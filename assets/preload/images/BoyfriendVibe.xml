@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="BoyfriendVibe.png">
+	<!-- Made By Feeshypoo -->
+	<!-- Programmed With Notepad -->
+	<SubTexture name="boyfriend Hump0000" x="0" y="0" width="1010" height="949" frameX="0" frameY="0" frameWidth="1010" frameHeight="949"/>
+	<SubTexture name="boyfriend Hump0001" x="0" y="0" width="1010" height="949" frameX="0" frameY="0" frameWidth="1010" frameHeight="949"/>
+	<SubTexture name="boyfriend Hump0002" x="1050" y="0" width="1010" height="949" frameX="0" frameY="0" frameWidth="1010" frameHeight="949"/>
+	<SubTexture name="boyfriend Hump0003" x="1050" y="0" width="1010" height="949" frameX="0" frameY="0" frameWidth="1010" frameHeight="949"/>
+	<SubTexture name="boyfriend Hump0004" x="2100" y="0" width="1010" height="949" frameX="0" frameY="0" frameWidth="1010" frameHeight="949"/>
+	<SubTexture name="boyfriend Hump0005" x="2100" y="0" width="1010" height="949" frameX="0" frameY="0" frameWidth="1010" frameHeight="949"/>
+	<SubTexture name="boyfriend Hump0006" x="2100" y="0" width="1010" height="949" frameX="0" frameY="0" frameWidth="1010" frameHeight="949"/>
+</TextureAtlas>

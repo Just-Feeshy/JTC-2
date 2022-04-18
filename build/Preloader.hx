@@ -1,0 +1,45 @@
+package;
+
+import flixel.FlxG;
+import flixel.FlxState;
+import sys.io.File;
+import openfl.Lib;
+import openfl.display.FPS;
+import haxe.Json;
+
+import SaveData.SaveType;
+
+using StringTools;
+
+class Preloader extends FlxState {
+    override public function create() {
+        if(true) {
+            FlxG.switchState(new CrashDumper());
+            return;
+        }
+
+        #if !mobile
+		Lib.current.addChild(new FPS(10, 3, 0xFFFFFF));
+		#end
+
+        if(File.getContent(Paths.mora("shaders", "json")).length < 11)
+            File.saveContent(Paths.mora("shaders", "json"), Json.stringify([0,0,0,0,0]));
+
+        FlxG.mouse.visible = false;
+
+        Main.trueFramerate = FlxG.save.data.lowFps;
+        Lib.current.stage.frameRate = Main.trueFramerate * SaveData.getData(SaveType.FPS_MULTIPLIER);
+
+        super.create();
+
+        FlxG.switchState(new TitleState());
+
+        Register.setup();
+        //trace();
+        Register.compile();
+    }
+
+    override function update(elapsed:Float) {
+        super.update(elapsed / 2);
+    }
+}

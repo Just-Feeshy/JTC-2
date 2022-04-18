@@ -1,0 +1,53 @@
+{
+    "file": "senpai.xml",
+
+    "animations": {
+        "idle": {
+            "prefix": "Angry Senpai Idle",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 0]
+        },
+
+        "singUP": {
+            "prefix": "Angry Senpai UP NOTE",
+            "framerate": 24,
+            "looped": false,
+            "offset": [5, 37]
+        },
+
+        "singRIGHT": {
+            "prefix": "Angry Senpai RIGHT NOTE",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 0]
+        },
+
+        "singLEFT": {
+            "prefix": "Angry Senpai LEFT NOTE",
+            "framerate": 24,
+            "looped": false,
+            "offset": [40, 0]
+        },
+
+        "singDOWN": {
+            "prefix": "Angry Senpai DOWN NOTE",
+            "framerate": 24,
+            "looped": false,
+            "offset": [14, 0]
+        }
+    },
+
+    "position": {
+        "x": 150,
+        "y": 360,
+        "camPosX": 300,
+        "camPosY": 0
+    },
+
+    "icon": [22, 22],
+
+    "playAnim": "idle",
+    "isPlayer": false,
+    "pixel": true
+}
