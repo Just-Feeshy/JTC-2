@@ -35,7 +35,7 @@ private class StupidVibeShader extends FlxShader {
 		void main() {
 			vec4 color = flixel_texture2D(bitmap, openfl_TextureCoordv);
 
-			gl_FragColor = vec4((vec3(color.r+color.g+color.b)/3.0) * (1 - vibe) + color.rgb * vibe, color.a);
+			gl_FragColor = vec4((vec3(color.r+color.g+color.b)/3.0) * (1.0 - vibe) + color.rgb * vibe, color.a);
 		}
     ')
     public function new(vibeMeter:Float) {

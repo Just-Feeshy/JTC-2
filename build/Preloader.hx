@@ -13,10 +13,14 @@ using StringTools;
 
 class Preloader extends FlxState {
     override public function create() {
+        var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
+
+        /**
         if(true) {
             FlxG.switchState(new CrashDumper());
             return;
         }
+        **/
 
         #if !mobile
 		Lib.current.addChild(new FPS(10, 3, 0xFFFFFF));
@@ -27,8 +31,13 @@ class Preloader extends FlxState {
 
         FlxG.mouse.visible = false;
 
+        if(fpsMulti < 1)
+            fpsMulti = 1;
+
         Main.trueFramerate = FlxG.save.data.lowFps;
-        Lib.current.stage.frameRate = Main.trueFramerate * SaveData.getData(SaveType.FPS_MULTIPLIER);
+        Lib.current.stage.frameRate = Main.trueFramerate * fpsMulti;
+
+        trace(Lib.current.stage.frameRate);
 
         super.create();
 

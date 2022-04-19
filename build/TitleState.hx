@@ -52,9 +52,11 @@ class TitleState extends MusicBeatState
 	{
 		credits.sort(sortByShit);
 
-		#if polymod
-		polymod.Polymod.init({modRoot: "mods", dirs: ['introMod']});
+		/**
+		#if (polymod && windows)
+		polymod.Polymod.init({modRoot: "mod_", dirs: ['introMod']});
 		#end
+		**/
 
 		PlayerSettings.init();
 
@@ -62,8 +64,6 @@ class TitleState extends MusicBeatState
 
 		userIcon = new FlxSpriteGroup();
 		userName = new FlxTypedGroup<FlxText>();
-
-		super.create();
 
 		NGio.noLogin(APIStuff.API);
 
@@ -92,6 +92,8 @@ class TitleState extends MusicBeatState
 			DiscordClient.shutdown();
 		 });
 		#end
+
+		super.create();
 	}
 
 	var logoBl:FlxSprite;

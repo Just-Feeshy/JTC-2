@@ -1,6 +1,7 @@
 package;
 
 import flixel.FlxG;
+import haxe.Json;
 import openfl.display.BitmapData;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -9,7 +10,6 @@ import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
 
 import ModInitialize;
-import json2object.JsonParser;
 import sys.FileSystem;
 import sys.io.File;
 
@@ -19,7 +19,7 @@ class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 
-	public static var modJSON:ConfigDef = cast loadJSON();
+	public static var modJSON(get, never):ConfigDef;
 
 	public static var bitLiteralMap:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 
@@ -36,14 +36,10 @@ class Paths
 		#end
 	}
 
-	static public function loadJSON():ConfigDef {
-		var parser:JsonParser<ConfigDef> = new JsonParser<ConfigDef>();
+	static function get_modJSON():ConfigDef {
+		var parser:ConfigDef = cast Json.parse(Assets.getText("config/mod.json").trim());
 
-		#if desktop
-		return parser.fromJson(File.getContent("config/mod.json"), "mod.json");
-		#else
-		return parser.fromJson(Assets.getText("config/mod.json"), "mod.json");
-		#end
+		return parser;
 	}
 
 	static public function setCurrentLevel(name:String)

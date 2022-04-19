@@ -34,7 +34,7 @@ enum ClassType {
 * Yes, this is a helper class for Feeshmora mods.
 */
 class Register {
-    private static final regJSON:String = File.getContent("config/mod.json").split(':')[1].split('"')[1];
+    private static var regJSON(get, never):String;
 
     public static macro function compile() {
         if(regJSON.length > 0)
@@ -44,6 +44,10 @@ class Register {
                 return;
             };
 	}
+
+    static function get_regJSON() {
+        return File.getContent("config/mod.json").split(':')[1].split('"')[1];
+    }
 
     #if !macro
     @:allow(PlayState)

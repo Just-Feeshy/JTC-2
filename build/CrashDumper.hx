@@ -46,6 +46,10 @@ class CrashDumper extends HelperStates {
         crashtext.x = (gray.width / 2) - (crashtext.width / 2);
         gray.add(crashtext);
 
+        var description:FlxText = new FlxText(0, 25 + darkgray.y, "", 16);
+        description.x = (gray.width / 2) - (description.width / 2);
+        gray.add(description);
+
         super.create();
     }
 
