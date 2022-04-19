@@ -102,9 +102,9 @@ class StoryMenuState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
-		var index = 0;
+		var i:Int = 0;
 
-		for (i in 0...Lambda.count(Paths.modJSON.weeks)) {
+		for (index in Paths.modJSON.weeks) {
 			var weekThing:FlxSprite = new FlxSprite(0, 575).loadGraphic(Paths.image('storymenu/week' + i));
 
 			weekThing.centerOffsets();
@@ -129,6 +129,8 @@ class StoryMenuState extends MusicBeatState
 				lock.screenCenter(X);
 				grpLocks.add(lock);
 			}
+
+			i++;
 		}
 
 		difficultySelectors = new FlxGroup();

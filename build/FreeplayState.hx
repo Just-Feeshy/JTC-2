@@ -20,8 +20,10 @@ import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 import lime.utils.Assets;
+import haxe.Json;
 
 import Feeshmora;
+import ModInitialize;
 
 using StringTools;
 
@@ -82,13 +84,19 @@ class FreeplayState extends MusicBeatState
 		isDebug = true;
 		#end
 
-		for(i in 0...Lambda.count(Paths.modJSON.weeks)) {
-			for(v in 0...Paths.modJSON.weeks.get("week_" + i).week_data.length) {
-				var peepeepoopoo:SwagSong = Song.loadFromJson(Paths.modJSON.weeks.get("week_" + i).week_data[v].toLowerCase(), Paths.modJSON.weeks.get("week_" + i).week_data[v].toLowerCase());
+		var index:Int = 0;
+
+		var modJSON:ConfigDef = cast Json.parse(Assets.getText("config/mod.json").trim());
+
+		for(i in modJSON.weeks) {
+			for(v in 0...i.week_data.length) {
+				var peepeepoopoo:SwagSong = Song.loadFromJson(i.week_data[v].toLowerCase(), i.week_data[v].toLowerCase());
 				
-				if(Paths.modJSON.weeks.get("week_" + i).week_unlocked)
-					addSong(Paths.modJSON.weeks.get("week_" + i).week_data[v].toLowerCase(), i, peepeepoopoo.player2);
+				if(i.week_unlocked)
+					addSong(i.week_data[v].toLowerCase(), index, peepeepoopoo.player2);
 			}
+
+			index++;
 		}
 
 		camFreeplay = new BetterCams();
