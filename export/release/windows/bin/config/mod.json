@@ -1,0 +1,131 @@
+{
+    "main": "Mod",
+
+    "mod": {
+        "name": "Feeshmora",
+        "version": "PROTOTYPE 2",
+
+        "stages": [
+            "stage",
+            "spooky",
+            "philly",
+            "limo",
+            "mall",
+            "mallEvil",
+            "school",
+            "schoolEvil"
+        ]
+    },
+
+    "main_menu": {
+        "background_image": "funkstreet",
+        "bpm": 97
+    },
+
+    "weeks": {
+        "week_0": {
+            "week_name": "Tutorial",
+            "week_background": "song backgrounds/stage",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Tutorial"
+            ]
+        },
+
+        "week_1": {
+            "week_name": "Daddy Dearest",
+            "week_background": "song backgrounds/stage",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Bopeebo",
+                "Fresh",
+                "Dadbattle"
+            ]
+        },
+
+        "week_2": {
+            "week_name": "Spooky Month",
+            "week_background": "song backgrounds/halloween_bg",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Spookeez",
+                "South"
+            ]
+        },
+
+        "week_3": {
+            "week_name": "PICO",
+            "week_background": "song backgrounds/pico",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Pico",
+                "Philly",
+                "Blammed"
+            ]
+        },
+
+        "week_4": {
+            "week_name": "MOMMY MUST MURDER",
+            "week_background": "song backgrounds/limo",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Satin-Panties",
+                "High",
+                "Milf"
+            ]
+        },
+
+        "week_5": {
+            "week_name": "RED SNOW",
+            "week_background": "song backgrounds/christmas",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Cocoa",
+                "Eggnog",
+                "Winter-Horrorland"
+            ]
+        },
+
+        "week_6": {
+            "week_name": "hating simulator ft. moawling",
+            "week_background": "song backgrounds/school",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Senpai",
+                "Roses",
+                "Thorns"
+            ]
+        }
+    },
+
+    "title_menu": {
+        "credit_engine_creator": true,
+
+        "mod_creators": [
+            ""
+        ],
+
+        "waky": [
+            "Your A",
+            "Sussy Baka",
+            "Filler"
+        ],
+
+        "random_waky": [
+            ["sussy baka"],
+            ["pog"],
+            ["poggies"],
+            ["AMOGUS", "lol"],
+            ["Feeshmora", "Update"],
+            ["sacrifice the", "newborn"],
+            ["Fesh", "Fesh"]
+        ]
+    }
+}

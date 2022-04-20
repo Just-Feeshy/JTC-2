@@ -4,8 +4,10 @@ import template.StageBuilder;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.addons.effects.chainable.FlxWaveEffect;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.system.FlxSound;
+import flixel.util.FlxDestroyUtil;
 
 class DefaultStage extends StageBuilder {
 
@@ -18,7 +20,10 @@ class DefaultStage extends StageBuilder {
     var bottomBoppers:FlxSprite;
     var fastCar:FlxSprite;
     var santa:FlxSprite;
+    var bgGirls:BackgroundGirls;
     var trainSound:FlxSound;
+
+    var isPixel:Bool = false;
 
     public function new(song:String) {
         super(song);
@@ -196,30 +201,27 @@ class DefaultStage extends StageBuilder {
 				evilSnow.antialiasing = true;
                 addToStage(evilSnow);
 			}
-            /**
 			case 'school':
 			{
-				isPixel = true;
-
-				// defaultCamZoom = 0.9;
+				setPixel(true);
 
 				var bgSky = new FlxSprite().loadGraphic(Paths.image('weeb/weebSky'));
 				bgSky.scrollFactor.set(0.1, 0.1);
-				add(bgSky);
+				addToStage(bgSky);
 
 				var repositionShit = -200;
 
 				var bgSchool:FlxSprite = new FlxSprite(repositionShit, 0).loadGraphic(Paths.image('weeb/weebSchool'));
 				bgSchool.scrollFactor.set(0.6, 0.90);
-				add(bgSchool);
+				addToStage(bgSchool);
 
 				var bgStreet:FlxSprite = new FlxSprite(repositionShit).loadGraphic(Paths.image('weeb/weebStreet'));
 				bgStreet.scrollFactor.set(0.95, 0.95);
-				add(bgStreet);
+				addToStage(bgStreet);
 
 				var fgTrees:FlxSprite = new FlxSprite(repositionShit + 170, 130).loadGraphic(Paths.image('weeb/weebTreesBack'));
 				fgTrees.scrollFactor.set(0.9, 0.9);
-				add(fgTrees);
+				addToStage(fgTrees);
 
 				var bgTrees:FlxSprite = new FlxSprite(repositionShit - 380, -800);
 				var treetex = Paths.getPackerAtlas('weeb/weebTrees');
@@ -227,14 +229,14 @@ class DefaultStage extends StageBuilder {
 				bgTrees.animation.add('treeLoop', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], 12);
 				bgTrees.animation.play('treeLoop');
 				bgTrees.scrollFactor.set(0.85, 0.85);
-				add(bgTrees);
+				addToStage(bgTrees);
 
 				var treeLeaves:FlxSprite = new FlxSprite(repositionShit, -40);
 				treeLeaves.frames = Paths.getSparrowAtlas('weeb/petals');
 				treeLeaves.animation.addByPrefix('leaves', 'PETALS ALL', 24, true);
 				treeLeaves.animation.play('leaves');
 				treeLeaves.scrollFactor.set(0.85, 0.85);
-				add(treeLeaves);
+				addToStage(treeLeaves);
 
 				var widShit = Std.int(bgSky.width * 6);
 
@@ -255,68 +257,76 @@ class DefaultStage extends StageBuilder {
 				bgGirls = new BackgroundGirls(-100, 190);
 				bgGirls.scrollFactor.set(0.9, 0.9);
 
-				if (SONG.song.toLowerCase() == 'roses')
+				if (song == 'roses')
 					{
 						bgGirls.getScared();
 				}
 
-				bgGirls.setGraphicSize(Std.int(bgGirls.width * daPixelZoom));
+				bgGirls.setGraphicSize(Std.int(bgGirls.width * 6));
 				bgGirls.updateHitbox();
-				add(bgGirls);
+				addToStage(bgGirls);
 			}
 			case 'schoolEvil':
 			{
-					isPixel = true;
+                setPixel(true);
 
-					var waveEffectBG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 3, 2);
-					var waveEffectFG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 5, 2);
+                var waveEffectBG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 3, 2);
+                var waveEffectFG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 5, 2);
 
-					var posX = 400;
-						var posY = 200;
+                var posX = 400;
+                var posY = 200;
 
-					var bg:FlxSprite = new FlxSprite(posX, posY);
-					bg.frames = Paths.getSparrowAtlas('weeb/animatedEvilSchool');
-					bg.animation.addByPrefix('idle', 'background 2', 24);
-					bg.animation.play('idle');
-					bg.scrollFactor.set(0.8, 0.9);
-					bg.scale.set(6, 6);
-					add(bg);
+                var bg:FlxSprite = new FlxSprite(posX, posY);
+                bg.frames = Paths.getSparrowAtlas('weeb/animatedEvilSchool');
+                bg.animation.addByPrefix('idle', 'background 2', 24);
+                bg.animation.play('idle');
+                bg.scrollFactor.set(0.8, 0.9);
+                bg.scale.set(6, 6);
+                addToStage(bg);
 			}
-            **/
 			default:
 			{
-                    setDefaultCameraZoom(0.90);
+                setDefaultCameraZoom(0.90);
 
-					var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));
-					bg.antialiasing = true;
-					bg.scrollFactor.set(0.9, 0.9);
-					bg.active = false;
-					addToStage(bg);
+                var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));
+                bg.antialiasing = true;
+                bg.scrollFactor.set(0.9, 0.9);
+                bg.active = false;
+                addToStage(bg);
 
-					var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(Paths.image('stagefront'));
-					stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
-					stageFront.updateHitbox();
-					stageFront.antialiasing = true;
-					stageFront.scrollFactor.set(0.9, 0.9);
-					stageFront.active = false;
-					addToStage(stageFront);
+                var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(Paths.image('stagefront'));
+                stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
+                stageFront.updateHitbox();
+                stageFront.antialiasing = true;
+                stageFront.scrollFactor.set(0.9, 0.9);
+                stageFront.active = false;
+                addToStage(stageFront);
 
-					var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image('stagecurtains'));
-					stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
-					stageCurtains.updateHitbox();
-					stageCurtains.antialiasing = true;
-					stageCurtains.scrollFactor.set(1.3, 1.3);
-					stageCurtains.active = false;
+                var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image('stagecurtains'));
+                stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
+                stageCurtains.updateHitbox();
+                stageCurtains.antialiasing = true;
+                stageCurtains.scrollFactor.set(1.3, 1.3);
+                stageCurtains.active = false;
 
-					addToStage(stageCurtains);
+                addToStage(stageCurtains);
 			}
 		}
+    }
+
+    override public function whenCreatingScene() {
+        super.whenCreatingScene();
+
+        addToStage(limo);
     }
 
     override function destroy() {
         super.destroy();
 
-
+        halloweenBG = FlxDestroyUtil.destroy(halloweenBG);
+        phillyCityLights = FlxDestroyUtil.destroy(phillyCityLights);
+        grpLimoDancers = FlxDestroyUtil.destroy(grpLimoDancers);
+        phillyTrain = FlxDestroyUtil.destroy(phillyTrain);
     }
 
     /**

@@ -25,21 +25,34 @@ abstract class StageBuilder extends FlxBasic {
     public function addToStageAndMap(name:String, thing:FlxBasic) {
         sprites.set(name, thing);
 
-        if(isOfType(cast FlxG.state, PlayState))
+        if(isOfType(FlxG.state, PlayState))
             FlxG.state.add(thing);
     }
 
     public function addToStage(thing:FlxBasic) {
-        if(isOfType(cast FlxG.state, PlayState))
+        if(isOfType(FlxG.state, PlayState))
             FlxG.state.add(thing);
     }
 
+    public function whenCreatingScene() {
+        //empty method
+    }
+
     public function setDefaultCameraZoom(zoom:Float) {
-        if(isOfType(cast FlxG.state, PlayState)) {
+        if(isOfType(FlxG.state, PlayState)) {
             var state:PlayState = cast FlxG.state;
 
             @:privateAccess
             state.defaultCamZoom = zoom;
+        }
+    }
+
+    public function setPixel(is:Bool) {
+        if(isOfType(FlxG.state, PlayState)) {
+            var state:PlayState = cast FlxG.state;
+
+            @:privateAccess
+            state.isPixel = is;
         }
     }
 

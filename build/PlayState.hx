@@ -340,10 +340,17 @@ class PlayState extends MusicBeatState
 		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
 		#end
 
+		stageGroup = new FlxTypedGroup<StageBuilder>();
+		add(stageGroup);
+
 		if(SONG.stage == null)
 			SONG.stage = DefaultStage.setMainGameStage(SONG.song.toLowerCase());
 
 		curStage = SONG.stage.toLowerCase();
+
+		for(i in 0...stages.length) {
+			stageGroup.add(cast Type.createInstance(stages[i], [SONG.song.toLowerCase()]));
+		}
 
 		switch (curStage)
 		{
@@ -734,7 +741,7 @@ class PlayState extends MusicBeatState
 		boyfriend.setPosition(boyfriend.x - SONG.player1X, boyfriend.y - SONG.player1Y);
 		dad.setPosition(dad.x - SONG.player2X, dad.y - SONG.player2Y);
 
-		createCharacters();
+		createScene();
 		createFogs();
 
 		doof = new DialogueBox(false, dialogue);
@@ -1024,7 +1031,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	private function createCharacters(?setup:Bool = true) {
+	private function createScene(?setup:Bool = true) {
 		if(setup) {
 			Conductor.mapBPMChanges(SONG);
 			Conductor.changeBPM(SONG.bpm);
@@ -1033,8 +1040,9 @@ class PlayState extends MusicBeatState
 		if(!createdCharacters) {
 			add(gf);
 
-			if (curStage == 'limo')
-				add(limo);
+			stageGroup.forEach(function(stage:StageBuilder) {
+				stage.whenCreatingScene();
+			});
 
 			add(dad);
 			add(boyfriend);
