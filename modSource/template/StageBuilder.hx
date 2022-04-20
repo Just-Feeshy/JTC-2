@@ -9,7 +9,7 @@ import Std.isOfType;
 import Std.is as isOfType;
 #end
 
-class StageBuilder extends FlxBasic {
+abstract class StageBuilder extends FlxBasic {
     private var sprites:Map<String, FlxBasic>;
     private var song:String;
     private var directory:String;
@@ -22,11 +22,25 @@ class StageBuilder extends FlxBasic {
         this.song = song;
     }
 
-    public function addToStage(name:String, thing:FlxBasic) {
+    public function addToStageAndMap(name:String, thing:FlxBasic) {
         sprites.set(name, thing);
 
-        if(isOfType(thing, PlayState))
+        if(isOfType(cast FlxG.state, PlayState))
             FlxG.state.add(thing);
+    }
+
+    public function addToStage(thing:FlxBasic) {
+        if(isOfType(cast FlxG.state, PlayState))
+            FlxG.state.add(thing);
+    }
+
+    public function setDefaultCameraZoom(zoom:Float) {
+        if(isOfType(cast FlxG.state, PlayState)) {
+            var state:PlayState = cast FlxG.state;
+
+            @:privateAccess
+            state.defaultCamZoom = zoom;
+        }
     }
 
     override public function destroy() {
@@ -40,5 +54,6 @@ class StageBuilder extends FlxBasic {
 
         sprites = null;
         song = null;
+        directory = null;
     }
 }

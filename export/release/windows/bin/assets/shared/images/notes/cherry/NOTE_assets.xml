@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="NOTE_cherry.png">
+	<SubTexture name="green0000" x="0" y="167" width="167" height="167"/>
+	<SubTexture name="red0000" x="0" y="0" width="167" height="167"/>
+	<SubTexture name="blue0000" x="167" y="167" width="167" height="167"/>
+	<SubTexture name="purple0000" x="167" y="0" width="167" height="167"/>
+	<SubTexture name="diamond0000" x="334" y="0" width="167" height="167"/>
+</TextureAtlas>

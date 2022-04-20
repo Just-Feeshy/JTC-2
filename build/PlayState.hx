@@ -123,8 +123,6 @@ class PlayState extends MusicBeatState
 	public static var storyDifficulty:Int = 2;
 	public static var noteBeat:Float;
 
-	var halloweenLevel:Bool = false;
-
 	var daRating:String = "sick";
 
 	//public var testers(default, set):Int;
@@ -298,7 +296,6 @@ class PlayState extends MusicBeatState
 				dialogue = CoolUtil.coolTextFile(Paths.txt('thorns/thornsDialogue'));
 		}
 
-		#if windows
 		// Making difficulty text for Discord Rich Presence.
 		switch (storyDifficulty)
 		{
@@ -339,18 +336,19 @@ class PlayState extends MusicBeatState
 		detailsPausedText = "Paused - " + detailsText;
 		
 		// Updating Discord Rich Presence.
+		#if windows
 		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
 		#end
 
 		if(SONG.stage == null)
 			SONG.stage = DefaultStage.setMainGameStage(SONG.song.toLowerCase());
 
-		switch (SONG.stage.toLowerCase())
+		curStage = SONG.stage.toLowerCase();
+
+		switch (curStage)
 		{
 			case 'spooky': 
 			{
-					halloweenLevel = true;
-
 					var hallowTex = Paths.getSparrowAtlas('halloween_bg');
 
 					halloweenBG = new FlxSprite(-200, -100);
@@ -447,7 +445,6 @@ class PlayState extends MusicBeatState
 				limo.antialiasing = true;
 
 				fastCar = new FlxSprite(-300, 160).loadGraphic(Paths.image('limo/fastCarLol'));
-				// add(limo);
 			}
 			case 'mall':
 			{
@@ -643,8 +640,7 @@ class PlayState extends MusicBeatState
 		var gfVersion:String = 'gf';
 
 		if(SONG.girlfriend == null) {
-			switch (curStage)
-			{
+			switch (curStage) {
 				case 'limo':
 					gfVersion = 'gf-car';
 				case 'mall' | 'mallEvil':

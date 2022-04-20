@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Fonz extra sprites.png">
+	<!-- Created with Adobe Animate version 19.2.1.408 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Fonz panting0000" x="0" y="0" width="358" height="458" frameX="-1" frameY="-4" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0001" x="0" y="0" width="358" height="458" frameX="-1" frameY="-4" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0002" x="358" y="0" width="358" height="462" frameX="-1" frameY="0" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0003" x="716" y="0" width="358" height="462" frameX="-1" frameY="0" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0004" x="716" y="0" width="358" height="462" frameX="-1" frameY="0" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0005" x="716" y="0" width="358" height="462" frameX="-1" frameY="0" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0006" x="716" y="0" width="358" height="462" frameX="-1" frameY="0" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0007" x="716" y="0" width="358" height="462" frameX="-1" frameY="0" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0008" x="1074" y="0" width="359" height="458" frameX="0" frameY="-4" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0009" x="1074" y="0" width="359" height="458" frameX="0" frameY="-4" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0010" x="1433" y="0" width="358" height="453" frameX="-1" frameY="-9" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz panting0011" x="0" y="462" width="358" height="452" frameX="-1" frameY="-10" frameWidth="359" frameHeight="462"/>
+	<SubTexture name="Fonz throwing mic0000" x="358" y="462" width="362" height="466" frameX="-528" frameY="-6" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0001" x="358" y="462" width="362" height="466" frameX="-528" frameY="-6" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0002" x="720" y="462" width="365" height="455" frameX="-524" frameY="-17" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0003" x="720" y="462" width="365" height="455" frameX="-524" frameY="-17" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0004" x="720" y="462" width="365" height="455" frameX="-524" frameY="-17" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0005" x="1085" y="462" width="389" height="473" frameX="-560" frameY="-1" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0006" x="1085" y="462" width="389" height="473" frameX="-560" frameY="-1" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0007" x="1474" y="462" width="393" height="474" frameX="-562" frameY="0" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0008" x="1474" y="462" width="393" height="474" frameX="-562" frameY="0" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0009" x="1474" y="462" width="393" height="474" frameX="-562" frameY="0" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0010" x="1474" y="462" width="393" height="474" frameX="-562" frameY="0" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0011" x="0" y="936" width="543" height="445" frameX="-336" frameY="-29" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0012" x="0" y="936" width="543" height="445" frameX="-336" frameY="-29" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0013" x="543" y="936" width="715" height="450" frameX="-162" frameY="-24" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0014" x="543" y="936" width="715" height="450" frameX="-162" frameY="-24" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0015" x="0" y="1386" width="886" height="460" frameX="0" frameY="-14" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0016" x="0" y="1386" width="886" height="460" frameX="0" frameY="-14" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0017" x="886" y="1386" width="356" height="460" frameX="-530" frameY="-14" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0018" x="886" y="1386" width="356" height="460" frameX="-530" frameY="-14" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0019" x="1242" y="1386" width="364" height="472" frameX="-528" frameY="0" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz throwing mic0020" x="1242" y="1386" width="364" height="472" frameX="-528" frameY="0" frameWidth="955" frameHeight="474"/>
+	<SubTexture name="Fonz_glitching mic back into hand0000" x="1606" y="1386" width="324" height="464" frameX="-82" frameY="-2" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0001" x="1606" y="1386" width="324" height="464" frameX="-82" frameY="-2" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0002" x="0" y="1858" width="403" height="459" frameX="0" frameY="-7" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0003" x="0" y="1858" width="403" height="459" frameX="0" frameY="-7" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0004" x="403" y="1858" width="388" height="460" frameX="-15" frameY="-6" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0005" x="403" y="1858" width="388" height="460" frameX="-15" frameY="-6" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0006" x="791" y="1858" width="399" height="461" frameX="-12" frameY="-5" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0007" x="791" y="1858" width="399" height="461" frameX="-12" frameY="-5" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0008" x="1190" y="1858" width="374" height="466" frameX="-41" frameY="0" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0009" x="1190" y="1858" width="374" height="466" frameX="-41" frameY="0" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0010" x="1564" y="1858" width="382" height="466" frameX="-33" frameY="0" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0011" x="1564" y="1858" width="382" height="466" frameX="-33" frameY="0" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0012" x="0" y="2324" width="365" height="466" frameX="-50" frameY="0" frameWidth="415" frameHeight="466"/>
+	<SubTexture name="Fonz_glitching mic back into hand0013" x="0" y="2324" width="365" height="466" frameX="-50" frameY="0" frameWidth="415" frameHeight="466"/>
+</TextureAtlas>

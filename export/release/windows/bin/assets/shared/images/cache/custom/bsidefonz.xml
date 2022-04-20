@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Fonz neo sprites.png">
+	<!-- Created with Adobe Animate version 19.2.1.408 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="FONZ bside  NOTE DOWN0000" x="0" y="0" width="304" height="435" frameX="0" frameY="-9" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0001" x="0" y="0" width="304" height="435" frameX="0" frameY="-9" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0002" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0003" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0004" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0005" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0006" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0007" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0008" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0009" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0010" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0011" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0012" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0013" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside  NOTE DOWN0014" x="304" y="0" width="297" height="444" frameX="-1" frameY="0" frameWidth="304" frameHeight="444"/>
+	<SubTexture name="FONZ bside NOTE LEFT0000" x="601" y="0" width="324" height="434" frameX="0" frameY="0" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0001" x="601" y="0" width="324" height="434" frameX="0" frameY="0" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0002" x="925" y="0" width="324" height="430" frameX="-2" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0003" x="925" y="0" width="324" height="430" frameX="-2" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0004" x="1249" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0005" x="1249" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0006" x="1581" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0007" x="1581" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0008" x="1581" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0009" x="925" y="0" width="324" height="430" frameX="-2" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0010" x="925" y="0" width="324" height="430" frameX="-2" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0011" x="1249" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0012" x="1249" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0013" x="1581" y="0" width="332" height="439" frameX="0" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE LEFT0014" x="925" y="0" width="324" height="430" frameX="-2" frameY="-4" frameWidth="332" frameHeight="443"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0000" x="0" y="444" width="324" height="430" frameX="-3" frameY="-3" frameWidth="331" frameHeight="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0001" x="0" y="444" width="324" height="430" frameX="-3" frameY="-3" frameWidth="331" frameHeight="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0002" x="324" y="444" width="325" height="433" frameX="-1" frameY="0" frameWidth="331" frameHeight="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0003" x="324" y="444" width="325" height="433" frameX="-1" frameY="0" frameWidth="331" frameHeight="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0004" x="649" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0005" x="649" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0006" x="980" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0007" x="980" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0008" x="980" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0009" x="324" y="444" width="325" height="433" frameX="-1" frameY="0" frameWidth="331" frameHeight="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0010" x="324" y="444" width="325" height="433" frameX="-1" frameY="0" frameWidth="331" frameHeight="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0011" x="649" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0012" x="649" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0013" x="980" y="444" width="331" height="442"/>
+	<SubTexture name="FONZ bside NOTE RIGHT0014" x="1311" y="444" width="325" height="433" frameX="-1" frameY="0" frameWidth="331" frameHeight="442"/>
+	<SubTexture name="FONZ bside NOTE UP0000" x="1636" y="444" width="339" height="484" frameX="-7" frameY="0" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0001" x="1636" y="444" width="339" height="484" frameX="-7" frameY="0" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0002" x="0" y="928" width="340" height="469" frameX="-3" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0003" x="0" y="928" width="340" height="469" frameX="-3" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0004" x="340" y="928" width="343" height="475" frameX="0" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0005" x="340" y="928" width="343" height="475" frameX="0" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0006" x="683" y="928" width="341" height="475" frameX="-2" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0007" x="683" y="928" width="341" height="475" frameX="-2" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0008" x="0" y="928" width="340" height="469" frameX="-3" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0009" x="0" y="928" width="340" height="469" frameX="-3" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0010" x="0" y="928" width="340" height="469" frameX="-3" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0011" x="340" y="928" width="343" height="475" frameX="0" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0012" x="340" y="928" width="343" height="475" frameX="0" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0013" x="683" y="928" width="341" height="475" frameX="-2" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bside NOTE UP0014" x="0" y="928" width="340" height="469" frameX="-3" frameY="-13" frameWidth="346" frameHeight="488"/>
+	<SubTexture name="FONZ bsideHEY!!0000" x="1024" y="928" width="338" height="431" frameX="-6" frameY="-3" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0001" x="1024" y="928" width="338" height="431" frameX="-6" frameY="-3" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0002" x="1362" y="928" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0003" x="1362" y="928" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0004" x="0" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0005" x="0" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0006" x="345" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0007" x="345" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0008" x="345" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0009" x="690" y="1403" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0010" x="690" y="1403" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0011" x="0" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0012" x="0" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0013" x="345" y="1403" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0014" x="1032" y="1403" width="345" height="439" frameX="0" frameY="-3" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0015" x="1032" y="1403" width="345" height="439" frameX="0" frameY="-3" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0016" x="1377" y="1403" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0017" x="1377" y="1403" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0018" x="0" y="1845" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0019" x="0" y="1845" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0020" x="345" y="1845" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0021" x="345" y="1845" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0022" x="345" y="1845" width="345" height="442"/>
+	<SubTexture name="FONZ bsideHEY!!0023" x="1377" y="1403" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0024" x="1377" y="1403" width="342" height="434" frameX="0" frameY="0" frameWidth="345" frameHeight="442"/>
+	<SubTexture name="FONZ bsideHEY!!0025" x="0" y="1845" width="345" height="442"/>
+	<SubTexture name="FONZ bside_idle dance0000" x="690" y="1845" width="361" height="439" frameX="-3" frameY="-2" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0001" x="690" y="1845" width="361" height="439" frameX="-3" frameY="-2" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0002" x="1051" y="1845" width="356" height="435" frameX="-5" frameY="-6" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0003" x="1051" y="1845" width="356" height="435" frameX="-5" frameY="-6" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0004" x="1407" y="1845" width="355" height="435" frameX="-4" frameY="-6" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0005" x="1407" y="1845" width="355" height="435" frameX="-4" frameY="-6" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0006" x="0" y="2287" width="359" height="437" frameX="0" frameY="-4" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0007" x="0" y="2287" width="359" height="437" frameX="0" frameY="-4" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0008" x="359" y="2287" width="355" height="441" frameX="-4" frameY="0" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0009" x="359" y="2287" width="355" height="441" frameX="-4" frameY="0" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0010" x="359" y="2287" width="355" height="441" frameX="-4" frameY="0" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0011" x="359" y="2287" width="355" height="441" frameX="-4" frameY="0" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0012" x="359" y="2287" width="355" height="441" frameX="-4" frameY="0" frameWidth="364" frameHeight="441"/>
+	<SubTexture name="FONZ bside_idle dance0013" x="359" y="2287" width="355" height="441" frameX="-4" frameY="0" frameWidth="364" frameHeight="441"/>
+</TextureAtlas>

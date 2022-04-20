@@ -6,12 +6,20 @@ import haxe.macro.Type;
 
 #if !macro
 import example_code.DefaultEvents;
+import example_code.DefaultStage;
 import template.CustomNote;
+import template.StageBuilder;
 import feshixl.group.FeshEventGroup;
 import flixel.FlxState;
 import flixel.tweens.FlxEase;
 import haxe.Json;
 import lime.utils.Assets;
+#end
+
+#if (haxe_ver >= 4.2)
+import Std.isOfType;
+#else
+import Std.is as isOfType;
 #end
 
 /**
@@ -55,6 +63,9 @@ class Register {
     @:allow(PlayState)
     private static var events:FeshEventGroup = new FeshEventGroup();
 
+    @:allow(PlayState)
+    private static var stages:Array<Class<StageBuilder>> = [DefaultStage];
+
     //@:allow(PlayState)
     //private static var stages:Array<Class<>>
 
@@ -78,7 +89,7 @@ class Register {
                 if(!events.members.contains(daEvent))
                     events.add(daEvent);
             case STAGE:
-                
+                stages.push(Type.getClass(addonClass));
         }
     }
 
