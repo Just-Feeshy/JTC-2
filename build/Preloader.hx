@@ -41,9 +41,10 @@ class Preloader extends FlxState {
 
         super.create();
 
+        Register.setup();
+
         FlxG.switchState(new TitleState());
 
-        Register.setup();
         //trace();
         Register.compile();
     }

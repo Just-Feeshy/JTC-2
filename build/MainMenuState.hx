@@ -112,8 +112,8 @@ class MainMenuState extends MusicBeatState
 
 		Conductor.changeBPM(Paths.modJSON.main_menu.bpm);
 
-		Lib.current.stage.frameRate = Main.trueFramerate * SaveData.getData(SaveType.FPS_MULTIPLIER);
-		Main.framerate = Main.trueFramerate;
+		Main.trueFramerate = FlxG.save.data.lowFps;
+        Lib.current.stage.frameRate = Main.trueFramerate * SaveData.getData(SaveType.FPS_MULTIPLIER);
 
 		#if windows
 		// Updating Discord Rich Presence

@@ -86,9 +86,9 @@ class FreeplayState extends MusicBeatState
 
 		var index:Int = 0;
 
-		var modJSON:ConfigDef = cast Json.parse(Assets.getText("config/mod.json").trim());
+		super.create();
 
-		for(i in modJSON.weeks) {
+		for(i in Paths.modJSON.weeks) {
 			for(v in 0...i.week_data.length) {
 				var peepeepoopoo:SwagSong = Song.loadFromJson(i.week_data[v].toLowerCase(), i.week_data[v].toLowerCase());
 				
@@ -177,8 +177,6 @@ class FreeplayState extends MusicBeatState
 		// add(selector);
 
 		var swag:Alphabet = new Alphabet(1, 0, "swag");
-
-		super.create();
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String)

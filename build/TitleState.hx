@@ -50,6 +50,8 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
+		FlxG.save.bind('funkin', 'ninjamuffin99');
+
 		credits.sort(sortByShit);
 
 		/**

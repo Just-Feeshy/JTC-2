@@ -10,6 +10,7 @@ import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
 
 import ModInitialize;
+import json2object.JsonParser;
 import sys.FileSystem;
 import sys.io.File;
 
@@ -19,7 +20,7 @@ class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 
-	public static var modJSON(get, never):ConfigDef;
+	@:isVar public static var modJSON(get, never):ConfigDef;
 
 	public static var bitLiteralMap:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 
@@ -37,9 +38,13 @@ class Paths
 	}
 
 	static function get_modJSON():ConfigDef {
-		var parser:ConfigDef = cast Json.parse(Assets.getText("config/mod.json").trim());
+		if(modJSON == null) { 
+			var parser:JsonParser<ConfigDef> = new JsonParser<ConfigDef>();
 
-		return parser;
+			return parser.fromJson(File.getContent("config/mod.json"), "mod.json");
+		}else {
+			return modJSON;
+		}
 	}
 
 	static public function setCurrentLevel(name:String)
