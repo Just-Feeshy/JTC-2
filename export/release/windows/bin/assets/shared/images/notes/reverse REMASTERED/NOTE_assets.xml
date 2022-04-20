@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<TextureAtlas imagePath="NOTE_assets.png"><SubTexture name="NOTE_assets reverse UP0000" x="0" y="0" width="172" height="171" frameX="0" frameY="0" frameWidth="172" frameHeight="171" />
-<SubTexture name="NOTE_assets reverse LEFT0000" x="172" y="0" width="172" height="171" frameX="0" frameY="0" frameWidth="172" frameHeight="171" />
-<SubTexture name="NOTE_assets reverse RIGHT0000" x="344" y="0" width="172" height="171" frameX="0" frameY="0" frameWidth="172" frameHeight="171" />
-<SubTexture name="NOTE_assets reverse DOWN0000" x="516" y="0" width="172" height="171" frameX="0" frameY="0" frameWidth="172" frameHeight="171" />
-</TextureAtlas>
