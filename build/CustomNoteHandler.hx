@@ -18,7 +18,8 @@ class CustomNoteHandler {
 
     @:allow(Note.getAddon)
     @:allow(Register.implementCustomNote)
-    private static var customNoteAddon:Map<String, Class<NoteAddon>> = new Map<String, Class<NoteAddon>>();
+    @:allow(ChartingState.addNoteUI)
+    private static var customNoteAddon:Map<String, Class<CustomNote>> = new Map<String, Class<CustomNote>>();
 
     static public function spawn() {
         triggerWarning = [

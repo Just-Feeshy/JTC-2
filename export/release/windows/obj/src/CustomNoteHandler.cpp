@@ -3,9 +3,6 @@
 #ifndef INCLUDED_CustomNoteHandler
 #include <CustomNoteHandler.h>
 #endif
-#ifndef INCLUDED_NoteAddon
-#include <NoteAddon.h>
-#endif
 #ifndef INCLUDED_haxe_IMap
 #include <haxe/IMap.h>
 #endif
@@ -13,26 +10,25 @@
 #include <haxe/ds/StringMap.h>
 #endif
 
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_19_spawn,"CustomNoteHandler","spawn",0x11eaec34,"CustomNoteHandler.spawn","CustomNoteHandler.hx",19,0x29748777)
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_38_configAddons,"CustomNoteHandler","configAddons",0x148d8e7c,"CustomNoteHandler.configAddons","CustomNoteHandler.hx",38,0x29748777)
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_7_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",7,0x29748777)
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_12_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",12,0x29748777)
-static const ::String _hx_array_data_8cdd7da7_6[] = {
+HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_24_spawn,"CustomNoteHandler","spawn",0x11eaec34,"CustomNoteHandler.spawn","CustomNoteHandler.hx",24,0x29748777)
+HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_9_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",9,0x29748777)
+HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_14_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",14,0x29748777)
+static const ::String _hx_array_data_8cdd7da7_3[] = {
 	HX_("poison",08,d9,31,f7),HX_("spiritual star",83,67,fb,93),HX_("trippy",2e,c2,d0,4a),HX_("reverse poison",46,c0,80,7a),HX_("planet notes",b9,fc,5e,75),
 };
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_13_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",13,0x29748777)
-static const ::String _hx_array_data_8cdd7da7_8[] = {
+HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_15_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",15,0x29748777)
+static const ::String _hx_array_data_8cdd7da7_5[] = {
 	HX_("reverse",22,39,fc,1a),HX_("poison",08,d9,31,f7),HX_("spiritual star",83,67,fb,93),HX_("trippy",2e,c2,d0,4a),HX_("reverse poison",46,c0,80,7a),HX_("ocean",fe,7b,37,2b),HX_("side note",1b,77,6d,8e),HX_("planet notes",b9,fc,5e,75),
 };
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_14_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",14,0x29748777)
-static const ::String _hx_array_data_8cdd7da7_10[] = {
+HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_16_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",16,0x29748777)
+static const ::String _hx_array_data_8cdd7da7_7[] = {
 	HX_("poison",08,d9,31,f7),HX_("trippy",2e,c2,d0,4a),HX_("reverse poison",46,c0,80,7a),HX_("planet notes",b9,fc,5e,75),
 };
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_15_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",15,0x29748777)
-static const ::String _hx_array_data_8cdd7da7_12[] = {
+HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_17_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",17,0x29748777)
+static const ::String _hx_array_data_8cdd7da7_9[] = {
 	HX_("poison",08,d9,31,f7),HX_("regular",5c,52,88,82),HX_("reverse",22,39,fc,1a),HX_("ocean",fe,7b,37,2b),HX_("side note",1b,77,6d,8e),
 };
-HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_17_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",17,0x29748777)
+HX_LOCAL_STACK_FRAME(_hx_pos_eb2ec6553bdc9e1d_22_boot,"CustomNoteHandler","boot",0xd140d859,"CustomNoteHandler.boot","CustomNoteHandler.hx",22,0x29748777)
 
 void CustomNoteHandler_obj::__construct() { }
 
@@ -65,111 +61,29 @@ bool CustomNoteHandler_obj::funni;
 
 ::Array< ::String > CustomNoteHandler_obj::lowNotesTick;
 
-::Array< ::Dynamic> CustomNoteHandler_obj::customNoteAddon;
+ ::haxe::ds::StringMap CustomNoteHandler_obj::customNoteAddon;
 
 void CustomNoteHandler_obj::spawn(){
-            	HX_GC_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_19_spawn)
-HXLINE(  20)		 ::haxe::ds::StringMap _g =  ::haxe::ds::StringMap_obj::__alloc( HX_CTX );
-HXDLIN(  20)		_g->set(HX_("reverse",22,39,fc,1a),false);
-HXDLIN(  20)		_g->set(HX_("spiritual star",83,67,fb,93),false);
-HXDLIN(  20)		_g->set(HX_("poison",08,d9,31,f7),false);
-HXDLIN(  20)		_g->set(HX_("reverse poison",46,c0,80,7a),false);
-HXDLIN(  20)		_g->set(HX_("side note",1b,77,6d,8e),false);
-HXDLIN(  20)		_g->set(HX_("ocean",fe,7b,37,2b),false);
-HXDLIN(  20)		::CustomNoteHandler_obj::triggerWarning = _g;
-HXLINE(  30)		 ::haxe::ds::StringMap _g1 =  ::haxe::ds::StringMap_obj::__alloc( HX_CTX );
-HXDLIN(  30)		_g1->set(HX_("trippy",2e,c2,d0,4a),0);
-HXDLIN(  30)		{
-HXLINE(  30)			 ::Dynamic value = null();
-HXDLIN(  30)			_g1->set(HX_("side note",1b,77,6d,8e),value);
+            	HX_GC_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_24_spawn)
+HXLINE(  25)		 ::haxe::ds::StringMap _g =  ::haxe::ds::StringMap_obj::__alloc( HX_CTX );
+HXDLIN(  25)		_g->set(HX_("reverse",22,39,fc,1a),false);
+HXDLIN(  25)		_g->set(HX_("spiritual star",83,67,fb,93),false);
+HXDLIN(  25)		_g->set(HX_("poison",08,d9,31,f7),false);
+HXDLIN(  25)		_g->set(HX_("reverse poison",46,c0,80,7a),false);
+HXDLIN(  25)		_g->set(HX_("side note",1b,77,6d,8e),false);
+HXDLIN(  25)		_g->set(HX_("ocean",fe,7b,37,2b),false);
+HXDLIN(  25)		::CustomNoteHandler_obj::triggerWarning = _g;
+HXLINE(  35)		 ::haxe::ds::StringMap _g1 =  ::haxe::ds::StringMap_obj::__alloc( HX_CTX );
+HXDLIN(  35)		_g1->set(HX_("trippy",2e,c2,d0,4a),0);
+HXDLIN(  35)		{
+HXLINE(  35)			 ::Dynamic value = null();
+HXDLIN(  35)			_g1->set(HX_("side note",1b,77,6d,8e),value);
             		}
-HXDLIN(  30)		::CustomNoteHandler_obj::yourNoteData = _g1;
+HXDLIN(  35)		::CustomNoteHandler_obj::yourNoteData = _g1;
             	}
 
 
 STATIC_HX_DEFINE_DYNAMIC_FUNC0(CustomNoteHandler_obj,spawn,(void))
-
-void CustomNoteHandler_obj::configAddons(){
-            	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_38_configAddons)
-HXDLIN(  38)		if (!(::CustomNoteHandler_obj::funni)) {
-HXLINE(  39)			{
-HXLINE(  39)				int _g = 0;
-HXDLIN(  39)				int _g1 = ::CustomNoteHandler_obj::customNoteAddon->length;
-HXDLIN(  39)				while((_g < _g1)){
-HXLINE(  39)					_g = (_g + 1);
-HXDLIN(  39)					int i = (_g - 1);
-HXLINE(  40)					 ::NoteAddon v = ::CustomNoteHandler_obj::customNoteAddon->__get(i).StaticCast<  ::NoteAddon >();
-HXLINE(  42)					bool _hx_tmp;
-HXDLIN(  42)					if ((v->getCustomNote() != HX_("",00,00,00,00))) {
-HXLINE(  42)						_hx_tmp = ::hx::IsNotNull( v->getCustomNote() );
-            					}
-            					else {
-HXLINE(  42)						_hx_tmp = false;
-            					}
-HXDLIN(  42)					if (_hx_tmp) {
-HXLINE(  43)						bool _hx_tmp;
-HXDLIN(  43)						if (v->playerShouldntHit()) {
-HXLINE(  43)							_hx_tmp = !(::CustomNoteHandler_obj::dontHitNotes->contains(v->getCustomNote()));
-            						}
-            						else {
-HXLINE(  43)							_hx_tmp = false;
-            						}
-HXDLIN(  43)						if (_hx_tmp) {
-HXLINE(  44)							::CustomNoteHandler_obj::dontHitNotes->push(v->getCustomNote());
-            						}
-            						else {
-HXLINE(  45)							bool _hx_tmp;
-HXDLIN(  45)							if (v->noDefaultSplash()) {
-HXLINE(  45)								_hx_tmp = !(::CustomNoteHandler_obj::noNoteAbstractStrum->contains(v->getCustomNote()));
-            							}
-            							else {
-HXLINE(  45)								_hx_tmp = false;
-            							}
-HXDLIN(  45)							if (_hx_tmp) {
-HXLINE(  46)								::CustomNoteHandler_obj::noNoteAbstractStrum->push(v->getCustomNote());
-            							}
-            							else {
-HXLINE(  47)								bool _hx_tmp;
-HXDLIN(  47)								if ((v->giveHealth() < 0)) {
-HXLINE(  47)									_hx_tmp = !(::CustomNoteHandler_obj::ouchyNotes->contains(v->getCustomNote()));
-            								}
-            								else {
-HXLINE(  47)									_hx_tmp = false;
-            								}
-HXDLIN(  47)								if (_hx_tmp) {
-HXLINE(  48)									::CustomNoteHandler_obj::ouchyNotes->push(v->getCustomNote());
-            								}
-            							}
-            						}
-            					}
-            				}
-            			}
-HXLINE(  52)			bool _hx_tmp;
-HXDLIN(  52)			if (::hx::IsNotNull( ::CustomNoteHandler_obj::customNoteAddon->__get(0).StaticCast<  ::NoteAddon >() )) {
-HXLINE(  52)				_hx_tmp = (::CustomNoteHandler_obj::customNoteAddon->__get(0).StaticCast<  ::NoteAddon >()->getCustomNote() != HX_("",00,00,00,00));
-            			}
-            			else {
-HXLINE(  52)				_hx_tmp = false;
-            			}
-HXDLIN(  52)			if (_hx_tmp) {
-HXLINE(  53)				int _g = 0;
-HXDLIN(  53)				int _g1 = ::CustomNoteHandler_obj::customNoteAddon->length;
-HXDLIN(  53)				while((_g < _g1)){
-HXLINE(  53)					_g = (_g + 1);
-HXDLIN(  53)					int i = (_g - 1);
-HXLINE(  54)					 ::NoteAddon v = ::CustomNoteHandler_obj::customNoteAddon->__get(i).StaticCast<  ::NoteAddon >();
-HXLINE(  56)					{
-HXLINE(  56)						::Dynamic this1 = ::CustomNoteHandler_obj::triggerWarning;
-HXDLIN(  56)						( ( ::haxe::ds::StringMap)(this1) )->set(v->getCustomNote(),false);
-            					}
-            				}
-            			}
-HXLINE(  60)			::CustomNoteHandler_obj::funni = true;
-            		}
-            	}
-
-
-STATIC_HX_DEFINE_DYNAMIC_FUNC0(CustomNoteHandler_obj,configAddons,(void))
 
 
 CustomNoteHandler_obj::CustomNoteHandler_obj()
@@ -190,7 +104,6 @@ bool CustomNoteHandler_obj::__GetStatic(const ::String &inName, Dynamic &outValu
 		if (HX_FIELD_EQ(inName,"yourNoteData") ) { outValue = ( yourNoteData ); return true; }
 		if (HX_FIELD_EQ(inName,"dontHitNotes") ) { outValue = ( dontHitNotes ); return true; }
 		if (HX_FIELD_EQ(inName,"lowNotesTick") ) { outValue = ( lowNotesTick ); return true; }
-		if (HX_FIELD_EQ(inName,"configAddons") ) { outValue = configAddons_dyn(); return true; }
 		break;
 	case 14:
 		if (HX_FIELD_EQ(inName,"triggerWarning") ) { outValue = ( triggerWarning ); return true; }
@@ -222,7 +135,7 @@ bool CustomNoteHandler_obj::__SetStatic(const ::String &inName,Dynamic &ioValue,
 		if (HX_FIELD_EQ(inName,"triggerWarning") ) { triggerWarning=ioValue.Cast<  ::haxe::ds::StringMap >(); return true; }
 		break;
 	case 15:
-		if (HX_FIELD_EQ(inName,"customNoteAddon") ) { customNoteAddon=ioValue.Cast< ::Array< ::Dynamic> >(); return true; }
+		if (HX_FIELD_EQ(inName,"customNoteAddon") ) { customNoteAddon=ioValue.Cast<  ::haxe::ds::StringMap >(); return true; }
 		break;
 	case 19:
 		if (HX_FIELD_EQ(inName,"noNoteAbstractStrum") ) { noNoteAbstractStrum=ioValue.Cast< ::Array< ::String > >(); return true; }
@@ -240,7 +153,7 @@ static ::hx::StaticInfo CustomNoteHandler_obj_sStaticStorageInfo[] = {
 	{::hx::fsObject /* ::Array< ::String > */ ,(void *) &CustomNoteHandler_obj::noNoteAbstractStrum,HX_("noNoteAbstractStrum",34,48,6c,c9)},
 	{::hx::fsObject /* ::Array< ::String > */ ,(void *) &CustomNoteHandler_obj::ouchyNotes,HX_("ouchyNotes",93,4c,00,60)},
 	{::hx::fsObject /* ::Array< ::String > */ ,(void *) &CustomNoteHandler_obj::lowNotesTick,HX_("lowNotesTick",0a,d9,ed,ba)},
-	{::hx::fsObject /* ::Array< ::Dynamic> */ ,(void *) &CustomNoteHandler_obj::customNoteAddon,HX_("customNoteAddon",3d,82,85,72)},
+	{::hx::fsObject /*  ::haxe::ds::StringMap */ ,(void *) &CustomNoteHandler_obj::customNoteAddon,HX_("customNoteAddon",3d,82,85,72)},
 	{ ::hx::fsUnknown, 0, null()}
 };
 #endif
@@ -282,7 +195,6 @@ static ::String CustomNoteHandler_obj_sStaticFields[] = {
 	HX_("lowNotesTick",0a,d9,ed,ba),
 	HX_("customNoteAddon",3d,82,85,72),
 	HX_("spawn",3b,9e,66,81),
-	HX_("configAddons",55,3b,2d,fe),
 	::String(null())
 };
 
@@ -316,28 +228,28 @@ void CustomNoteHandler_obj::__register()
 void CustomNoteHandler_obj::__boot()
 {
 {
-            	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_7_boot)
-HXDLIN(   7)		funni = false;
-            	}
-{
-            	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_12_boot)
-HXDLIN(  12)		dontHitNotes = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_6,5);
-            	}
-{
-            	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_13_boot)
-HXDLIN(  13)		noNoteAbstractStrum = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_8,8);
+            	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_9_boot)
+HXDLIN(   9)		funni = false;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_14_boot)
-HXDLIN(  14)		ouchyNotes = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_10,4);
+HXDLIN(  14)		dontHitNotes = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_3,5);
             	}
 {
             	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_15_boot)
-HXDLIN(  15)		lowNotesTick = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_12,5);
+HXDLIN(  15)		noNoteAbstractStrum = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_5,8);
+            	}
+{
+            	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_16_boot)
+HXDLIN(  16)		ouchyNotes = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_7,4);
             	}
 {
             	HX_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_17_boot)
-HXDLIN(  17)		customNoteAddon = ::Array_obj< ::Dynamic>::__new(0);
+HXDLIN(  17)		lowNotesTick = ::Array_obj< ::String >::fromData( _hx_array_data_8cdd7da7_9,5);
+            	}
+{
+            	HX_GC_STACKFRAME(&_hx_pos_eb2ec6553bdc9e1d_22_boot)
+HXDLIN(  22)		customNoteAddon =  ::haxe::ds::StringMap_obj::__alloc( HX_CTX );
             	}
 }
 

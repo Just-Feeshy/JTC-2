@@ -11,7 +11,6 @@
 HX_DECLARE_CLASS0(Boyfriend)
 HX_DECLARE_CLASS0(Character)
 HX_DECLARE_CLASS0(Note)
-HX_DECLARE_CLASS0(NoteAddon)
 HX_DECLARE_CLASS0(SplashSprite)
 HX_DECLARE_CLASS0(Strum)
 HX_DECLARE_CLASS1(flixel,FlxBasic)
@@ -20,6 +19,7 @@ HX_DECLARE_CLASS1(flixel,FlxSprite)
 HX_DECLARE_CLASS2(flixel,group,FlxTypedGroup)
 HX_DECLARE_CLASS2(flixel,util,FlxAxes)
 HX_DECLARE_CLASS2(flixel,util,IFlxDestroyable)
+HX_DECLARE_CLASS1(_hx_template,CustomNote)
 
 
 
@@ -86,7 +86,7 @@ class HXCPP_CLASS_ATTRIBUTES Note_obj : public  ::flixel::FlxSprite_obj
 		::String rating;
 		::String noteAbstract;
 		 ::flixel::group::FlxTypedGroup trail;
-		 ::NoteAddon hasCustomAddon;
+		 ::_hx_template::CustomNote hasCustomAddon;
 		bool ifPlayState;
 		Float tickDivider;
 		bool reverseDebounce;
@@ -126,7 +126,7 @@ class HXCPP_CLASS_ATTRIBUTES Note_obj : public  ::flixel::FlxSprite_obj
 		void setupPrefixes();
 		::Dynamic setupPrefixes_dyn();
 
-		 ::NoteAddon getAddon();
+		 ::_hx_template::CustomNote getAddon();
 		::Dynamic getAddon_dyn();
 
 		void update(Float elapsed);

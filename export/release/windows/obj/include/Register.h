@@ -68,6 +68,9 @@ class HXCPP_CLASS_ATTRIBUTES Register_obj : public ::hx::Object
 		static void add( ::ClassType addonType, ::Dynamic addonClass);
 		static ::Dynamic add_dyn();
 
+		static void implementCustomNote(::String name,::hx::Class addonClass);
+		static ::Dynamic implementCustomNote_dyn();
+
 		static int getWeekFromSong(::String song);
 		static ::Dynamic getWeekFromSong_dyn();
 

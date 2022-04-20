@@ -1569,6 +1569,12 @@
 #ifndef INCLUDED_APIStuff
 #include <APIStuff.h>
 #endif
+#ifndef INCLUDED_template_EventAddon
+#include <template/EventAddon.h>
+#endif
+#ifndef INCLUDED_template_CustomNote
+#include <template/CustomNote.h>
+#endif
 #ifndef INCLUDED_sys_thread__Thread_Thread_Impl_
 #include <sys/thread/_Thread/Thread_Impl_.h>
 #endif
@@ -3723,6 +3729,9 @@
 #ifndef INCLUDED_example_code_DefaultStage
 #include <example_code/DefaultStage.h>
 #endif
+#ifndef INCLUDED_template_StageBuilder
+#include <template/StageBuilder.h>
+#endif
 #ifndef INCLUDED_example_code_DefaultEvents
 #include <example_code/DefaultEvents.h>
 #endif
@@ -3771,9 +3780,6 @@
 #ifndef INCLUDED_Std
 #include <Std.h>
 #endif
-#ifndef INCLUDED_StageBuilder
-#include <StageBuilder.h>
-#endif
 #ifndef INCLUDED_SplashSprite
 #include <SplashSprite.h>
 #endif
@@ -3821,6 +3827,12 @@
 #endif
 #ifndef INCLUDED_Mod
 #include <Mod.h>
+#endif
+#ifndef INCLUDED_Test2
+#include <Test2.h>
+#endif
+#ifndef INCLUDED_Test1
+#include <Test1.h>
 #endif
 #ifndef INCLUDED_MenuBackground
 #include <MenuBackground.h>
@@ -4094,12 +4106,6 @@
 #endif
 #ifndef INCLUDED_flixel_util_IFlxDestroyable
 #include <flixel/util/IFlxDestroyable.h>
-#endif
-#ifndef INCLUDED_EventAddon
-#include <EventAddon.h>
-#endif
-#ifndef INCLUDED_NoteAddon
-#include <NoteAddon.h>
 #endif
 
 void __files__boot();
@@ -4631,6 +4637,8 @@ __files__boot();
 ::flixel::math::FlxRect_obj::__register();
 ::flixel::FlxBasic_obj::__register();
 ::APIStuff_obj::__register();
+::_hx_template::EventAddon_obj::__register();
+::_hx_template::CustomNote_obj::__register();
 ::sys::thread::_Thread::Thread_Impl__obj::__register();
 ::sys::thread::Mutex_obj::__register();
 ::sys::thread::Lock_obj::__register();
@@ -5349,6 +5357,7 @@ __files__boot();
 ::flixel::_hx_system::frontEnds::BitmapFrontEnd_obj::__register();
 ::flixel::IFlxBasic_obj::__register();
 ::example_code::DefaultStage_obj::__register();
+::_hx_template::StageBuilder_obj::__register();
 ::example_code::DefaultEvents_obj::__register();
 ::discord_rpc::DiscordRpc_obj::__register();
 ::discord_rpc::_DiscordRpc::DiscordRpc_Impl__obj::__register();
@@ -5365,7 +5374,6 @@ __files__boot();
 ::StringBuf_obj::__register();
 ::StoryMenuState_obj::__register();
 ::Std_obj::__register();
-::StageBuilder_obj::__register();
 ::SplashSprite_obj::__register();
 ::Song_obj::__register();
 ::SaveData_obj::__register();
@@ -5382,6 +5390,8 @@ __files__boot();
 ::ModLua_obj::__register();
 ::ModInitialize_obj::__register();
 ::Mod_obj::__register();
+::Test2_obj::__register();
+::Test1_obj::__register();
 ::MenuBackground_obj::__register();
 ::__ASSET__OPENFL__flixel_fonts_monsterrat_ttf_obj::__register();
 ::__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf_obj::__register();
@@ -5473,8 +5483,6 @@ __files__boot();
 ::flixel::util::IFlxPool_obj::__register();
 ::flixel::util::IFlxPooled_obj::__register();
 ::flixel::util::IFlxDestroyable_obj::__register();
-::EventAddon_obj::__register();
-::NoteAddon_obj::__register();
 ::polymod::hscript::Param_obj::__boot();
 ::polymod::format::EndLineType_obj::__boot();
 ::polymod::format::TextFileFormat_obj::__boot();

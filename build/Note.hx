@@ -666,7 +666,7 @@ class Note extends FlxSprite
 		}
 
 		function getAddon():CustomNote {
-			var customNote:CustomNote = Type.createInstance(CustomNoteHandler.customNoteAddon.get(noteAbstract));
+			var customNote:CustomNote = cast Type.createInstance(CustomNoteHandler.customNoteAddon.get(noteAbstract), []);
 
 			if(customNote != null) {
 				if(customNote.playerShouldntHit() && !CustomNoteHandler.dontHitNotes.contains(noteAbstract))

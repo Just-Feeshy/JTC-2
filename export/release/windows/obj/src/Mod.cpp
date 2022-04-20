@@ -21,6 +21,12 @@
 #ifndef INCLUDED_Register
 #include <Register.h>
 #endif
+#ifndef INCLUDED_Test1
+#include <Test1.h>
+#endif
+#ifndef INCLUDED_Test2
+#include <Test2.h>
+#endif
 #ifndef INCLUDED_flixel_FlxBasic
 #include <flixel/FlxBasic.h>
 #endif
@@ -46,7 +52,7 @@
 #include <flixel/util/IFlxDestroyable.h>
 #endif
 
-HX_LOCAL_STACK_FRAME(_hx_pos_730d362dee2b253d_7_onInit,"Mod","onInit",0x05e7c41b,"Mod.onInit","Mod.hx",7,0xf531c55c)
+HX_LOCAL_STACK_FRAME(_hx_pos_730d362dee2b253d_18_onInit,"Mod","onInit",0x05e7c41b,"Mod.onInit","Mod.hx",18,0xf531c55c)
 
 void Mod_obj::__construct() { }
 
@@ -66,8 +72,9 @@ bool Mod_obj::_hx_isInstanceOf(int inClassId) {
 }
 
 void Mod_obj::onInit(){
-            	HX_GC_STACKFRAME(&_hx_pos_730d362dee2b253d_7_onInit)
-HXDLIN(   7)		::Register_obj::attachLuaToState(::hx::ClassOf< ::MainMenuState >(), ::ModLua_obj::__alloc( HX_CTX ,::Paths_obj::lua(HX_("jtc_menu",85,2a,5c,17))));
+            	HX_GC_STACKFRAME(&_hx_pos_730d362dee2b253d_18_onInit)
+HXLINE(  21)		::Register_obj::attachLuaToState(::hx::ClassOf< ::MainMenuState >(), ::ModLua_obj::__alloc( HX_CTX ,::Paths_obj::lua(HX_("jtc_menu",85,2a,5c,17))));
+HXLINE(  19)		::hx::Class classy = ::hx::ClassOf< ::Test2 >();
             	}
 
 

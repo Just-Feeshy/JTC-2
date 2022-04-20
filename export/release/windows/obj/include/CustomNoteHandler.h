@@ -6,7 +6,6 @@
 #endif
 
 HX_DECLARE_CLASS0(CustomNoteHandler)
-HX_DECLARE_CLASS0(NoteAddon)
 HX_DECLARE_CLASS1(haxe,IMap)
 HX_DECLARE_CLASS2(haxe,ds,StringMap)
 
@@ -60,12 +59,9 @@ class HXCPP_CLASS_ATTRIBUTES CustomNoteHandler_obj : public ::hx::Object
 		static ::Array< ::String > noNoteAbstractStrum;
 		static ::Array< ::String > ouchyNotes;
 		static ::Array< ::String > lowNotesTick;
-		static ::Array< ::Dynamic> customNoteAddon;
+		static  ::haxe::ds::StringMap customNoteAddon;
 		static void spawn();
 		static ::Dynamic spawn_dyn();
-
-		static void configAddons();
-		static ::Dynamic configAddons_dyn();
 
 };
 

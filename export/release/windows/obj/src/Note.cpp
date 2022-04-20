@@ -28,9 +28,6 @@
 #ifndef INCLUDED_Note
 #include <Note.h>
 #endif
-#ifndef INCLUDED_NoteAddon
-#include <NoteAddon.h>
-#endif
 #ifndef INCLUDED_Paths
 #include <Paths.h>
 #endif
@@ -48,6 +45,9 @@
 #endif
 #ifndef INCLUDED_Strum
 #include <Strum.h>
+#endif
+#ifndef INCLUDED_Type
+#include <Type.h>
 #endif
 #ifndef INCLUDED_betterShit_BetterCams
 #include <betterShit/BetterCams.h>
@@ -127,8 +127,17 @@
 #ifndef INCLUDED_haxe_Exception
 #include <haxe/Exception.h>
 #endif
+#ifndef INCLUDED_haxe_IMap
+#include <haxe/IMap.h>
+#endif
+#ifndef INCLUDED_haxe_ds_StringMap
+#include <haxe/ds/StringMap.h>
+#endif
 #ifndef INCLUDED_lime_utils_Assets
 #include <lime/utils/Assets.h>
+#endif
+#ifndef INCLUDED_template_CustomNote
+#include <template/CustomNote.h>
 #endif
 
 HX_DEFINE_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_25_new,"Note","new",0x1cc75604,"Note.new","Note.hx",25,0x1a8855ec)
@@ -223,8 +232,8 @@ HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_612_setXaxis,"Note","setXaxis",0x5
 HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_621_splash,"Note","splash",0x02cd1a43,"Note.splash","Note.hx",621,0x1a8855ec)
 HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_638_setupPrefixes,"Note","setupPrefixes",0x03d664c1,"Note.setupPrefixes","Note.hx",638,0x1a8855ec)
 HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_668_getAddon,"Note","getAddon",0x684c74e6,"Note.getAddon","Note.hx",668,0x1a8855ec)
-HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_676_update,"Note","update",0xca3a1ee5,"Note.update","Note.hx",676,0x1a8855ec)
-HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_781_destroy,"Note","destroy",0xaf57549e,"Note.destroy","Note.hx",781,0x1a8855ec)
+HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_685_update,"Note","update",0xca3a1ee5,"Note.update","Note.hx",685,0x1a8855ec)
+HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_790_destroy,"Note","destroy",0xaf57549e,"Note.destroy","Note.hx",790,0x1a8855ec)
 HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_27_boot,"Note","boot",0x09bcee0e,"Note.boot","Note.hx",27,0x1a8855ec)
 HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_28_boot,"Note","boot",0x09bcee0e,"Note.boot","Note.hx",28,0x1a8855ec)
 HX_LOCAL_STACK_FRAME(_hx_pos_3be6f1ff2d789e96_29_boot,"Note","boot",0x09bcee0e,"Note.boot","Note.hx",29,0x1a8855ec)
@@ -1593,199 +1602,220 @@ HXLINE( 664)				this->animation->addByPrefix(HX_("bluehold",d9,60,aa,a4),HX_("ho
 
 HX_DEFINE_DYNAMIC_FUNC0(Note_obj,setupPrefixes,(void))
 
- ::NoteAddon Note_obj::getAddon(){
+ ::_hx_template::CustomNote Note_obj::getAddon(){
             	HX_STACKFRAME(&_hx_pos_3be6f1ff2d789e96_668_getAddon)
-HXLINE( 669)		{
-HXLINE( 669)			int _g = 0;
-HXDLIN( 669)			int _g1 = ::CustomNoteHandler_obj::customNoteAddon->length;
-HXDLIN( 669)			while((_g < _g1)){
-HXLINE( 669)				_g = (_g + 1);
-HXDLIN( 669)				int i = (_g - 1);
-HXLINE( 670)				::String _hx_tmp = ::CustomNoteHandler_obj::customNoteAddon->__get(i).StaticCast<  ::NoteAddon >()->getCustomNote();
-HXDLIN( 670)				if ((_hx_tmp == this->noteAbstract)) {
-HXLINE( 671)					return ::CustomNoteHandler_obj::customNoteAddon->__get(i).StaticCast<  ::NoteAddon >();
-            				}
+HXLINE( 669)		 ::_hx_template::CustomNote customNote = ( ( ::_hx_template::CustomNote)(::Type_obj::createInstance(::CustomNoteHandler_obj::customNoteAddon->get(this->noteAbstract),::cpp::VirtualArray_obj::__new(0))) );
+HXLINE( 671)		if (::hx::IsNotNull( customNote )) {
+HXLINE( 672)			bool _hx_tmp;
+HXDLIN( 672)			if (customNote->playerShouldntHit()) {
+HXLINE( 672)				_hx_tmp = !(::CustomNoteHandler_obj::dontHitNotes->contains(this->noteAbstract));
+            			}
+            			else {
+HXLINE( 672)				_hx_tmp = false;
+            			}
+HXDLIN( 672)			if (_hx_tmp) {
+HXLINE( 673)				::CustomNoteHandler_obj::dontHitNotes->push(this->noteAbstract);
+            			}
+HXLINE( 675)			bool _hx_tmp1;
+HXDLIN( 675)			if (customNote->noDefaultSplash()) {
+HXLINE( 675)				_hx_tmp1 = !(::CustomNoteHandler_obj::noNoteAbstractStrum->contains(this->noteAbstract));
+            			}
+            			else {
+HXLINE( 675)				_hx_tmp1 = false;
+            			}
+HXDLIN( 675)			if (_hx_tmp1) {
+HXLINE( 676)				::CustomNoteHandler_obj::noNoteAbstractStrum->push(this->noteAbstract);
+            			}
+HXLINE( 678)			bool _hx_tmp2;
+HXDLIN( 678)			if ((customNote->giveHealth() < 0)) {
+HXLINE( 678)				_hx_tmp2 = !(::CustomNoteHandler_obj::ouchyNotes->contains(this->noteAbstract));
+            			}
+            			else {
+HXLINE( 678)				_hx_tmp2 = false;
+            			}
+HXDLIN( 678)			if (_hx_tmp2) {
+HXLINE( 679)				::CustomNoteHandler_obj::ouchyNotes->push(this->noteAbstract);
             			}
             		}
-HXLINE( 673)		return null();
+HXLINE( 682)		return customNote;
             	}
 
 
 HX_DEFINE_DYNAMIC_FUNC0(Note_obj,getAddon,return )
 
 void Note_obj::update(Float elapsed){
-            	HX_STACKFRAME(&_hx_pos_3be6f1ff2d789e96_676_update)
-HXLINE( 677)		this->super::update((elapsed / this->tickDivider));
-HXLINE( 679)		if (this->ifPlayState) {
-HXLINE( 680)			bool _hx_tmp;
-HXDLIN( 680)			bool _hx_tmp1;
-HXDLIN( 680)			if ((this->noteAbstract != HX_("reverse",22,39,fc,1a))) {
-HXLINE( 680)				_hx_tmp1 = (this->noteAbstract == HX_("reverse poison",46,c0,80,7a));
+            	HX_STACKFRAME(&_hx_pos_3be6f1ff2d789e96_685_update)
+HXLINE( 686)		this->super::update((elapsed / this->tickDivider));
+HXLINE( 688)		if (this->ifPlayState) {
+HXLINE( 689)			bool _hx_tmp;
+HXDLIN( 689)			bool _hx_tmp1;
+HXDLIN( 689)			if ((this->noteAbstract != HX_("reverse",22,39,fc,1a))) {
+HXLINE( 689)				_hx_tmp1 = (this->noteAbstract == HX_("reverse poison",46,c0,80,7a));
             			}
             			else {
-HXLINE( 680)				_hx_tmp1 = true;
+HXLINE( 689)				_hx_tmp1 = true;
             			}
-HXDLIN( 680)			if (_hx_tmp1) {
-HXLINE( 680)				_hx_tmp = !(this->reverseDebounce);
+HXDLIN( 689)			if (_hx_tmp1) {
+HXLINE( 689)				_hx_tmp = !(this->reverseDebounce);
             			}
             			else {
-HXLINE( 680)				_hx_tmp = false;
+HXLINE( 689)				_hx_tmp = false;
             			}
-HXDLIN( 680)			if (_hx_tmp) {
-HXLINE( 681)				if ((this->getNoteStrumPosition(250) == 0)) {
-HXLINE( 682)					this->reverseDebounce = true;
-HXLINE( 684)					if (( (bool)(::PlayState_obj::SONG->__Field(HX_("fifthKey",e8,b7,40,b0),::hx::paccDynamic)) )) {
-HXLINE( 685)						this->noteData = ::Std_obj::_hx_int(::Math_obj::abs(( (Float)((this->noteData - 4)) )));
+HXDLIN( 689)			if (_hx_tmp) {
+HXLINE( 690)				if ((this->getNoteStrumPosition(250) == 0)) {
+HXLINE( 691)					this->reverseDebounce = true;
+HXLINE( 693)					if (( (bool)(::PlayState_obj::SONG->__Field(HX_("fifthKey",e8,b7,40,b0),::hx::paccDynamic)) )) {
+HXLINE( 694)						this->noteData = ::Std_obj::_hx_int(::Math_obj::abs(( (Float)((this->noteData - 4)) )));
             					}
             					else {
-HXLINE( 687)						this->noteData = ::Std_obj::_hx_int(::Math_obj::abs(( (Float)((this->noteData - 3)) )));
+HXLINE( 696)						this->noteData = ::Std_obj::_hx_int(::Math_obj::abs(( (Float)((this->noteData - 3)) )));
             					}
-HXLINE( 689)					this->refresh(( (bool)(::PlayState_obj::SONG->__Field(HX_("fifthKey",e8,b7,40,b0),::hx::paccDynamic)) ),null());
-HXLINE( 690)					this->refresh(( (bool)(::PlayState_obj::SONG->__Field(HX_("fifthKey",e8,b7,40,b0),::hx::paccDynamic)) ),true);
+HXLINE( 698)					this->refresh(( (bool)(::PlayState_obj::SONG->__Field(HX_("fifthKey",e8,b7,40,b0),::hx::paccDynamic)) ),null());
+HXLINE( 699)					this->refresh(( (bool)(::PlayState_obj::SONG->__Field(HX_("fifthKey",e8,b7,40,b0),::hx::paccDynamic)) ),true);
             				}
             			}
             		}
-HXLINE( 695)		if (::hx::IsNotNull( this->hasCustomAddon )) {
-HXLINE( 696)			this->hasCustomAddon->noteUpdate(::hx::ObjectPtr<OBJ_>(this));
+HXLINE( 704)		if (::hx::IsNotNull( this->hasCustomAddon )) {
+HXLINE( 705)			this->hasCustomAddon->noteUpdate(::hx::ObjectPtr<OBJ_>(this));
             		}
-HXLINE( 698)		bool _hx_tmp;
-HXDLIN( 698)		if (::hx::IsNotNull( this->trail )) {
-HXLINE( 698)			_hx_tmp = (this->noteAbstract == HX_("spiritual star",83,67,fb,93));
+HXLINE( 707)		bool _hx_tmp;
+HXDLIN( 707)		if (::hx::IsNotNull( this->trail )) {
+HXLINE( 707)			_hx_tmp = (this->noteAbstract == HX_("spiritual star",83,67,fb,93));
             		}
             		else {
-HXLINE( 698)			_hx_tmp = false;
+HXLINE( 707)			_hx_tmp = false;
             		}
-HXDLIN( 698)		if (_hx_tmp) {
-HXLINE( 699)			Float currentSway = (this->swayTime * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )));
-HXLINE( 700)			 ::Note _hx_tmp = ::hx::ObjectPtr<OBJ_>(this);
-HXDLIN( 700)			_hx_tmp->swayTime = (_hx_tmp->swayTime + ((Float)0.004));
-HXLINE( 702)			{
-HXLINE( 702)				int _g = 0;
-HXDLIN( 702)				int _g1 = this->trail->length;
-HXDLIN( 702)				while((_g < _g1)){
-HXLINE( 702)					_g = (_g + 1);
-HXDLIN( 702)					int i = (_g - 1);
-HXLINE( 703)					 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 703)					Float _hx_tmp1 = this->y;
-HXDLIN( 703)					_hx_tmp->set_y((_hx_tmp1 + (this->get_height() / ( (Float)(4) ))));
-HXLINE( 704)					Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >()->set_alpha(this->alpha);
-HXLINE( 706)					if ((::hx::Mod(1,(i + 1)) == 0)) {
-HXLINE( 707)						 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 707)						Float _hx_tmp1 = this->x;
-HXDLIN( 707)						Float _hx_tmp2 = (_hx_tmp1 + (this->get_width() / ( (Float)(4) )));
-HXDLIN( 707)						_hx_tmp->set_x((_hx_tmp2 + (( (Float)(64) ) * (::Math_obj::sin(((currentSway * ::Math_obj::PI) * (((Float)2.5) + this->howSpeed))) * ((Float)1.25)))));
+HXDLIN( 707)		if (_hx_tmp) {
+HXLINE( 708)			Float currentSway = (this->swayTime * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )));
+HXLINE( 709)			 ::Note _hx_tmp = ::hx::ObjectPtr<OBJ_>(this);
+HXDLIN( 709)			_hx_tmp->swayTime = (_hx_tmp->swayTime + ((Float)0.004));
+HXLINE( 711)			{
+HXLINE( 711)				int _g = 0;
+HXDLIN( 711)				int _g1 = this->trail->length;
+HXDLIN( 711)				while((_g < _g1)){
+HXLINE( 711)					_g = (_g + 1);
+HXDLIN( 711)					int i = (_g - 1);
+HXLINE( 712)					 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 712)					Float _hx_tmp1 = this->y;
+HXDLIN( 712)					_hx_tmp->set_y((_hx_tmp1 + (this->get_height() / ( (Float)(4) ))));
+HXLINE( 713)					Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >()->set_alpha(this->alpha);
+HXLINE( 715)					if ((::hx::Mod(1,(i + 1)) == 0)) {
+HXLINE( 716)						 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 716)						Float _hx_tmp1 = this->x;
+HXDLIN( 716)						Float _hx_tmp2 = (_hx_tmp1 + (this->get_width() / ( (Float)(4) )));
+HXDLIN( 716)						_hx_tmp->set_x((_hx_tmp2 + (( (Float)(64) ) * (::Math_obj::sin(((currentSway * ::Math_obj::PI) * (((Float)2.5) + this->howSpeed))) * ((Float)1.25)))));
             					}
             					else {
-HXLINE( 709)						 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 709)						Float _hx_tmp1 = this->x;
-HXDLIN( 709)						Float _hx_tmp2 = (_hx_tmp1 + (this->get_width() / ( (Float)(4) )));
-HXDLIN( 709)						_hx_tmp->set_x((_hx_tmp2 + (( (Float)(64) ) * (-(::Math_obj::sin(((currentSway * ::Math_obj::PI) * (((Float)2.5) + this->howSpeed)))) * ((Float)1.25)))));
+HXLINE( 718)						 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 718)						Float _hx_tmp1 = this->x;
+HXDLIN( 718)						Float _hx_tmp2 = (_hx_tmp1 + (this->get_width() / ( (Float)(4) )));
+HXDLIN( 718)						_hx_tmp->set_x((_hx_tmp2 + (( (Float)(64) ) * (-(::Math_obj::sin(((currentSway * ::Math_obj::PI) * (((Float)2.5) + this->howSpeed)))) * ((Float)1.25)))));
             					}
-HXLINE( 711)					Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >()->set_angle(this->angle);
+HXLINE( 720)					Dynamic( this->trail->members->__get(i)).StaticCast<  ::flixel::FlxSprite >()->set_angle(this->angle);
             				}
             			}
             		}
-HXLINE( 715)		if ((this->noteAbstract == HX_("spiritual star",83,67,fb,93))) {
-HXLINE( 717)			bool _hx_tmp;
-HXDLIN( 717)			if ((::PlayState_obj::curStage != HX_("school",74,b8,c8,40))) {
-HXLINE( 717)				_hx_tmp = (::PlayState_obj::curStage == HX_("schoolEvil",28,a1,f5,f7));
+HXLINE( 724)		if ((this->noteAbstract == HX_("spiritual star",83,67,fb,93))) {
+HXLINE( 726)			bool _hx_tmp;
+HXDLIN( 726)			if ((::PlayState_obj::curStage != HX_("school",74,b8,c8,40))) {
+HXLINE( 726)				_hx_tmp = (::PlayState_obj::curStage == HX_("schoolEvil",28,a1,f5,f7));
             			}
             			else {
-HXLINE( 717)				_hx_tmp = true;
+HXLINE( 726)				_hx_tmp = true;
             			}
-HXDLIN( 717)			if (_hx_tmp) {
-HXLINE( 718)				this->set_angle((this->angle + (((Float)4.5) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
+HXDLIN( 726)			if (_hx_tmp) {
+HXLINE( 727)				this->set_angle((this->angle + (((Float)4.5) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
             			}
             			else {
-HXLINE( 720)				this->set_angle((this->angle + (( (Float)(9) ) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
+HXLINE( 729)				this->set_angle((this->angle + (( (Float)(9) ) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
             			}
             		}
-HXLINE( 723)		if (::hx::IsNotNull( this->trail )) {
-HXLINE( 724)			if ((this->noteAbstract == HX_("trippy",2e,c2,d0,4a))) {
-HXLINE( 725)				 ::flixel::FlxSprite fh = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 725)				fh->set_angle((fh->angle + (( (Float)(3) ) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
-HXLINE( 727)				 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 727)				Float _hx_tmp1 = this->y;
-HXDLIN( 727)				_hx_tmp->set_y((_hx_tmp1 - (this->get_height() / ( (Float)(4) ))));
-HXLINE( 728)				 ::flixel::FlxSprite _hx_tmp2 = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 728)				Float _hx_tmp3 = this->x;
-HXDLIN( 728)				_hx_tmp2->set_x((_hx_tmp3 - (this->get_width() / ( (Float)(4) ))));
+HXLINE( 732)		if (::hx::IsNotNull( this->trail )) {
+HXLINE( 733)			if ((this->noteAbstract == HX_("trippy",2e,c2,d0,4a))) {
+HXLINE( 734)				 ::flixel::FlxSprite fh = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 734)				fh->set_angle((fh->angle + (( (Float)(3) ) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
+HXLINE( 736)				 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 736)				Float _hx_tmp1 = this->y;
+HXDLIN( 736)				_hx_tmp->set_y((_hx_tmp1 - (this->get_height() / ( (Float)(4) ))));
+HXLINE( 737)				 ::flixel::FlxSprite _hx_tmp2 = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 737)				Float _hx_tmp3 = this->x;
+HXDLIN( 737)				_hx_tmp2->set_x((_hx_tmp3 - (this->get_width() / ( (Float)(4) ))));
             			}
-HXLINE( 731)			if ((this->noteAbstract == HX_("reverse poison",46,c0,80,7a))) {
-HXLINE( 732)				 ::flixel::FlxSprite fh = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 732)				fh->set_angle((fh->angle + (((Float)4.5) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
-HXLINE( 734)				 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 734)				Float _hx_tmp1 = this->y;
-HXDLIN( 734)				_hx_tmp->set_y((_hx_tmp1 - (this->get_width() / ((Float)2.5))));
-HXLINE( 735)				 ::flixel::FlxSprite _hx_tmp2 = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
-HXDLIN( 735)				Float _hx_tmp3 = this->x;
-HXDLIN( 735)				_hx_tmp2->set_x((_hx_tmp3 - (this->get_width() / ( (Float)(2) ))));
+HXLINE( 740)			if ((this->noteAbstract == HX_("reverse poison",46,c0,80,7a))) {
+HXLINE( 741)				 ::flixel::FlxSprite fh = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 741)				fh->set_angle((fh->angle + (((Float)4.5) * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )))));
+HXLINE( 743)				 ::flixel::FlxSprite _hx_tmp = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 743)				Float _hx_tmp1 = this->y;
+HXDLIN( 743)				_hx_tmp->set_y((_hx_tmp1 - (this->get_width() / ((Float)2.5))));
+HXLINE( 744)				 ::flixel::FlxSprite _hx_tmp2 = Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >();
+HXDLIN( 744)				Float _hx_tmp3 = this->x;
+HXDLIN( 744)				_hx_tmp2->set_x((_hx_tmp3 - (this->get_width() / ( (Float)(2) ))));
             			}
-HXLINE( 738)			if ((this->noteAbstract == HX_("ocean",fe,7b,37,2b))) {
-HXLINE( 739)				Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >()->set_x(this->x);
-HXLINE( 740)				Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >()->set_y((this->y - ( (Float)(15) )));
+HXLINE( 747)			if ((this->noteAbstract == HX_("ocean",fe,7b,37,2b))) {
+HXLINE( 748)				Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >()->set_x(this->x);
+HXLINE( 749)				Dynamic( this->trail->members->__get(0)).StaticCast<  ::flixel::FlxSprite >()->set_y((this->y - ( (Float)(15) )));
             			}
-HXLINE( 743)			bool _hx_tmp;
-HXDLIN( 743)			if (::hx::IsNotNull( this->hasCustomAddon )) {
-HXLINE( 743)				_hx_tmp = this->ifPlayState;
+HXLINE( 752)			bool _hx_tmp;
+HXDLIN( 752)			if (::hx::IsNotNull( this->hasCustomAddon )) {
+HXLINE( 752)				_hx_tmp = this->ifPlayState;
             			}
             			else {
-HXLINE( 743)				_hx_tmp = false;
+HXLINE( 752)				_hx_tmp = false;
             			}
-HXDLIN( 743)			if (_hx_tmp) {
-HXLINE( 744)				this->hasCustomAddon->trailUpdate(::hx::ObjectPtr<OBJ_>(this));
+HXDLIN( 752)			if (_hx_tmp) {
+HXLINE( 753)				this->hasCustomAddon->trailUpdate(::hx::ObjectPtr<OBJ_>(this));
             			}
             		}
-HXLINE( 747)		if ((this->noteAbstract == HX_("cherry",99,7e,1a,ba))) {
-HXLINE( 748)			Float currentSway = (this->swayTime * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )));
-HXLINE( 749)			 ::Note _hx_tmp = ::hx::ObjectPtr<OBJ_>(this);
-HXDLIN( 749)			_hx_tmp->swayTime = (_hx_tmp->swayTime + ((Float)0.004));
-HXLINE( 751)			this->set_angle((( (Float)(15) ) * ::Math_obj::sin((currentSway * ::Math_obj::PI))));
+HXLINE( 756)		if ((this->noteAbstract == HX_("cherry",99,7e,1a,ba))) {
+HXLINE( 757)			Float currentSway = (this->swayTime * (( (Float)(::Conductor_obj::bpm) ) / ( (Float)(120) )));
+HXLINE( 758)			 ::Note _hx_tmp = ::hx::ObjectPtr<OBJ_>(this);
+HXDLIN( 758)			_hx_tmp->swayTime = (_hx_tmp->swayTime + ((Float)0.004));
+HXLINE( 760)			this->set_angle((( (Float)(15) ) * ::Math_obj::sin((currentSway * ::Math_obj::PI))));
             		}
-HXLINE( 754)		if (this->mustPress) {
-HXLINE( 757)			bool _hx_tmp;
-HXDLIN( 757)			if (((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) > (::Conductor_obj::trackPosition - ::Conductor_obj::safeZoneOffset))) {
-HXLINE( 757)				_hx_tmp = ((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) < (::Conductor_obj::trackPosition + (::Conductor_obj::safeZoneOffset * ((Float)0.6))));
+HXLINE( 763)		if (this->mustPress) {
+HXLINE( 766)			bool _hx_tmp;
+HXDLIN( 766)			if (((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) > (::Conductor_obj::trackPosition - ::Conductor_obj::safeZoneOffset))) {
+HXLINE( 766)				_hx_tmp = ((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) < (::Conductor_obj::trackPosition + (::Conductor_obj::safeZoneOffset * ((Float)0.6))));
             			}
             			else {
-HXLINE( 757)				_hx_tmp = false;
+HXLINE( 766)				_hx_tmp = false;
             			}
-HXDLIN( 757)			if (_hx_tmp) {
-HXLINE( 759)				this->canBeHit = true;
-            			}
-            			else {
-HXLINE( 761)				this->canBeHit = false;
-            			}
-HXLINE( 763)			bool _hx_tmp1;
-HXDLIN( 763)			if (((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) < (::Conductor_obj::trackPosition - ::Conductor_obj::safeZoneOffset))) {
-HXLINE( 763)				_hx_tmp1 = !(this->wasGoodHit);
+HXDLIN( 766)			if (_hx_tmp) {
+HXLINE( 768)				this->canBeHit = true;
             			}
             			else {
-HXLINE( 763)				_hx_tmp1 = false;
+HXLINE( 770)				this->canBeHit = false;
             			}
-HXDLIN( 763)			if (_hx_tmp1) {
-HXLINE( 764)				this->tooLate = true;
+HXLINE( 772)			bool _hx_tmp1;
+HXDLIN( 772)			if (((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) < (::Conductor_obj::trackPosition - ::Conductor_obj::safeZoneOffset))) {
+HXLINE( 772)				_hx_tmp1 = !(this->wasGoodHit);
+            			}
+            			else {
+HXLINE( 772)				_hx_tmp1 = false;
+            			}
+HXDLIN( 772)			if (_hx_tmp1) {
+HXLINE( 773)				this->tooLate = true;
             			}
             		}
             		else {
-HXLINE( 768)			this->canBeHit = false;
-HXLINE( 770)			if (((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) <= ::Conductor_obj::trackPosition)) {
-HXLINE( 771)				this->wasGoodHit = true;
+HXLINE( 777)			this->canBeHit = false;
+HXLINE( 779)			if (((this->strumTime + (::Conductor_obj::stepCrochet * ::Note_obj::AFFECTED_STRUMTIME)) <= ::Conductor_obj::trackPosition)) {
+HXLINE( 780)				this->wasGoodHit = true;
             			}
             		}
-HXLINE( 774)		if (this->tooLate) {
-HXLINE( 776)			if ((this->alpha > ((Float)0.3))) {
-HXLINE( 777)				this->set_alpha(((Float)0.3));
+HXLINE( 783)		if (this->tooLate) {
+HXLINE( 785)			if ((this->alpha > ((Float)0.3))) {
+HXLINE( 786)				this->set_alpha(((Float)0.3));
             			}
             		}
             	}
 
 
 void Note_obj::destroy(){
-            	HX_STACKFRAME(&_hx_pos_3be6f1ff2d789e96_781_destroy)
-HXLINE( 782)		this->super::destroy();
-HXLINE( 784)		this->hasCustomAddon = null();
-HXLINE( 786)		this->trail = ( ( ::flixel::group::FlxTypedGroup)(::flixel::util::FlxDestroyUtil_obj::destroy(this->trail)) );
+            	HX_STACKFRAME(&_hx_pos_3be6f1ff2d789e96_790_destroy)
+HXLINE( 791)		this->super::destroy();
+HXLINE( 793)		this->hasCustomAddon = null();
+HXLINE( 795)		this->trail = ( ( ::flixel::group::FlxTypedGroup)(::flixel::util::FlxDestroyUtil_obj::destroy(this->trail)) );
             	}
 
 
@@ -2021,7 +2051,7 @@ bool Note_obj::__GetStatic(const ::String &inName, Dynamic &outValue, ::hx::Prop
 	case 14:
 		if (HX_FIELD_EQ(inName,"downscrollNote") ) { downscrollNote=inValue.Cast< bool >(); return inValue; }
 		if (HX_FIELD_EQ(inName,"wasSustainNote") ) { wasSustainNote=inValue.Cast< bool >(); return inValue; }
-		if (HX_FIELD_EQ(inName,"hasCustomAddon") ) { hasCustomAddon=inValue.Cast<  ::NoteAddon >(); return inValue; }
+		if (HX_FIELD_EQ(inName,"hasCustomAddon") ) { hasCustomAddon=inValue.Cast<  ::_hx_template::CustomNote >(); return inValue; }
 		break;
 	case 15:
 		if (HX_FIELD_EQ(inName,"reverseDebounce") ) { reverseDebounce=inValue.Cast< bool >(); return inValue; }
@@ -2105,7 +2135,7 @@ static ::hx::StorageInfo Note_obj_sMemberStorageInfo[] = {
 	{::hx::fsString,(int)offsetof(Note_obj,rating),HX_("rating",1d,34,8a,bb)},
 	{::hx::fsString,(int)offsetof(Note_obj,noteAbstract),HX_("noteAbstract",f4,d6,de,fd)},
 	{::hx::fsObject /*  ::flixel::group::FlxTypedGroup */ ,(int)offsetof(Note_obj,trail),HX_("trail",c6,93,1f,16)},
-	{::hx::fsObject /*  ::NoteAddon */ ,(int)offsetof(Note_obj,hasCustomAddon),HX_("hasCustomAddon",d5,86,0a,a3)},
+	{::hx::fsObject /*  ::_hx_template::CustomNote */ ,(int)offsetof(Note_obj,hasCustomAddon),HX_("hasCustomAddon",d5,86,0a,a3)},
 	{::hx::fsBool,(int)offsetof(Note_obj,ifPlayState),HX_("ifPlayState",e0,43,a8,bf)},
 	{::hx::fsFloat,(int)offsetof(Note_obj,tickDivider),HX_("tickDivider",fc,94,ed,fc)},
 	{::hx::fsBool,(int)offsetof(Note_obj,reverseDebounce),HX_("reverseDebounce",0b,db,e8,3a)},

@@ -5,7 +5,6 @@ const char *__hxcpp_all_files[] = {
 #ifdef HXCPP_DEBUGGER
 "?",
 "APIStuff.hx",
-"AddonHandlerMain.hx",
 "Alphabet.hx",
 "ApplicationMain.hx",
 "BackgroundDancer.hx",
@@ -127,7 +126,6 @@ const char *__hxcpp_all_files[] = {
 "Section.hx",
 "Song.hx",
 "SplashSprite.hx",
-"StageBuilder.hx",
 "StoryMenuState.hx",
 "Strum.hx",
 "TitleState.hx",
@@ -929,6 +927,8 @@ const char *__hxcpp_all_files[] = {
 "polymod/hscript/PolymodScriptClass.hx",
 "polymod/util/SemanticVersion.hx",
 "polymod/util/Util.hx",
+"template/CustomNote.hx",
+"template/StageBuilder.hx",
 #endif
  0 };
 
@@ -936,7 +936,6 @@ const char *__hxcpp_all_files_fullpath[] = {
 #ifdef HXCPP_DEBUGGER
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\?",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\APIStuff.hx",
-"C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\AddonHandlerMain.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\Alphabet.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\export\\release\\windows\\haxe\\ApplicationMain.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\BackgroundDancer.hx",
@@ -1058,7 +1057,6 @@ const char *__hxcpp_all_files_fullpath[] = {
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\Section.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\Song.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\SplashSprite.hx",
-"C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\StageBuilder.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\StoryMenuState.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\Strum.hx",
 "C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\build\\TitleState.hx",
@@ -1860,14 +1858,14 @@ const char *__hxcpp_all_files_fullpath[] = {
 "C:\\HaxeToolkit\\haxe\\lib\\polymod\\git\\polymod\\hscript\\PolymodScriptClass.hx",
 "C:\\HaxeToolkit\\haxe\\lib\\polymod\\git\\polymod\\util\\SemanticVersion.hx",
 "C:\\HaxeToolkit\\haxe\\lib\\polymod\\git\\polymod\\util\\Util.hx",
+"C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\modSource\\template\\CustomNote.hx",
+"C:\\Users\\Diego\\Desktop\\Fnf Mods\\Feesh\\Feeshmora\\modSource\\template\\StageBuilder.hx",
 #endif
  0 };
 
 const char *__hxcpp_all_classes[] = {
 #ifdef HXCPP_DEBUGGER
 "APIStuff",
-"NoteAddon",
-"EventAddon",
 "flixel.FlxBasic",
 "flixel.util.FlxPool_flixel_math_FlxRect",
 "flixel.math.FlxRect",
@@ -2020,6 +2018,8 @@ const char *__hxcpp_all_classes[] = {
 "__ASSET__OPENFL__flixel_fonts_nokiafc22_ttf",
 "__ASSET__OPENFL__flixel_fonts_monsterrat_ttf",
 "MenuBackground",
+"Test1",
+"Test2",
 "Mod",
 "ModLua",
 "flixel.util._FlxSignal.FlxTypedSignal_Impl_",
@@ -2041,7 +2041,6 @@ const char *__hxcpp_all_classes[] = {
 "Section",
 "Song",
 "SplashSprite",
-"StageBuilder",
 "Std",
 "StoryMenuState",
 "StringBuf",
@@ -2061,6 +2060,7 @@ const char *__hxcpp_all_classes[] = {
 "discord_rpc._DiscordRpc.DiscordRpc_Impl_",
 "discord_rpc.DiscordRpc",
 "example_code.DefaultEvents",
+"template.StageBuilder",
 "example_code.DefaultStage",
 "feshixl.filters.GuassianBlur",
 "flixel.system.FlxVersion",
@@ -3113,6 +3113,8 @@ const char *__hxcpp_all_classes[] = {
 "sys.thread.Mutex",
 "sys.thread._Thread.Thread_Impl_",
 "sys.thread._Thread.HaxeThread",
+"template.CustomNote",
+"template.EventAddon",
 #endif
  0 };
 } // namespace hx

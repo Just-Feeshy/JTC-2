@@ -83,7 +83,7 @@ class Register {
     }
 
     public static function implementCustomNote(name:String, addonClass:Class<CustomNote>) {
-        CustomNoteHandler.customNoteAddon.set(name);
+        CustomNoteHandler.customNoteAddon.set(name, addonClass);
     }
 
     public static function getWeekFromSong(song:String):Int {

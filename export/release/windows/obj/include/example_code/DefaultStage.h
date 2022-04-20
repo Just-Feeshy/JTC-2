@@ -5,21 +5,21 @@
 #include <hxcpp.h>
 #endif
 
-#ifndef INCLUDED_StageBuilder
-#include <StageBuilder.h>
+#ifndef INCLUDED_template_StageBuilder
+#include <template/StageBuilder.h>
 #endif
-HX_DECLARE_CLASS0(StageBuilder)
 HX_DECLARE_CLASS1(example_code,DefaultStage)
 HX_DECLARE_CLASS1(flixel,FlxBasic)
 HX_DECLARE_CLASS2(flixel,util,IFlxDestroyable)
+HX_DECLARE_CLASS1(_hx_template,StageBuilder)
 
 namespace example_code{
 
 
-class HXCPP_CLASS_ATTRIBUTES DefaultStage_obj : public  ::StageBuilder_obj
+class HXCPP_CLASS_ATTRIBUTES DefaultStage_obj : public  ::_hx_template::StageBuilder_obj
 {
 	public:
-		typedef  ::StageBuilder_obj super;
+		typedef  ::_hx_template::StageBuilder_obj super;
 		typedef DefaultStage_obj OBJ_;
 		DefaultStage_obj();
 

@@ -88,9 +88,6 @@
 #ifndef INCLUDED_Note
 #include <Note.h>
 #endif
-#ifndef INCLUDED_NoteAddon
-#include <NoteAddon.h>
-#endif
 #ifndef INCLUDED_Options
 #include <Options.h>
 #endif
@@ -120,9 +117,6 @@
 #endif
 #ifndef INCLUDED_SplashSprite
 #include <SplashSprite.h>
-#endif
-#ifndef INCLUDED_StageBuilder
-#include <StageBuilder.h>
 #endif
 #ifndef INCLUDED_Std
 #include <Std.h>
@@ -415,8 +409,14 @@
 #ifndef INCLUDED_sys_FileSystem
 #include <sys/FileSystem.h>
 #endif
+#ifndef INCLUDED_template_CustomNote
+#include <template/CustomNote.h>
+#endif
+#ifndef INCLUDED_template_StageBuilder
+#include <template/StageBuilder.h>
+#endif
 
-HX_DEFINE_STACK_FRAME(_hx_pos_af23706db05c7feb_62_new,"PlayState","new",0xf8bf96cf,"PlayState.new","PlayState.hx",62,0xb30d7781)
+HX_DEFINE_STACK_FRAME(_hx_pos_af23706db05c7feb_63_new,"PlayState","new",0xf8bf96cf,"PlayState.new","PlayState.hx",63,0xb30d7781)
 static const ::String _hx_array_data_46c2835d_1[] = {
 	HX_("blah blah blah",d1,92,1f,27),HX_("coolswag",d3,7d,92,03),
 };
@@ -641,19 +641,19 @@ HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_3698_beatHit,"PlayState","beatHit"
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_3775_beatHit,"PlayState","beatHit",0xbe46146c,"PlayState.beatHit","PlayState.hx",3775,0xb30d7781)
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_3788_beatHit,"PlayState","beatHit",0xbe46146c,"PlayState.beatHit","PlayState.hx",3788,0xb30d7781)
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_1244_modifierCheckList,"PlayState","modifierCheckList",0x97edd19e,"PlayState.modifierCheckList","PlayState.hx",1244,0xb30d7781)
-HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_91_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",91,0xb30d7781)
-HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_115_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",115,0xb30d7781)
+HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_92_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",92,0xb30d7781)
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_116_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",116,0xb30d7781)
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_117_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",117,0xb30d7781)
-HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_119_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",119,0xb30d7781)
+HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_118_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",118,0xb30d7781)
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_120_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",120,0xb30d7781)
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_121_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",121,0xb30d7781)
 HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_122_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",122,0xb30d7781)
-HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_196_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",196,0xb30d7781)
-HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_201_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",201,0xb30d7781)
+HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_123_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",123,0xb30d7781)
+HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_197_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",197,0xb30d7781)
+HX_LOCAL_STACK_FRAME(_hx_pos_af23706db05c7feb_202_boot,"PlayState","boot",0xa6fd5ee3,"PlayState.boot","PlayState.hx",202,0xb30d7781)
 
 void PlayState_obj::__construct( ::Dynamic muted){
-            	HX_GC_STACKFRAME(&_hx_pos_af23706db05c7feb_62_new)
+            	HX_GC_STACKFRAME(&_hx_pos_af23706db05c7feb_63_new)
 HXLINE(3810)		this->curLight = 0;
 HXLINE(3690)		this->lightningOffset = 8;
 HXLINE(3689)		this->lightningStrikeBeat = 0;
@@ -673,48 +673,47 @@ HXLINE(1388)		this->songTime = ((Float)0);
 HXLINE(1387)		this->lastReportedPlayheadPosition = 0;
 HXLINE(1386)		this->previousFrameTime = 0;
 HXLINE(1242)		this->perfectMode = false;
-HXLINE( 211)		this->detailsPausedText = HX_("",00,00,00,00);
-HXLINE( 210)		this->detailsText = HX_("",00,00,00,00);
-HXLINE( 209)		this->songLength = ((Float)0);
-HXLINE( 208)		this->iconRPC = HX_("",00,00,00,00);
-HXLINE( 207)		this->storyDifficultyText = HX_("",00,00,00,00);
-HXLINE( 203)		this->inCutscene = false;
-HXLINE( 198)		this->defaultCamZoom = ((Float)1.05);
-HXLINE( 194)		this->songScore = 0;
-HXLINE( 193)		this->talking = true;
-HXLINE( 191)		this->wiggleShit =  ::WiggleEffect_obj::__alloc( HX_CTX );
-HXLINE( 174)		this->isHalloween = false;
-HXLINE( 171)		this->dialogue = ::Array_obj< ::String >::fromData( _hx_array_data_46c2835d_1,2);
-HXLINE( 163)		this->startingSong = false;
-HXLINE( 162)		this->generatedMusic = false;
-HXLINE( 157)		this->combo = 0;
-HXLINE( 156)		this->health = ((Float)1);
-HXLINE( 155)		this->gfSpeed = 1;
-HXLINE( 153)		this->curSong = HX_("",00,00,00,00);
-HXLINE( 152)		this->camZooming = false;
-HXLINE( 141)		this->curSection = 0;
-HXLINE( 138)		this->unspawnNotes = ::Array_obj< ::Dynamic>::__new(0);
-HXLINE( 127)		this->daRating = HX_("sick",be,8c,53,4c);
-HXLINE( 125)		this->halloweenLevel = false;
-HXLINE( 112)		this->playFPS = ::Main_obj::framerate;
-HXLINE( 111)		this->defaultBlur = ((Float)0);
-HXLINE( 110)		this->accTotal = ((Float)100);
-HXLINE( 109)		this->maxAcc = ((Float)100);
-HXLINE( 108)		this->accuracy = ((Float)100);
-HXLINE( 107)		this->missClicks = 0;
-HXLINE( 106)		this->misses = 0;
-HXLINE( 100)		this->trippyWiggle =  ::WiggleEffect_obj::__alloc( HX_CTX );
-HXLINE(  99)		this->waterBlur = ::Array_obj< ::Dynamic>::__new(0);
-HXLINE(  87)		this->prevEventStep = 0;
-HXLINE(  86)		this->eventCounter = 0;
-HXLINE(  83)		this->isPixel = false;
-HXLINE(  81)		this->playerAltAnim = HX_("",00,00,00,00);
-HXLINE(  80)		this->opponentAltAnim = HX_("",00,00,00,00);
-HXLINE(  78)		this->flipWiggle = 1;
-HXLINE(  75)		this->prevTrackPos = ((Float)0);
-HXLINE(  73)		this->curChar = HX_("",00,00,00,00);
-HXLINE( 215)		::CustomNoteHandler_obj::spawn();
-HXLINE( 216)		::CustomNoteHandler_obj::configAddons();
+HXLINE( 212)		this->detailsPausedText = HX_("",00,00,00,00);
+HXLINE( 211)		this->detailsText = HX_("",00,00,00,00);
+HXLINE( 210)		this->songLength = ((Float)0);
+HXLINE( 209)		this->iconRPC = HX_("",00,00,00,00);
+HXLINE( 208)		this->storyDifficultyText = HX_("",00,00,00,00);
+HXLINE( 204)		this->inCutscene = false;
+HXLINE( 199)		this->defaultCamZoom = ((Float)1.05);
+HXLINE( 195)		this->songScore = 0;
+HXLINE( 194)		this->talking = true;
+HXLINE( 192)		this->wiggleShit =  ::WiggleEffect_obj::__alloc( HX_CTX );
+HXLINE( 175)		this->isHalloween = false;
+HXLINE( 172)		this->dialogue = ::Array_obj< ::String >::fromData( _hx_array_data_46c2835d_1,2);
+HXLINE( 164)		this->startingSong = false;
+HXLINE( 163)		this->generatedMusic = false;
+HXLINE( 158)		this->combo = 0;
+HXLINE( 157)		this->health = ((Float)1);
+HXLINE( 156)		this->gfSpeed = 1;
+HXLINE( 154)		this->curSong = HX_("",00,00,00,00);
+HXLINE( 153)		this->camZooming = false;
+HXLINE( 142)		this->curSection = 0;
+HXLINE( 139)		this->unspawnNotes = ::Array_obj< ::Dynamic>::__new(0);
+HXLINE( 128)		this->daRating = HX_("sick",be,8c,53,4c);
+HXLINE( 126)		this->halloweenLevel = false;
+HXLINE( 113)		this->playFPS = ::Main_obj::framerate;
+HXLINE( 112)		this->defaultBlur = ((Float)0);
+HXLINE( 111)		this->accTotal = ((Float)100);
+HXLINE( 110)		this->maxAcc = ((Float)100);
+HXLINE( 109)		this->accuracy = ((Float)100);
+HXLINE( 108)		this->missClicks = 0;
+HXLINE( 107)		this->misses = 0;
+HXLINE( 101)		this->trippyWiggle =  ::WiggleEffect_obj::__alloc( HX_CTX );
+HXLINE( 100)		this->waterBlur = ::Array_obj< ::Dynamic>::__new(0);
+HXLINE(  88)		this->prevEventStep = 0;
+HXLINE(  87)		this->eventCounter = 0;
+HXLINE(  84)		this->isPixel = false;
+HXLINE(  82)		this->playerAltAnim = HX_("",00,00,00,00);
+HXLINE(  81)		this->opponentAltAnim = HX_("",00,00,00,00);
+HXLINE(  79)		this->flipWiggle = 1;
+HXLINE(  76)		this->prevTrackPos = ((Float)0);
+HXLINE(  74)		this->curChar = HX_("",00,00,00,00);
+HXLINE( 216)		::CustomNoteHandler_obj::spawn();
 HXLINE( 218)		::Note_obj::AFFECTED_SCROLLSPEED = ( (Float)(1) );
 HXLINE( 219)		::Note_obj::AFFECTED_STRUMTIME = ( (Float)(0) );
 HXLINE( 220)		::Compile_obj::spawn();
@@ -12066,44 +12065,44 @@ void PlayState_obj::__register()
 void PlayState_obj::__boot()
 {
 {
-            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_91_boot)
-HXDLIN(  91)		modStorage = ::Array_obj< ::String >::__new(0);
-            	}
-{
-            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_115_boot)
-HXDLIN( 115)		hasWarning = true;
+            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_92_boot)
+HXDLIN(  92)		modStorage = ::Array_obj< ::String >::__new(0);
             	}
 {
             	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_116_boot)
-HXDLIN( 116)		curStage = HX_("",00,00,00,00);
+HXDLIN( 116)		hasWarning = true;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_117_boot)
-HXDLIN( 117)		rawJSON = HX_("",00,00,00,00);
+HXDLIN( 117)		curStage = HX_("",00,00,00,00);
             	}
 {
-            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_119_boot)
-HXDLIN( 119)		isStoryMode = false;
+            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_118_boot)
+HXDLIN( 118)		rawJSON = HX_("",00,00,00,00);
             	}
 {
             	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_120_boot)
-HXDLIN( 120)		storyWeek = 0;
+HXDLIN( 120)		isStoryMode = false;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_121_boot)
-HXDLIN( 121)		storyPlaylist = ::Array_obj< ::String >::__new(0);
+HXDLIN( 121)		storyWeek = 0;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_122_boot)
-HXDLIN( 122)		storyDifficulty = 2;
+HXDLIN( 122)		storyPlaylist = ::Array_obj< ::String >::__new(0);
             	}
 {
-            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_196_boot)
-HXDLIN( 196)		campaignScore = 0;
+            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_123_boot)
+HXDLIN( 123)		storyDifficulty = 2;
             	}
 {
-            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_201_boot)
-HXDLIN( 201)		daPixelZoom = ((Float)6);
+            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_197_boot)
+HXDLIN( 197)		campaignScore = 0;
+            	}
+{
+            	HX_STACKFRAME(&_hx_pos_af23706db05c7feb_202_boot)
+HXDLIN( 202)		daPixelZoom = ((Float)6);
             	}
 }
 

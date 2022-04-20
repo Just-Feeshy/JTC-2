@@ -24,8 +24,6 @@ class ClassType_obj : public ::hx::EnumBase_obj
 
 		static ::ClassType EVENT;
 		static inline ::ClassType EVENT_dyn() { return EVENT; }
-		static ::ClassType NOTE;
-		static inline ::ClassType NOTE_dyn() { return NOTE; }
 		static ::ClassType STAGE;
 		static inline ::ClassType STAGE_dyn() { return STAGE; }
 };
