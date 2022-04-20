@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<TextureAtlas imagePath="EventHandler.png">
-<SubTexture name="EventHandler Modifiers0000" x="0" y="0" width="174" height="175" frameX="0" frameY="0" frameWidth="174" frameHeight="175" />
-<SubTexture name="EventHandler Game Modes0000" x="174" y="0" width="174" height="175" frameX="0" frameY="0" frameWidth="174" frameHeight="175" />
-<SubTexture name="EventHandler Other0000" x="348" y="0" width="174" height="175" frameX="0" frameY="0" frameWidth="174" frameHeight="175" />
-</TextureAtlas>

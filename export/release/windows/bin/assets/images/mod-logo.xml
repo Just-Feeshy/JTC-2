@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<TextureAtlas imagePath="mod-logo.png">
-<SubTexture name="bump0000" x="0" y="0" width="888" height="519" frameX="0" frameY="0" frameWidth="888" frameHeight="519" />
-<SubTexture name="bump0001" x="888" y="0" width="888" height="519" frameX="0" frameY="0" frameWidth="888" frameHeight="519" />
-<SubTexture name="bump0002" x="1776" y="0" width="888" height="519" frameX="0" frameY="0" frameWidth="888" frameHeight="519" />
-<SubTexture name="bump0003" x="2664" y="0" width="888" height="519" frameX="0" frameY="0" frameWidth="888" frameHeight="519" />
-</TextureAtlas>
