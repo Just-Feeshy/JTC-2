@@ -200,8 +200,6 @@ class ChartingState extends MusicBeatState
 		if(_song.stage == null)
 			setStage();
 
-		trace(_song.stage);
-
 		if(_song.girlfriend == null)
 			setGirlfriend();
 

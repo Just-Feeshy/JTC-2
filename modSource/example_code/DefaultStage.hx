@@ -1,12 +1,10 @@
 package example_code;
 
+import template.StageBuilder;
+
 class DefaultStage extends StageBuilder {
     public function new(song:String) {
         super(song);
-
-        switch (song) {
-
-        }
     }
 
     /**

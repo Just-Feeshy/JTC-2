@@ -86,14 +86,15 @@ class FreeplayState extends MusicBeatState
 
 		var index:Int = 0;
 
-		super.create();
-
-		for(i in Paths.modJSON.weeks) {
-			for(v in 0...i.week_data.length) {
-				var peepeepoopoo:SwagSong = Song.loadFromJson(i.week_data[v].toLowerCase(), i.week_data[v].toLowerCase());
+		while(Paths.modJSON.weeks.get("week_" + index) != null) {
+			for(v in 0...Paths.modJSON.weeks.get("week_" + index).week_data.length) {
+				var peepeepoopoo:SwagSong = Song.loadFromJson(
+					Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase(),
+					Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase()
+				);
 				
-				if(i.week_unlocked)
-					addSong(i.week_data[v].toLowerCase(), index, peepeepoopoo.player2);
+				if(Paths.modJSON.weeks.get("week_" + index).week_unlocked)
+					addSong(Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase(), index, peepeepoopoo.player2);
 			}
 
 			index++;
@@ -177,6 +178,8 @@ class FreeplayState extends MusicBeatState
 		// add(selector);
 
 		var swag:Alphabet = new Alphabet(1, 0, "swag");
+
+		super.create();
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String)

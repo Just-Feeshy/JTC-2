@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="NOTE_assets.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="COMBOdown0000" x="50" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOdown0001" x="50" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOdown0002" x="300" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOdown0003" x="300" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOdown0004" x="550" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOdown0005" x="550" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOdown0006" x="800" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOdown0007" x="800" y="50" width="200" height="175"/>
+	<SubTexture name="COMBOleft0000" x="1050" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOleft0001" x="1050" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOleft0002" x="1299" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOleft0003" x="1299" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOleft0004" x="1548" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOleft0005" x="1548" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOleft0006" x="1797" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOleft0007" x="1797" y="50" width="199" height="174"/>
+	<SubTexture name="COMBOright0000" x="50" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOright0001" x="50" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOright0002" x="299" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOright0003" x="299" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOright0004" x="548" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOright0005" x="548" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOright0006" x="797" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOright0007" x="797" y="275" width="199" height="174"/>
+	<SubTexture name="COMBOup0000" x="1046" y="275" width="200" height="175"/>
+	<SubTexture name="COMBOup0001" x="1046" y="275" width="200" height="175"/>
+	<SubTexture name="COMBOup0002" x="1296" y="275" width="200" height="175"/>
+	<SubTexture name="COMBOup0003" x="1296" y="275" width="200" height="175"/>
+	<SubTexture name="COMBOup0004" x="1546" y="275" width="200" height="175"/>
+	<SubTexture name="COMBOup0005" x="1546" y="275" width="200" height="175"/>
+	<SubTexture name="COMBOup0006" x="1796" y="275" width="200" height="175"/>
+	<SubTexture name="COMBOup0007" x="1796" y="275" width="200" height="175"/>
+</TextureAtlas>

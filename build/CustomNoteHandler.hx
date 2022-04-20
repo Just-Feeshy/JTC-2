@@ -1,8 +1,10 @@
 package;
 
-import AddonHandlerMain;
-//import addons.*;
+import template.CustomNote;
 
+/*
+* Backend organizer for FNF custom notes made by YOU, the developer.
+**/
 class CustomNoteHandler {
     private static var funni:Bool = false;
 
@@ -14,7 +16,9 @@ class CustomNoteHandler {
     public static final ouchyNotes:Array<String> = ['poison', 'trippy', 'reverse poison', 'planet notes'];
     public static final lowNotesTick:Array<String> = ['poison', 'regular', 'reverse', 'ocean', 'side note'];
 
-    public static var customNoteAddon:Array<NoteAddon> = [];
+    @:allow(Note.getAddon)
+    @:allow(Register.implementCustomNote)
+    private static var customNoteAddon:Map<String, Class<NoteAddon>> = new Map<String, Class<NoteAddon>>();
 
     static public function spawn() {
         triggerWarning = [
@@ -33,7 +37,7 @@ class CustomNoteHandler {
         ];
     }
 
-    //Don't touch these functions below, unless you know what you are doing.
+    /**
     static public function configAddons() {
         if(!funni) {
             for (i in 0...customNoteAddon.length) {
@@ -60,4 +64,5 @@ class CustomNoteHandler {
             funni = true;
         }
     }
+    **/
 }

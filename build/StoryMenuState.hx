@@ -94,8 +94,6 @@ class StoryMenuState extends MusicBeatState
 
 		grpLocks = new FlxTypedGroup<FlxSprite>();
 		add(grpLocks);
-
-		trace("Line 70");
 		
 		#if windows
 		// Updating Discord Rich Presence
@@ -104,7 +102,7 @@ class StoryMenuState extends MusicBeatState
 
 		var i:Int = 0;
 
-		for (index in Paths.modJSON.weeks) {
+		while(Paths.modJSON.weeks.get("week_" + i) != null) {
 			var weekThing:FlxSprite = new FlxSprite(0, 575).loadGraphic(Paths.image('storymenu/week' + i));
 
 			weekThing.centerOffsets();

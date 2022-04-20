@@ -6,6 +6,7 @@ import haxe.macro.Type;
 
 #if !macro
 import example_code.DefaultEvents;
+import template.CustomNote;
 import feshixl.group.FeshEventGroup;
 import flixel.FlxState;
 import flixel.tweens.FlxEase;
@@ -26,7 +27,6 @@ import sys.io.File;
 using StringTools;
 
 enum ClassType {
-    NOTE;
     EVENT;
     STAGE;
 }
@@ -72,9 +72,6 @@ class Register {
 
     public static function add(addonType:ClassType, addonClass:Dynamic):Void {
         switch(addonType) {
-            case NOTE:
-                if(!CustomNoteHandler.customNoteAddon.contains(addonClass))
-                    CustomNoteHandler.customNoteAddon.push(addonClass);
             case EVENT:
                 var daEvent:IFeshEvent = addonClass;
 
@@ -83,6 +80,28 @@ class Register {
             case STAGE:
                 
         }
+    }
+
+    public static function implementCustomNote(name:String, addonClass:Class<CustomNote>) {
+        CustomNoteHandler.customNoteAddon.set(name);
+    }
+
+    public static function getWeekFromSong(song:String):Int {
+        var week:Int = 0;
+
+        /*
+        * Faster run time.
+        **/
+        while(Paths.modJSON.weeks.get("week_" + week) != null) {
+            if(Paths.modJSON.weeks.get("week_" + week).week_data.contains(song)) {
+                return week;
+            }
+
+            week++;
+        }
+
+        throw "Error: song not found in method - getWeekFromSong";
+        return -1;
     }
 
     public static function forNameClass(type:String, args:Array<Dynamic>):Dynamic {

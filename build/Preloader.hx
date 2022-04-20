@@ -37,7 +37,9 @@ class Preloader extends FlxState {
         Main.trueFramerate = FlxG.save.data.lowFps;
         Lib.current.stage.frameRate = Main.trueFramerate * fpsMulti;
 
-        trace(Lib.current.stage.frameRate);
+        trace("FPS: " + Lib.current.stage.frameRate);
+
+        FlxG.autoPause = false;
 
         super.create();
 

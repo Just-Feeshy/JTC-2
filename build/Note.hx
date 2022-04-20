@@ -18,7 +18,7 @@ import betterShit.BetterCams;
 import polymod.format.ParseRules.TargetSignatureElement;
 #end
 
-import AddonHandlerMain.NoteAddon;
+import template.CustomNote;
 
 using StringTools;
 
@@ -63,7 +63,7 @@ class Note extends FlxSprite
 
 	public var trail:FlxTypedGroup<FlxSprite>;
 
-	public var hasCustomAddon:NoteAddon;
+	public var hasCustomAddon:CustomNote;
 
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
@@ -665,12 +665,21 @@ class Note extends FlxSprite
 			}
 		}
 
-		function getAddon():NoteAddon {
-			for(i in 0...CustomNoteHandler.customNoteAddon.length)
-				if(CustomNoteHandler.customNoteAddon[i].getCustomNote() == noteAbstract)
-					return CustomNoteHandler.customNoteAddon[i];
+		function getAddon():CustomNote {
+			var customNote:CustomNote = Type.createInstance(CustomNoteHandler.customNoteAddon.get(noteAbstract));
+
+			if(customNote != null) {
+				if(customNote.playerShouldntHit() && !CustomNoteHandler.dontHitNotes.contains(noteAbstract))
+					CustomNoteHandler.dontHitNotes.push(noteAbstract);
+
+				if(customNote.noDefaultSplash() && !CustomNoteHandler.noNoteAbstractStrum.contains(noteAbstract))
+					CustomNoteHandler.noNoteAbstractStrum.push(noteAbstract);
+
+				if(customNote.giveHealth() < 0 && !CustomNoteHandler.ouchyNotes.contains(noteAbstract))
+					CustomNoteHandler.ouchyNotes.push(noteAbstract);
+			}
 	
-			return null;
+			return customNote;
 		}
 
 		override function update(elapsed:Float) {

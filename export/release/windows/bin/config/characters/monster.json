@@ -1,0 +1,53 @@
+{
+    "file": "Monster_Assets.xml",
+
+    "animations": {
+        "idle": {
+            "prefix": "monster idle",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 0]
+        },
+
+        "singUP": {
+            "prefix": "monster up note",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-20, 50]
+        },
+
+        "singLEFT": {
+            "prefix": "Monster Right note",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-51, 0]
+        },
+
+        "singRIGHT": {
+            "prefix": "Monster left note",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-30, 0]
+        },
+
+        "singDOWN": {
+            "prefix": "monster down",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-30, -40]
+        }
+    },
+
+    "position": {
+        "x": 0,
+        "y": 100,
+        "camPosX": 0,
+        "camPosY": 0
+    },
+
+    "icon": [19, 20],
+
+    "playAnim": "idle",
+    "isPlayer": false,
+    "pixel": false
+}

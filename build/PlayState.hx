@@ -48,13 +48,14 @@ import feshixl.group.FeshEventGroup;
 import openfl.Lib;
 
 import example_code.DefaultStage;
+import template.CustomNote;
+import template.StageBuilder;
 
 import flash.filters.BlurFilter;
 import flash.filters.BitmapFilterQuality;
 import flash.filters.ShaderFilter;
 
 import SaveData.SaveType;
-import AddonHandlerMain;
 import Feeshmora;
 
 using StringTools;
@@ -213,7 +214,6 @@ class PlayState extends MusicBeatState
 
 	override public function new(?muted:Bool) {
 		CustomNoteHandler.spawn();
-		CustomNoteHandler.configAddons();
 
 		Note.AFFECTED_SCROLLSPEED = 1;
 		Note.AFFECTED_STRUMTIME = 0;
