@@ -348,8 +348,8 @@ class PlayState extends MusicBeatState
 
 		curStage = SONG.stage.toLowerCase();
 
-		for(i in 0...stages.length) {
-			stageGroup.add(cast Type.createInstance(stages[i], [SONG.song.toLowerCase()]));
+		for(i in 0...Register.stages.length) {
+			stageGroup.add(cast Type.createInstance(Register.stages[i], [SONG.song.toLowerCase()]));
 		}
 
 		switch (curStage)

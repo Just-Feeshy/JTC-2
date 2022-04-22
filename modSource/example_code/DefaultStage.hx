@@ -327,6 +327,12 @@ class DefaultStage extends StageBuilder {
         phillyCityLights = FlxDestroyUtil.destroy(phillyCityLights);
         grpLimoDancers = FlxDestroyUtil.destroy(grpLimoDancers);
         phillyTrain = FlxDestroyUtil.destroy(phillyTrain);
+        limo = FlxDestroyUtil.destroy(limo);
+        upperBoppers = FlxDestroyUtil.destroy(upperBoppers);
+        bottomBoppers = FlxDestroyUtil.destroy(bottomBoppers);
+        fastCar = FlxDestroyUtil.destroy(fastCar);
+        santa = FlxDestroyUtil.destroy(santa);
+        bgGirls = FlxDestroyUtil.destroy(bgGirls);
     }
 
     /**
