@@ -12,7 +12,7 @@ import Std.is as isOfType;
 abstract class StageBuilder extends FlxBasic {
     private var sprites:Map<String, FlxBasic>;
     private var stage:String;
-    private var directory:String;
+    private var directory(default, set):String;
 
     public function new(stage:String) {
         super();
@@ -68,6 +68,13 @@ abstract class StageBuilder extends FlxBasic {
     @:allow(PlayState)
     private function curStep():Void {
         //Empty
+    }
+
+    inline function set_directory(value:String) {
+        Paths.setCurrentLevel(value);
+
+        directory = value;
+        return value;
     }
 
     override public function destroy():Void {

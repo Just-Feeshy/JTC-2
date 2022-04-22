@@ -44,6 +44,8 @@ class DefaultStage extends StageBuilder {
 
         switch (stage) {
 			case 'spooky': {
+                directory = "week2";
+
                 isHalloween = true;
 
                 var hallowTex = Paths.getSparrowAtlas('halloween_bg');
@@ -57,6 +59,8 @@ class DefaultStage extends StageBuilder {
                 addToStage(halloweenBG);
 			}
 			case 'philly': {
+                directory = "week3";
+
 				var bg:FlxSprite = new FlxSprite(-100).loadGraphic(Paths.image('philly/sky'));
 				bg.scrollFactor.set(0.1, 0.1);
 				addToStage(bg);
@@ -95,6 +99,8 @@ class DefaultStage extends StageBuilder {
 				addToStage(street);
 			}
 			case 'limo': {
+                directory = "week4";
+
 				setDefaultCameraZoom(0.90);
 
 				var skyBG:FlxSprite = new FlxSprite(-120, -50).loadGraphic(Paths.image('limo/limoSunset'));
@@ -139,6 +145,8 @@ class DefaultStage extends StageBuilder {
 				fastCar = new FlxSprite(-300, 160).loadGraphic(Paths.image('limo/fastCarLol'));
 			}
 			case 'mall': {
+                directory = "week5";
+
 				setDefaultCameraZoom(0.80);
 
 				var bg:FlxSprite = new FlxSprite(-1000, -500).loadGraphic(Paths.image('christmas/bgWalls'));
@@ -192,6 +200,8 @@ class DefaultStage extends StageBuilder {
 				addToStage(santa);
 			}
 			case 'mallEvil': {
+                directory = "week5";
+
 				var bg:FlxSprite = new FlxSprite(-400, -500).loadGraphic(Paths.image('christmas/evilBG'));
 				bg.antialiasing = true;
 				bg.scrollFactor.set(0.2, 0.2);
@@ -210,6 +220,8 @@ class DefaultStage extends StageBuilder {
                 addToStage(evilSnow);
 			}
 			case 'school': {
+                directory = "week6";
+
 				setPixel(true);
 
 				var bgSky = new FlxSprite().loadGraphic(Paths.image('weeb/weebSky'));
@@ -273,6 +285,8 @@ class DefaultStage extends StageBuilder {
 				addToStage(bgGirls);
 			}
 			case 'schoolEvil': {
+                directory = "week6";
+
                 setPixel(true);
 
                 var waveEffectBG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 3, 2);
@@ -290,6 +304,8 @@ class DefaultStage extends StageBuilder {
                 addToStage(bg);
 			}
 			default: {
+                directory = "week1";
+
                 setDefaultCameraZoom(0.90);
 
                 var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));

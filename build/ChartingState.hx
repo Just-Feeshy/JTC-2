@@ -1297,7 +1297,12 @@ class ChartingState extends MusicBeatState
 			PlayState.SONG = _song;
 			FlxG.sound.music.stop();
 			vocals.stop();
-			FlxG.switchState(new PlayState(muteInGame));
+			
+			#if cpp
+			CacheState.loadAndSwitchState(new PlayState(muteInGame));
+			#else
+			LoadingState.loadAndSwitchState(new PlayState(muteInGame));
+			#end
 		}
 
 		if (FlxG.keys.justPressed.E)

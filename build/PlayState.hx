@@ -346,7 +346,7 @@ class PlayState extends MusicBeatState
 		if(SONG.stage == null)
 			SONG.stage = DefaultStage.setMainGameStage(SONG.song.toLowerCase());
 
-		curStage = SONG.stage.toLowerCase();
+		curStage = SONG.stage;
 
 		for(i in 0...Register.stages.length) {
 			stageGroup.add(cast Type.createInstance(Register.stages[i], [curStage]));
