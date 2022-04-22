@@ -6,9 +6,6 @@ import flixel.math.FlxPoint;
 import flixel.FlxG;
 import openfl.filters.BitmapFilter;
 
-/**
-* If your looking for the engine value crap, there in the FlxCamera, not here.
-**/
 class BetterCams extends FlxCamera {
 
     public var getFilters(get, never):Array<BitmapFilter>;

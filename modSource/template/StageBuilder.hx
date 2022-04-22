@@ -11,34 +11,38 @@ import Std.is as isOfType;
 
 abstract class StageBuilder extends FlxBasic {
     private var sprites:Map<String, FlxBasic>;
-    private var song:String;
+    private var stage:String;
     private var directory:String;
 
-    public function new(song:String) {
+    public function new(stage:String) {
         super();
 
         sprites = new Map<String, FlxBasic>();
 
-        this.song = song;
+        this.stage = stage;
     }
 
-    public function addToStageAndMap(name:String, thing:FlxBasic) {
+    public function addToStageAndMap(name:String, thing:FlxBasic):Void {
         sprites.set(name, thing);
 
         if(isOfType(FlxG.state, PlayState))
             FlxG.state.add(thing);
     }
 
-    public function addToStage(thing:FlxBasic) {
+    public function addToStage(thing:FlxBasic):Void {
         if(isOfType(FlxG.state, PlayState))
             FlxG.state.add(thing);
     }
 
-    public function whenCreatingScene() {
+    public function configStage():Void {
         //empty method
     }
 
-    public function setDefaultCameraZoom(zoom:Float) {
+    public function whenCreatingScene():Void {
+        //empty method
+    }
+
+    public function setDefaultCameraZoom(zoom:Float):Void {
         if(isOfType(FlxG.state, PlayState)) {
             var state:PlayState = cast FlxG.state;
 
@@ -47,16 +51,26 @@ abstract class StageBuilder extends FlxBasic {
         }
     }
 
-    public function setPixel(is:Bool) {
+    public function setPixel(isA:Bool):Void {
         if(isOfType(FlxG.state, PlayState)) {
             var state:PlayState = cast FlxG.state;
 
             @:privateAccess
-            state.isPixel = is;
+            state.isPixel = isA;
         }
     }
 
-    override public function destroy() {
+    @:allow(PlayState)
+    private function curBeat():Void {
+        //Empty
+    }
+
+    @:allow(PlayState)
+    private function curStep():Void {
+        //Empty
+    }
+
+    override public function destroy():Void {
         if(sprites != null) {
             for(k in sprites.keys()) {
                 sprites.get(k).destroy();
@@ -66,7 +80,7 @@ abstract class StageBuilder extends FlxBasic {
         }
 
         sprites = null;
-        song = null;
+        stage = null;
         directory = null;
     }
 }

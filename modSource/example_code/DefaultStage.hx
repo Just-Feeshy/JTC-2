@@ -4,9 +4,11 @@ import template.StageBuilder;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.addons.effects.FlxTrail;
 import flixel.addons.effects.chainable.FlxWaveEffect;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.system.FlxSound;
+import flixel.util.FlxTimer;
 import flixel.util.FlxDestroyUtil;
 
 class DefaultStage extends StageBuilder {
@@ -23,15 +25,27 @@ class DefaultStage extends StageBuilder {
     var bgGirls:BackgroundGirls;
     var trainSound:FlxSound;
 
+    var trainFrameTiming:Float = 0;
+    var lightningStrikeBeat:Int = 0;
+	var lightningOffset:Int = 8;
+    var trainCooldown:Int = 0;
+    var curLight:Int = 0;
+    var trainCars:Int = 8;
+
     var isPixel:Bool = false;
+    var isHalloween:Bool = false;
+    var trainMoving:Bool = false;
+    var fastCarCanDrive:Bool = true;
+    var startedMoving:Bool = false;
+    var trainFinishing:Bool = false;
 
-    public function new(song:String) {
-        super(song);
+    public function new(stage:String) {
+        super(stage);
 
-        switch (song)
-		{
-			case 'spooky': 
-			{
+        switch (stage) {
+			case 'spooky': {
+                isHalloween = true;
+
                 var hallowTex = Paths.getSparrowAtlas('halloween_bg');
 
                 halloweenBG = new FlxSprite(-200, -100);
@@ -42,8 +56,7 @@ class DefaultStage extends StageBuilder {
                 halloweenBG.antialiasing = FlxG.save.data.showAntialiasing;
                 addToStage(halloweenBG);
 			}
-			case 'philly': 
-			{
+			case 'philly': {
 				var bg:FlxSprite = new FlxSprite(-100).loadGraphic(Paths.image('philly/sky'));
 				bg.scrollFactor.set(0.1, 0.1);
 				addToStage(bg);
@@ -57,8 +70,7 @@ class DefaultStage extends StageBuilder {
 				phillyCityLights = new FlxTypedGroup<FlxSprite>();
 				addToStage(phillyCityLights);
 
-				for (i in 0...5)
-				{
+				for (i in 0...5) {
 						var light:FlxSprite = new FlxSprite(city.x).loadGraphic(Paths.image('philly/win' + i));
 						light.scrollFactor.set(0.3, 0.3);
 						light.visible = false;
@@ -82,8 +94,7 @@ class DefaultStage extends StageBuilder {
 				var street:FlxSprite = new FlxSprite(-40, streetBehind.y).loadGraphic(Paths.image('philly/street'));
 				addToStage(street);
 			}
-			case 'limo':
-			{
+			case 'limo': {
 				setDefaultCameraZoom(0.90);
 
 				var skyBG:FlxSprite = new FlxSprite(-120, -50).loadGraphic(Paths.image('limo/limoSunset'));
@@ -126,10 +137,8 @@ class DefaultStage extends StageBuilder {
 				limo.antialiasing = true;
 
 				fastCar = new FlxSprite(-300, 160).loadGraphic(Paths.image('limo/fastCarLol'));
-				addToStage(limo);
 			}
-			case 'mall':
-			{
+			case 'mall': {
 				setDefaultCameraZoom(0.80);
 
 				var bg:FlxSprite = new FlxSprite(-1000, -500).loadGraphic(Paths.image('christmas/bgWalls'));
@@ -182,8 +191,7 @@ class DefaultStage extends StageBuilder {
 				santa.antialiasing = true;
 				addToStage(santa);
 			}
-			case 'mallEvil':
-			{
+			case 'mallEvil': {
 				var bg:FlxSprite = new FlxSprite(-400, -500).loadGraphic(Paths.image('christmas/evilBG'));
 				bg.antialiasing = true;
 				bg.scrollFactor.set(0.2, 0.2);
@@ -201,8 +209,7 @@ class DefaultStage extends StageBuilder {
 				evilSnow.antialiasing = true;
                 addToStage(evilSnow);
 			}
-			case 'school':
-			{
+			case 'school': {
 				setPixel(true);
 
 				var bgSky = new FlxSprite().loadGraphic(Paths.image('weeb/weebSky'));
@@ -257,17 +264,15 @@ class DefaultStage extends StageBuilder {
 				bgGirls = new BackgroundGirls(-100, 190);
 				bgGirls.scrollFactor.set(0.9, 0.9);
 
-				if (song == 'roses')
-					{
-						bgGirls.getScared();
+				if (PlayState.SONG.song.toLowerCase() == 'roses') {
+					bgGirls.getScared();
 				}
 
 				bgGirls.setGraphicSize(Std.int(bgGirls.width * 6));
 				bgGirls.updateHitbox();
 				addToStage(bgGirls);
 			}
-			case 'schoolEvil':
-			{
+			case 'schoolEvil': {
                 setPixel(true);
 
                 var waveEffectBG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 3, 2);
@@ -284,8 +289,7 @@ class DefaultStage extends StageBuilder {
                 bg.scale.set(6, 6);
                 addToStage(bg);
 			}
-			default:
-			{
+			default: {
                 setDefaultCameraZoom(0.90);
 
                 var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));
@@ -314,13 +318,178 @@ class DefaultStage extends StageBuilder {
 		}
     }
 
-    override public function whenCreatingScene() {
+    override public function configStage():Void {
+        super.configStage();
+
+        switch (stage) {
+			case 'limo':
+				Register.getInGameCharacter(BOYFRIEND).y -= 220;
+				Register.getInGameCharacter(BOYFRIEND).x += 260;
+
+				resetFastCar();
+				addToStage(fastCar);
+
+			case 'mall':
+				Register.getInGameCharacter(BOYFRIEND).x += 200;
+			case 'mallEvil':
+				Register.getInGameCharacter(BOYFRIEND).x += 320;
+				Register.getInGameCharacter(OPPONENT).y -= 80;
+			case 'school':
+				Register.getInGameCharacter(BOYFRIEND).x += 200;
+				Register.getInGameCharacter(BOYFRIEND).y += 220;
+				Register.getInGameCharacter(GIRLFRIEND).x += 180;
+				Register.getInGameCharacter(GIRLFRIEND).y += 300;
+			case 'schoolEvil':
+				var evilTrail = new FlxTrail(Register.getInGameCharacter(OPPONENT), null, 4, 24, 0.3, 0.069);
+				addToStage(evilTrail);
+
+				Register.getInGameCharacter(BOYFRIEND).x += 200;
+				Register.getInGameCharacter(BOYFRIEND).y += 220;
+				Register.getInGameCharacter(GIRLFRIEND).x += 180;
+				Register.getInGameCharacter(GIRLFRIEND).y += 300;
+		}
+    }
+
+    override public function whenCreatingScene():Void {
         super.whenCreatingScene();
 
         addToStage(limo);
     }
 
-    override function destroy() {
+    function lightningStrikeShit():Void {
+        var playstate:PlayState = cast(FlxG.state, PlayState);
+
+        FlxG.sound.play(Paths.soundRandom('thunder_', 1, 2));
+        halloweenBG.animation.play('lightning');
+
+        @:privateAccess
+        lightningStrikeBeat = playstate.curBeat;
+		lightningOffset = FlxG.random.int(8, 24);
+
+        Register.getInGameCharacter(BOYFRIEND).playAnim('scared', true);
+        Register.getInGameCharacter(GIRLFRIEND).playAnim('scared', true);
+    }
+
+    function trainStart():Void {
+        trainMoving = true;
+
+        if (!trainSound.playing)
+            trainSound.play(true);
+    }
+
+    function updateTrainPos():Void {
+        if (trainSound.time >= 4700) {
+            startedMoving = true;
+            Register.getInGameCharacter(GIRLFRIEND).playAnim('hairBlow');
+        }
+
+        if (startedMoving) {
+            phillyTrain.x -= 400;
+
+            if (phillyTrain.x < -2000 && !trainFinishing) {
+                phillyTrain.x = -1150;
+                trainCars -= 1;
+
+                if (trainCars <= 0)
+                    trainFinishing = true;
+            }
+
+            if (phillyTrain.x < -4000 && trainFinishing)
+                trainReset();
+        }
+    }
+
+    function trainReset():Void {
+        Register.getInGameCharacter(GIRLFRIEND).playAnim('hairFall');
+        phillyTrain.x = FlxG.width + 200;
+        trainMoving = false;
+        trainCars = 8;
+        trainFinishing = false;
+        startedMoving = false;
+    }
+
+    function resetFastCar():Void {
+        fastCar.x = -12600;
+        fastCar.y = FlxG.random.int(140, 250);
+        fastCar.velocity.x = 0;
+        fastCarCanDrive = true;
+    }
+
+    function fastCarDrive() {
+        FlxG.sound.play(Paths.soundRandom('carPass', 0, 1), 0.7);
+
+        fastCar.velocity.x = (FlxG.random.int(170, 220) / FlxG.elapsed) * 3;
+        fastCarCanDrive = false;
+        new FlxTimer().start(2, function(tmr:FlxTimer)
+        {
+            resetFastCar();
+        });
+    }
+
+    override function curBeat():Void {
+        var playstate:PlayState = cast(FlxG.state, PlayState);
+
+        switch (stage) {
+			case 'school':
+				bgGirls.dance();
+
+			case 'mall':
+				upperBoppers.animation.play('bop', true);
+				bottomBoppers.animation.play('bop', true);
+				santa.animation.play('idle', true);
+
+			case 'limo':
+				grpLimoDancers.forEach(function(dancer:BackgroundDancer) {
+					dancer.dance();
+				});
+
+				if (FlxG.random.bool(10) && fastCarCanDrive)
+					fastCarDrive();
+			case "philly":
+				if (!trainMoving)
+					trainCooldown += 1;
+
+                
+				if (@:privateAccess playstate.curBeat % 4 == 0) {
+					phillyCityLights.forEach(function(light:FlxSprite) {
+						light.visible = false;
+					});
+
+					curLight = FlxG.random.int(0, phillyCityLights.length - 1);
+
+					phillyCityLights.members[curLight].visible = true;
+				}
+
+				if (@:privateAccess playstate.curBeat % 8 == 4 && FlxG.random.bool(30) && !trainMoving && trainCooldown > 8) {
+					trainCooldown = FlxG.random.int(-4, 0);
+					trainStart();
+				}
+		}
+
+        if (isHalloween && FlxG.random.bool(10) && @:privateAccess playstate.curBeat > lightningStrikeBeat + lightningOffset) {
+            lightningStrikeShit();
+        }
+
+        super.curBeat();
+    }
+
+    override function update(elapsed:Float):Void {
+        switch(stage) {
+			case 'philly':
+				if (trainMoving) {
+					trainFrameTiming += elapsed;
+
+					if (trainFrameTiming >= 1 / 24) {
+						updateTrainPos();
+						trainFrameTiming = 0;
+					}
+				}
+		}
+
+        super.update(elapsed);
+    }
+
+    override function destroy():Void {
         super.destroy();
 
         halloweenBG = FlxDestroyUtil.destroy(halloweenBG);
@@ -337,8 +506,8 @@ class DefaultStage extends StageBuilder {
 
     /**
     * Not important, if you want to make your own stage builder.
-    **/
-    static public function setMainGameStage(song:String) {
+    */
+    static public function setMainGameStage(song:String):String {
         switch(song.toLowerCase()) {
             case 'spookeez' | 'monster' | 'south':
                 return 'spooky';

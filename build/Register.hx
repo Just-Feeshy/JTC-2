@@ -12,6 +12,7 @@ import template.StageBuilder;
 import feshixl.group.FeshEventGroup;
 import flixel.FlxState;
 import flixel.tweens.FlxEase;
+import flixel.FlxG;
 import haxe.Json;
 import lime.utils.Assets;
 #end
@@ -80,6 +81,23 @@ class Register {
 		HelperStates.scriptsInStates.set(Type.getClassName(state), luaClass);
 		#end
 	}
+
+    public static function getInGameCharacter(character:CharacterRole):Character {
+        if(isOfType(FlxG.state, PlayState)) {
+            var playstate:PlayState = cast(FlxG.state, PlayState);
+
+            switch (character) {
+                case BOYFRIEND:
+                    return playstate.boyfriend;
+                case GIRLFRIEND:
+                    return playstate.gf;
+                default:
+                    return playstate.dad;
+            }
+        }
+
+        return null;
+    }
 
     public static function add(addonType:ClassType, addonClass:Dynamic):Void {
         switch(addonType) {
