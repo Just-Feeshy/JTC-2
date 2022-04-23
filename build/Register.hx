@@ -107,7 +107,7 @@ class Register {
                 if(!events.members.contains(daEvent))
                     events.add(daEvent);
             case STAGE:
-                stages.push(Type.getClass(addonClass));
+                stages.push(addonClass);
         }
     }
 

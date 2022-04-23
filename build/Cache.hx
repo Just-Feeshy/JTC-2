@@ -7,7 +7,7 @@ import openfl.utils.Assets as OpenFlAssets;
 
 //Basically a class like Path
 class Cache {
-    private static var theseAssets:Map<String, FlxGraphics> = new Map<String, FlxGraphics>();
+    private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 
     static public function cacheAsset(key:String, ?library:String = ""):Void {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);
@@ -22,15 +22,15 @@ class Cache {
         }
     }
 
-    static public function getAsset(key:String):FlxGraphics {
+    static public function getAsset(key:String, ?library:String = ""):FlxGraphic {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);
 
         if (OpenFlAssets.exists(path, IMAGE)) {
             if(theseAssets.exists(path)) {
-                return currentTrackedAssets.get(modKey);
+                trace("Retrieved file: " + path);
+                return theseAssets.get(key);
             }else {
-                trace("Warning: Could not locate asset in the cache files - " + path);
-                return path;
+                return null;
             }
         }
 
@@ -47,8 +47,8 @@ class Cache {
 		for (key in FlxG.bitmap._cache.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
 
-            if (daBitmap != null && !theseAssets.exists(path)) {
-                FlxG.bitmap.removeKey();
+            if (daBitmap != null) {
+                FlxG.bitmap.removeKey(key);
                 daBitmap.destroy();
 
                 daBitmap = null;

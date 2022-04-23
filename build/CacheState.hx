@@ -45,6 +45,13 @@ class CacheState extends MusicBeatState {
 			return;
 		}
 
+        var parser = new JsonParser<Array<String>>();
+        var cacheList:Array<String> = parser.fromJson(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""), "cache.json");
+
+        for(i in 0...cacheList.length) {
+            Cache.cacheAsset(cacheList[i], "");
+        }
+
 		LoadingState.loadAndSwitchState(target, stopMusic);
 	}
 

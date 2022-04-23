@@ -160,7 +160,8 @@ class Paths
 		if(cache)
 			cacheFile = "cache/";
 
-		if(FileSystem.exists('mod_assets/images/$key'))
+		if(FileSystem.exists('mod_assets/images/$key.png')
+		&& FileSystem.exists('mod_assets/images/$key.xml'))
 			cacheFile = "";
 
 		if(Assets.exists(file('images/' + cacheFile + key + '.txt', library))) {
@@ -196,39 +197,26 @@ class Paths
 
 	inline static public function voices(song:String)
 	{
-		if(Assets.exists('songs:assets/songs/${song.toLowerCase()}/Voices.$SOUND_EXT'))
-			return 'songs:assets/songs/${song.toLowerCase()}/Voices.$SOUND_EXT';
+		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT')))
+			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
 		else {
-			throw ("Error: could not locate voices - " + song + SOUND_EXT);
+			throw ("Error: could not locate voices - " + song + "." + SOUND_EXT);
 			return null;
 		}
 	}
 	
 	inline static public function inst(song:String)
 	{
-		if(Assets.exists('songs:assets/songs/${song.toLowerCase()}/Inst.$SOUND_EXT'))
-			return 'songs:assets/songs/${song.toLowerCase()}/Inst.$SOUND_EXT';
+		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT')))
+			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT');
 		else {
-			throw ("Error: could not locate instrumental - " + song + SOUND_EXT);
+			throw ("Error: could not locate instrumental - " + song + "." + SOUND_EXT);
 			return null;
 		}
 	}
 
 	static function ifImageCached(key:String):FlxGraphic {
 		return bitLiteralMap.get(key);
-	}
-
-	inline static public function getCharacterFile(key:String, ?library:String, ?cache:Bool):String {
-		var cacheFile:String = "";
-
-		if(cache) {
-			cacheFile = "cache/";
-		}
-
-		if(FileSystem.exists('mod_assets/images/$key'))
-			cacheFile = "";
-
-		return file('images/' + cacheFile + key + '.xml', library);
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)
@@ -239,10 +227,13 @@ class Paths
 			cacheFile = "cache/";
 		}
 
-		if(FileSystem.exists('mod_assets/images/$key'))
+		if(FileSystem.exists('mod_assets/images/$key.png') 
+		&& FileSystem.exists('mod_assets/images/$key.xml')) {
 			cacheFile = "";
+			library = "";
+		}
 
-		if(Assets.exists(getCharacterFile(key, library, cache))) {
+		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
 
 			if(ifImageCached(cacheFile + key) != null)
 				return FlxAtlasFrames.fromSparrow(ifImageCached(cacheFile + key), file('images/' + cacheFile + key + '.xml', library)); //fImageCached(key)
@@ -272,7 +263,7 @@ class Paths
 		if(Assets.exists(getPath('images/$key.png', IMAGE, library)))
 			return getPath('images/$key.png', IMAGE, library);
 		else {
-			throw ("Error: could not locate asset - " + file('images/$key.png', library));
+			//throw ("Error: could not locate asset - " + file('images/$key.png', library));
 			return null;
 		}
 	}
