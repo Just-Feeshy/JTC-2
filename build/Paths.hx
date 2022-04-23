@@ -216,7 +216,10 @@ class Paths
 	}
 
 	static function ifImageCached(key:String):FlxGraphic {
-		return bitLiteralMap.get(key);
+		if(Cache.getAsset(key, "") != null)
+			return Cache.getAsset(key, "");
+		else
+			return bitLiteralMap.get(key);
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)

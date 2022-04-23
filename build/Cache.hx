@@ -34,7 +34,6 @@ class Cache {
             }
         }
 
-        throw "Error: could not locate asset - " + path;
         return null;
     }
 
