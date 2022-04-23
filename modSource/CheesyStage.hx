@@ -14,7 +14,7 @@ class CheesyStage extends StageBuilder {
 
 				var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('funkstreet'));
 				bg.antialiasing = true;
-				bg.scrollFactor.set(0.9, 0.9);
+				bg.scrollFactor.set(0.95, 0.95);
 				bg.active = false;
 				addToStage(bg);
 

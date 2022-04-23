@@ -250,7 +250,7 @@ class OptionsMenuState extends MusicBeatState {
 						if(pressed)
 							isChangingOption = false;
 					}),
-					new Options(0, 90, "High Graphics", SaveType.GRAPHICS, function(option:Options, pressed:Bool) {
+					new Options(0, 90, "High Quality", SaveType.GRAPHICS, function(option:Options, pressed:Bool) {
 						option.ID = 8;
 
 						if(pressed)

@@ -75,6 +75,8 @@ class PlayState extends MusicBeatState
 	private var camMovementPos:FlxPoint;
 	private var prevTrackPos:Float = 0;
 
+	private var healthTween:FlxTween;
+
 	public var camPos:FlxPoint;
 	public var flipWiggle:Int = 1;
 
@@ -712,7 +714,17 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	private function createScene(?setup:Bool = true) {
+	function setHealth(hp:Float) {
+		final tempHealth:Float = health;
+
+		if(Math.abs(health - tempHealth) > 0.01 && SaveData.getData(SaveType.GRAPHICS)) {
+			healthTween = FlxTween.tween(this, {health: hp}, Math.abs(health - tempHealth), {ease: FlxEase.quadOut});
+		}else {
+			health = hp;
+		}
+	}
+
+	function createScene(?setup:Bool = true) {
 		if(setup) {
 			Conductor.mapBPMChanges(SONG);
 			Conductor.changeBPM(SONG.bpm);
@@ -732,7 +744,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	private function createFogs() {
+	function createFogs() {
 		waterFog = new FlxSprite(0, 0).makeGraphic(1280, 720, FlxColor.BLUE);
 		waterFog.screenCenter();
 		waterFog.alpha = 0;
@@ -2097,7 +2109,7 @@ class PlayState extends MusicBeatState
 					cameraMovement(daNote.noteData, daNote.isSustainNote);
 
 					if(modifierCheckList('fair battle'))
-						health -= 0.014;
+						setHealth(health - 0.014);
 
 					opponentStrums.forEach(function(spr:FlxSprite) {
 						if (Math.abs(daNote.noteData) == spr.ID) {
@@ -2178,7 +2190,7 @@ class PlayState extends MusicBeatState
 						if (daNote.isSustainNote && daNote.wasGoodHit)
 							{
 								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract))
-									health += 0.010;		
+									setHealth(health + 0.010);		
 								
 								if(maxAcc < 99) {
 									accuracy += 0.05;
@@ -2201,9 +2213,9 @@ class PlayState extends MusicBeatState
 								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
 	
 									if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note")
-										health -= 2;
+										setHealth(health - 2);
 									else
-										health -= 0.069;
+										setHealth(health - 0.069);
 
 									vocals.volume = 0;
 	
@@ -2378,7 +2390,7 @@ class PlayState extends MusicBeatState
 		if (noteDiff > Conductor.safeZoneOffset * 0.9)
 		{
 			if(modifierCheckList('get good')) {
-				health -= 2;
+				setHealth(health - 2);
 			}
 
 			daRating = 'shit';
@@ -2387,12 +2399,12 @@ class PlayState extends MusicBeatState
 			accuracy -= 0.75 * GhostTapping.consequence;
 			combo = 0;
 
-			health -= 0.005;
+			setHealth(health - 0.005);
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 0.75)
 		{
 			if(modifierCheckList('get good')) {
-				health -= 2;
+				setHealth(health - 2);
 			}
 
 			daRating = 'bad';
@@ -2401,7 +2413,7 @@ class PlayState extends MusicBeatState
 			accuracy -= 0.50 * GhostTapping.consequence;
 			combo = 0;
 
-			health -= 0.002;
+			setHealth(health - 0.002);
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 0.2)
 		{
@@ -2662,7 +2674,7 @@ class PlayState extends MusicBeatState
 				}
 			} else {
 				if(!GhostTapping.ghostTap) {
-					health -= 0.05;
+					setHealth(health - 0.05);
 					badNoteCheck();
 				}
 			}
@@ -2718,7 +2730,7 @@ class PlayState extends MusicBeatState
 
 		if (!boyfriend.stunned)
 		{
-			health -= 0.04;
+			setHealth(health - 0.04);
 
 			if (combo > 5 && gf.animOffsets.exists('sad'))
 			{
@@ -2839,13 +2851,13 @@ class PlayState extends MusicBeatState
 				if(note.noteAbstract == "poison" || note.noteAbstract == "reverse poison") {
 					for(i in 0...150) {
 						new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-							health -= (0.001);
+							setHealth(health - (0.001));
 						});
 					}
 				}else if(note.noteAbstract == "trippy")	{
-					health -= 0.3;
+					setHealth(health - 0.3);
 				}else if(note.noteAbstract == "planet notes") {
-					health -= 0.4;
+					setHealth(health - 0.4);
 				}
 
 				noteMiss(note.noteData, note, true);
@@ -2860,28 +2872,28 @@ class PlayState extends MusicBeatState
 			if(note.noteAbstract == "regular" || note.noteAbstract == "ghost") {
 
 				if (note.noteData >= 0)
-					health += 0.023;
+					setHealth(health + 0.023);
 				else
-					health += 0.004;
+					setHealth(health + 0.004);
 			}else if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
 
 				if (note.noteData >= 0)
-					health += 0.004;
+					setHealth(health + 0.004);
 			}
 
 			if(note.hasCustomAddon != null)
-				health += note.hasCustomAddon.giveHealth();
+				setHealth(health + note.hasCustomAddon.giveHealth());
 
 			if(note.noteAbstract == "spiritual star")
-				health -= 0.054;
+				setHealth(health - 0.054);
 			
 			if(note.noteAbstract == "cherry") {
 
 				if(SONG.fifthKey && note.noteData == 2) {
-					health += 1;
+					setHealth(health + 1);
 					FlxG.sound.play(Paths.sound("confirmMenu"));
 				} else {
-					health += 0.069;
+					setHealth(health + 0.069);
 				}	
 			}
 
@@ -2913,9 +2925,9 @@ class PlayState extends MusicBeatState
 				camNOTE.setFilters([waterBlur[1]]);
 
 				if (note.noteData >= 0)
-					health += 0.04;
+					setHealth(health + 0.04);
 				else
-					health += 0.007;
+					setHealth(health + 0.007);
 			}else if(note.noteAbstract == "trippy") {
 
 				if(waterBlur[1] != null) {
