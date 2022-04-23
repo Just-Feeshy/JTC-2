@@ -94,9 +94,13 @@
 	<assets path="assets/week6"    library="week6"    exclude="*.ogg" if="web"/>
 	<assets path="assets/week6"    library="week6"    exclude="*.mp3" unless="web"/>
 
-	<assets path = 'mod_assets' embed='false'/>
+	<assets path = 'mod_assets' embed='true'/>
 	<assets path = 'config' embed='false'/>
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
+
+	<assets path="mod_assets/songs"    library="songs"    exclude="*.ogg" if="web"/>
+	<assets path="mod_assets/songs"    library="songs"    exclude="*.mp3" unless="web"/>
+
 	<!-- <template path='mods' /> -->
 
 	<!-- NOTE FOR FUTURE SELF SINCE FONTS ARE ALWAYS FUCKY 

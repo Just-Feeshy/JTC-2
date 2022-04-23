@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="funkroad.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="funkroad0000" x="20" y="20" width="3249" height="1657"/>
+	<SubTexture name="funkroad0001" x="3349" y="20" width="3249" height="1657"/>
+	<SubTexture name="funkroad0002" x="20" y="1757" width="3249" height="1657"/>
+	<SubTexture name="funkroad0003" x="3349" y="1757" width="3249" height="1657"/>
+	<SubTexture name="funkroad0004" x="20" y="3494" width="3249" height="1657"/>
+	<SubTexture name="funkroad0005" x="3349" y="3494" width="3249" height="1657"/>
+</TextureAtlas>

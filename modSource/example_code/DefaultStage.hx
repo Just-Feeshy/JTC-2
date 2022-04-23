@@ -12,7 +12,6 @@ import flixel.util.FlxTimer;
 import flixel.util.FlxDestroyUtil;
 
 class DefaultStage extends StageBuilder {
-
     var halloweenBG:FlxSprite;
     var phillyCityLights:FlxTypedGroup<FlxSprite>;
     var grpLimoDancers:FlxTypedGroup<BackgroundDancer>;
