@@ -1,0 +1,53 @@
+{
+    "file": "DADDY_DEAREST.xml",
+
+    "animations": {
+        "idle": {
+            "prefix": "Dad idle dance",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 0]
+        },
+
+        "singUP": {
+            "prefix": "Dad Sing Note UP",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-6, 50]
+        },
+
+        "singRIGHT": {
+            "prefix": "Dad Sing Note RIGHT",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 27]
+        },
+
+        "singLEFT": {
+            "prefix": "Dad Sing Note LEFT",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-10, 10]
+        },
+
+        "singDOWN": {
+            "prefix": "Dad Sing Note DOWN",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, -30]
+        }
+    },
+
+    "position": {
+        "x": 0,
+        "y": 0,
+        "camPosX": 400,
+        "camPosY": 0
+    },
+
+    "icon": [12, 13, 12],
+
+    "playAnim": "idle",
+    "isPlayer": false,
+    "pixel": false
+}

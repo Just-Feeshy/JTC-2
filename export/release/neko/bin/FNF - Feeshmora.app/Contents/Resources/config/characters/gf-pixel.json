@@ -1,0 +1,18 @@
+{
+    "file": "gfPixel.xml",
+
+    "animations": {},
+
+    "position": {
+        "x": 0,
+        "y": 0,
+        "camPosX": 0,
+        "camPosY": 0
+    },
+
+    "icon": [16],
+
+    "playAnim": "danceRight",
+    "isPlayer": false,
+    "pixel": true
+}
