@@ -251,8 +251,8 @@ class Paths
 
 	inline static public function getNoteAtlas(key:String) {
 		if(Assets.exists(image("notes/" + key))) {
-			if(ifImageCached(key) != null)
-				return FlxAtlasFrames.fromSparrow(image("notes/" + key), file('images/notes/$key.xml'));
+			if(ifImageCached("notes/" + key) != null)
+				return FlxAtlasFrames.fromSparrow(ifImageCached("notes/" + key), file('images/notes/$key.xml'));
 			else
 				return FlxAtlasFrames.fromSparrow(image("notes/" + key), file('images/notes/$key.xml'));
 		}else {
