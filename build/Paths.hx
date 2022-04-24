@@ -272,10 +272,10 @@ class Paths
 	}
 
 	static public function lua(key:String) {
-		if(Assets.exists(getPath('scripts/$key.lua', TEXT, ""))) {
-			return getPath('scripts/$key.lua', TEXT, "");
+		if(Assets.exists(getPath('scripts/$key.lua', TEXT, null))) {
+			return getPath('scripts/$key.lua', TEXT, null);
 		}else {
-			throw ("Error: could not locate asset - " + getPath('scripts/$key.lua', TEXT, ""));
+			throw ("Error: could not locate asset - " + getPath('scripts/$key.lua', TEXT, null));
 			return null;
 		}
 	}

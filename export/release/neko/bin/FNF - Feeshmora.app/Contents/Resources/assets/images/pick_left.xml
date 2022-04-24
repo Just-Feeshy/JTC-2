@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAtlas imagePath="pick_left.png">
-	<!-- Created with Adobe Animate version 21.0.9.42677 -->
-	<!-- http://www.adobe.com/products/animate.html -->
-	<SubTexture name="arrow0000" x="0" y="0" width="57" height="109" frameX="-2" frameY="0" frameWidth="61" frameHeight="109"/>
-	<SubTexture name="arrow push left0000" x="0" y="0" width="57" height="109" frameX="-2" frameY="0" frameWidth="61" frameHeight="109"/>
-	<SubTexture name="arrow push left0001" x="57" y="0" width="59" height="106" frameX="-1" frameY="-1" frameWidth="61" frameHeight="109"/>
-	<SubTexture name="arrow push left0002" x="116" y="0" width="61" height="99" frameX="0" frameY="-5" frameWidth="61" frameHeight="109"/>
-</TextureAtlas>

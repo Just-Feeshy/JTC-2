@@ -79,6 +79,7 @@ class PlayState extends MusicBeatState
 
 	public var camPos:FlxPoint;
 	public var flipWiggle:Int = 1;
+	public var health:Float = 1;
 
 	public var opponentAltAnim:String = "";
 	public var playerAltAnim:String = "";
@@ -154,7 +155,6 @@ class PlayState extends MusicBeatState
 	private var curSong:String = "";
 
 	private var gfSpeed:Int = 1;
-	private var health:Float = 1;
 	private var combo:Int = 0;
 
 	private var healthBarBG:FlxSprite;
@@ -717,7 +717,7 @@ class PlayState extends MusicBeatState
 	function setHealth(hp:Float) {
 		final tempHealth:Float = health;
 
-		if(Math.abs(health - tempHealth) > 0.01 && SaveData.getData(SaveType.GRAPHICS)) {
+		if(Math.abs(health - tempHealth) > 0.01) {
 			healthTween = FlxTween.tween(this, {health: hp}, Math.abs(health - tempHealth), {ease: FlxEase.quadOut});
 		}else {
 			health = hp;

@@ -94,7 +94,7 @@
 	<assets path="assets/week6"    library="week6"    exclude="*.ogg" if="web"/>
 	<assets path="assets/week6"    library="week6"    exclude="*.mp3" unless="web"/>
 
-	<assets path = 'mod_assets' embed='true'/>
+	<assets path = 'mod_assets' embed='false'/>
 	<assets path = 'config' embed='false'/>
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
 
