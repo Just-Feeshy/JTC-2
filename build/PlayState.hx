@@ -44,6 +44,7 @@ import lime.utils.Assets;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
+import openfl.system.System;
 import feshixl.group.FeshEventGroup;
 import openfl.Lib;
 
@@ -224,6 +225,8 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function create() {
+		Cache.clearALLassets();
+
 		FlxG.mouse.visible = false;
 		//testSprite.visible = false;
 		modStorage = [];
@@ -501,17 +504,6 @@ class PlayState extends MusicBeatState
 		healthBarBG.scrollFactor.set();
 		add(healthBarBG);
 
-		healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
-			'health', 0, 2);
-		healthBar.scrollFactor.set();
-
-		if(ChooseFeeshmora.chooseSkin.get("health").length >= 1)
-			healthBar.createFilledBar(FlxColor.fromString(ChooseFeeshmora.avaiableColors[Std.int(ChooseFeeshmora.chooseSkin.get("health")[0])]), FlxColor.fromString(ChooseFeeshmora.avaiableColors[Std.int(ChooseFeeshmora.chooseSkin.get("health")[1])]));
-		else
-			healthBar.createFilledBar(FlxColor.RED, FlxColor.LIME);
-		// healthBar
-		add(healthBar);
-
 		//Feesh Miss
 		debugText = new FlxText(0, 0, FlxG.width, "Debug Pause State", 32);
 		debugText.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -526,7 +518,7 @@ class PlayState extends MusicBeatState
 		add(counterTxt);
 
 		iconP1 = new HealthIcon(SONG.player1, true, SONG.bpm);
-		iconP1.y = healthBar.y - (iconP1.height / 2);
+		
 
 		if(ChooseFeeshmora.chooseSkin.get("boyfriend").length >= 1) {
 
@@ -542,10 +534,21 @@ class PlayState extends MusicBeatState
 			);
 		}
 
-		add(iconP1);
-
 		iconP2 = new HealthIcon(SONG.player2, false);
+
+		healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+			'health', 0, 2);
+		healthBar.scrollFactor.set();
+
+		healthBar.createFilledBar(FlxColor.fromInt(getMainColorFromIcon(iconP2)), FlxColor.fromInt(getMainColorFromIcon(iconP1)));
+
+		// healthBar
+		add(healthBar);
+
+		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
+
+		add(iconP1);
 		add(iconP2);
 
 		strumLineNotes.cameras = [camNOTE];
@@ -573,7 +576,55 @@ class PlayState extends MusicBeatState
 		eventLoad();
 
 		super.create();
+
+		System.gc();
 	}
+
+	function getMainColorFromIcon(icon:HealthIcon):Int {
+        var colorMatrix:Null<Array<Array<Int>>> = new Array<Array<Int>>();
+        colorMatrix[0] = new Array<Int>();
+
+        for(column in 0...icon.frameWidth) {
+            for(row in 0...icon.frameHeight) {
+                var pixelColor:Int = icon.updateFramePixels().getPixel32(column, row);
+
+                if(colorMatrix[0].length > 0) {
+                    var index:Int = 0;
+
+                    if(pixelColor != 0) {
+                        while(index <= colorMatrix.length) {
+                            if(index < colorMatrix.length) {
+                                if(colorMatrix[index][0] == pixelColor) {
+                                    colorMatrix[index].push(pixelColor);
+                                    break;
+                                }
+                            }else {
+                                colorMatrix.push(new Array<Int>());
+                                colorMatrix[index].push(pixelColor);
+                                break;
+                            }
+
+                            index++;
+                        }
+                    }
+                }else {
+                    colorMatrix[0].push(pixelColor);
+                }
+            }
+        }
+
+        var maxLength:Int = 0;
+        var index:Int = 0;
+
+        for(i in 0...colorMatrix.length) {
+            if(maxLength < colorMatrix[i].length) {
+                maxLength = colorMatrix[i].length;
+                index = i;
+            }
+        }
+
+        return colorMatrix[index][0];
+    }
 
 	function schoolIntro(?dialogueBox:DialogueBox):Void
 	{

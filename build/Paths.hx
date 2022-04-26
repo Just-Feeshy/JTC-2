@@ -32,7 +32,7 @@ class Paths
 		if(bitLiteralMap.get("regular/splash") == null) {
 			var splashGraphic:FlxGraphic = FlxGraphic.fromBitmapData(BitmapData.fromFile('assets/shared/images/notes/regular/splash.png'));
 			splashGraphic.persist = true;
-			bitLiteralMap.set("regular/splash", splashGraphic);
+			bitLiteralMap.set("notes/regular/splash", splashGraphic);
 		}	
 		#end
 	}
@@ -161,14 +161,15 @@ class Paths
 			cacheFile = "cache/";
 
 		if(FileSystem.exists('mod_assets/images/$key.png')
-		&& FileSystem.exists('mod_assets/images/$key.xml'))
+		&& FileSystem.exists('mod_assets/images/$key.xml')) {
 			cacheFile = "";
+			library = "";
+		}
+
+		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key);
 
 		if(Assets.exists(file('images/' + cacheFile + key + '.txt', library))) {
-			if(ifImageCached(cacheFile + key) != null)
-				return FlxAtlasFrames.fromSpriteSheetPacker(ifImageCached(cacheFile + key), file('images/' + cacheFile + key + '.txt', library));
-			else
-				return FlxAtlasFrames.fromSpriteSheetPacker(image(cacheFile + key, library), file('images/' + cacheFile + key + '.txt', library));
+			return FlxAtlasFrames.fromSpriteSheetPacker(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.txt', library));
 		}else {
 			throw ("Error: could not locate asset - " + file('images/' + cacheFile + key + '.txt', library));
 			return null;
@@ -216,10 +217,11 @@ class Paths
 	}
 
 	static function ifImageCached(key:String):FlxGraphic {
-		if(Cache.getAsset(key, "") != null)
+		if(Cache.getAsset(key, "") != null) {
 			return Cache.getAsset(key, "");
-		else
+		}else {
 			return bitLiteralMap.get(key);
+		}
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)
@@ -236,36 +238,28 @@ class Paths
 			library = "";
 		}
 
-		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
+		var cachedImage:FlxGraphic = ifImageCached("notes/" + key);
 
-			if(ifImageCached(cacheFile + key) != null)
-				return FlxAtlasFrames.fromSparrow(ifImageCached(cacheFile + key), file('images/' + cacheFile + key + '.xml', library)); //fImageCached(key)
-			else {
-				return FlxAtlasFrames.fromSparrow(image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
-			}	
+		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
+			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
 		}else {
 			throw ("Error: could not locate asset - " + file('images/' + cacheFile + key + '.xml', library));
 			return null;
 		}
 	}
 
-	inline static public function getNoteAtlas(key:String) {
-		if(Assets.exists(image("notes/" + key))) {
-			if(ifImageCached("notes/" + key) != null)
-				return FlxAtlasFrames.fromSparrow(ifImageCached("notes/" + key), file('images/notes/$key.xml'));
-			else
-				return FlxAtlasFrames.fromSparrow(image("notes/" + key), file('images/notes/$key.xml'));
-		}else {
-			throw ("Error: could not locate asset - " + file('images/$key.xml'));
-			return null;
-		}
+	inline static public function getNoteAtlas(key:String, library:String = "shared") {
+		return getSparrowAtlas("notes/" + key, library);
 	}
 
-	static public function image(key:String, ?library:String)
-	{
-		if(Assets.exists(getPath('images/$key.png', IMAGE, library)))
-			return getPath('images/$key.png', IMAGE, library);
-		else {
+	static public function image(key:String, ?library:String):FlxGraphic {
+		if(Assets.exists(getPath('images/$key.png', IMAGE, library))) {
+			var path:String = getPath('images/$key.png', IMAGE, library);
+
+			var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
+			graphics.persist = false;
+			return graphics;
+		}else {
 			//throw ("Error: could not locate asset - " + file('images/$key.png', library));
 			return null;
 		}

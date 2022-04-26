@@ -97,7 +97,7 @@ class FlxUINumericStepper extends FlxUIGroup implements IFlxUIWidget implements 
 		}
 		if (value < min)
 		{
-			value = min;
+			value = 0;
 		}
 		if (value > max)
 		{

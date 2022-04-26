@@ -71,7 +71,7 @@ class CharacterCreatorState extends MusicBeatState {
     private var character:Character;
     private var characterStorage:FlxTypedGroup<Character>;
     private var characterAutosave:Map<String, ConfigCharacters>;
-    private var mapEditor:Map<String, Array<Array<Float>>>;
+    private var mapEditor:Map<String, Dynamic>;
     private var characterJSONs:Array<String> = new Array<String>();
     private var parser = new JsonParser<PreloadJSON>();
     private var healthBar:FlxBar;
@@ -96,24 +96,6 @@ class CharacterCreatorState extends MusicBeatState {
 
     private var _file:FileReference;
 
-    private final avaiableColors:Array<String> = [
-        "red",
-        "transparent",
-        "lime",
-        "blue",
-        "black",
-        "cyan",
-        "brown",
-        "gray",
-        "green",
-        "magenta",
-        "orange",
-        "pink",
-        "purple",
-        "white",
-        "yellow"
-    ];
-
     override function create() {
         FlxG.mouse.visible = true;
 
@@ -130,7 +112,7 @@ class CharacterCreatorState extends MusicBeatState {
 
         mapEditor = [
             "character" => [[0,0,0,0,0,0,0,0]],
-            "health" => [[1,3]]
+            "health" => 0
         ];
 
         characterAutosave = new Map<String, ConfigCharacters>();
@@ -273,8 +255,11 @@ class CharacterCreatorState extends MusicBeatState {
     var blueOffset:FlxUINumericStepper;
     var alphaOffset:FlxUINumericStepper;
 
-    var damageColor:FlxUINumericStepper;
-    var healthColor:FlxUINumericStepper;
+    var redColor:FlxUINumericStepper;
+    var blueColor:FlxUINumericStepper;
+    var greenColor:FlxUINumericStepper;
+
+    var plrHealth:FlxUINumericStepper;
 
     var xInput:FlxUINumericStepper;
     var yInput:FlxUINumericStepper;
@@ -301,10 +286,11 @@ class CharacterCreatorState extends MusicBeatState {
         blueOffset = new FlxUINumericStepper(10, 190, 1, 0, 0, 255, 0);
         alphaOffset = new FlxUINumericStepper(10, 150, 1, 0, 0, 255, 0);
 
-        damageColor = new FlxUINumericStepper(210, 60, 1, 1, 1, avaiableColors.length, 1);
-        healthColor = new FlxUINumericStepper(210, 80, 1, 3, 1, avaiableColors.length, 1);
+        redColor = new FlxUINumericStepper(210, 60, 1, 0, 0, 255, 0);
+        blueColor = new FlxUINumericStepper(210, 75, 1, 0, 0, 255, 0);
+        greenColor = new FlxUINumericStepper(210, 90, 1, 0, 0, 255, 0);
 
-        var plrHealth:FlxUINumericStepper = new FlxUINumericStepper(210, 140, 10, 50, 10, 100, 0);
+        plrHealth = new FlxUINumericStepper(210, 140, 10, 50, 10, 100, 0);
         plrHealth.value = health * 50;
         plrHealth.name = "health";
 
@@ -415,7 +401,10 @@ class CharacterCreatorState extends MusicBeatState {
             Std.int(mapEditor.get("character")[chooseSkin][7])
         );
 
-        healthBar.createFilledBar(FlxColor.fromString(avaiableColors[Std.int(mapEditor.get("health")[chooseSkin][0])]), FlxColor.fromString(avaiableColors[Std.int(mapEditor.get("health")[chooseSkin][1])]));
+        mapEditor.set("health", getMainColorFromIcon());
+
+        setColorOptions(mapEditor.get("health"));
+
         healthBar.percent = 50;
 
         var hpTextColor:FlxText = new FlxUIText(210, 30, 0, "Health Color Mapping", 11);
@@ -429,8 +418,9 @@ class CharacterCreatorState extends MusicBeatState {
         greenOffset.name = "greenOffset";
         blueOffset.name = "blueOffset";
         alphaOffset.name = "alphaOffset";
-        damageColor.name = "damage";
-        healthColor.name = "health";
+        redColor.name = "redColor";
+        blueColor.name = "blueColor";
+        greenColor.name = "greenColor";
 
         tab_group_display.add(bfTextColor);
         tab_group_display.add(redMulti);
@@ -441,8 +431,9 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_display.add(greenOffset);
         tab_group_display.add(blueOffset);
         tab_group_display.add(alphaOffset);
-        tab_group_display.add(damageColor);
-        tab_group_display.add(healthColor);
+        tab_group_display.add(redColor);
+        tab_group_display.add(blueColor);
+        tab_group_display.add(greenColor);
         tab_group_display.add(hpTextColor);
         tab_group_display.add(centerCamButton);
         tab_group_display.add(characterName);
@@ -690,7 +681,7 @@ class CharacterCreatorState extends MusicBeatState {
 
         tab_group_export.add(bfTextColor);
         tab_group_export.add(saveCharacter);
-        tab_group_export.add(saveColors);
+        //tab_group_export.add(saveColors);
 
         UI_thingy.addGroup(tab_group_export);
     }
@@ -788,6 +779,9 @@ class CharacterCreatorState extends MusicBeatState {
             character.isPlayer = true;
             character.cameras = [camGame];
             characterStorage.add(character);
+
+            mapEditor.set("health", getMainColorFromIcon());
+            setColorOptions(mapEditor.get("health"));
         }
 
         if(id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper)) {
@@ -835,7 +829,17 @@ class CharacterCreatorState extends MusicBeatState {
                 character._info.icon[2] = Std.int(nums.value);
                 characterAutosave.set(character.curCharacter, character._info);
             }else if(wname == 'health') {
-                health = nums.value / 50;
+                health = plrHealth.value / 50;
+            }
+            
+            if(wname == 'redColor' || wname == 'blueColor' || wname == 'greenColor') {
+                var color:Int = FlxColor.fromRGB(
+                    Std.int(redColor.value),
+                    Std.int(greenColor.value),
+                    Std.int(blueColor.value)
+                );
+
+                setColorOptions(color);
             }
 
             if(wname.endsWith('pos')) {
@@ -1148,20 +1152,73 @@ class CharacterCreatorState extends MusicBeatState {
                 Std.int(mapEditor.get("character")[chooseSkin][7])
             );
         }
+    }
 
-        if(mapEditor.get("health")[chooseSkin][0] != damageColor.value-1) {
-            mapEditor.get("health")[chooseSkin][0] = damageColor.value-1;
+    function getMainColorFromIcon():Int {
+        var colorMatrix:Null<Array<Array<Int>>> = new Array<Array<Int>>();
+        colorMatrix[0] = new Array<Int>();
 
-            healthBar.createFilledBar(FlxColor.fromString(avaiableColors[Std.int(mapEditor.get("health")[chooseSkin][0])]), FlxColor.fromString(avaiableColors[Std.int(mapEditor.get("health")[chooseSkin][1])]));
-            healthBar.percent = 50;
+        var tempChar:String = iconP1.animation.name;
+
+        remove(iconP1);
+        iconP1.destroy();
+        iconP1 = new HealthIcon(tempChar, true);
+        iconP1.y = healthBar.y - (iconP1.height / 2);
+        add(iconP1);
+
+        for(column in 0...iconP1.frameWidth) {
+            for(row in 0...iconP1.frameHeight) {
+                var pixelColor:Int = iconP1.updateFramePixels().getPixel32(column, row);
+
+                if(colorMatrix[0].length > 0) {
+                    var index:Int = 0;
+
+                    if(pixelColor != 0) {
+                        while(index <= colorMatrix.length) {
+                            if(index < colorMatrix.length) {
+                                if(colorMatrix[index][0] == pixelColor) {
+                                    colorMatrix[index].push(pixelColor);
+                                    break;
+                                }
+                            }else {
+                                colorMatrix.push(new Array<Int>());
+                                colorMatrix[index].push(pixelColor);
+                                break;
+                            }
+
+                            index++;
+                        }
+                    }
+                }else {
+                    colorMatrix[0].push(pixelColor);
+                }
+            }
         }
 
-        if(mapEditor.get("health")[chooseSkin][1] != healthColor.value-1) {
-            mapEditor.get("health")[chooseSkin][1] = healthColor.value-1;
+        var maxLength:Int = 0;
+        var index:Int = 0;
 
-            healthBar.createFilledBar(FlxColor.fromString(avaiableColors[Std.int(mapEditor.get("health")[chooseSkin][0])]), FlxColor.fromString(avaiableColors[Std.int(mapEditor.get("health")[chooseSkin][1])]));
-            healthBar.percent = 50;
+        for(i in 0...colorMatrix.length) {
+            if(maxLength < colorMatrix[i].length) {
+                maxLength = colorMatrix[i].length;
+                index = i;
+            }
         }
+
+        return colorMatrix[index][0];
+    }
+
+    function setColorOptions(getColor:Int) {
+        var color:FlxColor = new FlxColor(getColor);
+
+        mapEditor.set("health", getColor);
+
+        healthBar.createFilledBar(FlxColor.RED, color);
+        healthBar.percent = plrHealth.value;
+
+        redColor.value = color.red;
+        greenColor.value = color.green;
+        blueColor.value = color.blue;
     }
     
     function saveFile(fileType:FileType):Void {
