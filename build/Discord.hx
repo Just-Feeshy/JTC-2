@@ -75,7 +75,7 @@ class DiscordClient
 		DiscordRpc.presence({
 			details: details,
 			state: state,
-			largeImageKey: 'ww1',
+			largeImageKey: Paths.modJSON.mod.discord_rpc.largeImageKey,
 			largeImageText: "Feesh lol'",
 			smallImageKey : 'help',
 			smallImageText : 'help me',

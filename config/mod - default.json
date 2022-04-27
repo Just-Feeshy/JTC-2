@@ -14,7 +14,14 @@
             "mallEvil",
             "school",
             "schoolEvil"
-        ]
+        ],
+
+        "discord_rpc": {
+            "largeImageKey": "ww1",
+            "largeImageText": "lol",
+            "smallImageKey": "help",
+            "smallImageText": "help me"
+        }
     },
 
     "main_menu": {

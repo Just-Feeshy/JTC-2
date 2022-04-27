@@ -260,6 +260,7 @@ class MainMenuState extends MusicBeatState
 		}
 
 		super.onCreate();
+		
 		#else
 		for (i in 0...optionShit.length) {
 			var menuItem:FlxSprite = new FlxSprite(90, (i * 200));

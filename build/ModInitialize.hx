@@ -31,6 +31,7 @@ typedef Mod_Info = {
     var version:String;
 
     var stages:Array<String>;
+    var discord_rpc:DiscordRPC;
 }
 
 typedef Main_Menu = {
@@ -60,4 +61,11 @@ typedef AnimationInfo = {
     var framerate:Int;
     var looped:Bool;
     var offset:Array<Int>;
+}
+
+typedef DiscordRPC = {
+    var largeImageKey:String;
+    var largeImageText:String;
+    var smallImageKey:String;
+    var smallImageText:String;
 }

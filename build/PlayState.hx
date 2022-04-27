@@ -266,7 +266,7 @@ class PlayState extends MusicBeatState
 			else
 				hasWarning = false;
 		else
-			hasWarning = false;		
+			hasWarning = false;
 
 		if(SONG.modifiers == null)
 			SONG.modifiers = [];
@@ -1545,7 +1545,9 @@ class PlayState extends MusicBeatState
 			#if windows
 			if (startTimer.finished)
 			{
-				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength - Conductor.trackPosition);
+				songLength = FlxG.sound.music.length;
+
+				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, - songLength);
 			}
 			else
 			{
@@ -1723,7 +1725,7 @@ class PlayState extends MusicBeatState
 		}
 
 		#if windows
-		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength);
+		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength - FlxG.sound.music.time);
 		#end
 
 		if (FlxG.keys.justPressed.ENTER && startedCountdown && canPause)

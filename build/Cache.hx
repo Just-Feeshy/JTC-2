@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import openfl.display.BitmapData;
 import flixel.graphics.FlxGraphic;
+import flixel.addons.transition.FlxTransitionableState;
 import openfl.utils.Assets as OpenFlAssets;
 
 //Basically a class like Path
@@ -57,18 +58,29 @@ class Cache {
                 daBitmap = null;
             }
         }
+
+        openfl.Assets.cache.clear("songs");
     }
 
     static public function clearALLassets() {
+        /**
+        * Use `@:privateAccess` to get keys cached.
+        */
+
         @:privateAccess
 		for (key in FlxG.bitmap._cache.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
 
-            if(daBitmap != null && !theseAssets.exists(key)) {
-                FlxG.bitmap.removeKey(key);
-                daBitmap.destroy();
+            var transitionIn:FlxGraphic = FlxTransitionableState.defaultTransIn.tileData.asset;
+            var transitionOut:FlxGraphic = FlxTransitionableState.defaultTransOut.tileData.asset;
 
-                daBitmap = null;
+            if(daBitmap != transitionIn && daBitmap != transitionOut) {
+                if(daBitmap != null && !theseAssets.exists(key)) {
+                    FlxG.bitmap.removeKey(key);
+                    daBitmap.destroy();
+
+                    daBitmap = null;
+                }
             }
         }
 

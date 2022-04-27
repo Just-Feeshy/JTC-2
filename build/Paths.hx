@@ -253,6 +253,12 @@ class Paths
 	}
 
 	static public function image(key:String, ?library:String):FlxGraphic {
+		var cachedImage:FlxGraphic = ifImageCached("notes/" + key);
+
+		if(cachedImage != null) {
+			return cachedImage;
+		}
+
 		if(Assets.exists(getPath('images/$key.png', IMAGE, library))) {
 			var path:String = getPath('images/$key.png', IMAGE, library);
 
