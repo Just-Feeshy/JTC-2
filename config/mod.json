@@ -11,6 +11,7 @@
         ],
 
         "discord_rpc": {
+            "ClientID": "680224225809793025",
             "largeImageKey": "ww1",
             "largeImageText": "lol",
             "smallImageKey": "help",

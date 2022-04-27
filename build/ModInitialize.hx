@@ -64,6 +64,7 @@ typedef AnimationInfo = {
 }
 
 typedef DiscordRPC = {
+    var ClientID:String;
     var largeImageKey:String;
     var largeImageText:String;
     var smallImageKey:String;
