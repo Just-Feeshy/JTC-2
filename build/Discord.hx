@@ -39,8 +39,10 @@ class DiscordClient
 		DiscordRpc.presence({
 			details: "In the Menus",
 			state: null,
-			largeImageKey: 'icon',
-			largeImageText: "Friday Night Funkin'"
+			largeImageKey: Paths.modJSON.mod.discord_rpc.largeImageKey,
+			largeImageText: Paths.modJSON.mod.discord_rpc.largeImageText,
+			smallImageKey : Paths.modJSON.mod.discord_rpc.smallImageKey,
+			smallImageText : Paths.modJSON.mod.discord_rpc.smallImageText
 		});
 	}
 
@@ -76,9 +78,9 @@ class DiscordClient
 			details: details,
 			state: state,
 			largeImageKey: Paths.modJSON.mod.discord_rpc.largeImageKey,
-			largeImageText: "Feesh lol'",
-			smallImageKey : 'help',
-			smallImageText : 'help me',
+			largeImageText: Paths.modJSON.mod.discord_rpc.largeImageText,
+			smallImageKey : Paths.modJSON.mod.discord_rpc.smallImageKey,
+			smallImageText : Paths.modJSON.mod.discord_rpc.smallImageText,
 			// Obtained times are in milliseconds so they are divided so Discord can use it
 			startTimestamp : Std.int(startTimestamp / 1000),
             endTimestamp : Std.int(endTimestamp / 1000)
