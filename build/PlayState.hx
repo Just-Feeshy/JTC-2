@@ -54,7 +54,6 @@ import template.StageBuilder;
 
 import flash.filters.BlurFilter;
 import flash.filters.BitmapFilterQuality;
-import flash.filters.ShaderFilter;
 
 import SaveData.SaveType;
 import Feeshmora;

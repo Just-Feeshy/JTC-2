@@ -28,6 +28,8 @@ enum SaveType {
     CAMERA_MOVEMENT_MOD;
     GHOST_TAPPING;
     CUSTOM_MENU_BINDS;
+    GAMMA;
+    ERASE_DATA;
 }
 
 class SaveData {
@@ -57,6 +59,7 @@ class SaveData {
         FlxG.save.data.camMove = getData(SaveType.CAMERA_MOVEMENT_MOD);
         FlxG.save.data.ghostTapping = getData(SaveType.GHOST_TAPPING);
         FlxG.save.data.menuBinds = getData(SaveType.CUSTOM_MENU_BINDS);
+        FlxG.save.data.gamma = getData(SaveType.GAMMA);
 
         FlxG.save.flush();
     }
@@ -186,6 +189,11 @@ class SaveData {
                     FlxG.save.data.fpsMulti = 1;
 
                 return FlxG.save.data.fpsMulti;
+            case GAMMA:
+                if(FlxG.save.data.gamma == null)
+                    FlxG.save.data.gamma = 1;
+
+                return FlxG.save.data.gamma;
             default:
                 return null;
         }

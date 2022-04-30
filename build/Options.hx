@@ -11,6 +11,8 @@ import SaveData.SaveType;
 
 class Options extends Alphabet {
     public var optionIcon:FlxSprite;
+
+    public var inputDetector:Bool = false;
     
     public var optionTitle(default, set):Bool = false;
 
@@ -34,6 +36,7 @@ class Options extends Alphabet {
         optionIcon.animation.addByPrefix('off', "arrowRIGHT0");
         optionIcon.animation.addByPrefix('on', "red0");
         optionIcon.animation.addByPrefix('other', "blue0");
+        optionIcon.animation.addByPrefix('section', "green0");
         optionIcon.animation.addByPrefix('modifier', "purple0");
 
         if(SaveData.getData(saveType))

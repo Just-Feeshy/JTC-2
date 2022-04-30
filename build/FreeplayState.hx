@@ -234,7 +234,7 @@ class FreeplayState extends MusicBeatState
 			giveTick += elapsed;
 		#end
 
-		if (accepted)
+		if (accepted || FlxG.mouse.justPressed)
 		{
 			var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
 

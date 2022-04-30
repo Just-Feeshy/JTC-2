@@ -5,6 +5,7 @@ import flixel.FlxState;
 import sys.io.File;
 import openfl.Lib;
 import openfl.display.FPS;
+import openfl.filters.ShaderFilter;
 import haxe.Json;
 
 import SaveData.SaveType;
@@ -34,12 +35,20 @@ class Preloader extends FlxState {
         if(fpsMulti < 1)
             fpsMulti = 1;
 
+        SaveData.saveClient();
+
         Main.trueFramerate = FlxG.save.data.lowFps;
         Lib.current.stage.frameRate = Main.trueFramerate * fpsMulti;
 
+        var gammaShaders = new BuiltInShaders();
+        gammaShaders.shader = GAMMA;
+        gammaShaders.position = SaveData.getData(SaveType.GAMMA);
+
+        FlxG.game.setFilters([new ShaderFilter(gammaShaders)]);
+
         trace("FPS: " + Lib.current.stage.frameRate);
 
-        FlxG.autoPause = false;
+        //FlxG.autoPause = false;
 
         super.create();
 

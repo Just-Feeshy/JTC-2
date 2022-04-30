@@ -9,6 +9,9 @@ import flixel.FlxSprite;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 
+import openfl.filters.ShaderFilter;
+
+import BuiltInShaders.ShaderType;
 import SaveData.SaveType;
 
 using StringTools;
@@ -22,6 +25,10 @@ class OptionsSubState extends MusicBeatSubstate {
 		switch(type) {
 			case CUSTOM_KEYBINDS:
 				return new CustomKeys();
+			case ERASE_DATA:
+				return new EraseSave();
+			case GAMMA:
+				return new GammaMenu();
 			default:
 				return new OptionsSubState();
 		}
@@ -67,7 +74,7 @@ class CustomKeys extends OptionsSubState {
 		}});
 	}
 
-	override public function update(elapsed:Float) {
+	override function update(elapsed:Float) {
 		if(keys != null) {
 			colorSway += elapsed;
 
@@ -78,7 +85,6 @@ class CustomKeys extends OptionsSubState {
 				}
 			}
 		}
-
 
 		if(FlxG.keys.justPressed.ANY && !changingKeys) {
 			if(!saveryMapArray) {
@@ -155,5 +161,156 @@ class CustomKeys extends OptionsSubState {
 		keys = new Alphabet(0, 0, text, true, false);
 		keys.screenCenter();
 		add(keys);
+	}
+}
+
+class EraseSave extends OptionsSubState {
+	private var bgBlack:FlxSprite;
+
+	private var choices:Alphabet;
+	private var yourSure:FlxText;
+
+	private var section:Int = 0;
+
+	private var colorSway:Float = 0;
+
+	private var changingKeys:Bool = false;
+
+	public function new() {
+		super();
+
+		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bgBlack.alpha = 0;
+		add(bgBlack);
+
+		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
+			choices = new Alphabet(0, 0, "yes no", true, false);
+			choices.screenCenter();
+			add(choices);
+
+			yourSure = new FlxText(0, 0, FlxG.width, "Are you sure?", 32);
+			yourSure.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			yourSure.borderSize = 2;
+			yourSure.screenCenter(X);
+			yourSure.y = yourSure.getScreenCenter(Y) + (choices.height * 1.5);
+			add(yourSure);
+		}});
+	}
+
+	override function update(elapsed:Float) {
+		if(choices != null) {
+			colorSway += elapsed;
+
+			for(i in 0...choices.letters.length) {
+				if(choices.letters[i].spaceLocation == section) {
+					choices.letters[i].color = FlxColor.fromRGBFloat(0.6 + Math.sin(colorSway * Math.PI) * 0.4,
+					0.6 + Math.sin(colorSway * Math.PI) * 0.4, 0.6 + Math.sin(colorSway * Math.PI) * 0.4);
+				}else {
+					choices.letters[i].color = FlxColor.fromRGBFloat(1, 1, 1);
+				}
+			}
+		}
+
+		if(changingKeys == false) {
+			changingKeys = true;
+
+			if(controls.LEFT_P) {
+				section -= 1;
+			}
+
+			if(controls.RIGHT_P) {
+				section += 1;
+			}
+
+			section %= 2;
+
+			if(controls.ACCEPT) {
+				if(section == 0) {
+					FlxG.save.erase();
+					SaveData.saveClient();
+				}
+
+				close();
+			}
+
+			changingKeys = false;
+		}
+
+		super.update(elapsed);
+	}
+}
+
+class GammaMenu extends OptionsSubState {
+	private var bgBlack:FlxSprite;
+
+	private var valueTxt:FlxText;
+	private var tutorial:FlxText;
+
+	private var changingKeys:Bool = false;
+
+	public function new() {
+		super();
+
+		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bgBlack.alpha = 0;
+		add(bgBlack);
+
+		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
+			valueTxt = new FlxText(0, 0, FlxG.width, "< " + SaveData.getData(SaveType.GAMMA) + " >", 64);
+			valueTxt.setFormat("VCR OSD Mono", 64, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			valueTxt.borderSize = 4;
+			valueTxt.screenCenter();
+			add(valueTxt);
+
+			tutorial = new FlxText(0, 0, FlxG.width, "Use left and right keys", 32);
+			tutorial.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			tutorial.borderSize = 2;
+			tutorial.screenCenter(X);
+			tutorial.y = tutorial.getScreenCenter(Y) + (tutorial.height * 2);
+			add(tutorial);
+		}});
+	}
+
+	function getShaders():BuiltInShaders {
+		@:privateAccess
+		for(i in 0...FlxG.game._filters.length) {
+			var shaderFilter:ShaderFilter = cast(FlxG.game._filters[i], ShaderFilter);
+			var shaders:BuiltInShaders = cast (shaderFilter.shader, BuiltInShaders);
+
+			if(shaders.shader == ShaderType.GAMMA) {
+				return shaders;
+			}
+		}
+
+		throw "Error: Has GAMMA not been implemented";
+		return null;
+	}
+
+	override function update(elapsed:Float) {
+		if(!changingKeys) {
+			if(controls.LEFT_P) {
+				FlxG.save.data.gamma = FlxG.save.data.gamma - 0.1;
+				FlxG.save.data.gamma = Math.round(FlxG.save.data.gamma * 10) / 10;
+				valueTxt.text = "< " + SaveData.getData(SaveType.GAMMA) + " >";
+
+				var shaders:BuiltInShaders = getShaders();
+				shaders.position = SaveData.getData(SaveType.GAMMA);
+			}else if(controls.RIGHT_P) {
+				FlxG.save.data.gamma = FlxG.save.data.gamma + 0.1;
+				FlxG.save.data.gamma = Math.round(FlxG.save.data.gamma * 10)  / 10;
+				valueTxt.text = "< " + SaveData.getData(SaveType.GAMMA) + " >";
+
+				var shaders:BuiltInShaders = getShaders();
+				shaders.position = SaveData.getData(SaveType.GAMMA);
+			}
+
+			if(controls.BACK || controls.ACCEPT) {
+				changingKeys = true;
+
+				SaveData.saveClient();
+
+				close();
+			}
+		}
 	}
 }

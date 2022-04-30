@@ -30,9 +30,6 @@ import SaveData.SaveType;
 
 using StringTools;
 
-/**
-* Scratched Idea
-**/
 private typedef OptionSystem = {
     catagory:String,
     options:Array<Options>
@@ -59,7 +56,7 @@ private class StupidVibeShader extends FlxShader {
 }
 
 class OptionsMenuState extends MusicBeatState {
-	final imNotSure:Int = 10;
+	final imNotSure:Int = 0;
 
 	private var camBackground:BetterCams;
 	private var camNoBlur:BetterCams;
@@ -81,6 +78,14 @@ class OptionsMenuState extends MusicBeatState {
 	private var changeBlur:Bool = false;
 
 	private var settingTxt:String = "";
+
+	private var catalog:String;
+
+	public function new(?catalog:String = "none") {
+		this.catalog = catalog;
+
+		super();
+	}
 
     override public function create():Void {
 		FlxG.mouse.visible = true;
@@ -104,349 +109,415 @@ class OptionsMenuState extends MusicBeatState {
 
 		curOptionSection = new FlxTypedSpriteGroup<Options>();
 
-		optionList = [
-			{
-				catagory: "Everything",
-				options: [
-					new Options(0, 10, "Custom Keybinds", SaveType.CUSTOM_KEYBINDS, function(option:Options, pressed:Bool) {
-						option.ID = 0;
+		switch(this.catalog) {
+			case "game": {
+				optionList = [
+					{
+						catagory: this.catalog,
+						options: [
+							new Options(0, 10, "Custom Keybinds", SaveType.CUSTOM_KEYBINDS, function(option:Options, pressed:Bool) {
+								option.ID = 0;
 
-						if(option.optionIcon.animation.curAnim.name != "other")
-							option.optionIcon.animation.play("other");
-						
-						if(pressed) {
-							option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
-							option.optionSubState = OptionsSubState.newSubState(SaveType.CUSTOM_KEYBINDS);
-							option.optionSubState.cameras = [camSubState];
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+								
+								if(pressed) {
+									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+									option.optionSubState = OptionsSubState.newSubState(SaveType.CUSTOM_KEYBINDS);
+									option.optionSubState.cameras = [camSubState];
 
-							openSubStateBlur(option.optionSubState);
-						}
+									openSubStateBlur(option.optionSubState);
+								}
 
-						setting(option, "", option.ID);
-					}),
-					new Options(0, 20, "Preset Keybinds", SaveType.PRESET_KEYBINDS, function(option:Options, pressed:Bool) {
-						option.ID = 1;
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 20, "Preset Keybinds", SaveType.PRESET_KEYBINDS, function(option:Options, pressed:Bool) {
+								option.ID = 1;
 
-						if(option.optionIcon.animation.curAnim.name != "other")
-							option.optionIcon.animation.play("other");
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
 
-						if(pressed) {
-							FlxG.save.data.dfjk += 1;
-							setControls(option, option.ID);
-						}else {
-							setControls(option, option.ID);
-						}
+								if(pressed) {
+									FlxG.save.data.dfjk += 1;
+									setControls(option, option.ID);
+								}else {
+									setControls(option, option.ID);
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 30, "Minimal FPS Cap", SaveType.SET_FPS_DEFAULT, function(option:Options, pressed:Bool) {
-						option.ID = 2;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 30, "Minimal FPS Cap", SaveType.SET_FPS_DEFAULT, function(option:Options, pressed:Bool) {
+								option.ID = 2;
 
-						if(option.optionIcon.animation.curAnim.name != "other")
-							option.optionIcon.animation.play("other");
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
 
-						if(pressed) {
-							FlxG.save.data.lowFps += 10;
+								if(pressed) {
+									FlxG.save.data.lowFps += 10;
 
-							if(FlxG.save.data.lowFps > 100)
-								FlxG.save.data.lowFps = 60;
-							
-							Lib.current.stage.frameRate = FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER);
-							Main.framerate = FlxG.save.data.lowFps;
-						}
+									if(FlxG.save.data.lowFps > 100)
+										FlxG.save.data.lowFps = 60;
+									
+									Lib.current.stage.frameRate = FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER);
+									Main.framerate = FlxG.save.data.lowFps;
+								}
 
-						setting(option, Std.string(FlxG.save.data.lowFps), option.ID);
+								setting(option, Std.string(FlxG.save.data.lowFps), option.ID);
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 40, "Multiply FPS", SaveType.FPS_MULTIPLIER, function(option:Options, pressed:Bool) {
-						option.ID = 3;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 40, "Multiply FPS", SaveType.FPS_MULTIPLIER, function(option:Options, pressed:Bool) {
+								option.ID = 3;
 
-						if(option.optionIcon.animation.curAnim.name != "other")
-							option.optionIcon.animation.play("other");
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
 
-						if(pressed) {
-							FlxG.save.data.fpsMulti += 1;
+								if(pressed) {
+									FlxG.save.data.fpsMulti += 1;
 
-							if(FlxG.save.data.fpsMulti > 9)
-								FlxG.save.data.fpsMulti = 1;
+									if(FlxG.save.data.fpsMulti > 9)
+										FlxG.save.data.fpsMulti = 1;
 
-							Lib.current.stage.frameRate = FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER);
-							Main.framerate = FlxG.save.data.lowFps;
-						}
+									Lib.current.stage.frameRate = FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER);
+									Main.framerate = FlxG.save.data.lowFps;
+								}
 
-						setting(option, Std.string(FlxG.save.data.fpsMulti), option.ID);
+								setting(option, Std.string(FlxG.save.data.fpsMulti), option.ID);
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 50, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
-						option.ID = 4;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 50, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
+								option.ID = 4;
 
-						if(pressed)
-							FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
+								if(pressed)
+									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
 
-						if(!SaveData.getData(SaveType.PRESET_INPUTS)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play ("on");
-						}
+								if(!SaveData.getData(SaveType.PRESET_INPUTS)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play ("on");
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 60, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-						option.ID = 5;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 60, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
+								option.ID = 5;
 
-						if(pressed)
-							FlxG.save.data.helpme = !FlxG.save.data.helpme;
+								if(pressed)
+									FlxG.save.data.helpme = !FlxG.save.data.helpme;
 
-						if(!SaveData.getData(SaveType.DOWNSCROLL)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("on");
-						}
+								if(!SaveData.getData(SaveType.DOWNSCROLL)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 70, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-						option.ID = 6;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 70, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
+								option.ID = 6;
 
-						if(pressed)
-							FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
+								if(pressed)
+									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
 
-						if(!SaveData.getData(SaveType.SHOW_NOTE_SPLASH)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("on");
-						}
+								if(!SaveData.getData(SaveType.SHOW_NOTE_SPLASH)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 80, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-						option.ID = 7;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 80, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
+								option.ID = 7;
 
-						if(pressed)
-							FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
+								if(pressed)
+									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
 
-						if(!SaveData.getData(SaveType.SHOW_BOTTOM_BAR)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("on");
-						}
+								if(!SaveData.getData(SaveType.SHOW_BOTTOM_BAR)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 90, "High Quality", SaveType.GRAPHICS, function(option:Options, pressed:Bool) {
-						option.ID = 8;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new GhostTapping(0, 90, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
+								option.ID = 8;
 
-						if(pressed)
-							FlxG.save.data.showAntialiasing = !FlxG.save.data.showAntialiasing;
+								if(pressed)
+									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
 
-						if(!SaveData.getData(SaveType.GRAPHICS)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("on");
-						}
+								if(!SaveData.getData(SaveType.GHOST_TAPPING)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, 100, "Cache Assets", SaveType.CACHE_ASSETS, function(option:Options, pressed:Bool) {
-						option.ID = 9;
+								if(pressed)
+									isChangingOption = false;
+							})
+						]
+					}
+				];
+			}case "graphics": {
+				optionList = [
+					{
+						catagory: this.catalog,
+						options: [
+							new Options(0, 0, "High Quality", SaveType.GRAPHICS, function(option:Options, pressed:Bool) {
+								option.ID = 0;
 
-						if(pressed)
-							FlxG.save.data.preload = !FlxG.save.data.preload;
+								if(pressed)
+									FlxG.save.data.showAntialiasing = !FlxG.save.data.showAntialiasing;
 
-						if(!SaveData.getData(SaveType.CACHE_ASSETS)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("on");
-						}
+								if(!SaveData.getData(SaveType.GRAPHICS)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new GhostTapping(0, 110, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-						option.ID = 10;
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 10, "Gamma", SaveType.GAMMA, function(option:Options, pressed:Bool) {
+								option.ID = 1;
 
-						if(pressed)
-							FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
+								if(pressed) {
+									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+									option.optionSubState = OptionsSubState.newSubState(SaveType.GAMMA);
+									option.optionSubState.cameras = [camSubState];
 
-						if(!SaveData.getData(SaveType.GHOST_TAPPING)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("on");
-						}
+									openSubStateBlur(option.optionSubState);
+								}
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 1) * 10) + 60, "Modifiers", SaveType.NONE, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 1;
+								setting(option, "", option.ID);
+							})
+						]
+					}
+				];
+			}case "modifiers": {
+				optionList = [
+					{
+						catagory: this.catalog,
+						options: [
+							new Options(0, ((imNotSure + 0) * 10) + 120, "Opposite Chart", SaveType.FLIP_CHART_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure;
 
-						option.optionIcon.kill();
-						option.optionTitle = true;
-						setting(option, "", option.ID);
-					}),
-					new Options(0, ((imNotSure + 1) * 10) + 120, "Opposite Chart", SaveType.FLIP_CHART_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 2;
+								if(pressed)
+									FlxG.save.data.flip = !FlxG.save.data.flip;
 
-						if(pressed)
-							FlxG.save.data.flip = !FlxG.save.data.flip;
+								if(!SaveData.getData(SaveType.FLIP_CHART_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.FLIP_CHART_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 1) * 10) + 120, "Custom Hell", SaveType.CUSTOM_HELL_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 1;
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 2) * 10) + 120, "Custom Hell", SaveType.CUSTOM_HELL_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 3;
+								if(pressed)
+									FlxG.save.data.customhell = !FlxG.save.data.customhell;
 
-						if(pressed)
-							FlxG.save.data.customhell = !FlxG.save.data.customhell;
+								if(!SaveData.getData(SaveType.CUSTOM_HELL_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.CUSTOM_HELL_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 2) * 10) + 120, "Get Good Scrub", SaveType.PERFECT_MODE_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 2;
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 3) * 10) + 120, "Get Good Scrub", SaveType.PERFECT_MODE_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 4;
+								if(pressed)
+									FlxG.save.data.perfectMode = !FlxG.save.data.perfectMode;
 
-						if(pressed)
-							FlxG.save.data.perfectMode = !FlxG.save.data.perfectMode;
+								if(!SaveData.getData(SaveType.PERFECT_MODE_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.PERFECT_MODE_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 3) * 10) + 120, "Both Health Gain", SaveType.FAIR_BATTLE_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 3;
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 4) * 10) + 120, "Both Health Gain", SaveType.FAIR_BATTLE_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 5;
+								if(pressed)
+									FlxG.save.data.fair = !FlxG.save.data.fair;
 
-						if(pressed)
-							FlxG.save.data.fair = !FlxG.save.data.fair;
+								if(!SaveData.getData(SaveType.FAIR_BATTLE_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.FAIR_BATTLE_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 4) * 10) + 120, "Fade In Notes", SaveType.FADE_BATTLE_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 4;
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 5) * 10) + 120, "Fade In Notes", SaveType.FADE_BATTLE_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 6;
+								if(pressed)
+									FlxG.save.data.fade = !FlxG.save.data.fade;
 
-						if(pressed)
-							FlxG.save.data.fade = !FlxG.save.data.fade;
+								if(!SaveData.getData(SaveType.FADE_BATTLE_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.FADE_BATTLE_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 5) * 10) + 120, "No Blue Balls", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 5;
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 6) * 10) + 120, "No Blue Balls", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 7;
+								if(pressed)
+									FlxG.save.data.safeballs = !FlxG.save.data.safeballs;
 
-						if(pressed)
-							FlxG.save.data.safeballs = !FlxG.save.data.safeballs;
+								if(!SaveData.getData(SaveType.NO_BLUE_BALLS_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.NO_BLUE_BALLS_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 6) * 10) + 120, "Simon Says", SaveType.BLIND_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 6;
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 7) * 10) + 120, "Simon Says", SaveType.BLIND_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 8;
+								if(pressed)
+									FlxG.save.data.blind = !FlxG.save.data.blind;
 
-						if(pressed)
-							FlxG.save.data.blind = !FlxG.save.data.blind;
+								if(!SaveData.getData(SaveType.BLIND_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.BLIND_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 7) * 10) + 120, "Wobbly Notes", SaveType.X_WOBBLE_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 7;
 
-						if(pressed)
-							isChangingOption = false;
-					}),
-					new Options(0, ((imNotSure + 8) * 10) + 120, "Wobbly Notes", SaveType.X_WOBBLE_MOD, function(option:Options, pressed:Bool) {
-						option.ID = imNotSure + 9;
+								if(pressed)
+									FlxG.save.data.xWobble = !FlxG.save.data.xWobble;
 
-						if(pressed)
-							FlxG.save.data.xWobble = !FlxG.save.data.xWobble;
+								if(!SaveData.getData(SaveType.X_WOBBLE_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
 
-						if(!SaveData.getData(SaveType.X_WOBBLE_MOD)) {
-							setting(option, "Off", option.ID);
-							option.optionIcon.animation.play("off");
-						}else {
-							setting(option, "On", option.ID);
-							option.optionIcon.animation.play("modifier");
-						}
+								if(pressed)
+									isChangingOption = false;
+							})
+						]
+					}
+				];
+			}default: {
+				optionList = [
+					{
+						catagory: this.catalog,
+						options: [
+							new Options(0, 0, "Gameplay And Performance", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 0;
 
-						if(pressed)
-							isChangingOption = false;
-					})
-				]
+								if(option.optionIcon.animation.curAnim.name != "section")
+									option.optionIcon.animation.play("section");
+
+								if(pressed)
+									FlxG.switchState(new OptionsMenuState("game"));
+
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 10, "Graphics And Window", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 1;
+
+								if(option.optionIcon.animation.curAnim.name != "section")
+									option.optionIcon.animation.play("section");
+
+								if(pressed)
+									FlxG.switchState(new OptionsMenuState("graphics"));
+
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 10, "Modifiers", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 2;
+
+								if(option.optionIcon.animation.curAnim.name != "section")
+									option.optionIcon.animation.play("section");
+
+								if(pressed)
+									FlxG.switchState(new OptionsMenuState("modifiers"));
+
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 20, "Erase Save Data", SaveType.CACHE_ASSETS, function(option:Options, pressed:Bool) {
+								option.ID = 3;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed) {
+									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+									option.optionSubState = OptionsSubState.newSubState(SaveType.ERASE_DATA);
+									option.optionSubState.cameras = [camSubState];
+
+									openSubStateBlur(option.optionSubState);
+								}
+
+								setting(option, "", option.ID);
+							})
+						]
+					}
+				];
 			}
-		];
+		}
 
 		setCat(curCatalog);
 
@@ -606,7 +677,7 @@ class OptionsMenuState extends MusicBeatState {
 		if((downP || FlxG.mouse.wheel < -0.1) && !isChangingOption)
 			changeSelection(1);
 
-		if(accepted && !isChangingOption) {
+		if((accepted || FlxG.mouse.justPressed) && !isChangingOption) {
 			isChangingOption = true;
 			
 			settingTxt = "";
@@ -625,7 +696,12 @@ class OptionsMenuState extends MusicBeatState {
 		}
 
 		if(escaped && !isChangingOption) {
-			FlxG.switchState(new MainMenuState());
+			switch(catalog) {
+				case "none":
+					FlxG.switchState(new MainMenuState());
+				default:
+					FlxG.switchState(new OptionsMenuState());
+			}
 		}
 
 		if(optionSetting != null) {

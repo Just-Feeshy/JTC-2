@@ -25,6 +25,10 @@
         }
     },
 
+    "background_images": [
+        "space"
+    ],
+
     "main_menu": {
         "background_image": "",
         "bpm": 97

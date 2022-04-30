@@ -6,7 +6,7 @@ import openfl.display.BitmapData;
 enum ShaderType {
     MINING_SIM_LOADING;
     GLIM_SELECTION;
-    GAUSSIAN_BLUR;
+    GAMMA;
 }
 
 class BuiltInShaders extends FlxShader {
@@ -23,6 +23,7 @@ class BuiltInShaders extends FlxShader {
 
         const int MINING_SIM_LOADING = 0;
         const int GLIM_SELECTION = 1;
+        const int GAUSSIAN_BLUR = 2;
 
         mat2 setAngle(float rotation) {
             return mat2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
@@ -66,11 +67,18 @@ class BuiltInShaders extends FlxShader {
             }
         }
 
+        void gamma() {
+            vec3 maf = pow(color().rgb, vec3(1.0 / shaderValue));
+            gl_FragColor = vec4(maf, 1.0);
+        }
+
         void main() {
             if(shad == MINING_SIM_LOADING)
                 robloxIntro();
             else if(shad == GLIM_SELECTION)
                 objSelect();
+            else if(shad == GAUSSIAN_BLUR)
+                gamma();
         }
     ')
     public function new(?spriteBit:BitmapData):Void {
