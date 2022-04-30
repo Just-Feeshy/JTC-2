@@ -23,7 +23,7 @@ class BuiltInShaders extends FlxShader {
 
         const int MINING_SIM_LOADING = 0;
         const int GLIM_SELECTION = 1;
-        const int GAUSSIAN_BLUR = 2;
+        const int GAMMA = 2;
 
         mat2 setAngle(float rotation) {
             return mat2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
@@ -77,7 +77,7 @@ class BuiltInShaders extends FlxShader {
                 robloxIntro();
             else if(shad == GLIM_SELECTION)
                 objSelect();
-            else if(shad == GAUSSIAN_BLUR)
+            else if(shad == GAMMA)
                 gamma();
         }
     ')

@@ -302,6 +302,9 @@ class OptionsMenuState extends MusicBeatState {
 							new Options(0, 10, "Gamma", SaveType.GAMMA, function(option:Options, pressed:Bool) {
 								option.ID = 1;
 
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
 								if(pressed) {
 									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
 									option.optionSubState = OptionsSubState.newSubState(SaveType.GAMMA);

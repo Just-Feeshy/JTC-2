@@ -29,7 +29,7 @@ class CacheState extends MusicBeatState {
 
     override function create() {
         menuBG = new FlxSprite();
-		menuBG.loadGraphic(Paths.image("default_loading_screen"));
+		menuBG.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(0, Paths.modJSON.background_images.length - 1)]));
         menuBG.screenCenter();
 		add(menuBG);
 
