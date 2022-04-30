@@ -8,7 +8,6 @@ typedef ConfigDef = {
 	var main:String;
 
 	var mod:Mod_Info;
-    var background_images:Array<String>;
 	var main_menu:Main_Menu;
     var title_menu:Title_Menu;
 
