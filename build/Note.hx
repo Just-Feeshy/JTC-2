@@ -803,7 +803,7 @@ class Note extends FlxSprite
 						return this;
 					}
 				}else {
-					if((Math.abs(list[i].getNoteY()) < Note.swagWidth)
+					if((Math.abs(list[i].getNoteY()) < Note.swagWidth || Math.abs(getNoteY()) < Note.swagWidth)
 					&& (prevNote != this && (!prevNote.canBeHit && noteData != prevNote.noteData))) {
 						return this;
 					}

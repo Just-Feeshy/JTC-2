@@ -565,10 +565,10 @@ class Controls extends FlxActionSet
 				inline bindKeys(Control.CHEAT, []);
 			case None: // nothing
 			case Custom:
-				inline bindKeys(Control.UP, [SaveData.getData(CUSTOM_KEYBINDS)[0], FlxKey.UP]);
-				inline bindKeys(Control.DOWN, [SaveData.getData(CUSTOM_KEYBINDS)[1], FlxKey.DOWN]);
-				inline bindKeys(Control.LEFT, [SaveData.getData(CUSTOM_KEYBINDS)[2], FlxKey.LEFT]);
-				inline bindKeys(Control.RIGHT, [SaveData.getData(CUSTOM_KEYBINDS)[3], FlxKey.RIGHT]);
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_KEYBINDS)[3]);
 				inline bindKeys(Control.ACCEPT, [G, Z, FlxKey.SPACE, ENTER]);
 				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
 				inline bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);
@@ -576,7 +576,7 @@ class Controls extends FlxActionSet
 				inline bindKeys(Control.CHEAT, []);
 		}
 
-		inline bindKeys(Control.SPACE, [FlxKey.fromStringMap.get(SaveData.getData(CUSTOM_MENU_BINDS)[0].split(" ")[0])]);
+		inline bindKeys(Control.SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
 
 		#end
 	}

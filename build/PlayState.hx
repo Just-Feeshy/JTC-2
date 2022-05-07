@@ -2649,15 +2649,6 @@ class PlayState extends MusicBeatState
 		curSection += 1;
 	}
 
-	private function getSpeed(note:Note):Int {
-		if(CustomNoteHandler.dontHitNotes.contains(note.noteAbstract))
-			return 20;
-
-		if(note.howSpeed * Note.AFFECTED_SCROLLSPEED > 5)return 5;
-		else if(note.howSpeed * Note.AFFECTED_SCROLLSPEED < 1)return 20;
-		else return 10;
-	}
-
 	function getKey(key:FlxKey) {
 		if(key != FlxKey.NONE) {
 			for(i in 0...keysMatrix.length) {

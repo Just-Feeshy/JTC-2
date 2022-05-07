@@ -107,8 +107,6 @@ class CustomKeys extends OptionsSubState {
 				}
 			}
 
-			trace(keyString);
-
 			var trimmed:String = keyString;
 			keyString = trimmed.rtrim();
 
@@ -122,7 +120,6 @@ class CustomKeys extends OptionsSubState {
 
 				for(i in 0...keyLength) {
 					FlxG.save.data.customKeys[i + keyIndex][0] = FlxKey.fromStringMap.get(keyString.split(" ")[i]);
-					trace(keyString.split(" ")[i]);
 				}
 
 				SaveData.saveClient();
@@ -141,10 +138,6 @@ class CustomKeys extends OptionsSubState {
 
 					reloadKeys(keyString);
 				}else {
-					//for(i in 0...FlxG.save.data.customKeys.length) {
-					//	trace(FlxKey.toStringMap.get(FlxG.save.data.customKeys[i][0]));
-					//}
-
 					SaveData.saveClient();
 					close();
 				}
