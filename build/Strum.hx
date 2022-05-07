@@ -51,6 +51,7 @@ class Strum extends FlxSprite {
 		if (animation.finished && ifOpponent && animation.curAnim.name == 'confirm') {
 			animation.play('static');
 			centerOffsets();
+			centerOrigin();
 		}
 
 		if((animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && PlayState.modifierCheckList('blind effect'))

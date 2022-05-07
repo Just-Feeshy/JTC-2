@@ -165,8 +165,17 @@ class SaveData {
 
                 return FlxG.save.data.preload;
             case CUSTOM_KEYBINDS:
-                if(FlxG.save.data.customKeys == null)
-                    FlxG.save.data.customKeys = '';
+                if(FlxG.save.data.customKeys == null) {
+                    FlxG.save.data.customKeys = new Array<Array<FlxKey>>();
+
+                    FlxG.save.data.customKeys = [
+                        [FlxKey.A, FlxKey.LEFT], //LEFT
+                        [FlxKey.S, FlxKey.DOWN], //DOWN
+                        [FlxKey.W, FlxKey.UP], //UP
+                        [FlxKey.D, FlxKey.RIGHT], //RIGHT
+                        [FlxKey.SPACE] //SPACE
+                    ];
+                }
 
                 return FlxG.save.data.customKeys;
             case CAMERA_MOVEMENT_MOD:
@@ -181,7 +190,7 @@ class SaveData {
                 return FlxG.save.data.ghostTapping;
             case CUSTOM_MENU_BINDS:
                 if(FlxG.save.data.menuBinds == null)
-                    FlxG.save.data.menuBinds = ["SPACE",  "PLUS MINUS"];
+                    FlxG.save.data.menuBinds = ["PLUS", "MINUS"];
 
                 return FlxG.save.data.menuBinds;
             case FPS_MULTIPLIER:

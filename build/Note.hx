@@ -597,8 +597,12 @@ class Note extends FlxSprite
 			}
 		}
 
+		public function getNoteY():Float {
+			return ((Conductor.trackPosition - Compile.getNoteTime(strumTime)) * Note.AFFECTED_SCROLLSPEED) * (0.45 * FlxMath.roundDecimal(howSpeed, 2));
+		}
+
 		public function getNoteStrumPosition(offset:Int):Float {
-			return Math.max(0, (((Conductor.trackPosition - strumTime) * (-0.45 * FlxMath.roundDecimal(howSpeed * AFFECTED_SCROLLSPEED, 2)))-offset)/100);
+			return Math.max(0, (((Conductor.trackPosition - strumTime) * (-0.45 * FlxMath.roundDecimal(howSpeed * AFFECTED_SCROLLSPEED, 2))) - offset)/100);
 		}
 
 		public function setVisibility(visibility:Bool) {
@@ -630,6 +634,10 @@ class Note extends FlxSprite
 
 							strumNote.setColorTransform(1,1,1,1,0,0,0,0);
 							strumNote.animation.play('confirm');
+
+							strumNote.centerOffsets();
+							strumNote.offset.x -= 13;
+							strumNote.offset.y -= 13;
 						}
 				}
 			}
@@ -762,9 +770,10 @@ class Note extends FlxSprite
 	
 			if (mustPress)
 			{
-					// 0.6 is better than 0.5
+				var safeHit:Float = 0.5;
+
 				if (Compile.getNoteTime(strumTime) > Conductor.trackPosition - Conductor.safeZoneOffset
-					&& Compile.getNoteTime(strumTime) < Conductor.trackPosition + (Conductor.safeZoneOffset * 0.6))
+					&& Compile.getNoteTime(strumTime) < Conductor.trackPosition + (Conductor.safeZoneOffset * safeHit))
 					canBeHit = true;
 				else
 					canBeHit = false;
@@ -785,6 +794,23 @@ class Note extends FlxSprite
 				if (alpha > 0.3)
 					alpha = 0.3;
 			}
+		}
+
+		public function getNoteHittable(list:Array<Note>):Note {
+			for(i in 0...list.length) {
+				if(SaveData.getData(PRESET_INPUTS) == true) {
+					if(Math.abs(list[i].strumTime - strumTime) < 1 && (prevNote != this && (!prevNote.canBeHit && noteData != prevNote.noteData))) {
+						return this;
+					}
+				}else {
+					if((Math.abs(list[i].getNoteY()) < Note.swagWidth)
+					&& (prevNote != this && (!prevNote.canBeHit && noteData != prevNote.noteData))) {
+						return this;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		override function destroy() {

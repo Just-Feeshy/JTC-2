@@ -47,21 +47,28 @@ class CustomKeys extends OptionsSubState {
 
 	private var changingKeys:Bool = false;
 
-	private var saveryMapArray:Bool = false;
 	private var changedOnSteam:Int = 0;
+
+	private var keyString:String;
+
+	private var keyLength:Int = 4;
+	private var keyIndex:Int = 0;
 
 	public function new() {
 		super();
 
-		if(FlxG.save.data.customKeys.split(" ").length < 4)
-			FlxG.save.data.customKeys = "A S W D";
+		keyString = keysToString(SaveData.getData(SaveType.CUSTOM_KEYBINDS), 0, keyLength);
+
+		if(keyString.split(" ").length < keyLength) {
+			keyString = "A S W D";
+		}
 
 		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		bgBlack.alpha = 0;
 		add(bgBlack);
 
 		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-			keys = new Alphabet(0, 0, FlxG.save.data.customKeys, true, false);
+			keys = new Alphabet(0, 0, keyString, true, false);
 			keys.screenCenter();
 			add(keys);
 
@@ -87,69 +94,63 @@ class CustomKeys extends OptionsSubState {
 		}
 
 		if(FlxG.keys.justPressed.ANY && !changingKeys) {
-			if(!saveryMapArray) {
-				changingKeys = true;
+			changingKeys = true;
 
-				var containKeys:Array<String> = FlxG.save.data.customKeys.split(" ");
-				FlxG.save.data.customKeys = "";
+			var containKeys:Array<String> = keyString.split(" ");
+			keyString = "";
 
-				for(i in 0...containKeys.length) {
-					if(section == i) {
-						FlxG.save.data.customKeys += FlxKey.toStringMap.get(FlxG.keys.firstJustPressed()) + " ";
-					}else {
-						FlxG.save.data.customKeys += containKeys[i] + " ";
-					}
+			for(i in 0...keyLength) {
+				if(section == i) {
+					keyString += FlxKey.toStringMap.get(FlxG.keys.firstJustPressed()) + " ";
+				}else {
+					keyString += containKeys[i] + " ";
+				}
+			}
+
+			trace(keyString);
+
+			var trimmed:String = keyString;
+			keyString = trimmed.rtrim();
+
+			section += 1;
+			reloadKeys(keyString);
+
+			if(section >= keyLength) {
+				section = 0;
+
+				keyString.rtrim();
+
+				for(i in 0...keyLength) {
+					FlxG.save.data.customKeys[i + keyIndex][0] = FlxKey.fromStringMap.get(keyString.split(" ")[i]);
+					trace(keyString.split(" ")[i]);
 				}
 
-				var trimmed:String = FlxG.save.data.customKeys;
-				FlxG.save.data.customKeys = trimmed.rtrim();
+				SaveData.saveClient();
 
-				section += 1;
-				reloadKeys(FlxG.save.data.customKeys);
+				if(changedOnSteam == 0)
+					howManyKey.text = "Middle Keybind For Five Keys";
 
-				if(section >= containKeys.length) {
+				if(keyLength > 1) {
+					keyLength = 1;
+					keyIndex = 4;
+					keyString = keysToString(SaveData.getData(SaveType.CUSTOM_KEYBINDS), 4, keyLength);
 					section = 0;
+
+					if(keyString.split(" ").length < keyLength)
+						keyString = "SPACE";
+
+					reloadKeys(keyString);
+				}else {
+					//for(i in 0...FlxG.save.data.customKeys.length) {
+					//	trace(FlxKey.toStringMap.get(FlxG.save.data.customKeys[i][0]));
+					//}
+
 					SaveData.saveClient();
-					saveryMapArray = true;
-
-					reloadKeys(FlxG.save.data.menuBinds[changedOnSteam]);
-
-					if(changedOnSteam == 0)
-						howManyKey.text = "Middle Keybind For Five Keys";
-				}
-
-				changingKeys = false;
-			}else if(saveryMapArray) {
-				changingKeys = true;
-
-				var containKeys:Array<String> = FlxG.save.data.menuBinds[changedOnSteam].split(" ");
-
-				FlxG.save.data.menuBinds[changedOnSteam] = "";
-
-				for(i in 0...containKeys.length) {
-					if(section == i) {
-						FlxG.save.data.menuBinds[changedOnSteam] += FlxKey.toStringMap.get(FlxG.keys.firstJustPressed()) + " ";
-					}else {
-						FlxG.save.data.menuBinds[changedOnSteam] += containKeys[i] + " ";
-					}
-				}
-
-				var trimmed:String = FlxG.save.data.menuBinds[changedOnSteam];
-				FlxG.save.data.menuBinds[changedOnSteam] = trimmed.rtrim();
-
-				section += 1;
-				reloadKeys(FlxG.save.data.menuBinds[changedOnSteam]);
-
-				if(section >= containKeys.length) {
-					section = 0;
-					SaveData.saveClient();
-					saveryMapArray = true;
-
 					close();
 				}
-
-				changingKeys = false;
 			}
+
+			changingKeys = false;
 		}
 
 		super.update(elapsed);
@@ -161,6 +162,17 @@ class CustomKeys extends OptionsSubState {
 		keys = new Alphabet(0, 0, text, true, false);
 		keys.screenCenter();
 		add(keys);
+	}
+
+	function keysToString(key:Array<Array<FlxKey>>, index:Int, length:Int):String {
+		var stringKeys:String = "";
+
+		for(i in index...(index + length)) {
+			stringKeys += FlxKey.toStringMap.get(key[i][0]) + " ";
+		}
+
+		stringKeys.rtrim();
+		return stringKeys;
 	}
 }
 

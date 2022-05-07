@@ -1,0 +1,137 @@
+{
+    "file": "BOYFRIENDCOOL.xml",
+
+    "animations": {
+        "idle": {
+            "prefix": "BF idle dance",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, -5]
+        },
+
+        "singUP": {
+            "prefix": "BF NOTE UP0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-29, 27]
+        },
+
+        "singRIGHT": {
+            "prefix": "BF NOTE RIGHT0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-38, -7]
+        },
+
+        "singLEFT": {
+            "prefix": "BF NOTE LEFT0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [12, -6]
+        },
+
+        "singDOWN": {
+            "prefix": "BF NOTE DOWN0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-10, -50]
+        },
+
+        "singUPmiss": {
+            "prefix": "BF NOTE UP MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-29, 27]
+        },
+
+        "singRIGHTmiss": {
+            "prefix": "BF NOTE RIGHT MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-30, 21]
+        },
+
+        "singLEFTmiss": {
+            "prefix": "BF NOTE LEFT MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [12, 24]
+        },
+
+        "singDOWNmiss": {
+            "prefix": "BF NOTE DOWN MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-11, -19]
+        },
+
+        "hey": {
+            "prefix": "BF HEY",
+            "framerate": 24,
+            "looped": false,
+            "offset": [7, 4]
+        },
+
+        "firstDeath": {
+            "prefix": "BF dies",
+            "framerate": 24,
+            "looped": false,
+            "offset": [37, 11]
+        },
+
+        "deathLoop": {
+            "prefix": "BF Dead Loop",
+            "framerate": 24,
+            "looped": false,
+            "offset": [37, 5]
+        },
+
+        "deathConfirm": {
+            "prefix": "BF Dead confirm",
+            "framerate": 24,
+            "looped": false,
+            "offset": [37, 69]
+        },
+
+        "scared": {
+            "prefix": "BF idle shaking",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-4, 0]
+        },
+
+        "poisoned": {
+            "prefix": "boyfriend poisoned",
+            "framerate": 48,
+            "looped": false,
+            "offset": [0, -20]
+        },
+
+        "dodge": {
+            "prefix": "boyfriend dodge",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-5, -12]
+        },
+
+        "bfBEEP": {
+            "prefix": "boyfriend scared",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-5, 0]
+        }
+    },
+
+    "position": {
+        "x": 0,
+        "y": 350,
+        "camPosX": 0,
+        "camPosY": 0
+    },
+
+    "icon": [0, 1, 26],
+
+    "playAnim": "idle",
+    "isPlayer": true,
+    "pixel": false
+}
