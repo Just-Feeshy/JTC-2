@@ -485,7 +485,6 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_animations.name = 'E Animations';
 
         fileInput = new FlxUIInputText(40, 20, 80, character._info.file, 8);
-        var fileInputTxt:FlxText = new FlxText(40, fileInput.y - 15, "file: ");
 
         var changeButton:FlxUIButton = new FlxUIButton(40, fileInput.y + 20, "Save/Load", function() {
             changeCharacter = true;
@@ -635,8 +634,7 @@ class CharacterCreatorState extends MusicBeatState {
         canBePixel = new FlxUICheckBox(140, shadowMan.y + 80, null, null, "Is Pixel");
         canBePixel.checked = characterAutosave.get(character.curCharacter).pixel;
 
-        tab_group_animations.add(fileInput);
-        tab_group_animations.add(fileInputTxt);
+        //tab_group_animations.add(fileInput);
         tab_group_animations.add(changeButton);
         tab_group_animations.add(animationDropTxt);
         tab_group_animations.add(playAnimButton);
@@ -1220,7 +1218,7 @@ class CharacterCreatorState extends MusicBeatState {
         greenColor.value = color.green;
         blueColor.value = color.blue;
     }
-    
+
     function saveFile(fileType:FileType):Void {
         var data:String;
 
@@ -1248,6 +1246,18 @@ class CharacterCreatorState extends MusicBeatState {
         }
     }
 
+    function _characterSelect():Void {
+        _file = new FileReference();
+       
+        /*
+        var filters:FILEFILTERS = {
+            count: 1,
+            descriptions: ["XML files"],
+            extensions: ["*.xml"]
+        };
+        */
+    }
+
     function exploreFile():Void {
         _file = new FileReference();
         _file.addEventListener(Event.SELECT, onSelect, false, 0, true);
@@ -1259,31 +1269,28 @@ class CharacterCreatorState extends MusicBeatState {
         _file.browse();
     }
 
-    function onSaveComplete(_):Void {
+    function onSelect(_):Void {
+        trace("test");
+    }
+
+    function clearEvent():Void {
         _file.removeEventListener(Event.COMPLETE, onSaveComplete);
         _file.removeEventListener(Event.CANCEL, onCancel);
         _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
         _file = null;
+    }
+
+    function onSaveComplete(_):Void {
+        clearEvent();
         FlxG.log.notice("Successfully saved CHARACTER DATA.");
     }
 
     function onCancel(_):Void {
-        _file.removeEventListener(Event.COMPLETE, onSaveComplete);
-        _file.removeEventListener(Event.CANCEL, onCancel);
-        _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-        _file = null;
+        clearEvent();
     }
 
     function onSaveError(_):Void {
-        _file.removeEventListener(Event.COMPLETE, onSaveComplete);
-        _file.removeEventListener(Event.CANCEL, onCancel);
-        _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-        _file = null;
+        clearEvent();
         FlxG.log.error("Problem saving Character data");
-    }
-
-
-    function onSelect(E:Event):Void {
-
     }
 }
