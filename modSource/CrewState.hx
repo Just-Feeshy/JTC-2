@@ -104,8 +104,9 @@ class CrewState extends MusicBeatState {
                 if (tween != null) {
                     tween.cancel();
                     tween.destroy();
-                    allTweens.remove(tween);
                 }
+
+                allTweens.remove(tween);
             }
         }
     }

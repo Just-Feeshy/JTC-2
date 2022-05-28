@@ -3,6 +3,7 @@ package;
 import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.FlxState;
+import flixel.util.FlxColor;
 
 import sys.thread.Thread;
 import sys.FileSystem;
@@ -19,6 +20,9 @@ class CacheState extends MusicBeatState {
 	var stopMusic = false;
 
     var menuBG:FlxSprite;
+    var loading:Alphabet;
+
+    var colorSway:Float = 0;
 
     public function new(target:FlxState, stopMusic:Bool) {
         super();
@@ -29,15 +33,32 @@ class CacheState extends MusicBeatState {
 
     override function create() {
         menuBG = new FlxSprite();
-		menuBG.loadGraphic(Paths.image("default_loading_screen"));
+		menuBG.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(1, Paths.modJSON.background_images.length - 1)]));
         menuBG.screenCenter();
 		add(menuBG);
+
+        loading = new Alphabet(0, 0, "Loading", true, false, 30);
+        loading.y = (FlxG.height - loading.height) - 30;
+        add(loading);
 
 		Thread.create(() -> {
 			cacheStuff();
 		});
 
         super.create();
+    }
+
+    override function update(elapsed:Float) {
+        if(loading != null) {
+            loading.forEach(function(spr:FlxSprite) {
+                spr.color = FlxColor.fromRGBFloat(0.6 + Math.sin(colorSway * Math.PI) * 0.4,
+                0.6 + Math.sin(colorSway * Math.PI) * 0.4, 0.6 + Math.sin(colorSway * Math.PI) * 0.4);
+            });
+
+            colorSway += elapsed;
+        }
+        
+        super.update(elapsed);
     }
 
     function cacheStuff() {

@@ -129,7 +129,7 @@
         "camPosY": 0
     },
 
-    "icon": [0, 1, 26],
+    "icon": [26, 1, 26],
 
     "playAnim": "idle",
     "isPlayer": true,
