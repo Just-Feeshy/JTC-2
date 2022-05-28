@@ -13,6 +13,7 @@ class CrewState extends MusicBeatState {
     var allTweens:Array<FlxTween>;
 
     var curSelected:Int = 0;
+    var selected:Bool = false;
 
     public function new() {
         super();
@@ -47,12 +48,20 @@ class CrewState extends MusicBeatState {
     override function update(elapsed:Float) {
         super.update(elapsed);
 
-        if(controls.RIGHT_P) {
-            changeDev(1);
-        }
-        
-        if(controls.LEFT_P) {
-            changeDev(-1);
+        if(!selected) {
+            selected = true;
+
+            if(controls.RIGHT_P) {
+                changeDev(1);
+            }
+            
+            if(controls.LEFT_P) {
+                changeDev(-1);
+            }
+
+            if(controls.ESCAPE) {
+                FlxG.switchState(new MainMenuState());
+            }
         }
     }
 
