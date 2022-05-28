@@ -29,6 +29,21 @@ enum abstract Action(String) to String from String
 	var RIGHT_R = "right-release";
 	var DOWN_R = "down-release";
 	var SPACE_R = "space-release";
+	var GAME_UP = "up";
+	var GAME_LEFT = "left";
+	var GAME_RIGHT = "right";
+	var GAME_SPACE = "space";
+	var GAME_DOWN = "down";
+	var GAME_UP_P = "up-press";
+	var GAME_SPACE_P = "space-press";
+	var GAME_LEFT_P = "left-press";
+	var GAME_RIGHT_P = "right-press";
+	var GAME_DOWN_P = "down-press";
+	var GAME_UP_R = "up-release";
+	var GAME_LEFT_R = "left-release";
+	var GAME_RIGHT_R = "right-release";
+	var GAME_DOWN_R = "down-release";
+	var GAME_SPACE_R = "space-release";
 	var ACCEPT = "accept";
 	var BACK = "back";
 	var PAUSE = "pause";
@@ -54,6 +69,21 @@ abstract Action(String) to String from String
 	var RIGHT_R = "right-release";
 	var DOWN_R = "down-release";
 	var SPACE_R = "space-release";
+	var GAME_UP = "up";
+	var GAME_LEFT = "left";
+	var GAME_RIGHT = "right";
+	var GAME_SPACE = "space";
+	var GAME_DOWN = "down";
+	var GAME_UP_P = "up-press";
+	var GAME_SPACE_P = "space-press";
+	var GAME_LEFT_P = "left-press";
+	var GAME_RIGHT_P = "right-press";
+	var GAME_DOWN_P = "down-press";
+	var GAME_UP_R = "up-release";
+	var GAME_LEFT_R = "left-release";
+	var GAME_RIGHT_R = "right-release";
+	var GAME_DOWN_R = "down-release";
+	var GAME_SPACE_R = "space-release";
 	var ACCEPT = "accept";
 	var BACK = "back";
 	var PAUSE = "pause";
@@ -80,6 +110,11 @@ enum Control
 	RIGHT;
 	DOWN;
 	SPACE;
+	GAME_UP;
+	GAME_LEFT;
+	GAME_RIGHT;
+	GAME_DOWN;
+	GAME_SPACE;
 	RESET;
 	ACCEPT;
 	BACK;
@@ -116,6 +151,21 @@ class Controls extends FlxActionSet
 	var _rightR = new FlxActionDigital(Action.RIGHT_R);
 	var _downR = new FlxActionDigital(Action.DOWN_R);
 	var _spaceR = new FlxActionDigital(Action.SPACE_R);
+	var _game_up = new FlxActionDigital(Action.GAME_UP);
+	var _game_left = new FlxActionDigital(Action.GAME_LEFT);
+	var _game_right = new FlxActionDigital(Action.GAME_RIGHT);
+	var _game_down = new FlxActionDigital(Action.GAME_DOWN);
+	var _game_space = new FlxActionDigital(Action.GAME_SPACE);
+	var _game_upP = new FlxActionDigital(Action.GAME_UP_P);
+	var _game_leftP = new FlxActionDigital(Action.GAME_LEFT_P);
+	var _game_rightP = new FlxActionDigital(Action.GAME_RIGHT_P);
+	var _game_downP = new FlxActionDigital(Action.GAME_DOWN_P);
+	var _game_spaceP = new FlxActionDigital(Action.GAME_SPACE_P);
+	var _game_upR = new FlxActionDigital(Action.GAME_UP_R);
+	var _game_leftR = new FlxActionDigital(Action.GAME_LEFT_R);
+	var _game_rightR = new FlxActionDigital(Action.GAME_RIGHT_R);
+	var _game_downR = new FlxActionDigital(Action.GAME_DOWN_R);
+	var _game_spaceR = new FlxActionDigital(Action.GAME_SPACE_R);
 	var _accept = new FlxActionDigital(Action.ACCEPT);
 	var _back = new FlxActionDigital(Action.BACK);
 	var _pause = new FlxActionDigital(Action.PAUSE);
@@ -206,6 +256,81 @@ class Controls extends FlxActionSet
 	inline function get_SPACE_R()
 		return _spaceR.check();
 
+	public var GAME_UP(get, never):Bool;
+
+	inline function get_GAME_UP()
+		return _game_up.check();
+
+	public var GAME_LEFT(get, never):Bool;
+
+	inline function get_GAME_LEFT()
+		return _game_left.check();
+
+	public var GAME_RIGHT(get, never):Bool;
+
+	inline function get_GAME_RIGHT()
+		return _game_right.check();
+
+	public var GAME_DOWN(get, never):Bool;
+
+	inline function get_GAME_DOWN()
+		return _game_down.check();
+
+	public var GAME_SPACE(get, never):Bool;
+
+	inline function get_GAME_SPACE()
+		return _game_space.check();
+
+	public var GAME_SPACE_P(get, never):Bool;
+
+	inline function get_GAME_SPACE_P()
+		return _game_spaceP.check();
+
+	public var GAME_UP_P(get, never):Bool;
+
+	inline function get_GAME_UP_P()
+		return _game_upP.check();
+
+	public var GAME_LEFT_P(get, never):Bool;
+
+	inline function get_GAME_LEFT_P()
+		return _game_leftP.check();
+
+	public var GAME_RIGHT_P(get, never):Bool;
+
+	inline function get_GAME_RIGHT_P()
+		return _game_rightP.check();
+
+	public var GAME_DOWN_P(get, never):Bool;
+
+	inline function get_GAME_DOWN_P()
+		return _game_downP.check();
+
+	public var GAME_UP_R(get, never):Bool;
+
+	inline function get_GAME_UP_R()
+		return _game_upR.check();
+
+	public var GAME_LEFT_R(get, never):Bool;
+
+	inline function get_GAME_LEFT_R()
+		return _game_leftR.check();
+
+	public var GAME_RIGHT_R(get, never):Bool;
+
+	inline function get_GAME_RIGHT_R()
+		return _game_rightR.check();
+
+	public var GAME_DOWN_R(get, never):Bool;
+
+	inline function get_GAME_DOWN_R()
+		return _game_downR.check();
+
+	public var GAME_SPACE_R(get, never):Bool;
+
+	inline function get_GAME_SPACE_R()
+		return _game_spaceR.check();
+
 	public var ACCEPT(get, never):Bool;
 
 	inline function get_ACCEPT()
@@ -251,6 +376,21 @@ class Controls extends FlxActionSet
 		add(_rightR);
 		add(_downR);
 		add(_spaceR);
+		add(_game_up);
+		add(_game_left);
+		add(_game_right);
+		add(_game_down);
+		add(_game_space);
+		add(_game_upP);
+		add(_game_leftP);
+		add(_game_rightP);
+		add(_game_downP);
+		add(_game_spaceP);
+		add(_game_upR);
+		add(_game_leftR);
+		add(_game_rightR);
+		add(_game_downR);
+		add(_game_spaceR);
 		add(_accept);
 		add(_back);
 		add(_pause);
@@ -282,6 +422,22 @@ class Controls extends FlxActionSet
 		add(_rightR);
 		add(_downR);
 		add(_spaceR);
+		add(_accept);
+		add(_game_up);
+		add(_game_left);
+		add(_game_right);
+		add(_game_down);
+		add(_game_space);
+		add(_game_upP);
+		add(_game_leftP);
+		add(_game_rightP);
+		add(_game_downP);
+		add(_game_spaceP)
+		add(_game_upR);
+		add(_game_leftR);
+		add(_game_rightR);
+		add(_game_downR);
+		add(_game_spaceR);
 		add(_accept);
 		add(_back);
 		add(_pause);
@@ -336,12 +492,17 @@ class Controls extends FlxActionSet
 			case DOWN: _down;
 			case LEFT: _left;
 			case RIGHT: _right;
+			case SPACE: _space;
+			case GAME_UP: _game_up;
+			case GAME_DOWN: _game_down;
+			case GAME_LEFT: _game_left;
+			case GAME_RIGHT: _game_right;
+			case GAME_SPACE: _game_space;
 			case ACCEPT: _accept;
 			case BACK: _back;
 			case PAUSE: _pause;
 			case RESET: _reset;
 			case CHEAT: _cheat;
-			case SPACE: _space;
 		}
 	}
 
@@ -377,6 +538,30 @@ class Controls extends FlxActionSet
 				func(_down, PRESSED);
 				func(_downP, JUST_PRESSED);
 				func(_downR, JUST_RELEASED);
+			case SPACE:
+				func(_space, PRESSED);
+				func(_spaceP, JUST_PRESSED);
+				func(_spaceR, JUST_RELEASED);
+			case GAME_UP:
+				func(_game_up, PRESSED);
+				func(_game_upP, JUST_PRESSED);
+				func(_game_upR, JUST_RELEASED);
+			case GAME_LEFT:
+				func(_game_left, PRESSED);
+				func(_game_leftP, JUST_PRESSED);
+				func(_game_leftR, JUST_RELEASED);
+			case GAME_RIGHT:
+				func(_game_right, PRESSED);
+				func(_game_rightP, JUST_PRESSED);
+				func(_game_rightR, JUST_RELEASED);
+			case GAME_DOWN:
+				func(_game_down, PRESSED);
+				func(_game_downP, JUST_PRESSED);
+				func(_game_downR, JUST_RELEASED);
+			case GAME_SPACE:
+				func(_game_space, PRESSED);
+				func(_game_spaceP, JUST_PRESSED);
+				func(_game_spaceR, JUST_RELEASED);
 			case ACCEPT:
 				func(_accept, JUST_PRESSED);
 			case BACK:
@@ -387,10 +572,6 @@ class Controls extends FlxActionSet
 				func(_reset, JUST_PRESSED);
 			case CHEAT:
 				func(_cheat, JUST_PRESSED);
-			case SPACE:
-				func(_space, PRESSED);
-				func(_spaceP, JUST_PRESSED);
-				func(_spaceR, JUST_RELEASED);
 		}
 	}
 
@@ -536,39 +717,55 @@ class Controls extends FlxActionSet
 		switch (scheme)
 		{
 			case Solo:
-				inline bindKeys(Control.UP, [J, FlxKey.UP]);
-				inline bindKeys(Control.DOWN, [F, FlxKey.DOWN]);
-				inline bindKeys(Control.LEFT, [D, FlxKey.LEFT]);
-				inline bindKeys(Control.RIGHT, [K, FlxKey.RIGHT]);
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_UP, [J, FlxKey.UP]);
+				inline bindKeys(Control.GAME_DOWN, [F, FlxKey.DOWN]);
+				inline bindKeys(Control.GAME_LEFT, [D, FlxKey.LEFT]);
+				inline bindKeys(Control.GAME_RIGHT, [K, FlxKey.RIGHT]);
 				inline bindKeys(Control.ACCEPT, [G, Z, FlxKey.SPACE, ENTER]);
 				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
 				inline bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);
 				inline bindKeys(Control.RESET, [R]);
 				inline bindKeys(Control.CHEAT, []);
 			case Duo(true):
-				inline bindKeys(Control.UP, [W, FlxKey.UP]);
-				inline bindKeys(Control.DOWN, [S, FlxKey.DOWN]);
-				inline bindKeys(Control.LEFT, [A, FlxKey.LEFT]);
-				inline bindKeys(Control.RIGHT, [D, FlxKey.RIGHT]);
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_UP, [W, FlxKey.UP]);
+				inline bindKeys(Control.GAME_DOWN, [S, FlxKey.DOWN]);
+				inline bindKeys(Control.GAME_LEFT, [A, FlxKey.LEFT]);
+				inline bindKeys(Control.GAME_RIGHT, [D, FlxKey.RIGHT]);
 				inline bindKeys(Control.ACCEPT, [G, Z, FlxKey.SPACE, ENTER]);
 				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
 				inline bindKeys(Control.RESET, [R]);
 				inline bindKeys(Control.CHEAT, []);
 			case Duo(false):
-				inline bindKeys(Control.UP, [ONE, NUMPADONE, FlxKey.UP]);
-				inline bindKeys(Control.DOWN, [X, FlxKey.DOWN]);
-				inline bindKeys(Control.LEFT, [Z, FlxKey.LEFT]);
-				inline bindKeys(Control.RIGHT, [TWO, NUMPADTWO, FlxKey.RIGHT]);
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_UP, [ONE, NUMPADONE, FlxKey.UP]);
+				inline bindKeys(Control.GAME_DOWN, [X, FlxKey.DOWN]);
+				inline bindKeys(Control.GAME_LEFT, [Z, FlxKey.LEFT]);
+				inline bindKeys(Control.GAME_RIGHT, [TWO, NUMPADTWO, FlxKey.RIGHT]);
 				inline bindKeys(Control.ACCEPT, [G, O, FlxKey.SPACE, ENTER]);
 				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE, P]);
 				inline bindKeys(Control.RESET, [R]);
 				inline bindKeys(Control.CHEAT, []);
 			case None: // nothing
 			case Custom:
-				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_KEYBINDS)[0]);
-				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_KEYBINDS)[1]);
-				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_KEYBINDS)[2]);
-				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_KEYBINDS)[3]);
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_LEFT, SaveData.getData(CUSTOM_KEYBINDS)[0]);
+				inline bindKeys(Control.GAME_DOWN, SaveData.getData(CUSTOM_KEYBINDS)[1]);
+				inline bindKeys(Control.GAME_UP, SaveData.getData(CUSTOM_KEYBINDS)[2]);
+				inline bindKeys(Control.GAME_RIGHT, SaveData.getData(CUSTOM_KEYBINDS)[3]);
 				inline bindKeys(Control.ACCEPT, [G, Z, FlxKey.SPACE, ENTER]);
 				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
 				inline bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);

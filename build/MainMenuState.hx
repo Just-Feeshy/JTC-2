@@ -308,8 +308,10 @@ class MainMenuState extends MusicBeatState
 
 			secondCam.setPosition(FlxMath.lerp(secondCam.x, camFollow.x, lerpTick), FlxMath.lerp(secondCam.y, camFollow.y, lerpTick));
 
+			#if debug
 			if(FlxG.keys.justPressed.SEVEN)
 				FlxG.switchState(new CharacterCreatorState());
+			#end
 
 			if (controls.UP_P) {
 				FlxG.sound.play(Paths.sound('scrollMenu'));

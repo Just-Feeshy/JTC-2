@@ -5,9 +5,10 @@ import Discord.DiscordClient;
 #end
 
 import Song.SwagSong;
+import Controls.Control;
+
 import flixel.addons.ui.FlxUIText;
 import flixel.FlxG;
-import Controls.Control;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxAxes;
 import flixel.input.gamepad.FlxGamepad;
@@ -39,6 +40,7 @@ import openfl.events.IOErrorEvent;
 import openfl.events.IOErrorEvent;
 import openfl.net.FileFilter;
 import openfl.net.FileReference;
+import openfl.utils.ByteArray;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.Json;
@@ -276,7 +278,12 @@ class CharacterCreatorState extends MusicBeatState {
         var tab_group_display = new FlxUI(null, UI_thingy);
 		tab_group_display.name = 'Display';
 
-        var bfTextColor:FlxText = new FlxUIText(10, 30, 0, "Character Color Mapping", 11);
+        var getXML:FlxUIButton = new FlxUIButton(10, 50, "Get .xml", _characterSelectXML);
+        getXML.color = FlxColor.fromRGB(10, 10, 255);
+        getXML.label.color = FlxColor.WHITE;
+        getXML.resize(getXML.width, getXML.height * 1.5);
+
+        var bfTextColor:FlxText = new FlxUIText(10, 30, 0, "Character Stuff");
         redMulti = new FlxUINumericStepper(10, 60, 0.1, 1, 0, 255, 1);
         greenMulti = new FlxUINumericStepper(10, 80, 0.1, 1, 0, 255, 1);
         blueMulti = new FlxUINumericStepper(10, 100, 0.1, 1, 0, 255, 1);
@@ -290,7 +297,7 @@ class CharacterCreatorState extends MusicBeatState {
         blueColor = new FlxUINumericStepper(210, 75, 1, 0, 0, 255, 0);
         greenColor = new FlxUINumericStepper(210, 90, 1, 0, 0, 255, 0);
 
-        plrHealth = new FlxUINumericStepper(210, 140, 10, 50, 10, 100, 0);
+        plrHealth = new FlxUINumericStepper(210, 50, 10, 50, 10, 100, 0);
         plrHealth.value = health * 50;
         plrHealth.name = "health";
 
@@ -379,36 +386,13 @@ class CharacterCreatorState extends MusicBeatState {
         var dedIxonTxt:FlxText = new FlxText(dedIxon.x + 65, dedIxon.y, "Dead Icon");
         var hapeyIxonTxt:FlxText = new FlxText(hapeyIxon.x + 65, hapeyIxon.y, "Hapey Icon");
 
-        iconP1.setColorTransform(
-            mapEditor.get("character")[chooseSkin][0],
-            mapEditor.get("character")[chooseSkin][1],
-            mapEditor.get("character")[chooseSkin][2],
-            mapEditor.get("character")[chooseSkin][3],
-            Std.int(mapEditor.get("character")[chooseSkin][4]),
-            Std.int(mapEditor.get("character")[chooseSkin][5]),
-            Std.int(mapEditor.get("character")[chooseSkin][6]),
-            Std.int(mapEditor.get("character")[chooseSkin][7])
-        );
-
-        character.setColorTransform(
-            mapEditor.get("character")[chooseSkin][0],
-            mapEditor.get("character")[chooseSkin][1],
-            mapEditor.get("character")[chooseSkin][2],
-            mapEditor.get("character")[chooseSkin][3],
-            Std.int(mapEditor.get("character")[chooseSkin][4]),
-            Std.int(mapEditor.get("character")[chooseSkin][5]),
-            Std.int(mapEditor.get("character")[chooseSkin][6]),
-            Std.int(mapEditor.get("character")[chooseSkin][7])
-        );
-
-        mapEditor.set("health", getMainColorFromIcon());
+        mapEditor.set("health", CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
 
         setColorOptions(mapEditor.get("health"));
 
         healthBar.percent = 50;
 
-        var hpTextColor:FlxText = new FlxUIText(210, 30, 0, "Health Color Mapping", 11);
-        var hpTextChange:FlxText = new FlxUIText(210, 110, 0, "Health Bar Settings", 11);
+        var hpTextChange:FlxText = new FlxUIText(210, 30, 0, "Health Bar Settings");
 
         redMulti.name = "redMulti";
         greenMulti.name = "greenMulti";
@@ -423,18 +407,6 @@ class CharacterCreatorState extends MusicBeatState {
         greenColor.name = "greenColor";
 
         tab_group_display.add(bfTextColor);
-        tab_group_display.add(redMulti);
-        tab_group_display.add(blueMulti);
-        tab_group_display.add(greenMulti);
-        tab_group_display.add(alphaMulti);
-        tab_group_display.add(redOffset);
-        tab_group_display.add(greenOffset);
-        tab_group_display.add(blueOffset);
-        tab_group_display.add(alphaOffset);
-        tab_group_display.add(redColor);
-        tab_group_display.add(blueColor);
-        tab_group_display.add(greenColor);
-        tab_group_display.add(hpTextColor);
         tab_group_display.add(centerCamButton);
         tab_group_display.add(characterName);
         tab_group_display.add(createCharacterButton);
@@ -459,11 +431,11 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_display.add(hapeyIxonTxt);
         tab_group_display.add(flipSides);
         tab_group_display.add(characterSelector);
+        tab_group_display.add(getXML);
 
         UI_thingy.addGroup(tab_group_display);
     }
 
-    var fileInput:FlxUIInputText;
     var animationDrop:FlxUIDropDownMenu;
     var lockAnimCheck:FlxUICheckBox;
     var prefixInput:FlxUIInputText;
@@ -484,9 +456,7 @@ class CharacterCreatorState extends MusicBeatState {
         var tab_group_animations = new FlxUI(null, UI_thingy);
         tab_group_animations.name = 'E Animations';
 
-        fileInput = new FlxUIInputText(40, 20, 80, character._info.file, 8);
-
-        var changeButton:FlxUIButton = new FlxUIButton(40, fileInput.y + 20, "Save/Load", function() {
+        var changeButton:FlxUIButton = new FlxUIButton(40, 40, "Refresh", function() {
             changeCharacter = true;
 
             if(character._info.animations.get(animationDrop.selectedLabel) != null) {
@@ -497,7 +467,6 @@ class CharacterCreatorState extends MusicBeatState {
                 character._info.animations.get(animationDrop.selectedLabel).offset[1] = Std.int(offsetYInput.value);
             }
 
-            character._info.file = fileInput.text;
             character._info.isPlayer = checkPlayable.checked;
             character._info.pixel = canBePixel.checked;
 
@@ -518,7 +487,7 @@ class CharacterCreatorState extends MusicBeatState {
         
         var animationDropTxt:FlxText = new FlxText(240, animationDrop.y - 15, "Custom Animation:");
 
-        var playAnimButton:FlxUIButton = new FlxUIButton(40, fileInput.y + 50, "Play Animation", function() {
+        var playAnimButton:FlxUIButton = new FlxUIButton(40, 70, "Play Animation", function() {
             playCustomAnim = true;
 
             character.playAnim(animationDrop.selectedLabel);
@@ -551,10 +520,10 @@ class CharacterCreatorState extends MusicBeatState {
         deleteAnimButton.label.color = FlxColor.WHITE;
         deleteAnimButton.resize(deleteAnimButton.width, deleteAnimButton.height * 1.5);
 
-        var animNameInput:FlxUIInputText = new FlxUIInputText(140, fileInput.y, 80, "", 8);
+        var animNameInput:FlxUIInputText = new FlxUIInputText(140, 20, 80, "", 8);
         var animNameTxt:FlxText = new FlxText(animNameInput.x, animNameInput.y - 15, "Anim Name:");
 
-        var newAnimButton:FlxUIButton = new FlxUIButton(140, fileInput.y + 20, "Create New", function() {
+        var newAnimButton:FlxUIButton = new FlxUIButton(140, 40, "Create New", function() {
             if(!character.animations.contains(animNameInput.text)) {
                 changeCharacter = true;
 
@@ -634,7 +603,6 @@ class CharacterCreatorState extends MusicBeatState {
         canBePixel = new FlxUICheckBox(140, shadowMan.y + 80, null, null, "Is Pixel");
         canBePixel.checked = characterAutosave.get(character.curCharacter).pixel;
 
-        //tab_group_animations.add(fileInput);
         tab_group_animations.add(changeButton);
         tab_group_animations.add(animationDropTxt);
         tab_group_animations.add(playAnimButton);
@@ -759,8 +727,6 @@ class CharacterCreatorState extends MusicBeatState {
             else
                 hapeyIxon.value = characterAutosave.get(character.curCharacter).icon[0];
 
-            fileInput.text = character._info.file;
-
             if(character.animations.length > 0)
                 animationDrop.setData(FlxUIDropDownMenu.makeStrIdLabelArray(character.animations, true));
             else
@@ -778,7 +744,7 @@ class CharacterCreatorState extends MusicBeatState {
             character.cameras = [camGame];
             characterStorage.add(character);
 
-            mapEditor.set("health", getMainColorFromIcon());
+            mapEditor.set("health", CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
             setColorOptions(mapEditor.get("health"));
         }
 
@@ -1152,60 +1118,6 @@ class CharacterCreatorState extends MusicBeatState {
         }
     }
 
-    function getMainColorFromIcon():Int {
-        var colorMatrix:Null<Array<Array<Int>>> = new Array<Array<Int>>();
-        colorMatrix[0] = new Array<Int>();
-
-        var tempChar:String = iconP1.animation.name;
-
-        remove(iconP1);
-        iconP1.destroy();
-        iconP1 = new HealthIcon(tempChar, true);
-        iconP1.y = healthBar.y - (iconP1.height / 2);
-        add(iconP1);
-
-        for(column in 0...iconP1.frameWidth) {
-            for(row in 0...iconP1.frameHeight) {
-                var pixelColor:Int = iconP1.updateFramePixels().getPixel32(column, row);
-
-                if(colorMatrix[0].length > 0) {
-                    var index:Int = 0;
-
-                    if(pixelColor != 0) {
-                        while(index <= colorMatrix.length) {
-                            if(index < colorMatrix.length) {
-                                if(colorMatrix[index][0] == pixelColor) {
-                                    colorMatrix[index].push(pixelColor);
-                                    break;
-                                }
-                            }else {
-                                colorMatrix.push(new Array<Int>());
-                                colorMatrix[index].push(pixelColor);
-                                break;
-                            }
-
-                            index++;
-                        }
-                    }
-                }else {
-                    colorMatrix[0].push(pixelColor);
-                }
-            }
-        }
-
-        var maxLength:Int = 0;
-        var index:Int = 0;
-
-        for(i in 0...colorMatrix.length) {
-            if(maxLength < colorMatrix[i].length) {
-                maxLength = colorMatrix[i].length;
-                index = i;
-            }
-        }
-
-        return colorMatrix[index][0];
-    }
-
     function setColorOptions(getColor:Int) {
         var color:FlxColor = new FlxColor(getColor);
 
@@ -1246,37 +1158,42 @@ class CharacterCreatorState extends MusicBeatState {
         }
     }
 
-    function _characterSelect():Void {
+    function _characterSelectXML():Void {
         _file = new FileReference();
-       
-        /*
-        var filters:FILEFILTERS = {
-            count: 1,
-            descriptions: ["XML files"],
-            extensions: ["*.xml"]
-        };
-        */
+        _file.addEventListener(Event.SELECT, onSelect);
+        _file.addEventListener(Event.CANCEL, onCancel);
+        var filters:Array<FileFilter> = new Array<FileFilter>();
+		filters.push(new FileFilter("XML Files", "*.xml"));
+        _file.browse(filters);
     }
 
-    function exploreFile():Void {
-        _file = new FileReference();
-        _file.addEventListener(Event.SELECT, onSelect, false, 0, true);
-        _file.addEventListener(Event.CANCEL, onCancel, false, 0, true);
-
-        var filterArray:Array<FileFilter> = new Array<FileFilter>();
-        filterArray.push(new FileFilter("XML Files", "*.xml"));
-
-        _file.browse();
+    function onSelect(event:Event):Void {
+        _file = cast(event.target, FileReference);
+        _file.addEventListener(Event.COMPLETE, onComplete);
+        _file.load();
     }
 
-    function onSelect(_):Void {
-        trace("test");
+    function onComplete(event:Event):Void {
+        _file = cast(event.target, FileReference);
+        _file.removeEventListener(Event.COMPLETE, onComplete);
+
+        try {
+            changeCharacter = true;
+
+            getEvent("click_button", null, Std.string(characterJSONs.indexOf(character.curCharacter)));
+
+            trace(_file.name);
+        }catch(e:haxe.Exception) {
+            clearEvent();
+            throw e;
+        }
     }
 
     function clearEvent():Void {
         _file.removeEventListener(Event.COMPLETE, onSaveComplete);
         _file.removeEventListener(Event.CANCEL, onCancel);
         _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        _file.removeEventListener(Event.SELECT, onSelect);
         _file = null;
     }
 

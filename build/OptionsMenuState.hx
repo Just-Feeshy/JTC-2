@@ -131,8 +131,24 @@ class OptionsMenuState extends MusicBeatState {
 
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 20, "Preset Keybinds", SaveType.PRESET_KEYBINDS, function(option:Options, pressed:Bool) {
+							new Options(0, 10, "Custom UI Keybinds", SaveType.CUSTOM_KEYBINDS, function(option:Options, pressed:Bool) {
 								option.ID = 1;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+								
+								if(pressed) {
+									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+									option.optionSubState = OptionsSubState.newSubState(SaveType.CUSTOM_UI_KEYBINDS);
+									option.optionSubState.cameras = [camSubState];
+
+									openSubStateBlur(option.optionSubState);
+								}
+
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 20, "Preset Keybinds", SaveType.PRESET_KEYBINDS, function(option:Options, pressed:Bool) {
+								option.ID = 2;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -148,7 +164,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 30, "Minimal FPS Cap", SaveType.SET_FPS_DEFAULT, function(option:Options, pressed:Bool) {
-								option.ID = 2;
+								option.ID = 3;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -169,7 +185,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 40, "Multiply FPS", SaveType.FPS_MULTIPLIER, function(option:Options, pressed:Bool) {
-								option.ID = 3;
+								option.ID = 4;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -190,7 +206,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 50, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
-								option.ID = 4;
+								option.ID = 5;
 
 								if(pressed)
 									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
@@ -207,7 +223,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 60, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-								option.ID = 5;
+								option.ID = 6;
 
 								if(pressed)
 									FlxG.save.data.helpme = !FlxG.save.data.helpme;
@@ -224,7 +240,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 70, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-								option.ID = 6;
+								option.ID = 7;
 
 								if(pressed)
 									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
@@ -241,7 +257,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 80, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-								option.ID = 7;
+								option.ID = 8;
 
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
@@ -258,7 +274,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new GhostTapping(0, 90, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-								option.ID = 8;
+								option.ID = 9;
 
 								if(pressed)
 									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
@@ -301,6 +317,9 @@ class OptionsMenuState extends MusicBeatState {
 							}),
 							new Options(0, 10, "Gamma", SaveType.GAMMA, function(option:Options, pressed:Bool) {
 								option.ID = 1;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
 
 								if(pressed) {
 									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);

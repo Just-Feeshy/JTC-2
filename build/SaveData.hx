@@ -25,6 +25,7 @@ enum SaveType {
     PRESET_INPUTS;
     CACHE_ASSETS;
     CUSTOM_KEYBINDS;
+    CUSTOM_UI_KEYBINDS;
     CAMERA_MOVEMENT_MOD;
     GHOST_TAPPING;
     CUSTOM_MENU_BINDS;
@@ -56,6 +57,7 @@ class SaveData {
         FlxG.save.data.simpInputs = getData(SaveType.PRESET_INPUTS);
         FlxG.save.data.preload = getData(SaveType.CACHE_ASSETS);
         FlxG.save.data.customKeys = getData(SaveType.CUSTOM_KEYBINDS);
+        FlxG.save.data.customUIKeys = getData(SaveType.CUSTOM_UI_KEYBINDS);
         FlxG.save.data.camMove = getData(SaveType.CAMERA_MOVEMENT_MOD);
         FlxG.save.data.ghostTapping = getData(SaveType.GHOST_TAPPING);
         FlxG.save.data.menuBinds = getData(SaveType.CUSTOM_MENU_BINDS);
@@ -178,6 +180,20 @@ class SaveData {
                 }
 
                 return FlxG.save.data.customKeys;
+            case CUSTOM_UI_KEYBINDS:
+                if(FlxG.save.data.customUIKeys == null) {
+                    FlxG.save.data.customUIKeys = new Array<Array<FlxKey>>();
+
+                    FlxG.save.data.customUIKeys = [
+                        [FlxKey.A, FlxKey.LEFT], //LEFT
+                        [FlxKey.S, FlxKey.DOWN], //DOWN
+                        [FlxKey.W, FlxKey.UP], //UP
+                        [FlxKey.D, FlxKey.RIGHT], //RIGHT
+                        [FlxKey.SPACE] //SPACE
+                    ];
+                }
+
+                return FlxG.save.data.customUIKeys;
             case CAMERA_MOVEMENT_MOD:
                 if(FlxG.save.data.camMove == null)
                     FlxG.save.data.camMove = false;

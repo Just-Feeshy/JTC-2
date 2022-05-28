@@ -544,7 +544,7 @@ class PlayState extends MusicBeatState
 			'health', 0, 2);
 		healthBar.scrollFactor.set();
 
-		healthBar.createFilledBar(FlxColor.fromInt(getMainColorFromIcon(iconP2)), FlxColor.fromInt(getMainColorFromIcon(iconP1)));
+		healthBar.createFilledBar(CoolUtil.calculateAverageColor(iconP2.updateFramePixels()), CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
 
 		// healthBar
 		add(healthBar);
@@ -599,52 +599,6 @@ class PlayState extends MusicBeatState
 			keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
 		}
 	}
-
-	function getMainColorFromIcon(icon:HealthIcon):Int {
-        var colorMatrix:Null<Array<Array<Int>>> = new Array<Array<Int>>();
-        colorMatrix[0] = new Array<Int>();
-
-        for(column in 0...icon.frameWidth) {
-            for(row in 0...icon.frameHeight) {
-                var pixelColor:Int = icon.updateFramePixels().getPixel32(column, row);
-
-                if(colorMatrix[0].length > 0) {
-                    var index:Int = 0;
-
-                    if(pixelColor != 0) {
-                        while(index <= colorMatrix.length) {
-                            if(index < colorMatrix.length) {
-                                if(colorMatrix[index][0] == pixelColor) {
-                                    colorMatrix[index].push(pixelColor);
-                                    break;
-                                }
-                            }else {
-                                colorMatrix.push(new Array<Int>());
-                                colorMatrix[index].push(pixelColor);
-                                break;
-                            }
-
-                            index++;
-                        }
-                    }
-                }else {
-                    colorMatrix[0].push(pixelColor);
-                }
-            }
-        }
-
-        var maxLength:Int = 0;
-        var index:Int = 0;
-
-        for(i in 0...colorMatrix.length) {
-            if(maxLength < colorMatrix[i].length) {
-                maxLength = colorMatrix[i].length;
-                index = i;
-            }
-        }
-
-        return colorMatrix[index][0];
-    }
 
 	function schoolIntro(?dialogueBox:DialogueBox):Void
 	{
@@ -2668,51 +2622,51 @@ class PlayState extends MusicBeatState
 			return;
 
 		var controlReleaseArray:Array<Bool> = [
-			controls.LEFT_R,
-			controls.DOWN_R,
-			controls.UP_R,
-			controls.RIGHT_R
+			controls.GAME_LEFT_R,
+			controls.GAME_DOWN_R,
+			controls.GAME_UP_R,
+			controls.GAME_RIGHT_R
 		];
 
 		var controlArray:Array<Bool> = [
-			controls.LEFT_P,
-			controls.DOWN_P,
-			controls.UP_P,
-			controls.RIGHT_P
+			controls.GAME_LEFT_P,
+			controls.GAME_DOWN_P,
+			controls.GAME_UP_P,
+			controls.GAME_RIGHT_P
 		];
 
 		var controlHoldArray:Array<Bool> = [
-			controls.LEFT,
-			controls.DOWN,
-			controls.UP,
-			controls.RIGHT
+			controls.GAME_LEFT,
+			controls.GAME_DOWN,
+			controls.GAME_UP,
+			controls.GAME_RIGHT
 		];
 
 		// I could care less about fixing input tbh
 
 		if(SONG.fifthKey) {
 			controlReleaseArray = [
-				controls.LEFT_R,
-				controls.DOWN_R,
-				controls.SPACE_R,
-				controls.UP_R,
-				controls.RIGHT_R
+				controls.GAME_LEFT_R,
+				controls.GAME_DOWN_R,
+				controls.GAME_SPACE_R,
+				controls.GAME_UP_R,
+				controls.GAME_RIGHT_R
 			];
 
 			controlArray = [
-				controls.LEFT_P,
-				controls.DOWN_P,
-				controls.SPACE_P,
-				controls.UP_P,
-				controls.RIGHT_P
+				controls.GAME_LEFT_P,
+				controls.GAME_DOWN_P,
+				controls.GAME_SPACE_P,
+				controls.GAME_UP_P,
+				controls.GAME_RIGHT_P
 			];
 			
 			controlHoldArray = [
-				controls.LEFT,
-				controls.DOWN,
-				controls.SPACE,
-				controls.UP,
-				controls.RIGHT
+				controls.GAME_LEFT,
+				controls.GAME_DOWN,
+				controls.GAME_SPACE,
+				controls.GAME_UP,
+				controls.GAME_RIGHT
 			];
 		}
 

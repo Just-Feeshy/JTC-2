@@ -25,6 +25,8 @@ class OptionsSubState extends MusicBeatSubstate {
 		switch(type) {
 			case CUSTOM_KEYBINDS:
 				return new CustomKeys();
+			case CUSTOM_UI_KEYBINDS:
+				return new CustomUIKeys();
 			case ERASE_DATA:
 				return new EraseSave();
 			case GAMMA:
@@ -141,6 +143,123 @@ class CustomKeys extends OptionsSubState {
 					SaveData.saveClient();
 					close();
 				}
+			}
+
+			changingKeys = false;
+		}
+
+		super.update(elapsed);
+	}
+
+	function reloadKeys(text:String) {
+		remove(keys);
+		keys.destroy();
+		keys = new Alphabet(0, 0, text, true, false);
+		keys.screenCenter();
+		add(keys);
+	}
+
+	function keysToString(key:Array<Array<FlxKey>>, index:Int, length:Int):String {
+		var stringKeys:String = "";
+
+		for(i in index...(index + length)) {
+			stringKeys += FlxKey.toStringMap.get(key[i][0]) + " ";
+		}
+
+		stringKeys.rtrim();
+		return stringKeys;
+	}
+}
+
+class CustomUIKeys extends OptionsSubState {
+	private var bgBlack:FlxSprite;
+
+	private var keys:Alphabet;
+	private var howManyKey:FlxText;
+
+	private var section:Int = 0;
+
+	private var colorSway:Float = 0;
+
+	private var changingKeys:Bool = false;
+
+	private var changedOnSteam:Int = 0;
+
+	private var keyString:String;
+
+	private var keyLength:Int = 4;
+	private var keyIndex:Int = 0;
+
+	public function new() {
+		super();
+
+		keyString = keysToString(SaveData.getData(SaveType.CUSTOM_UI_KEYBINDS), 0, keyLength);
+
+		if(keyString.split(" ").length < keyLength) {
+			keyString = "A S W D";
+		}
+
+		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bgBlack.alpha = 0;
+		add(bgBlack);
+
+		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
+			keys = new Alphabet(0, 0, keyString, true, false);
+			keys.screenCenter();
+			add(keys);
+
+			howManyKey = new FlxText(0, 0, FlxG.width, "Standard Four Keybinds", 32);
+			howManyKey.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			howManyKey.borderSize = 2;
+			howManyKey.screenCenter(X);
+			howManyKey.y = howManyKey.getScreenCenter(Y) + (keys.height * 1.5);
+			add(howManyKey);
+		}});
+	}
+
+	override function update(elapsed:Float) {
+		if(keys != null) {
+			colorSway += elapsed;
+
+			for(i in 0...keys.letters.length) {
+				if(keys.letters[i].spaceLocation == section) {
+					keys.letters[i].color = FlxColor.fromRGBFloat(0.6 + Math.sin(colorSway * Math.PI) * 0.4,
+					0.6 + Math.sin(colorSway * Math.PI) * 0.4, 0.6 + Math.sin(colorSway * Math.PI) * 0.4);
+				}
+			}
+		}
+
+		if(FlxG.keys.justPressed.ANY && !changingKeys) {
+			changingKeys = true;
+
+			var containKeys:Array<String> = keyString.split(" ");
+			keyString = "";
+
+			for(i in 0...keyLength) {
+				if(section == i) {
+					keyString += FlxKey.toStringMap.get(FlxG.keys.firstJustPressed()) + " ";
+				}else {
+					keyString += containKeys[i] + " ";
+				}
+			}
+
+			var trimmed:String = keyString;
+			keyString = trimmed.rtrim();
+
+			section += 1;
+			reloadKeys(keyString);
+
+			if(section >= keyLength) {
+				section = 0;
+
+				keyString.rtrim();
+
+				for(i in 0...keyLength) {
+					FlxG.save.data.customUIKeys[i + keyIndex][0] = FlxKey.fromStringMap.get(keyString.split(" ")[i]);
+				}
+
+				SaveData.saveClient();
+				close();
 			}
 
 			changingKeys = false;
