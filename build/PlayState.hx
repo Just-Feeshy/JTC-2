@@ -1339,7 +1339,7 @@ class PlayState extends MusicBeatState
 								babyArrow.animation.add('confirm', [15, 19], 24, false);
 						}
 					default:
-						babyArrow.frames = Paths.getSparrowAtlas('cache/NOTE_assets');
+						babyArrow.frames = Paths.getSparrowAtlas('NOTE_assets', null, true);
 						babyArrow.animation.addByPrefix('green', 'arrowUP');
 						babyArrow.animation.addByPrefix('blue', 'arrowDOWN');
 						babyArrow.animation.addByPrefix('purple', 'arrowLEFT');
@@ -1416,7 +1416,7 @@ class PlayState extends MusicBeatState
 								babyArrow.animation.add('confirm', [15, 19], 24, false);
 						}
 					default:
-						babyArrow.frames = Paths.getSparrowAtlas('cache/NOTE_assets');
+						babyArrow.frames = Paths.getSparrowAtlas('NOTE_assets', null, true);
 						babyArrow.animation.addByPrefix('green', 'arrowUP');
 						babyArrow.animation.addByPrefix('blue', 'arrowDOWN');
 						babyArrow.animation.addByPrefix('purple', 'arrowLEFT');
