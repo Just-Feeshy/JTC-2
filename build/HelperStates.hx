@@ -1,8 +1,14 @@
 package;
 
 import flixel.FlxG;
+import flixel.addons.transition.FlxTransitionSprite.GraphicTransTileDiamond;
 import flixel.addons.transition.FlxTransitionableState;
+import flixel.addons.transition.TransitionData;
+import flixel.graphics.FlxGraphic;
 import flixel.addons.ui.FlxUIState;
+import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
+import flixel.util.FlxColor;
 import flixel.FlxSprite;
 
 #if (haxe_ver >= 4.2)
@@ -15,15 +21,16 @@ import Std.is as isOfType;
 * Basically another extendy that should clean up the game more.
 * Also extend on the main game/mod.
 **/
-abstract class HelperStates extends FlxUIState {
+class HelperStates extends HelperStates {
 	public var modifiableSprites:Map<String, FlxSprite>;
 
 	private static var scriptsInStates:Map<String, ModLua> = new Map<String, ModLua>();
 
 	public function new() {
-		super();
-
 		modifiableSprites = new Map<String, FlxSprite>();
+
+		final transition:Array<TransitionData> = makeDefaultTransition();
+		super(transition[0], transition[1]);
 	}
 
 	override function create() {
@@ -62,6 +69,18 @@ abstract class HelperStates extends FlxUIState {
 			Register.attachLuaToState(Type.getClass(this), new ModLua(file));
 		}
 		#end
+	}
+
+	public function makeDefaultTransition():Array<TransitionData> {
+		var diamond:FlxGraphic = FlxGraphic.fromClass(GraphicTransTileDiamond);
+		diamond.persist = true;
+		diamond.destroyOnNoUse = false;
+
+		return [new TransitionData(FADE, FlxColor.BLACK, 0.7, new FlxPoint(0, -1), {asset: diamond, width: 32, height: 32},
+			new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4)),
+			new TransitionData(TILES, FlxColor.BLACK, 0.7, new FlxPoint(0, 1),
+			{asset: diamond, width: 32, height: 32}, new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4))
+		];
 	}
 
     function clearStuff():Void {

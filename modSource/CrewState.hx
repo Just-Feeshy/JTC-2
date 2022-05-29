@@ -23,6 +23,8 @@ class CrewState extends MusicBeatState {
     }
 
     override function create() {
+        super.create();
+
         allTweens = new Array<FlxTween>();
 
         var background:FlxSprite = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height,
@@ -51,8 +53,6 @@ class CrewState extends MusicBeatState {
 
         camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
-
-        super.create();
     }
 
     override function update(elapsed:Float) {

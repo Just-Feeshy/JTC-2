@@ -126,9 +126,6 @@ class MainMenuState extends MusicBeatState
 		//Sys.command("shutdown", ['now']);
 		//#end
 
-		transIn = FlxTransitionableState.defaultTransIn;
-		transOut = FlxTransitionableState.defaultTransOut;
-
 		if (!FlxG.sound.music.playing)
 		{
 			FlxG.sound.playMusic(Paths.music('Main Menu'));
