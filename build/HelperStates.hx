@@ -1,15 +1,15 @@
 package;
 
 import flixel.FlxG;
-import flixel.addons.transition.FlxTransitionSprite.GraphicTransTileDiamond;
-import flixel.addons.transition.FlxTransitionableState;
-import flixel.addons.transition.TransitionData;
 import flixel.graphics.FlxGraphic;
+import flixel.FlxState;
 import flixel.addons.ui.FlxUIState;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import flixel.FlxSprite;
+
+import template.TransitionBuilder;
 
 #if (haxe_ver >= 4.2)
 import Std.isOfType;
@@ -21,16 +21,22 @@ import Std.is as isOfType;
 * Basically another extendy that should clean up the game more.
 * Also extend on the main game/mod.
 **/
-class HelperStates extends HelperStates {
+class HelperStates extends FlxUIState {
 	public var modifiableSprites:Map<String, FlxSprite>;
 
 	private static var scriptsInStates:Map<String, ModLua> = new Map<String, ModLua>();
 
+	private var controls(get, never):Controls;
+
+	var transOutFinished:Bool = false;
+
+	inline function get_controls():Controls
+		return PlayerSettings.player1.controls;
+
 	public function new() {
 		modifiableSprites = new Map<String, FlxSprite>();
 
-		final transition:Array<TransitionData> = makeDefaultTransition();
-		super(transition[0], transition[1]);
+		super();
 	}
 
 	override function create() {
@@ -71,18 +77,6 @@ class HelperStates extends HelperStates {
 		#end
 	}
 
-	public function makeDefaultTransition():Array<TransitionData> {
-		var diamond:FlxGraphic = FlxGraphic.fromClass(GraphicTransTileDiamond);
-		diamond.persist = true;
-		diamond.destroyOnNoUse = false;
-
-		return [new TransitionData(FADE, FlxColor.BLACK, 0.7, new FlxPoint(0, -1), {asset: diamond, width: 32, height: 32},
-			new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4)),
-			new TransitionData(TILES, FlxColor.BLACK, 0.7, new FlxPoint(0, 1),
-			{asset: diamond, width: 32, height: 32}, new FlxRect(-200, -200, FlxG.width * 1.4, FlxG.height * 1.4))
-		];
-	}
-
     function clearStuff():Void {
 		if(!isOfType(this, PlayState)) {
 			if(PlayState.camNOTE != null) {
@@ -112,5 +106,16 @@ class HelperStates extends HelperStates {
 
 	static public function luaExist(state:Class<Dynamic>):Bool {
 		return scriptsInStates.exists(Type.getClassName(state));
+	}
+
+	/**
+	* Transition stuff
+	*/
+	override function switchTo(state:FlxState):Bool {
+		return true;
+	}
+
+	function fadeIn() {
+
 	}
 }

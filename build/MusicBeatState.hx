@@ -17,19 +17,12 @@ class MusicBeatState extends HelperStates
 	private var curBeat:Int = 0;
 
 	private var songPos(get, never):Float;
-	private var controls(get, never):Controls;
-
-	inline function get_controls():Controls
-		return PlayerSettings.player1.controls;
 
 	function get_songPos():Float
 		return Conductor.songPosition;
 
 	override function create()
 	{
-		if (transIn != null)
-			trace('reg ' + transIn.region);
-
 		super.create();
 	}
 

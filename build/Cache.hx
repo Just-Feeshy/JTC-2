@@ -70,17 +70,12 @@ class Cache {
         @:privateAccess
 		for (key in FlxG.bitmap._cache.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
+            
+            if(daBitmap != null && !theseAssets.exists(key)) {
+                FlxG.bitmap.removeKey(key);
+                daBitmap.destroy();
 
-            var transitionIn:FlxGraphic = FlxTransitionableState.defaultTransIn.tileData.asset;
-            var transitionOut:FlxGraphic = FlxTransitionableState.defaultTransOut.tileData.asset;
-
-            if(daBitmap != transitionIn && daBitmap != transitionOut) {
-                if(daBitmap != null && !theseAssets.exists(key)) {
-                    FlxG.bitmap.removeKey(key);
-                    daBitmap.destroy();
-
-                    daBitmap = null;
-                }
+                daBitmap = null;
             }
         }
 
