@@ -9,6 +9,7 @@ import flixel.FlxCamera;
 abstract TransitionFade(String) {
     var IN = "in";
     var OUT = "out";
+    var NONE = "none";
 }
 
 class TransitionBuilder extends FlxSubState {
@@ -31,18 +32,23 @@ class TransitionBuilder extends FlxSubState {
 
         transCamera = new FlxCamera();
         transCamera.bgColor.alpha = 0;
-        FlxG.camera.add(transCamera);
+        FlxG.cameras.add(transCamera, false);
 
-        this.camera = [transCamera];
+        this.cameras = [transCamera];
 
     }
 
     override function destroy() {
         this.cameras = [];
 
-        FlxG.camera.remove(transCamera);
+        FlxG.cameras.remove(transCamera);
 
         transCamera = FlxDestroyUtil.destroy(transCamera);
+
+        if(finishCallback != null) {
+            finishCallback();
+            finishCallback = null;
+        }
 
         super.destroy();
     }

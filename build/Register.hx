@@ -82,6 +82,13 @@ class Register {
 		#end
 	}
 
+    @:access(HelperStates)
+    public static function detachLuaFromState(state:Class<Dynamic>) {
+        #if (USING_LUA && linc_luajit)
+        HelperStates.scriptsInStates.remove(Type.getClassName(state));
+        #end
+    }
+
     public static function getInGameCharacter(character:CharacterRole):Character {
         if(isOfType(FlxG.state, PlayState)) {
             var playstate:PlayState = cast(FlxG.state, PlayState);

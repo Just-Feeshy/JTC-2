@@ -9,6 +9,8 @@ import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import flixel.FlxSprite;
 
+import example_code.TransitionSamples.FadeTransition;
+import template.TransitionBuilder.TransitionFade;
 import template.TransitionBuilder;
 
 #if (haxe_ver >= 4.2)
@@ -24,23 +26,41 @@ import Std.is as isOfType;
 class HelperStates extends FlxUIState {
 	public var modifiableSprites:Map<String, FlxSprite>;
 
+	public static var transitionSkip:Bool = false;
+
 	private static var scriptsInStates:Map<String, ModLua> = new Map<String, ModLua>();
+	private static var transitionBuilds:Map<String, Class<TransitionBuilder>> = new Map<String, Class<TransitionBuilder>>();
 
 	private var controls(get, never):Controls;
 
 	var transOutFinished:Bool = false;
 
+	var transInType:String;
+	var transOutType:String;
+
 	inline function get_controls():Controls
 		return PlayerSettings.player1.controls;
 
-	public function new() {
+	public function new(?transInType:String, ?transOutType:String) {
 		modifiableSprites = new Map<String, FlxSprite>();
+
+		if(transInType == null) {
+			this.transInType = transInType;
+		}
+
+		if(transOutType == null) {
+			this.transOutType = transOutType;
+		}
 
 		super();
 	}
 
 	override function create() {
 		super.create();
+
+		if(!transitionSkip) {
+			//openSubState();
+		}
 
 		/**
 		* Interesting, I know.
@@ -109,13 +129,27 @@ class HelperStates extends FlxUIState {
 	}
 
 	/**
-	* Transition stuff
+	* Based off of `FlxTransitionableState` class from HaxeFlixel.
 	*/
-	override function switchTo(state:FlxState):Bool {
-		return true;
+	function createTransition(transType:String, fade:TransitionFade):TransitionBuilder {
+		return switch(transType) {
+			case "fade": new FadeTransition(0.7, fade);
+			default: null;
+		}
 	}
 
-	function fadeIn() {
+	@:noCompletion
+	public function transitionIn():Void {
+		if(transInType != null && transInType != "none") {
+			var transition = createTransition(transInType, IN);
 
+			if(transition == null) {
+				return;
+			}
+		}
+	}
+
+	override function switchTo(state:FlxState):Bool {
+		return true;
 	}
 }
