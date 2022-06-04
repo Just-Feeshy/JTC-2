@@ -9,8 +9,7 @@ import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import flixel.FlxSprite;
 
-import example_code.TransitionSamples.FadeTransition;
-import template.TransitionBuilder.TransitionFade;
+import example_code.TransitionSamples;
 import template.TransitionBuilder;
 
 #if (haxe_ver >= 4.2)
@@ -44,12 +43,16 @@ class HelperStates extends FlxUIState {
 	public function new(?transInType:String, ?transOutType:String) {
 		modifiableSprites = new Map<String, FlxSprite>();
 
-		if(transInType == null) {
+		if(transInType != null) {
 			this.transInType = transInType;
+		}else {
+			this.transInType = "fade";
 		}
 
-		if(transOutType == null) {
+		if(transOutType != null) {
 			this.transOutType = transOutType;
+		}else {
+			this.transOutType = "fade";
 		}
 
 		super();
@@ -59,7 +62,7 @@ class HelperStates extends FlxUIState {
 		super.create();
 
 		if(!transitionSkip) {
-			//openSubState();
+			transitionIn();
 		}
 
 		/**
@@ -132,20 +135,20 @@ class HelperStates extends FlxUIState {
 	* Based off of `FlxTransitionableState` class from HaxeFlixel.
 	*/
 	function createTransition(transType:String, fade:TransitionFade):TransitionBuilder {
-		return switch(transType) {
-			case "fade": new FadeTransition(0.7, fade);
-			default: null;
-		}
+		return Type.createInstance(transitionBuilds.get(transType), [0.7, fade]);
 	}
 
 	@:noCompletion
 	public function transitionIn():Void {
 		if(transInType != null && transInType != "none") {
-			var transition = createTransition(transInType, IN);
+			var _transition = createTransition(transInType, IN);
 
-			if(transition == null) {
+			if(_transition == null) {
+				trace("Yea");
 				return;
 			}
+
+			openSubState(_transition);
 		}
 	}
 

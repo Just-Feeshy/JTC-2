@@ -9,7 +9,6 @@ import flixel.FlxCamera;
 abstract TransitionFade(String) {
     var IN = "in";
     var OUT = "out";
-    var NONE = "none";
 }
 
 class TransitionBuilder extends FlxSubState {

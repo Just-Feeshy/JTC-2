@@ -5,8 +5,11 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 
 #if !macro
+import example_code.TransitionSamples;
+
 import example_code.DefaultEvents;
 import example_code.DefaultStage;
+import template.TransitionBuilder;
 import template.CustomNote;
 import template.StageBuilder;
 import feshixl.group.FeshEventGroup;
@@ -67,12 +70,12 @@ class Register {
     @:allow(PlayState)
     private static var stages:Array<Class<StageBuilder>> = [DefaultStage];
 
-    //@:allow(PlayState)
-    //private static var stages:Array<Class<>>
-
     @:allow(Preloader)
+    @:access(HelperStates.transitionBuilds)
     private static function setup() {
         events.add(new DefaultEvents());
+
+        HelperStates.transitionBuilds.set("fade", FadeTransition);
     }
 
     @:access(HelperStates)
@@ -87,6 +90,16 @@ class Register {
         #if (USING_LUA && linc_luajit)
         HelperStates.scriptsInStates.remove(Type.getClassName(state));
         #end
+    }
+
+    @:access(HelperStates.transitionBuilds)
+    public static function addCustomTransition(transition:String, transOBJ:Class<TransitionBuilder>) {
+        HelperStates.transitionBuilds.set(transition, transOBJ);
+    }
+
+    @:access(HelperStates.transitionBuilds)
+    public static function removeCustomTransition(transition:String) {
+        HelperStates.transitionBuilds.remove(transition);
     }
 
     public static function getInGameCharacter(character:CharacterRole):Character {
