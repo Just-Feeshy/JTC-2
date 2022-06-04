@@ -131,11 +131,23 @@ class HelperStates extends FlxUIState {
 		return scriptsInStates.exists(Type.getClassName(state));
 	}
 
+	override function switchTo(state:FlxState):Bool {
+		if(transitionSkip) {
+			return true;
+		}
+
+		if(!transOutFinished) {
+			transitionOut(state);
+		}
+
+		return transOutFinished;
+	}
+
 	/**
 	* Based off of `FlxTransitionableState` class from HaxeFlixel.
 	*/
 	function createTransition(transType:String, fade:TransitionFade):TransitionBuilder {
-		return Type.createInstance(transitionBuilds.get(transType), [0.7, fade]);
+		return Type.createInstance(transitionBuilds.get(transType), [0.5, fade]);
 	}
 
 	@:noCompletion
@@ -144,7 +156,6 @@ class HelperStates extends FlxUIState {
 			var _transition = createTransition(transInType, IN);
 
 			if(_transition == null) {
-				trace("Yea");
 				return;
 			}
 
@@ -152,7 +163,22 @@ class HelperStates extends FlxUIState {
 		}
 	}
 
-	override function switchTo(state:FlxState):Bool {
-		return true;
+	@:noCompletion
+	public function transitionOut(state:FlxState):Void {
+		if(transOutType != null && transOutType != "none") {
+			var _transition = createTransition(transOutType, OUT);
+
+			if(_transition == null) {
+				transOutFinished = true;
+				return;
+			}
+
+			_transition.finishCallback = function() {
+				transOutFinished = true;
+				FlxG.switchState(state);
+			}
+
+			openSubState(_transition);
+		}
 	}
 }

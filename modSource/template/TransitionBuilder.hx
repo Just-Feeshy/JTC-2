@@ -38,16 +38,13 @@ class TransitionBuilder extends FlxSubState {
     }
 
     override function destroy() {
+        finishCallback = null;
+
         this.cameras = [];
 
         FlxG.cameras.remove(transCamera);
 
         transCamera = FlxDestroyUtil.destroy(transCamera);
-
-        if(finishCallback != null) {
-            finishCallback();
-            finishCallback = null;
-        }
 
         super.destroy();
     }

@@ -36,7 +36,9 @@ class FadeTransition extends VoidTransition {
         }else {
             transFade.y = -transFade.height;
             tweenManager.push(FlxTween.tween(transFade, {y: transFade.height + 50}, duration, {onComplete: function(twn:FlxTween) {
-                close();
+                if(finishCallback != null) {
+                    finishCallback();
+                }
             }, ease: FlxEase.linear}));
         }
     }
@@ -49,6 +51,12 @@ class FadeTransition extends VoidTransition {
 		}
 
         super.update(elapsed);
+
+        if(fade == IN) {
+			transBlack2.y = transFade.y + transFade.height;
+		} else {
+			transBlack2.y = transFade.y - transBlack2.height;
+		}
     }
 
     override function destroy() {
@@ -79,10 +87,12 @@ class VoidTransition extends TransitionBuilder {
 
         if(fade == IN) {
             transBlack.alpha = 1;
-            tweenManager.push(FlxTween.tween(transBlack, {alpha: 0}, duration, {ease: FlxEase.quadIn}));
+            tweenManager.push(FlxTween.tween(transBlack, {alpha: 0}, duration, {onComplete: function(twn:FlxTween) {
+            }, ease: FlxEase.quadIn}));
         }else {
             transBlack.alpha = 0;
-            tweenManager.push(FlxTween.tween(transBlack, {alpha: 1}, duration, {ease: FlxEase.quadIn}));
+            tweenManager.push(FlxTween.tween(transBlack, {alpha: 1}, duration, {onComplete: function(twn:FlxTween) {
+            }, ease: FlxEase.quadIn}));
         }
     }
 
