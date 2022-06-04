@@ -11,6 +11,9 @@ abstract TransitionFade(String) {
     var OUT = "out";
 }
 
+/**
+* Small, I know.
+*/
 class TransitionBuilder extends FlxSubState {
     /**
     * What happens after the transition.

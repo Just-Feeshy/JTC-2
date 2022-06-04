@@ -4,11 +4,14 @@ import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
 import flixel.util.FlxDestroyUtil;
+import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.FlxSprite;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 
 import template.TransitionBuilder;
+
+import SaveData;
 
 /**
 * Extends off of VoidTransition because i'm lazy.
@@ -123,4 +126,46 @@ class VoidTransition extends TransitionBuilder {
 
 		super.destroy();
 	}
+}
+
+class TileTransition extends TransitionBuilder {
+    var _particles:FlxTypedSpriteGroup<DelaySprite>;
+
+    public function new(duration:Float, fade:TransitionFade, ?customSprite:FlxSprite) {
+        super(duration, fade);
+
+        _particles = new FlxTypedSpriteGroup<DelaySprite>();
+
+        var customDelaySprite:DelaySprite;
+
+        if(customSprite == null) {
+            customSprite = defaultSpriteBuild();
+        }
+
+        customDelaySprite = cast(customSprite, DelaySprite);
+
+        var tileWidth:Int = Math.ceil(customDelaySprite.width / FlxG.width);
+        var tileHeight:Int = Math.ceil(customDelaySprite.height / FlxG.height);
+    }
+
+    function defaultSpriteBuild():FlxSprite {
+        var temp:FlxSprite = new FlxSprite(0, 0);
+        temp.loadGraphic("assets/images/transitions/circle.png", 32, 32);
+
+        var transInArray:Array<Int> = [];
+
+        for(i in 1...(temp.numFrames - 1)) {
+            transInArray.push(i);
+        }
+
+        var transOutArray:Array<Int> = transInArray.copy();
+        transOutArray.reverse();
+
+        temp.animation.add("empty", [0], 0, false);
+        temp.animation.add("in", transInArray, 40, false);
+        temp.animation.add("out", transOutArray, 40, false);
+        temp.animation.add("full", [temp.numFrames - 1], 0, false);
+
+        return temp;
+    }
 }
