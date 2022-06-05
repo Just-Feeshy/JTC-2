@@ -4,14 +4,18 @@ import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
 import flixel.util.FlxDestroyUtil;
+import flixel.util.FlxTimer;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
+import flixel.graphics.FlxGraphic;
 import flixel.FlxSprite;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 
+import flixel.addons.transition.FlxTransitionSprite.GraphicTransTileCircle;
+
 import template.TransitionBuilder;
 
-import SaveData;
+import DelaySprite;
 
 /**
 * Extends off of VoidTransition because i'm lazy.
@@ -34,14 +38,10 @@ class FadeTransition extends VoidTransition {
         if(fade == IN) {
             transFade.y = transBlack.y - transBlack.height;
             tweenManager.push(FlxTween.tween(transFade, {y: transFade.height + 50}, duration, {onComplete: function(twn:FlxTween) {
-                close();
             }, ease: FlxEase.linear}));
         }else {
             transFade.y = -transFade.height;
             tweenManager.push(FlxTween.tween(transFade, {y: transFade.height + 50}, duration, {onComplete: function(twn:FlxTween) {
-                if(finishCallback != null) {
-                    finishCallback();
-                }
             }, ease: FlxEase.linear}));
         }
     }
@@ -91,10 +91,14 @@ class VoidTransition extends TransitionBuilder {
         if(fade == IN) {
             transBlack.alpha = 1;
             tweenManager.push(FlxTween.tween(transBlack, {alpha: 0}, duration, {onComplete: function(twn:FlxTween) {
+                close();
             }, ease: FlxEase.quadIn}));
         }else {
             transBlack.alpha = 0;
             tweenManager.push(FlxTween.tween(transBlack, {alpha: 1}, duration, {onComplete: function(twn:FlxTween) {
+                if(finishCallback != null) {
+                    finishCallback();
+                }
             }, ease: FlxEase.quadIn}));
         }
     }
@@ -131,30 +135,97 @@ class VoidTransition extends TransitionBuilder {
 class TileTransition extends TransitionBuilder {
     var _particles:FlxTypedSpriteGroup<DelaySprite>;
 
-    public function new(duration:Float, fade:TransitionFade, ?customSprite:FlxSprite) {
+    public function new(duration:Float, fade:TransitionFade) {
         super(duration, fade);
 
         _particles = new FlxTypedSpriteGroup<DelaySprite>();
 
         var customDelaySprite:DelaySprite;
 
-        if(customSprite == null) {
-            customSprite = defaultSpriteBuild();
+        var customSprite:DelaySprite = defaultSpriteBuild();
+
+        final borderX:Int = 0;
+        final borderY:Int = 0;
+
+        final tileWidth:Int = Math.ceil(FlxG.width / customSprite.width);
+        final tileHeight:Int = Math.ceil(FlxG.height / customSprite.height);
+
+        final maxTiles:Int = tileWidth > tileHeight ? tileWidth : tileHeight;
+
+        var totalDelay:Float = 0;
+
+        var addX:Int = Std.int(customSprite.width);
+		var addY:Int = Std.int(customSprite.height);
+
+        var totalX:Int = 0;
+        var totalY:Int = 0;
+
+        var startX:Int = borderX;
+        var startY:Int = borderY;
+
+        if(FlxG.width - borderX <= 0) {
+            addX *= -1;
+            startX += addX;
         }
 
-        customDelaySprite = cast(customSprite, DelaySprite);
+        if(FlxG.height - borderY <= 0) {
+            addY *= -1;
+            startY += addY;
+        }
 
-        var tileWidth:Int = Math.ceil(customDelaySprite.width / FlxG.width);
-        var tileHeight:Int = Math.ceil(customDelaySprite.height / FlxG.height);
+        totalX = startX;
+        totalY = startY;
+
+        for(i_y in 0...tileHeight) {
+            for(i_x in 0...tileWidth) {
+                var transitionSprite:DelaySprite = defaultSpriteBuild();
+
+                if(fade == OUT) {
+                    transitionSprite.animation.play("empty");
+                }else {
+                    transitionSprite.animation.play("full");
+                }
+
+                transitionSprite.setPosition(totalX, totalY);
+                transitionSprite.color = FlxColor.BLACK;
+                transitionSprite.scrollFactor.set();
+                _particles.add(transitionSprite);
+
+                totalX += addX;
+
+                if(fade == OUT) {
+                    transitionSprite.playAnim("in", totalDelay);
+                }else {
+                    transitionSprite.playAnim("out", totalDelay);
+                }
+                
+                totalDelay += duration / (maxTiles * 50);
+            }
+
+            totalY += addY;
+            totalX = startX;
+        }
+
+        _particles.members[_particles.length - 1].onFinishedAnimation = function(name:String) {
+            if(fade == IN) {
+                close();
+            }else {
+                if(finishCallback != null) {
+                    finishCallback();
+                }
+            }
+        }
+
+        add(_particles);
     }
 
-    function defaultSpriteBuild():FlxSprite {
-        var temp:FlxSprite = new FlxSprite(0, 0);
-        temp.loadGraphic("assets/images/transitions/circle.png", 32, 32);
+    function defaultSpriteBuild():DelaySprite {
+        var temp:DelaySprite = new DelaySprite(0, 0);
+        temp.loadGraphic(FlxGraphic.fromClass(GraphicTransTileCircle), true, 32, 32);
 
         var transInArray:Array<Int> = [];
 
-        for(i in 1...(temp.numFrames - 1)) {
+        for(i in 0...temp.numFrames) {
             transInArray.push(i);
         }
 
@@ -162,10 +233,16 @@ class TileTransition extends TransitionBuilder {
         transOutArray.reverse();
 
         temp.animation.add("empty", [0], 0, false);
-        temp.animation.add("in", transInArray, 40, false);
-        temp.animation.add("out", transOutArray, 40, false);
+        temp.animation.add("in", transInArray, 40 / duration, false);
+        temp.animation.add("out", transOutArray, 40 / duration, false);
         temp.animation.add("full", [temp.numFrames - 1], 0, false);
 
         return temp;
+    }
+
+    override function destroy() {
+        _particles = FlxDestroyUtil.destroy(_particles);
+
+        super.destroy();
     }
 }

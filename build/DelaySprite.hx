@@ -9,7 +9,7 @@ typedef DelayedAnimation = {
 }
 
 class DelaySprite extends FlxSprite {
-    public var onFinishedAnimation:Void->Void;
+    public var onFinishedAnimation:(name:String) -> Void;
 
     var readyPlayAnim:Array<DelayedAnimation>;
 
@@ -23,7 +23,7 @@ class DelaySprite extends FlxSprite {
         readyPlayAnim.push({animation: Anim, timer: Timer});
     }
 
-    override public function update(elapsed:Float):Void {
+    override function update(elapsed:Float):Void {
         super.update(elapsed);
 
         var index:Int = 0;
@@ -32,7 +32,9 @@ class DelaySprite extends FlxSprite {
             var delayedAnim:DelayedAnimation = readyPlayAnim[index++];
 
             if(delayedAnim.timer <= 0) {
-                
+                animation.play(delayedAnim.animation);
+                animation.finishCallback = onFinishedAnimation;
+                readyPlayAnim.remove(delayedAnim);
             }else {
                 delayedAnim.timer -= elapsed;
             }

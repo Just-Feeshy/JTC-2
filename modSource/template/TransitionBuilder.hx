@@ -21,6 +21,7 @@ class TransitionBuilder extends FlxSubState {
     public var finishCallback:Void->Void;
 
     var fade:TransitionFade;
+    var duration:Float;
 
     /**
     * No BetterCams WAAAAAA!
@@ -31,6 +32,7 @@ class TransitionBuilder extends FlxSubState {
         super();
 
         this.fade = fade;
+        this.duration = duration;
 
         transCamera = new FlxCamera();
         transCamera.bgColor.alpha = 0;

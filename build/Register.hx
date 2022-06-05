@@ -76,6 +76,7 @@ class Register {
         events.add(new DefaultEvents());
 
         HelperStates.transitionBuilds.set("fade", FadeTransition);
+        HelperStates.transitionBuilds.set("tile", TileTransition);
     }
 
     @:access(HelperStates)

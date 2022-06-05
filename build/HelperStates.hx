@@ -52,7 +52,7 @@ class HelperStates extends FlxUIState {
 		if(transOutType != null) {
 			this.transOutType = transOutType;
 		}else {
-			this.transOutType = "fade";
+			this.transOutType = "tile";
 		}
 
 		super();
