@@ -34,6 +34,7 @@ class CacheState extends MusicBeatState {
     override function create() {
         menuBG = new FlxSprite();
 		menuBG.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(1, Paths.modJSON.background_images.length - 1)]));
+        menuBG.scrollFactor.set();
         menuBG.screenCenter();
 		add(menuBG);
 

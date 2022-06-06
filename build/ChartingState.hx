@@ -216,12 +216,23 @@ class ChartingState extends MusicBeatState
 		if(colorMap == null)
 			colorMap = 0;
 
+		var noColorShader:BuiltInShaders = new BuiltInShaders();
+		noColorShader.shader = ShaderType.MINING_SIM_LOADING;
+
+		var bg:FlxSprite = new FlxSprite();
+		bg.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(1, Paths.modJSON.background_images.length - 1)]));
+		bg.shader = noColorShader;
+		bg.alpha = 0.5;
+		bg.scrollFactor.set();
+		bg.screenCenter();
+		add(bg);
+
 		bpmTxt = new FlxText(1000, 50, 0, "", 16);
 
 		if(_song.fifthKey) {
 			bpmTxt.x = 1050;
 			mainGrid = 10;
-		}	
+		}
 
 		gridBG = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, GRID_SIZE * 16);
 		add(gridBG);
@@ -281,6 +292,7 @@ class ChartingState extends MusicBeatState
 		var tabs = [
 			{name: "Song", label: 'Song'},
 			{name: "Section", label: 'Section'},
+			{name: "Video", label: 'Video'},
 			{name: "Note", label: 'Note'},
 			{name: "SF Map", label: 'Map'}
 		];
@@ -369,6 +381,13 @@ class ChartingState extends MusicBeatState
 
 	var stepperSpeed:FlxUINumericStepper;
 	var speedLabel:FlxText;
+
+	function addVideoUI():Void {
+		var videoInstructions:FlxText = new FlxText(10, 10, "The video you selected must be located in the video folder.");
+
+		var getVideo:FlxButton = new FlxButton(10, videoInstructions.y + 10, "Get Video");
+
+	}
 
 	function addModifierUI():Void {
 		var makeModName = new FlxUIInputText(160, 20, 80, "Modifier Pog", 8);
@@ -1447,7 +1466,7 @@ class ChartingState extends MusicBeatState
 			+ "\nBeat Counter: "
 			+ Math.max(0, curBeat)
 			+ "\n"
-			+ "\nMade By Feeshy";
+			+ "\nMade By: Feeshy";
 		super.update(elapsed);
 	}
 
@@ -2085,32 +2104,46 @@ class ChartingState extends MusicBeatState
 		}
 	}
 
-	function onSaveComplete(_):Void
-	{
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
-		_file.removeEventListener(Event.CANCEL, onSaveCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-		_file = null;
+	function onSelect(event:Event):Void {
+        _file = cast(event.target, FileReference);
+        _file.addEventListener(Event.COMPLETE, onComplete);
+        _file.load();
+    }
+
+	function onSaveComplete(_):Void {
+		clearEvent();
 		FlxG.log.notice("Successfully saved LEVEL DATA.");
+	}
+
+	function onComplete(event:Event):Void {
+		_file = cast(event.target, FileReference);
+        _file.removeEventListener(Event.COMPLETE, onComplete);
+
+		try {
+			
+		}catch(e:haxe.Exception) {
+			clearEvent();
+			throw e;
+		}
 	}
 
 	/**
 	 * Called when the save file dialog is cancelled.
 	 */
-	function onSaveCancel(_):Void
-	{
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
-		_file.removeEventListener(Event.CANCEL, onSaveCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-		_file = null;
+	function onSaveCancel(_):Void {
+		clearEvent();
 	}
 
-	function onSaveError(_):Void
-	{
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
-		_file.removeEventListener(Event.CANCEL, onSaveCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-		_file = null;
+	function onSaveError(_):Void {
+		clearEvent();
 		FlxG.log.error("Problem saving Level data");
 	}
+
+	function clearEvent():Void {
+        _file.removeEventListener(Event.COMPLETE, onSaveComplete);
+        _file.removeEventListener(Event.CANCEL, onSaveCancel);
+        _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        _file.removeEventListener(Event.SELECT, onSelect);
+        _file = null;
+    }
 }

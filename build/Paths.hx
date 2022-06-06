@@ -22,20 +22,7 @@ class Paths
 
 	@:isVar public static var modJSON(get, never):ConfigDef;
 
-	public static var bitLiteralMap:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
-
 	static var currentLevel:String;
-
-	static public function cacheEitherWay():Void {
-		
-		#if desktop
-		if(bitLiteralMap.get("regular/splash") == null) {
-			var splashGraphic:FlxGraphic = FlxGraphic.fromBitmapData(BitmapData.fromFile('assets/shared/images/notes/regular/splash.png'));
-			splashGraphic.persist = true;
-			bitLiteralMap.set("notes/regular/splash", splashGraphic);
-		}	
-		#end
-	}
 
 	static function get_modJSON():ConfigDef {
 		if(modJSON == null) { 
@@ -176,6 +163,10 @@ class Paths
 		}
 	}
 
+	inline static public function video(key:String) {
+		//var videoFile:String = getPath(CoolUtil.);
+	}
+
 	inline static public function sound(key:String, ?library:String)
 	{
 		if(Assets.exists(getPath('sounds/$key.$SOUND_EXT', SOUND, library)))
@@ -217,11 +208,7 @@ class Paths
 	}
 
 	static function ifImageCached(key:String):FlxGraphic {
-		if(Cache.getAsset(key, "") != null) {
-			return Cache.getAsset(key, "");
-		}else {
-			return bitLiteralMap.get(key);
-		}
+		return Cache.getAsset(key, "");
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)

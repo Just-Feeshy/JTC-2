@@ -71,10 +71,8 @@ class CoolUtil
 
 		while(index < files.length) {
 			if(files[index].contains(file)) {
-				return files[index];
+				return files[index++];
 			}
-
-			index++;
 		}
 
 		return null;

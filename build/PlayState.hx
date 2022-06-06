@@ -230,6 +230,7 @@ class PlayState extends MusicBeatState
 
 	override public function create() {
 		Cache.clearALLassets();
+		System.gc();
 
 		FlxG.mouse.visible = false;
 		//testSprite.visible = false;
@@ -239,8 +240,6 @@ class PlayState extends MusicBeatState
 			FlxG.sound.music.stop();
 
 		SaveData.saveClient();
-
-		Paths.cacheEitherWay();
 		
 		camGame = new BetterCams();
 		camNOTE = new CameraNote();
@@ -581,8 +580,6 @@ class PlayState extends MusicBeatState
 		eventLoad();
 
 		super.create();
-
-		System.gc();
 	}
 
 	function setupExtraKeys() {

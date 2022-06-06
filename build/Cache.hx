@@ -1,9 +1,10 @@
 package;
 
 import flixel.FlxG;
-import openfl.display.BitmapData;
 import flixel.graphics.FlxGraphic;
+import flixel.util.FlxDestroyUtil;
 import flixel.addons.transition.FlxTransitionableState;
+import openfl.display.BitmapData;
 import openfl.utils.Assets as OpenFlAssets;
 
 //Basically a class like Path
@@ -17,6 +18,7 @@ class Cache {
             if(!theseAssets.exists(path)) {
                 var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
                 graphics.persist = true;
+                graphics.destroyOnNoUse = false;
                 trace("Retrieved: " + path);
                 theseAssets.set(path, graphics);
             }
@@ -73,9 +75,7 @@ class Cache {
             
             if(daBitmap != null && !theseAssets.exists(key)) {
                 FlxG.bitmap.removeKey(key);
-                daBitmap.destroy();
-
-                daBitmap = null;
+                daBitmap = FlxDestroyUtil.destroy(daBitmap);
             }
         }
 
