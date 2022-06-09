@@ -164,7 +164,7 @@ class Paths
 	}
 
 	inline static public function video(key:String) {
-		//var videoFile:String = getPath(CoolUtil.);
+		return getPreloadPath("videos/" + key);
 	}
 
 	inline static public function sound(key:String, ?library:String)
@@ -207,8 +207,8 @@ class Paths
 		}
 	}
 
-	static function ifImageCached(key:String):FlxGraphic {
-		return Cache.getAsset(key, "");
+	static function ifImageCached(key:String, ?library:String):FlxGraphic {
+		return Cache.getAsset(key, library);
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)
@@ -225,7 +225,7 @@ class Paths
 			library = "";
 		}
 
-		var cachedImage:FlxGraphic = ifImageCached("notes/" + key);
+		var cachedImage:FlxGraphic = ifImageCached("notes/" + key, library);
 
 		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
 			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));

@@ -15,7 +15,7 @@ import lime.utils.UInt8Array;
  * @author Tommy S
  */
 //
-@:buildXml('<include name="../../../../source/vlc/LibVLCBuild.xml" />')
+@:buildXml('<include name="../../../../build/vlc/LibVLCBuild.xml" />')
 @:include("LibVLC.h")
 @:unreflective
 @:keep

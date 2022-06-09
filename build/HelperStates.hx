@@ -21,7 +21,7 @@ import Std.is as isOfType;
 /**
 * Basically another extendy that should clean up the game more.
 * Also extend on the main game/mod.
-**/
+*/
 class HelperStates extends FlxUIState {
 	public var modifiableSprites:Map<String, FlxSprite>;
 

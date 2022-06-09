@@ -77,6 +77,7 @@ class Register {
 
         HelperStates.transitionBuilds.set("fade", FadeTransition);
         HelperStates.transitionBuilds.set("tile", TileTransition);
+        HelperStates.transitionBuilds.set("void", VoidTransition);
     }
 
     @:access(HelperStates)

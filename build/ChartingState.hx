@@ -121,6 +121,8 @@ class ChartingState extends MusicBeatState
 	var songFPS:Null<Int> = 100;
 	var colorMap:Null<Int> = 0;
 
+	var fileType:Array<String> = [];
+
 	var osuManiaSounds:Array<Note> = [];
 
 	final gfSideDefault:Array<String> = [
@@ -343,6 +345,7 @@ class ChartingState extends MusicBeatState
 		addSectionUI();
 		addNoteUI();
 		addWorldMapUI();
+		addVideoUI();
 
 		//Options
 		addModifierUI();
@@ -382,11 +385,32 @@ class ChartingState extends MusicBeatState
 	var stepperSpeed:FlxUINumericStepper;
 	var speedLabel:FlxText;
 
+	var unableLabel:FlxText;
+
 	function addVideoUI():Void {
 		var videoInstructions:FlxText = new FlxText(10, 10, "The video you selected must be located in the video folder.");
 
-		var getVideo:FlxButton = new FlxButton(10, videoInstructions.y + 10, "Get Video");
+		var getVideo:FlxButton = new FlxButton(10, videoInstructions.y + 20, "Get Video", function() {
+			_file = new FileReference();
+			_file.addEventListener(Event.SELECT, onSelect);
+			_file.addEventListener(Event.CANCEL, onCancel);
 
+			fileType = [".mp4", ".mov"];
+
+			_file.browse();
+		});
+
+		unableLabel = new FlxText(10, 50, "");
+		unableLabel.color = FlxColor.RED;
+
+		var tab_group_video = new FlxUI(null, UI_box);
+		tab_group_video.name = "Video";
+		tab_group_video.add(videoInstructions);
+		tab_group_video.add(getVideo);
+		tab_group_video.add(unableLabel);
+
+		UI_box.addGroup(tab_group_video);
+		UI_box.scrollFactor.set();
 	}
 
 	function addModifierUI():Void {
@@ -2098,7 +2122,7 @@ class ChartingState extends MusicBeatState
 		{
 			_file = new FileReference();
 			_file.addEventListener(Event.COMPLETE, onSaveComplete);
-			_file.addEventListener(Event.CANCEL, onSaveCancel);
+			_file.addEventListener(Event.CANCEL, onCancel);
 			_file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 			_file.save(data.trim(), _song.song.toLowerCase() + ".json");
 		}
@@ -2120,7 +2144,29 @@ class ChartingState extends MusicBeatState
         _file.removeEventListener(Event.COMPLETE, onComplete);
 
 		try {
-			
+			unableLabel.text = "";
+
+			var foundFile:Bool = false;
+
+			for(i in 0...fileType.length) {
+				if(_file.type == fileType[i]) {
+					foundFile = true;
+				}
+			}
+
+			fileType = [];
+
+			if(!foundFile) {
+				unableLabel.text = "Unable to compile video:\n" + Paths.video(_file.name);
+				return;
+			}
+
+			if(Paths.video(_file.name) == null) {
+				unableLabel.text = "Unable to compile video:\n" + Paths.video(_file.name);
+				return;
+			}
+
+			FlxG.switchState(new VideoState(new PlayState(muteInGame), Paths.video(_file.name)));
 		}catch(e:haxe.Exception) {
 			clearEvent();
 			throw e;
@@ -2130,7 +2176,7 @@ class ChartingState extends MusicBeatState
 	/**
 	 * Called when the save file dialog is cancelled.
 	 */
-	function onSaveCancel(_):Void {
+	function onCancel(_):Void {
 		clearEvent();
 	}
 
@@ -2141,7 +2187,7 @@ class ChartingState extends MusicBeatState
 
 	function clearEvent():Void {
         _file.removeEventListener(Event.COMPLETE, onSaveComplete);
-        _file.removeEventListener(Event.CANCEL, onSaveCancel);
+        _file.removeEventListener(Event.CANCEL, onCancel);
         _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
         _file.removeEventListener(Event.SELECT, onSelect);
         _file = null;

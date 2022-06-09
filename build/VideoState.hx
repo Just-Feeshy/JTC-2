@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxG;
 import flixel.addons.transition.Transition;
 import flixel.FlxState;
 
@@ -17,9 +18,8 @@ import vlc.VlcBitmap;
 /*
 * Ducky was here :D
 **/
+@:access(vlc.VlcBitmap)
 class VideoState extends HelperStates {
-    public static var VIDEO_FPS_CAP = 60;
-
     public var repeat:Bool = false;
     public var isFullscreen:Bool = false;
     public var inWindow:Bool = false;
@@ -57,7 +57,7 @@ class VideoState extends HelperStates {
 
     public function playVideo() {
         #if desktop
-        var bitmap = new VlcBitmap();
+        bitmap = new VlcBitmap();
 
         if(FlxG.stage.stageHeight / 9 < FlxG.stage.stageWidth / 16) {
             bitmap.set_width(FlxG.stage.stageHeight * (16 / 9));
@@ -76,7 +76,7 @@ class VideoState extends HelperStates {
             bitmap.repeat = 0;
 
         /**precaution*/
-        bitmap.isFullscreen = this.isFullscreen;
+        bitmap.fullscreen = this.isFullscreen;
         bitmap.inWindow = this.inWindow;
 
         FlxG.addChildBelowMouse(bitmap);
@@ -102,7 +102,9 @@ class VideoState extends HelperStates {
 		netConnect.addEventListener(NetStatusEvent.NET_STATUS, function(event:NetStatusEvent) {
 			if(event.info.code == "NetStream.Play.Complete") {
 				netStream.dispose();
-				if(FlxG.game.contains(player)) FlxG.game.removeChild(player);
+				if(FlxG.game.contains(player)) {
+                    FlxG.game.removeChild(player);
+                }
 
 				FlxG.switchState(state);
 			}
@@ -111,28 +113,25 @@ class VideoState extends HelperStates {
         #end
     }
 
-    override function update(elapsed) {
+    override function update(elapsed:Float) {
         super.update(elapsed);
 
         #if desktop
-        if(controls.ACCEPT) {
-            if (bitmap.isPlaying) {
-                onVLCComplete();
+        //Just incase
+        if(bitmap != null) {
+            if(controls.ACCEPT) {
+                if (bitmap.isPlaying) {
+                    onVLCComplete();
+                }
+            }
+
+            if (FlxG.sound.volume < 0.1) {
+                bitmap.volume = 0;
+            }else {
+                bitmap.volume = FlxG.sound.volume + 0.3;
             }
         }
-
-        bitmap.volume = FlxG.sound.volume + 0.3;
-
-        if (FlxG.sound.volume < 0.1) {
-            bitmap.volume = 0;
-        }
         #end
-    }
-
-    override public function switchTo(nextState:FlxState):Bool {
-
-
-        super.switchTo(nextState);
     }
 
     #if desktop
@@ -140,9 +139,11 @@ class VideoState extends HelperStates {
         bitmap.stop();
         bitmap.dispose();
 
-        if (FlxG.game.contains(vlcBitmap)) {
-            FlxG.game.removeChild(vlcBitmap);
+        if (FlxG.game.contains(bitmap)) {
+            FlxG.game.removeChild(bitmap);
         }
+
+        bitmap = null;
 
         FlxG.switchState(state);
     }

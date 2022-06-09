@@ -322,8 +322,8 @@ class VlcBitmap extends Bitmap
 		frameRect = new Rectangle(0, 0, Std.int(videoWidth), Std.int(videoHeight));
 
 		// (Stage3D)
-		// texture = Lib.current.stage.stage3Ds[0].context3D.createRectangleTexture(videoWidth, videoHeight, Context3DTextureFormat.BGRA, true);
-		// this.bitmapData = BitmapData.fromTexture(texture);
+		//texture = Lib.current.stage.stage3Ds[0].context3D.createRectangleTexture(videoWidth, videoHeight, Context3DTextureFormat.BGRA, true);
+		//this.bitmapData = BitmapData.fromTexture(texture);
 
 		smoothing = true;
 
@@ -382,10 +382,11 @@ class VlcBitmap extends Bitmap
 						if (libvlc.getPixelData() != null)
 							this.bitmapData.setPixels(frameRect, Bytes.ofData(bufferMem));
 
-						// (Stage3D)
-						// texture.uploadFromByteArray( Bytes.ofData(cast(bufferMem)), 0 );
-						// this.width++; //This is a horrible hack to force the texture to update... Surely there is a better way...
-						// this.width--;
+						if(texture != null) {
+							texture.uploadFromByteArray( Bytes.ofData(cast(bufferMem)), 0 );
+							//this.width++; //This is a horrible hack to force the texture to update... Surely there is a better way...
+							//this.width--;
+						}
 					}
 				}
 				catch (e:Error)
