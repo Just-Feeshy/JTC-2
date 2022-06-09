@@ -150,6 +150,10 @@ class HelperStates extends FlxUIState {
 		return Type.createInstance(transitionBuilds.get(transType), [0.5, fade]);
 	}
 
+	function finishedTransition() {
+		transOutFinished = true;
+	}
+
 	@:noCompletion
 	public function transitionIn():Void {
 		if(transInType != null && transInType != "none") {
@@ -174,9 +178,9 @@ class HelperStates extends FlxUIState {
 			}
 
 			_transition.finishCallback = function() {
-				transOutFinished = true;
+				finishedTransition();
 				FlxG.switchState(state);
-			}
+			};
 
 			openSubState(_transition);
 		}

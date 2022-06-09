@@ -42,15 +42,19 @@ class VideoState extends HelperStates {
         this.state = state;
         this.path = path;
         
-        super();
+        super("void", "void");
     }
 
     override function create() {
+        FlxG.mouse.visible = false;
+
         super.create();
 
         if (FlxG.sound.music != null) {
             FlxG.sound.music.stop();
         }
+
+        FlxG.camera.bgColor.alpha = 0;
 
         playVideo();
     }
@@ -67,19 +71,20 @@ class VideoState extends HelperStates {
             bitmap.set_height(FlxG.stage.stageWidth / (16 / 9));
         }
 
-        bitmap.onComplete = onVLCComplete;
+        bitmap.onComplete = finishedVideo;
         bitmap.onError = onVLCError;
 
-        if(repeat)
+        if(repeat) {
             bitmap.repeat = -1;
-        else
+        }else {
             bitmap.repeat = 0;
+        }
 
         /**precaution*/
         bitmap.fullscreen = this.isFullscreen;
         bitmap.inWindow = this.inWindow;
 
-        FlxG.addChildBelowMouse(bitmap);
+        FlxG.game.addChildAt(bitmap, 0);
         bitmap.play(checkFile(path));
         #end
 
@@ -87,7 +92,7 @@ class VideoState extends HelperStates {
         var player:Video = new Video();
 		player.x = 0;
 		player.y = 0;
-		FlxG.addChildBelowMouse(player);
+		FlxG.game.addChildAt(player, 0);
 
         var netConnect = new NetConnection();
 		netConnect.connect(null);
@@ -121,7 +126,7 @@ class VideoState extends HelperStates {
         if(bitmap != null) {
             if(controls.ACCEPT) {
                 if (bitmap.isPlaying) {
-                    onVLCComplete();
+                    FlxG.switchState(state);
                 }
             }
 
@@ -132,6 +137,18 @@ class VideoState extends HelperStates {
             }
         }
         #end
+    }
+
+    override function finishedTransition() {
+        #if desktop
+        onVLCComplete();
+        #end
+
+        super.finishedTransition();
+    }
+
+    function finishedVideo() {
+        FlxG.switchState(state);
     }
 
     #if desktop
