@@ -174,9 +174,6 @@ class PlayState extends MusicBeatState
 
 	public var camGame:BetterCams;
 
-	//Array Strings
-	private var dialogue:Array<String> = ['blah blah blah', 'coolswag'];
-
 	var halloweenBG:FlxSprite;
 	var isHalloween:Bool = false;
 
@@ -275,33 +272,6 @@ class PlayState extends MusicBeatState
 
 		if(modifierCheckList('blind effect'))
 			FlxG.camera.alpha = 0;
-
-		switch (SONG.song.toLowerCase())
-		{
-			case 'tutorial':
-				dialogue = ["Hey you're pretty cute.", 'Use the arrow keys to keep up \nwith me singing.'];
-			case 'bopeebo':
-				dialogue = [
-					'HEY!',
-					"You think you can just sing\nwith my daughter like that?",
-					"If you want to date her...",
-					"You're going to have to go \nthrough ME first!"
-				];
-			case 'fresh':
-				dialogue = ["Not too shabby boy.", ""];
-			case 'dadbattle':
-				dialogue = [
-					"gah you think you're hot stuff?",
-					"If you can beat me here...",
-					"Only then I will even CONSIDER letting you\ndate my daughter!"
-				];
-			case 'senpai':
-				dialogue = CoolUtil.coolTextFile(Paths.txt('senpai/senpaiDialogue'));
-			case 'roses':
-				dialogue = CoolUtil.coolTextFile(Paths.txt('roses/rosesDialogue'));
-			case 'thorns':
-				dialogue = CoolUtil.coolTextFile(Paths.txt('thorns/thornsDialogue'));
-		}
 
 		// Making difficulty text for Discord Rich Presence.
 		switch (storyDifficulty)
@@ -629,7 +599,6 @@ class PlayState extends MusicBeatState
 					if(dialogueBox != null) {
 						dialogueBox.finishCallback = clearDialogue;
 
-						dialogueBox.setDialogScript(dialogue);
 						dialogueBox.createDialogue(this);
 						dialogueBox.attachToCamera(camHUD);
 					}else {
@@ -1145,7 +1114,7 @@ class PlayState extends MusicBeatState
 				for (susNote in 0...Math.floor(susLength)) {
 					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
-					if(!oldNote.isSustainNote && oldNote.trail != null && oldNote.noteAbstract == "ocean")
+					if(!oldNote.isSustainNote && oldNote.trail != null)
 						oldNote.trail.members[0].visible = true;
 
 					var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, oldNote, true, daNoteAbstract);
@@ -1948,7 +1917,7 @@ class PlayState extends MusicBeatState
 						}
 
 						switch(daNote.noteAbstract) {
-							case "ocean" | "side note":
+							case "side note":
 								if(daNote.isSustainNote) {
 									if(camNOTE.camNoteWOBBLE == null) {
 										camNOTE.createNoteCam(daNote.noteAbstract);
@@ -1961,7 +1930,7 @@ class PlayState extends MusicBeatState
 
 									daNote.cameras = [camNOTE.camNoteWOBBLE];
 
-									if(!daNote.prevNote.isSustainNote && daNote.noteAbstract == "ocean")
+									if(!daNote.prevNote.isSustainNote)
 										daNote.prevNote.trail.cameras = [camNOTE.camNoteWOBBLE];
 								}
 
@@ -2095,7 +2064,7 @@ class PlayState extends MusicBeatState
 					daNote.setNoteAlpha(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
 				}
 
-				if (daNote.isSustainNote && daNote.noteAbstract != "ocean") {
+				if (daNote.isSustainNote) {
 					if(daNote.prevNote.isSustainNote)
 						daNote.setInverseAxis(daNote.distanceAxis, daNote.prevNote.getInverseAxis(daNote.prevNote.distanceAxis));
 					else
@@ -2117,7 +2086,7 @@ class PlayState extends MusicBeatState
 							daNote.cameras = [camNOTE.camNoteWOBBLE];
 					}
 				}else if(!modifierCheckList('note woggle') && Main.feeshmoraModifiers) {
-					if(daNote.cameras.contains(camNOTE.camNoteWOBBLE) && (daNote.noteAbstract != "ocean" && daNote.noteAbstract != "side note"))
+					if(daNote.cameras.contains(camNOTE.camNoteWOBBLE) && daNote.noteAbstract != "side note")
 						daNote.cameras = [camNOTE];
 				}
 
@@ -2766,106 +2735,6 @@ class PlayState extends MusicBeatState
 				}	
 			}
 
-			
-			if(note.noteAbstract == "ocean") {
-				if(trippyFog.alpha == 0.5) {
-					trippyFog.alpha = 0;
-					camGame.setFilters([]);
-				}
-
-				if(waterFog.alpha == 0) {
-					waterFog.alpha = 0.25;
-					FlxG.sound.play(Paths.sound("splashlol"));
-				}
-
-				if(waterBlur[0].blurX <= defaultBlur+2) {
-					waterBlur[0].blurX = defaultBlur+3;
-					waterBlur[0].blurY = defaultBlur+3;
-					camGame.setFilters([waterBlur[0]]);
-				}
-
-
-
-				if(waterBlur[1] == null)
-					waterBlur.push(new BlurFilter(1, 1, BitmapFilterQuality.LOW));
-
-				waterBlur[1].blurX += 1;
-				waterBlur[1].blurY += 1;
-				camNOTE.setFilters([waterBlur[1]]);
-
-				if (note.noteData >= 0)
-					setHealth(health + 0.04);
-				else
-					setHealth(health + 0.007);
-			}else if(note.noteAbstract == "trippy") {
-
-				if(waterBlur[1] != null) {
-						
-					if(waterBlur[1].blurX <= 0) {
-						waterBlur[1].blurX -= 1;
-						waterBlur[1].blurY -= 1;
-						camNOTE.setFilters([waterBlur[1]]);
-					}else {
-						waterBlur[1] = new BlurFilter(1, 1, BitmapFilterQuality.LOW);
-						camNOTE.setFilters([]);
-
-						if(waterFog.alpha == 0.25)
-							waterFog.alpha = 0;
-					}
-
-					camGame.setFilters([]);
-				}
-
-				if(trippyFog.alpha == 0) {
-					trippyFog.alpha = 0.5;
-					FlxG.sound.play(Paths.sound("drugsl"));
-					camGame.setFilters([waterBlur[0], trippyShader]);
-					camNOTE.setFilters([trippyShader]);
-
-					if(waterBlur[0].blurX <= defaultBlur+2) {
-						waterBlur[0].blurX = defaultBlur+3;
-						waterBlur[0].blurY = defaultBlur+3;
-					}
-				}
-			}else {
-				if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
-					
-					if(waterBlur[1] != null) {
-						
-						if(waterBlur[1].blurX <= 0) {
-							waterBlur[1].blurX -= 1;
-							waterBlur[1].blurY -= 1;
-							camNOTE.setFilters([waterBlur[1]]);
-						}else {
-							waterBlur[1] = new BlurFilter(1, 1, BitmapFilterQuality.LOW);
-							camNOTE.setFilters([]);
-
-							if(waterFog.alpha == 0.25) {
-								waterFog.alpha = 0;
-								FlxG.sound.play(Paths.sound("splashlol"));
-		
-								if(waterBlur[0].blurX >= defaultBlur+3) {
-									waterBlur[0].blurX = defaultBlur;
-									waterBlur[0].blurY = defaultBlur;
-									camGame.setFilters([waterBlur[0]]);
-								}
-							}
-						}
-					}
-				}
-
-				if(trippyFog.alpha == 0.5) {
-					trippyFog.alpha = 0;
-					FlxG.sound.play(Paths.sound("drugsl"));
-
-					if(waterBlur[0].blurX >= defaultBlur+3) {
-						waterBlur[0].blurX = defaultBlur;
-						waterBlur[0].blurY = defaultBlur;
-						camGame.setFilters([waterBlur[0]]);
-					}
-				}
-			}
-
 			note.pressedByPlayer(boyfriend, dad, gf);
 			boyfriend.customAnimation = true;
 
@@ -2926,7 +2795,10 @@ class PlayState extends MusicBeatState
 					if(SaveData.getData(SaveType.SHOW_NOTE_SPLASH))
 						note.splash(grpSplash.members[spr.ID], spr, daRating);
 	
-					try{ switch(spr.ifCustom) {			
+					/**
+					* Old shit made in 2020 while trying to learn how Haxe and HaxeFlixel.
+					*/
+					try{ switch(spr.ifCustom) {
 						case "reverse":
 							spr.animation.play('static');
 							spr.setColorTransform(3,3,0,0.75,0,0,0,0);
@@ -3031,13 +2903,6 @@ class PlayState extends MusicBeatState
 								swirl.kill();
 								remove(swirl);
 								swirl = null;
-							});
-						case "ocean":
-							spr.animation.play('static');
-							spr.setColorTransform(0,1,2,1,0,0,0,0);
-
-							new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-								spr.setColorTransform(1,1,1,1,0,0,0,0);
 							});
 						case "side note":
 							spr.animation.play('static');

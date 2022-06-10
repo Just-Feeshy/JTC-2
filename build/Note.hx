@@ -289,25 +289,6 @@ class Note extends FlxSprite
 
 							trail.add(trailSpirit);
 						}
-
-						if(noteType == "ocean" && ifPlayState && !isSustainNote) {
-							trail = new FlxTypedGroup<FlxSprite>();
-
-							var trailSpirit:FlxSprite = new FlxSprite(this.x, this.y);
-							trailSpirit.frames = Paths.getNoteAtlas('$noteType/NOTE_assets');
-							trailSpirit.scrollFactor.set();
-
-							trailSpirit.animation.addByPrefix('coolFlow', 'flow');
-
-							trailSpirit.setGraphicSize(Std.int(this.width), Std.int(this.height/1.15));
-							trailSpirit.updateHitbox();
-							trailSpirit.alpha = 0.5;
-							trailSpirit.visible = false;
-
-							trailSpirit.animation.play('coolFlow');
-
-							trail.add(trailSpirit);
-						}
 					}
 			}
 	
@@ -424,11 +405,8 @@ class Note extends FlxSprite
 						}
 					}
 	
-					if(prevNote.noteAbstract != "poison" && prevNote.noteAbstract != "reverse poison" && prevNote.noteAbstract != "ocean")
+					if(prevNote.noteAbstract != "poison" && prevNote.noteAbstract != "reverse poison")
 						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
-
-					if(prevNote.noteAbstract == "ocean")
-						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.26 * howSpeed;
 
 					if(prevNote.noteAbstract == "poison" || prevNote.noteAbstract == "reverse poison")
 						prevNote.setGraphicSize(Std.int(prevNote.width*1.5));
@@ -573,10 +551,7 @@ class Note extends FlxSprite
 				fadeValue = getNoteStrumPosition(400);
 
 			if(noteAbstract != "ghost" && hasCustomAddon == null) {
-				if(noteAbstract == "ocean" && isSustainNote)
-					alpha = Math.min(Math.min(0.5, value), fadeValue);
-				else
-					alpha = Math.min(value, fadeValue);
+				alpha = Math.min(value, fadeValue);
 			}else if(noteAbstract == "ghost") {
 				alpha = Math.min(getNoteStrumPosition(250), fadeValue);
 			}else if(hasCustomAddon != null) {
@@ -650,27 +625,15 @@ class Note extends FlxSprite
 			animation.addByPrefix('purpleScroll', 'purple0');
 			animation.addByPrefix('diamondScroll', 'diamond0');
 
-			if(!wasSustainNote && noteAbstract != "ocean") {
-				animation.addByPrefix('purplehold end', 'pruple end hold');
-				animation.addByPrefix('greenhold end', 'green hold end');
-				animation.addByPrefix('redhold end', 'red hold end');
-				animation.addByPrefix('bluehold end', 'blue hold end');
+			animation.addByPrefix('purplehold end', 'pruple end hold');
+			animation.addByPrefix('greenhold end', 'green hold end');
+			animation.addByPrefix('redhold end', 'red hold end');
+			animation.addByPrefix('bluehold end', 'blue hold end');
 
-				animation.addByPrefix('purplehold', 'purple hold piece');
-				animation.addByPrefix('greenhold', 'green hold piece');
-				animation.addByPrefix('redhold', 'red hold piece');
-				animation.addByPrefix('bluehold', 'blue hold piece');
-			}else if(noteAbstract == "ocean") {
-				animation.addByPrefix('purplehold end', 'hold end');
-				animation.addByPrefix('greenhold end', 'hold end');
-				animation.addByPrefix('redhold end', 'hold end');
-				animation.addByPrefix('bluehold end', 'hold end');
-
-				animation.addByPrefix('purplehold', 'hold piece');
-				animation.addByPrefix('greenhold', 'hold piece');
-				animation.addByPrefix('redhold', 'hold piece');
-				animation.addByPrefix('bluehold', 'hold piece');
-			}
+			animation.addByPrefix('purplehold', 'purple hold piece');
+			animation.addByPrefix('greenhold', 'green hold piece');
+			animation.addByPrefix('redhold', 'red hold piece');
+			animation.addByPrefix('bluehold', 'blue hold piece');
 		}
 
 		function getAddon():CustomNote {
@@ -750,11 +713,6 @@ class Note extends FlxSprite
 
 					trail.members[0].y = y-(width/2.5);
 					trail.members[0].x = x-(width/2);
-				}
-
-				if(noteAbstract == "ocean") {
-					trail.members[0].x = x;
-					trail.members[0].y = y-15;
 				}
 
 				if(hasCustomAddon != null && ifPlayState)
