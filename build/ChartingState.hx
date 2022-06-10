@@ -184,6 +184,7 @@ class ChartingState extends MusicBeatState
 				player1: 'bf',
 				player2: 'dad',
 				stage: null,
+				video: null,
 				girlfriend: null,
 				speed: 1,
 				validScore: false,
@@ -341,6 +342,8 @@ class ChartingState extends MusicBeatState
 		selectingShader = new BuiltInShaders();
 		selectingShader.shader = ShaderType.GLIM_SELECTION;
 
+		super.create();
+
 		addSongUI();
 		addSectionUI();
 		addNoteUI();
@@ -363,8 +366,6 @@ class ChartingState extends MusicBeatState
 
 		instrucTxt.scrollFactor.set();
 		add(instrucTxt);
-
-		super.create();
 	}
 
 	function setStage() {
@@ -386,8 +387,13 @@ class ChartingState extends MusicBeatState
 	var speedLabel:FlxText;
 
 	var unableLabel:FlxText;
+	var watchButton:FlxButton;
+	var tab_group_video:FlxUI;
 
 	function addVideoUI():Void {
+		tab_group_video = new FlxUI(null, UI_box);
+		tab_group_video.name = "Video";
+
 		var videoInstructions:FlxText = new FlxText(10, 10, "The video you selected must be located in the video folder.");
 
 		var getVideo:FlxButton = new FlxButton(10, videoInstructions.y + 20, "Get Video", function() {
@@ -400,11 +406,21 @@ class ChartingState extends MusicBeatState
 			_file.browse();
 		});
 
+		watchButton = new FlxButton(getVideo.width + getVideo.x + 10, videoInstructions.y + 20, "Watch", function() {
+			if(_song.video != null) {
+				FlxG.switchState(new VideoState(new ChartingState(), _song.video));
+			}
+		});
+		watchButton.color = FlxColor.RED;
+		watchButton.label.color = FlxColor.WHITE;
+
+		if(_song.video != null) {
+			tab_group_video.add(watchButton);
+		}
+
 		unableLabel = new FlxText(10, 50, "");
 		unableLabel.color = FlxColor.RED;
 
-		var tab_group_video = new FlxUI(null, UI_box);
-		tab_group_video.name = "Video";
 		tab_group_video.add(videoInstructions);
 		tab_group_video.add(getVideo);
 		tab_group_video.add(unableLabel);
@@ -2157,16 +2173,20 @@ class ChartingState extends MusicBeatState
 			fileType = [];
 
 			if(!foundFile) {
-				unableLabel.text = "Unable to compile video:\n" + Paths.video(_file.name);
+				unableLabel.text = "Unable to compile video file: " + _file.name;
 				return;
 			}
 
 			if(Paths.video(_file.name) == null) {
-				unableLabel.text = "Unable to compile video:\n" + Paths.video(_file.name);
+				unableLabel.text = "Unable to compile video file: " + _file.name;
 				return;
 			}
 
-			FlxG.switchState(new VideoState(new PlayState(muteInGame), Paths.video(_file.name)));
+			_song.video = Paths.video(_file.name);
+
+			if(_song.video != null) {
+				tab_group_video.add(watchButton);
+			}
 		}catch(e:haxe.Exception) {
 			clearEvent();
 			throw e;

@@ -1,7 +1,9 @@
 package;
 
 import flixel.FlxG;
+import flixel.text.FlxText;
 import flixel.addons.transition.Transition;
+import flixel.util.FlxColor;
 import flixel.FlxState;
 
 #if web
@@ -23,6 +25,8 @@ class VideoState extends HelperStates {
     public var repeat:Bool = false;
     public var isFullscreen:Bool = false;
     public var inWindow:Bool = false;
+
+    var SPACE:FlxText;
 
     var state:FlxState;
     var path:String;
@@ -48,8 +52,6 @@ class VideoState extends HelperStates {
     override function create() {
         FlxG.mouse.visible = false;
 
-        super.create();
-
         if (FlxG.sound.music != null) {
             FlxG.sound.music.stop();
         }
@@ -57,6 +59,13 @@ class VideoState extends HelperStates {
         FlxG.camera.bgColor.alpha = 0;
 
         playVideo();
+
+        SPACE = new FlxText(20, 20, "Press SPACE to skip", 16);
+        SPACE.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+        SPACE.borderSize = 2;
+        add(SPACE);
+
+        super.create();
     }
 
     public function playVideo() {
@@ -140,6 +149,9 @@ class VideoState extends HelperStates {
     }
 
     override function finishedTransition() {
+        SPACE.destroy();
+        SPACE = null;
+
         #if desktop
         onVLCComplete();
         #end

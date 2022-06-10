@@ -4,6 +4,7 @@ import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
 
 import sys.thread.Thread;
 import sys.FileSystem;
@@ -63,13 +64,6 @@ class CacheState extends MusicBeatState {
     }
 
     function cacheStuff() {
-        /**
-		if(!FlxG.save.data.preload) {
-			LoadingState.loadAndSwitchState(target, stopMusic);
-			return;
-		}
-        */
-
         Cache.clear();
 
         var cacheList:Array<String> = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")));
@@ -78,7 +72,9 @@ class CacheState extends MusicBeatState {
             Cache.cacheAsset(cacheList[i], "");
         }
 
-		LoadingState.loadAndSwitchState(target, stopMusic);
+        new FlxTimer().start(0.1, function(tmr:FlxTimer) {
+            LoadingState.loadAndSwitchState(target, stopMusic);
+        });
 	}
 
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true) {

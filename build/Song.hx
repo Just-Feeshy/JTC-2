@@ -26,6 +26,7 @@ typedef SwagSong =
 	var girlfriend:String;
 
 	var stage:String;
+	var video:String;
 
 	var validScore:Bool;
 	var fifthKey:Bool;
