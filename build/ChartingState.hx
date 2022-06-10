@@ -223,7 +223,7 @@ class ChartingState extends MusicBeatState
 		noColorShader.shader = ShaderType.MINING_SIM_LOADING;
 
 		var bg:FlxSprite = new FlxSprite();
-		bg.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(1, Paths.modJSON.background_images.length - 1)]));
+		bg.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(0, Paths.modJSON.background_images.length - 1)]));
 		bg.shader = noColorShader;
 		bg.alpha = 0.5;
 		bg.scrollFactor.set();

@@ -34,7 +34,7 @@ class CacheState extends MusicBeatState {
 
     override function create() {
         menuBG = new FlxSprite();
-		menuBG.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(1, Paths.modJSON.background_images.length - 1)]));
+		menuBG.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(0, Paths.modJSON.background_images.length - 1)]));
         menuBG.scrollFactor.set();
         menuBG.screenCenter();
 		add(menuBG);
@@ -78,6 +78,16 @@ class CacheState extends MusicBeatState {
 	}
 
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true) {
+        if(PlayState.SONG.video != null) {
+            if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
+                FlxG.switchState(new VideoState(new CacheState(new PlayState(), true), PlayState.SONG.video));
+            }else {
+                LoadingState.loadAndSwitchState(new VideoState(new PlayState(), PlayState.SONG.video));
+            }
+
+            return;
+        }
+
         if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
             FlxG.switchState(new CacheState(new PlayState(), true));
         }else {
