@@ -401,7 +401,7 @@ class ChartingState extends MusicBeatState
 			_file.addEventListener(Event.SELECT, onSelect);
 			_file.addEventListener(Event.CANCEL, onCancel);
 
-			fileType = [".mp4", ".mov"];
+			fileType = [".mp4", ".mov", ".webm"];
 
 			_file.browse();
 		});
