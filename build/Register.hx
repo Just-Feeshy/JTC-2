@@ -13,6 +13,7 @@ import template.TransitionBuilder;
 import template.CustomNote;
 import template.StageBuilder;
 import feshixl.group.FeshEventGroup;
+import feshixl.interfaces.IDialogue;
 import flixel.FlxState;
 import flixel.tweens.FlxEase;
 import flixel.FlxG;
@@ -70,14 +71,24 @@ class Register {
     @:allow(PlayState)
     private static var stages:Array<Class<StageBuilder>> = [DefaultStage];
 
+    @:allow(PlayState)
+    private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
+
     @:allow(Preloader)
     @:access(HelperStates.transitionBuilds)
     private static function setup() {
-        events.add(new DefaultEvents());
+        /**
+        * Default initialization for game.
+        */
+        add(EVENT, new DefaultEvents());
 
-        HelperStates.transitionBuilds.set("fade", FadeTransition);
-        HelperStates.transitionBuilds.set("tile", TileTransition);
-        HelperStates.transitionBuilds.set("void", VoidTransition);
+        addCustomTransition("fade", FadeTransition);
+        addCustomTransition("tile", TileTransition);
+        addCustomTransition("void", VoidTransition);
+
+        implementDialogueToSong("senpai", DialogueBox);
+        implementDialogueToSong("roses", DialogueBox);
+        implementDialogueToSong("thorns", DialogueBox);
     }
 
     @:access(HelperStates)
@@ -131,6 +142,10 @@ class Register {
             case STAGE:
                 stages.push(addonClass);
         }
+    }
+
+    public static function implementDialogueToSong(name:String, dialogueClass:Class<IDialogue>) {
+        dialogues.set(name, dialogueClass);
     }
 
     public static function implementCustomNote(name:String, addonClass:Class<CustomNote>) {

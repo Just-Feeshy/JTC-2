@@ -48,6 +48,7 @@ import openfl.filters.ShaderFilter;
 import openfl.events.KeyboardEvent;
 import openfl.system.System;
 import feshixl.group.FeshEventGroup;
+import feshixl.interfaces.IDialogue;
 import openfl.Lib;
 
 import example_code.DefaultStage;
@@ -191,8 +192,6 @@ class PlayState extends MusicBeatState
 	var bottomBoppers:FlxSprite;
 	var santa:FlxSprite;
 
-	var doof:DialogueBox;
-
 	var bgGirls:BackgroundGirls;
 	var wiggleShit:WiggleEffect = new WiggleEffect();
 
@@ -206,7 +205,7 @@ class PlayState extends MusicBeatState
 	// how big to stretch the pixel art assets
 	public static var daPixelZoom:Float = 6;
 
-	var inCutscene:Bool = false;
+	public var inCutscene:Bool = false;
 
 	#if desktop
 	// Discord RPC variables
@@ -433,12 +432,6 @@ class PlayState extends MusicBeatState
 		createScene();
 		createFogs();
 
-		doof = new DialogueBox(false, dialogue);
-		// doof.x += 70;
-		// doof.y = FlxG.height * 0.5;
-		doof.scrollFactor.set();
-		doof.finishThing = startCountdown;
-
 		Conductor.trackPosition = -5000;
 
 		strumLine = new FlxSprite(0, 50).makeGraphic(FlxG.width, 10);
@@ -563,7 +556,6 @@ class PlayState extends MusicBeatState
 		iconP2.cameras = [camHUD];
 		debugText.cameras = [camHUD];
 		counterTxt.cameras = [camHUD];
-		doof.cameras = [camHUD];
 
 		// if (SONG.song == 'South')
 		// FlxG.camera.alpha = 0.7;
@@ -595,90 +587,6 @@ class PlayState extends MusicBeatState
 			keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
 			keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
 		}
-	}
-
-	function schoolIntro(?dialogueBox:DialogueBox):Void
-	{
-		var black:FlxSprite = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, FlxColor.BLACK);
-		black.scrollFactor.set();
-		add(black);
-
-		var red:FlxSprite = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFFff1b31);
-		red.scrollFactor.set();
-
-		var senpaiEvil:FlxSprite = new FlxSprite();
-		senpaiEvil.frames = Paths.getSparrowAtlas('weeb/senpaiCrazy');
-		senpaiEvil.animation.addByPrefix('idle', 'Senpai Pre Explosion', 24, false);
-		senpaiEvil.setGraphicSize(Std.int(senpaiEvil.width * 6));
-		senpaiEvil.scrollFactor.set();
-		senpaiEvil.updateHitbox();
-		senpaiEvil.screenCenter();
-
-		if (SONG.song.toLowerCase() == 'roses' || SONG.song.toLowerCase() == 'thorns')
-		{
-			remove(black);
-
-			if (SONG.song.toLowerCase() == 'thorns')
-			{
-				add(red);
-			}
-		}
-
-		new FlxTimer().start(0.3, function(tmr:FlxTimer)
-		{
-			black.alpha -= 0.15;
-
-			if (black.alpha > 0)
-			{
-				tmr.reset(0.3);
-			}
-			else
-			{
-				if (dialogueBox != null)
-				{
-					inCutscene = true;
-
-					if (SONG.song.toLowerCase() == 'thorns')
-					{
-						add(senpaiEvil);
-						senpaiEvil.alpha = 0;
-						new FlxTimer().start(0.3, function(swagTimer:FlxTimer)
-						{
-							senpaiEvil.alpha += 0.15;
-							if (senpaiEvil.alpha < 1)
-							{
-								swagTimer.reset();
-							}
-							else
-							{
-								senpaiEvil.animation.play('idle');
-								FlxG.sound.play(Paths.sound('Senpai_Dies'), 1, false, null, true, function()
-								{
-									remove(senpaiEvil);
-									remove(red);
-									FlxG.camera.fade(FlxColor.WHITE, 0.01, true, function()
-									{
-										add(dialogueBox);
-									}, true);
-								});
-								new FlxTimer().start(3.2, function(deadTime:FlxTimer)
-								{
-									FlxG.camera.fade(FlxColor.WHITE, 1.6, false);
-								});
-							}
-						});
-					}
-					else
-					{
-						add(dialogueBox);
-					}
-				}
-				else
-					startCountdown();
-
-				remove(black);
-			}
-		});
 	}
 
 	function inDeBenigin() {
@@ -715,15 +623,18 @@ class PlayState extends MusicBeatState
 							});
 						});
 					});
-				case 'senpai':
-					schoolIntro(doof);
-				case 'roses':
-					FlxG.sound.play(Paths.sound('ANGRY'));
-					schoolIntro(doof);
-				case 'thorns':
-					schoolIntro(doof);
 				default:
-					startCountdown();
+					var dialogueBox = Type.createInstance(cast Register.dialogues.get(curSong.toLowerCase()), []);
+
+					if(dialogueBox != null) {
+						dialogueBox.finishCallback = clearDialogue;
+
+						dialogueBox.setDialogScript(dialogue);
+						dialogueBox.createDialogue(this);
+						dialogueBox.attachToCamera(camHUD);
+					}else {
+						startCountdown();
+					}
 			}
 		}
 		else
@@ -734,6 +645,13 @@ class PlayState extends MusicBeatState
 					startCountdown();
 			}
 		}
+	}
+
+	function clearDialogue(dialogue:IDialogue) {
+		dialogue.destroyDialogue();
+		dialogue = null;
+
+		startCountdown();
 	}
 
 	function setHealth(hp:Float) {

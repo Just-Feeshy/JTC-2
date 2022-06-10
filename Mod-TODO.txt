@@ -1,2 +1,0 @@
-Make CrewState. - N
-Fix Character Creator - N
