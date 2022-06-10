@@ -11,6 +11,7 @@ class BetterCams extends FlxCamera {
     public var getFilters(get, never):Array<BitmapFilter>;
 
     private var lockedFilters:Array<BitmapFilter>;
+    private var wastefulFilters:Array<BitmapFilter>;
 
     public var betterFiltersEnabled:Bool = true;
 
@@ -26,6 +27,10 @@ class BetterCams extends FlxCamera {
 
         super();
     }
+
+    public function setTrashFilters(trashFilters:Array<BitmapFilter>) {
+        wastefulFilters = trashFilters;
+    }
     
     public function lockFilter(filters:BitmapFilter):Void {
         lockedFilters.push(filters);
@@ -34,6 +39,7 @@ class BetterCams extends FlxCamera {
 
     public function eraseFilters() {
         lockedFilters = [];
+        wastefulFilters = [];
         setFilters([]);
     }
 
@@ -43,6 +49,10 @@ class BetterCams extends FlxCamera {
         for(i in 0...lockedFilters.length)
             if(!daFilters.contains(lockedFilters[i]))
                 daFilters.push(lockedFilters[i]);
+
+        for(i in 0...wastefulFilters.length)
+            if(!daFilters.contains(wastefulFilters[i]))
+                daFilters.push(wastefulFilters[i]);
 
         return daFilters;
     }

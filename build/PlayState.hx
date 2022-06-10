@@ -2735,6 +2735,75 @@ class PlayState extends MusicBeatState
 				}	
 			}
 
+			if(note.noteAbstract == "trippy") {
+
+				if(waterBlur[1] != null) {
+						
+					if(waterBlur[1].blurX <= 0) {
+						waterBlur[1].blurX -= 1;
+						waterBlur[1].blurY -= 1;
+						camNOTE.setTrashFilters([waterBlur[1]]);
+					}else {
+						waterBlur[1] = new BlurFilter(1, 1, BitmapFilterQuality.LOW);
+						camNOTE.setTrashFilters([]);
+
+						if(waterFog.alpha == 0.25)
+							waterFog.alpha = 0;
+					}
+
+					camGame.setTrashFilters([]);
+				}
+
+				if(trippyFog.alpha == 0) {
+					trippyFog.alpha = 0.5;
+					FlxG.sound.play(Paths.sound("drugsl"));
+					camGame.setTrashFilters([waterBlur[0], trippyShader]);
+					camNOTE.setTrashFilters([trippyShader]);
+
+					if(waterBlur[0].blurX <= defaultBlur+2) {
+						waterBlur[0].blurX = defaultBlur+3;
+						waterBlur[0].blurY = defaultBlur+3;
+					}
+				}
+			}else {
+				if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
+					
+					if(waterBlur[1] != null) {
+						
+						if(waterBlur[1].blurX <= 0) {
+							waterBlur[1].blurX -= 1;
+							waterBlur[1].blurY -= 1;
+							camNOTE.setTrashFilters([waterBlur[1]]);
+						}else {
+							waterBlur[1] = new BlurFilter(1, 1, BitmapFilterQuality.LOW);
+							camNOTE.setTrashFilters([]);
+
+							if(waterFog.alpha == 0.25) {
+								waterFog.alpha = 0;
+								FlxG.sound.play(Paths.sound("splashlol"));
+		
+								if(waterBlur[0].blurX >= defaultBlur+3) {
+									waterBlur[0].blurX = defaultBlur;
+									waterBlur[0].blurY = defaultBlur;
+									camGame.setTrashFilters([waterBlur[0]]);
+								}
+							}
+						}
+					}
+				}
+
+				if(trippyFog.alpha == 0.5) {
+					trippyFog.alpha = 0;
+					FlxG.sound.play(Paths.sound("drugsl"));
+
+					if(waterBlur[0].blurX >= defaultBlur+3) {
+						waterBlur[0].blurX = defaultBlur;
+						waterBlur[0].blurY = defaultBlur;
+						camGame.setFilters([waterBlur[0]]);
+					}
+				}
+			}
+
 			note.pressedByPlayer(boyfriend, dad, gf);
 			boyfriend.customAnimation = true;
 
