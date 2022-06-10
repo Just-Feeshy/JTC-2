@@ -1,4 +1,4 @@
-import CrewState;
+import example_code.DefaultDialogueBox;
 
 class Mod {
     static public function onInit() {

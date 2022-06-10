@@ -22,6 +22,7 @@ class BetterCams extends FlxCamera {
 
     public function new() {
         lockedFilters = new Array<BitmapFilter>();
+        wastefulFilters = new Array<BitmapFilter>();
 
         filtersEnabled = false;
 
@@ -97,6 +98,9 @@ class BetterCams extends FlxCamera {
 
         lockedFilters.splice(0, lockedFilters.length);
         lockedFilters = null;
+
+        wastefulFilters.splice(0, wastefulFilters.length);
+        wastefulFilters = null
     }
 
     override function updateFlashSpritePosition():Void {
