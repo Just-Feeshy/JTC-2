@@ -100,7 +100,7 @@ class BetterCams extends FlxCamera {
         lockedFilters = null;
 
         wastefulFilters.splice(0, wastefulFilters.length);
-        wastefulFilters = null
+        wastefulFilters = null;
     }
 
     override function updateFlashSpritePosition():Void {

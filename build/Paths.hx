@@ -228,7 +228,7 @@ class Paths
 		var cachedImage:FlxGraphic = ifImageCached("notes/" + key, library);
 
 		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
-			//trace(Xml.parse(file('images/' + cacheFile + key + '.xml')).firstElement());
+			trace(Assets.getText(file('images/' + cacheFile + key + '.xml')));
 			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
 		}else {
 			throw ("Error: could not locate asset - " + file('images/' + cacheFile + key + '.xml', library));
