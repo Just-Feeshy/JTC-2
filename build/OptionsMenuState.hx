@@ -478,6 +478,25 @@ class OptionsMenuState extends MusicBeatState {
 						]
 					}
 				];
+			}case "editiors": {
+				optionList = [
+					{
+						catagory: this.catalog,
+						options: [
+							new Options(0, 0, "Dialogue Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 0;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									FlxG.switchState(new DialogueCreatorState());
+
+								setting(option, "", option.ID);
+							})
+						]
+					}
+				];
 			}default: {
 				optionList = [
 					{
@@ -505,8 +524,19 @@ class OptionsMenuState extends MusicBeatState {
 
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 10, "Modifiers", SaveType.NONE, function(option:Options, pressed:Bool) {
+							new Options(0, 20, "Dev Tools Stuff", SaveType.NONE, function(option:Options, pressed:Bool) {
 								option.ID = 2;
+
+								if(option.optionIcon.animation.curAnim.name != "section")
+									option.optionIcon.animation.play("section");
+
+								if(pressed)
+									FlxG.switchState(new OptionsMenuState("editiors"));
+
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 30, "Modifiers", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 3;
 
 								if(option.optionIcon.animation.curAnim.name != "section")
 									option.optionIcon.animation.play("section");
@@ -516,8 +546,8 @@ class OptionsMenuState extends MusicBeatState {
 
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 20, "Erase Save Data", SaveType.CACHE_ASSETS, function(option:Options, pressed:Bool) {
-								option.ID = 3;
+							new Options(0, 40, "Erase Save Data", SaveType.CACHE_ASSETS, function(option:Options, pressed:Bool) {
+								option.ID = 4;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");

@@ -4,7 +4,6 @@ import flixel.FlxCamera;
 import flixel.FlxState;
 
 import openfl.utils.ByteArray;
-import openfl.display.BitmapData;
 
 interface IDialogue {
     var finishCallback:(dialogue:IDialogue)->Void;
@@ -15,11 +14,30 @@ interface IDialogue {
 }
 
 typedef DialogueFileData = {
-    var spriteData:BitmapData;
-    var xmlData:String;
+    var name:String;
+    var spriteData:ByteArray;
+    var xmlData:ByteArray;
 }
 
+typedef DialogueSpriteData = {
+    var assetID:Int;
+    var size:Float;
+}
+
+/**
+* Should be stored in an array to have more than one line.
+*/
 typedef DialogueData = {
-    var leftPortrait:DialogueFileData;
-    var rightPortait:DialogueFileData;
+    var speed:Float;
+
+    var protagonistTalking:Bool;
+    var soundTalking:ByteArray;
+
+    var text:Array<Array<String>>;
+
+    var totalSprites:Array<DialogueFileData>;
+
+    var leftPortrait:DialogueSpriteData;
+    var rightPortrait:DialogueSpriteData;
+    var speechBubble:DialogueSpriteData;
 }

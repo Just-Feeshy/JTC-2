@@ -4,6 +4,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import sys.FileSystem;
 import flixel.FlxG;
 import betterShit.BetterCams;
+import openfl.events.Event;
 
 import Note;
 
@@ -53,9 +54,7 @@ class Compile { //WIP: For upcoming modchart
 
     static public function spawn() {
         kill();
-    }
 
-    static public function kill() {
         strumOffset = 0;
         sizeTimer = 0;
         shakeCamTimer = 0;
@@ -66,13 +65,35 @@ class Compile { //WIP: For upcoming modchart
         camPos = [0, 0, 0];
         camAngle = [0, 0, 0];
         tempNoteAbstracts = [];
+
+        jitStrumSize = false;
+        strumSize = new Array<Array<Float>>();
+
+        FlxG.stage.addEventListener(Event.ENTER_FRAME, update);
+    }
+
+    static public function kill() {
+        strumOffset = 0;
+        sizeTimer = 0;
+        shakeCamTimer = 0;
+        shakeCamTimerHUD = 0;
+        timeFreeze = 0;
+        strumOffsetEvent = null;
+        strumOffsetArray = null;
+        camPos = null;
+        camAngle = null;
+        tempNoteAbstracts = null;
         preloadAddon = false;
         
         jitStrumSize = false;
-        strumSize = new Array<Array<Float>>();
+        strumSize = null;
+
+        FlxG.stage.removeEventListener(Event.ENTER_FRAME, update);
     }
 
-    static public function update() {
+    static function update(e:Event) {
+        trace("funni");
+
         var mainCam:BetterCams = cast FlxG.camera;
         var camHUD:BetterCams = cast PlayState.camHUD;
         var noteCam:BetterCams = cast PlayState.camNOTE;

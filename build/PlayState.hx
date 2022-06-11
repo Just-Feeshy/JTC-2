@@ -45,7 +45,6 @@ import lime.utils.Assets;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
-import openfl.events.KeyboardEvent;
 import openfl.system.System;
 import feshixl.group.FeshEventGroup;
 import feshixl.interfaces.IDialogue;
@@ -218,7 +217,6 @@ class PlayState extends MusicBeatState
 
 		Note.AFFECTED_SCROLLSPEED = 1;
 		Note.AFFECTED_STRUMTIME = 0;
-		Compile.spawn();
 
 		muteInst = muted;
 		super();
@@ -540,6 +538,8 @@ class PlayState extends MusicBeatState
 
 		setupExtraKeys();
 		eventLoad();
+
+		Compile.spawn();
 
 		super.create();
 	}
@@ -1549,7 +1549,6 @@ class PlayState extends MusicBeatState
 				iconP1.animation.play('bf-old');
 		}
 
-		Compile.update();
 		Register.events.whenGameIsRunning(modStorage, this);
 
 		super.update(elapsed);
@@ -3173,6 +3172,8 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function destroy() {
+		Compile.kill();
+		
 		super.destroy();
 	}
 }

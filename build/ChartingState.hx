@@ -32,8 +32,6 @@ import lime.utils.Assets;
 import example_code.DefaultEvents.Modifiers;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
-import openfl.events.IOErrorEvent;
-import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
@@ -2159,37 +2157,32 @@ class ChartingState extends MusicBeatState
 		_file = cast(event.target, FileReference);
         _file.removeEventListener(Event.COMPLETE, onComplete);
 
-		try {
-			unableLabel.text = "";
+		unableLabel.text = "";
 
-			var foundFile:Bool = false;
+		var foundFile:Bool = false;
 
-			for(i in 0...fileType.length) {
-				if(_file.type == fileType[i]) {
-					foundFile = true;
-				}
+		for(i in 0...fileType.length) {
+			if(_file.type == fileType[i]) {
+				foundFile = true;
 			}
+		}
 
-			fileType = [];
+		fileType = [];
 
-			if(!foundFile) {
-				unableLabel.text = "Unable to compile video file: " + _file.name;
-				return;
-			}
+		if(!foundFile) {
+			unableLabel.text = "Unable to compile video file: " + _file.name;
+			return;
+		}
 
-			if(Paths.video(_file.name) == null) {
-				unableLabel.text = "Unable to compile video file: " + _file.name;
-				return;
-			}
+		if(Paths.video(_file.name) == null) {
+			unableLabel.text = "Unable to compile video file: " + _file.name;
+			return;
+		}
 
-			_song.video = Paths.video(_file.name);
+		_song.video = Paths.video(_file.name);
 
-			if(_song.video != null) {
-				tab_group_video.add(watchButton);
-			}
-		}catch(e:haxe.Exception) {
-			clearEvent();
-			throw e;
+		if(_song.video != null) {
+			tab_group_video.add(watchButton);
 		}
 	}
 
