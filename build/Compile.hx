@@ -92,8 +92,6 @@ class Compile { //WIP: For upcoming modchart
     }
 
     static function update(e:Event) {
-        trace("funni");
-
         var mainCam:BetterCams = cast FlxG.camera;
         var camHUD:BetterCams = cast PlayState.camHUD;
         var noteCam:BetterCams = cast PlayState.camNOTE;
