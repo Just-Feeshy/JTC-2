@@ -1,4 +1,4 @@
-# Friday Night Funkin' - JTC Mora "Engine"
+# Friday Night Funkin' - Feeshmora (JTC Mod)
 
 This is the repository for [Friday Night Funkin': vs. JTC](https://gamebanana.com/mods/46741). 
 
