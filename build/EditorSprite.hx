@@ -25,6 +25,8 @@ import Std.is as isOfType;
 * This sprite class was made to make creator/editior states easier to configure
 * which would also allow the user to easily cutomize said sprite for there mod.
 *
+* TODO: Get animations from json too.
+*
 * @author Feeshy
 */
 class EditorSprite extends FlxSprite {
@@ -61,6 +63,8 @@ class EditorSprite extends FlxSprite {
 
             return;
         }
+
+        this.frames = null;
 
         /**
         * Directly copied from `FlxAtlasFrames`.
@@ -109,7 +113,27 @@ class EditorSprite extends FlxSprite {
         this.frames = tempFrames;
     }
 
+    public function getSourceAnimationName():Array<String> {
+        var frameName:Array<String> = [];
+
+        var index:Int = 0;
+
+        if(this.frames != null) {
+            while(index < this.frames.frames.length) {
+                if(!frameName.contains(this.frames.frames[index].name.split("0")[0])) {
+                    //trace(this.frames.frames[index].name);
+                    frameName.push(this.frames.frames[index].name.split("0")[0]);
+                }
+
+                index++;
+            }
+        }
+
+        return frameName;
+    }
+
     public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+        
         /**
         * Just to be safe.
         * Basically, if it can't find the animation it's looking for to play, then it'll execute a random one.

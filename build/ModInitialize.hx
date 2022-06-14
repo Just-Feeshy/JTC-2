@@ -58,6 +58,7 @@ typedef WeekInfo = {
 }
 
 typedef AnimationInfo = {
+    var name:String;
     var prefix:String;
     var framerate:Int;
     var looped:Bool;

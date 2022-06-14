@@ -23,7 +23,6 @@ import flixel.addons.ui.FlxUICheckBox;
 import flixel.addons.ui.FlxUIDropDownMenu;
 import flixel.addons.ui.FlxUIButton;
 import flixel.addons.ui.FlxUIInputText;
-import flixel.addons.ui.FlxUIInputText;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxMath;
 import flixel.FlxSprite;

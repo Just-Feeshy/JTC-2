@@ -5,6 +5,8 @@ import flixel.FlxState;
 
 import openfl.utils.ByteArray;
 
+import ModInitialize;
+
 interface IDialogue {
     var finishCallback:(dialogue:IDialogue)->Void;
 
@@ -20,24 +22,32 @@ typedef DialogueFileData = {
 }
 
 typedef DialogueSpriteData = {
+    var animations:Array<AnimationInfo>;
+
     var assetID:Int;
     var size:Float;
+
+    var x:Float;
+    var y:Float;
 }
 
-/**
-* Should be stored in an array to have more than one line.
-*/
 typedef DialogueData = {
     var speed:Float;
 
     var protagonistTalking:Bool;
     var soundTalking:ByteArray;
 
-    var text:Array<Array<String>>;
-
-    var totalSprites:Array<DialogueFileData>;
+    var text:Array<String>;
 
     var leftPortrait:DialogueSpriteData;
     var rightPortrait:DialogueSpriteData;
     var speechBubble:DialogueSpriteData;
+}
+
+/**
+* Main export/import data.
+*/
+typedef DialogueInfo = {
+    var info:Array<DialogueData>;
+    var totalSprites:Array<DialogueFileData>;
 }
