@@ -7,12 +7,15 @@ import flixel.addons.ui.FlxUITabMenu;
 import flixel.addons.ui.FlxUIDropDownMenu;
 import flixel.addons.ui.FlxUIButton;
 import flixel.addons.ui.FlxUIInputText;
+import flixel.addons.text.FlxTypeText;
 import flixel.addons.ui.FlxUINumericStepper;
+import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxColor;
 import flixel.text.FlxText;
 import flixel.system.FlxSound;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
 import feshixl.interfaces.IDialogue;
 import openfl.net.FileReference;
@@ -33,8 +36,12 @@ using StringTools;
 abstract FileStatus(String) {
     var NONE = "none";
     var OVERRIDE = "override";
+    var DOCUMENT = "document";
 }
 
+/**
+* BONUS CHALLENGE: Don't override the `update` method.
+*/
 class DialogueCreatorState extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
 
@@ -57,6 +64,8 @@ class DialogueCreatorState extends MusicBeatState {
     var selectedAsset:Int = 0;
 
     var changeSprite:Bool = false;
+
+    var readOutDialogue:FlxTypeText;
 
     public function new() {
         super();
@@ -82,7 +91,8 @@ class DialogueCreatorState extends MusicBeatState {
             {name: "Dialogue", label: "Dialogue"},
 			{name: "E Sprites", label: 'Sprites'},
             {name: "F Animation", label: 'Animation'},
-            {name: "F Export", label: 'Export'}
+            {name: "Scene", label: 'Scene'},
+            {name: "T Export", label: 'Export'}
 		];
 
         fileStatus = NONE;
@@ -102,6 +112,9 @@ class DialogueCreatorState extends MusicBeatState {
         createDialogueUI();
         createDisplayUI();
         createAnimationUI();
+        createSceneUI();
+
+        FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
 
         super.create();
     }
@@ -143,7 +156,12 @@ class DialogueCreatorState extends MusicBeatState {
         rightPortrait.compileSprite();
         speechBubble.compileSprite();
 
+        leftPortrait.setGraphicSize(Std.int(leftPortrait.width * _info.info[dialogueScene].leftPortrait.size));
+        rightPortrait.setGraphicSize(Std.int(leftPortrait.width * _info.info[dialogueScene].rightPortrait.size));
         speechBubble.setGraphicSize(Std.int(speechBubble.width * _info.info[dialogueScene].speechBubble.size));
+
+        leftPortrait.updateHitbox();
+        rightPortrait.updateHitbox();
         speechBubble.updateHitbox();
         
         leftPortrait.x = _info.info[dialogueScene].leftPortrait.x;
@@ -196,7 +214,7 @@ class DialogueCreatorState extends MusicBeatState {
         var instructionSprite:FlxText = new FlxText(10, 10, "Select sprite");
 
         dialogueSpriteSelector = new FlxUIDropDownMenu(10, 30, FlxUIDropDownMenu.makeStrIdLabelArray(["speech bubble", "left portrait", "right portrait"], true), function(choose:String) {
-            //changeSprite = true;
+            changeSprite = true;
         });
         dialogueSpriteSelector.selectedLabel = "speech bubble";
 
@@ -248,7 +266,7 @@ class DialogueCreatorState extends MusicBeatState {
         });
         spriteSelector.selectedLabel = getSpriteNames()[0];
 
-        var getXML:FlxUIButton = new FlxUIButton(spriteSelector.width + spriteSelector.x + 20, 30, "Get XML", function() {
+        var getXML:FlxUIButton = new FlxUIButton(spriteSelector.width + spriteSelector.x + 20, 30, "Import XML", function() {
             fileStatus = OVERRIDE;
             fileType = [".xml"];
 
@@ -259,7 +277,7 @@ class DialogueCreatorState extends MusicBeatState {
             _file.browse();
         });
 
-        var getPNG:FlxUIButton = new FlxUIButton(getXML.x, 5 + getXML.y + getXML.height, "Get PNG", function() {
+        var getPNG:FlxUIButton = new FlxUIButton(getXML.x, 5 + getXML.y + getXML.height, "Import PNG", function() {
             fileStatus = OVERRIDE;
             fileType = [".png"];
 
@@ -389,6 +407,8 @@ class DialogueCreatorState extends MusicBeatState {
         var animNameText:FlxText = new FlxText(inputAnimName.x + inputAnimName.width + 5, inputAnimName.y, "Animation Name");
 
         framerateStepper = new FlxUINumericStepper(10, inputAnimName.y + inputAnimName.height + 10, 1, 24, 0, 60);
+        framerateStepper.name = "info_framerate";
+
         var framerateText:FlxText = new FlxText(framerateStepper.x + framerateStepper.width + 10, framerateStepper.y, "Framerate");
 
         loopedCheckbox = new FlxUICheckBox(10, framerateStepper.y + framerateStepper.height + 10, null, null, "Looped", 50);
@@ -410,14 +430,51 @@ class DialogueCreatorState extends MusicBeatState {
         UI_thingy.addGroup(tab_group_animation);
     }
 
-    function getSpriteAnimations(spriteName:String):Array<String> {
-        var animation:Array<String> = [];
+    var unableLabelText:FlxText;
 
-        animation = return switch(spriteName) {
-            case "speech bubble": speechBubble.getSourceAnimationName();
-            case "right portrait": rightPortrait.getSourceAnimationName();
-            case "left portrait": leftPortrait.getSourceAnimationName();
-            default: [];
+    function createSceneUI():Void {
+        var tab_group_scene = new FlxUI(null, UI_thingy);
+        tab_group_scene.name = "Scene";
+
+        var sceneStepper:FlxUINumericStepper = new FlxUINumericStepper(10, 30, 1, 1, 1, _info.info.length);
+        sceneStepper.name = "info_scene";
+
+        var selectSceneText:FlxText = new FlxText(sceneStepper.x + sceneStepper.width + 10, 30, "Dialogue Scene");
+
+        var getTXT:FlxUIButton = new FlxUIButton(10, 60, "Import TXT", function() {
+            fileStatus = DOCUMENT;
+            fileType = [".txt"];
+
+            _file = new FileReference();
+			_file.addEventListener(Event.SELECT, onSelect);
+			_file.addEventListener(Event.CANCEL, onCancel);
+
+            _file.browse();
+        });
+
+        unableLabelText = new FlxText(getTXT.y + getTXT.height + 20, "");
+        unableLabelText.color = FlxColor.RED;
+
+        var narratorDropDown:FlxUINumericStepper = new FlxUINumericStepper(getTXT.x + getTXT.width + 20, 60, FlxUIDropDownMenu.makeStrIdLabelArray(["left portrait", "right portrait"], true), function(choose:String) {
+
+        });
+
+        tab_group_scene.add(sceneStepper);
+        tab_group_scene.add(selectSceneText);
+        tab_group_scene.add(getTXT);
+        tab_group_scene.add(narratorDropDown);
+
+        UI_thingy.addGroup(tab_group_scene);
+    }
+
+    function getSpriteAnimations(spriteName:String):Array<String> {
+        var animation:Array<String>;
+
+        switch(spriteName) {
+            case "speech bubble": animation = speechBubble.getSourceAnimationName();
+            case "right portrait": animation = rightPortrait.getSourceAnimationName();
+            case "left portrait": animation = leftPortrait.getSourceAnimationName();
+            default: animation = [];
         }
 
         if(animation.length == 0) {
@@ -491,6 +548,18 @@ class DialogueCreatorState extends MusicBeatState {
             changeSprite = false;
             refreshDisplay();
         }
+
+        if(id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper)) {
+            var nums:FlxUINumericStepper = cast sender;
+			var wname = nums.name;
+
+            if(wname == "info_scene") {
+                if(dialogueScene != Std.int(nums.value) - 1) {
+                    dialogueScene = Std.int(nums.value) - 1;
+                    refreshDisplay();
+                }
+            }
+        }
     }
 
     function safelyGetAssetInfo(value:String, file:DialogueFileData):ByteArray {
@@ -503,6 +572,14 @@ class DialogueCreatorState extends MusicBeatState {
         }
 
         return null;
+    }
+
+    function attachKeysToEditor(event:KeyboardEvent) {
+        var key:FlxKey = event.keyCode;
+
+        if(key == FlxKey.ESCAPE) {
+            FlxG.switchState(new OptionsMenuState("editiors"));
+        }
     }
 
     function saveLevel() {
@@ -533,22 +610,24 @@ class DialogueCreatorState extends MusicBeatState {
 		_file = cast(event.target, FileReference);
         _file.removeEventListener(Event.COMPLETE, onComplete);
 
+        unableLabel.text = "";
+
+        var foundFile:Bool = false;
+
+        for(i in 0...fileType.length) {
+            if(_file.type == fileType[i]) {
+                foundFile = true;
+            }
+        }
+
+        if(!foundFile) {
+            unableLabel.text = "Unable to compile file:\n" + _file.name;
+            return;
+        }
+
 		switch(fileStatus) {
             case OVERRIDE: {
-                unableLabel.text = "";
-
-                var foundFile:Bool = false;
-
-                for(i in 0...fileType.length) {
-                    if(_file.type == fileType[i]) {
-                        foundFile = true;
-                    }
-                }
-
-                if(!foundFile) {
-                    unableLabel.text = "Unable to compile file:\n" + _file.name;
-                    return;
-                }else if(spriteSelector.selectedLabel.trim() == "") {
+                if(spriteSelector.selectedLabel.trim() == "") {
                     unableLabel.text = "Unable to compile file:\n" + _file.name + "\n\n" + "You must create an empty asset value.";
                     return;
                 }
@@ -572,6 +651,8 @@ class DialogueCreatorState extends MusicBeatState {
                 refreshDisplay();
 
                 fileType = [];
+            case DOCUMENT:
+                
             }default: {
                 return;
             }
@@ -596,5 +677,11 @@ class DialogueCreatorState extends MusicBeatState {
         _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
         _file.removeEventListener(Event.SELECT, onSelect);
         _file = null;
+    }
+
+    override function destroy():Void {
+        FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
+
+        super.destroy();
     }
 }

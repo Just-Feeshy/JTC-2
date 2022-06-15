@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.text.FlxText;
 import flixel.addons.transition.Transition;
+import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxColor;
 import flixel.FlxState;
 
@@ -60,7 +61,7 @@ class VideoState extends HelperStates {
 
         playVideo();
 
-        SPACE = new FlxText(20, 20, "Press SPACE to skip", 16);
+        SPACE = new FlxText(20, 20, "Press " + FlxKey.toStringMap.get(SaveData.getData(CUSTOM_UI_KEYBINDS)[4][0]).toUpperCase() + " to skip", 16);
         SPACE.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
         SPACE.borderSize = 2;
         add(SPACE);

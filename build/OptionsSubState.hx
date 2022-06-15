@@ -140,6 +140,8 @@ class CustomKeys extends OptionsSubState {
 
 					reloadKeys(keyString);
 				}else {
+					controls.setKeyboardScheme(controls.keyboardScheme, true);
+
 					SaveData.saveClient();
 					close();
 				}
@@ -189,6 +191,8 @@ class CustomUIKeys extends OptionsSubState {
 
 	private var keyLength:Int = 4;
 	private var keyIndex:Int = 0;
+
+	private var turns:Int = 0;
 
 	public function new() {
 		super();
@@ -249,17 +253,45 @@ class CustomUIKeys extends OptionsSubState {
 			section += 1;
 			reloadKeys(keyString);
 
-			if(section >= keyLength) {
-				section = 0;
+			try {
+				if(section >= keyLength) {
+					section = 0;
 
-				keyString.rtrim();
+					keyString.rtrim();
 
-				for(i in 0...keyLength) {
-					FlxG.save.data.customUIKeys[i + keyIndex][0] = FlxKey.fromStringMap.get(keyString.split(" ")[i]);
+					for(i in 0...keyLength) {
+						FlxG.save.data.customUIKeys[i + keyIndex][0] = FlxKey.fromStringMap.get(keyString.split(" ")[i]);
+					}
+
+					if(turns < 2) {
+						if(turns == 0) {
+							keyLength = 2;
+							keyIndex = 4;
+
+							keyString = keysToString(SaveData.getData(SaveType.CUSTOM_UI_KEYBINDS), keyIndex, keyLength);
+							howManyKey.text = "Start Keybinds";
+
+							reloadKeys(keyString);
+						}else if(turns == 1) {
+							keyLength = 2;
+							keyIndex = 6;
+
+							keyString = keysToString(SaveData.getData(SaveType.CUSTOM_UI_KEYBINDS), keyIndex, keyLength);
+							howManyKey.text = "Escape Keybinds";
+
+							reloadKeys(keyString);
+						}
+
+						turns++;
+					}else {
+						controls.setKeyboardScheme(controls.keyboardScheme, true);
+
+						SaveData.saveClient();
+						close();
+					}
 				}
-
-				SaveData.saveClient();
-				close();
+			}catch(e) {
+				SaveData.createNewBinds(CUSTOM_UI_KEYBINDS);
 			}
 
 			changingKeys = false;
@@ -353,6 +385,8 @@ class EraseSave extends OptionsSubState {
 					FlxG.save.erase();
 					SaveData.saveClient();
 				}
+
+				controls.setKeyboardScheme(controls.keyboardScheme, true);
 
 				close();
 			}

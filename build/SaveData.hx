@@ -130,14 +130,14 @@ class SaveData {
             case SET_FPS_DEFAULT:
                 #if (haxe >= "4.2.1")
                 if (FlxG.save.data.lowFps == null)
-                    FlxG.save.data.lowFps = 60;
+                    FlxG.save.data.lowFps = 100;
                 else if(!Std.isOfType(FlxG.save.data.lowFps, Int))
-                    FlxG.save.data.lowFps = 60;
+                    FlxG.save.data.lowFps = 100;
                 #else
                 if (FlxG.save.data.lowFps == null)
-                    FlxG.save.data.lowFps = 60;
+                    FlxG.save.data.lowFps = 100;
                 else if(!Std.is(FlxG.save.data.lowFps, Int))
-                    FlxG.save.data.lowFps = 60;
+                    FlxG.save.data.lowFps = 100;
                 #end
 
                 return FlxG.save.data.lowFps;
@@ -189,7 +189,10 @@ class SaveData {
                         [FlxKey.S, FlxKey.DOWN], //DOWN
                         [FlxKey.W, FlxKey.UP], //UP
                         [FlxKey.D, FlxKey.RIGHT], //RIGHT
-                        [FlxKey.SPACE] //SPACE
+                        [FlxKey.SPACE], //ACCEPT
+                        [FlxKey.ENTER],  //ACCEPT
+                        [FlxKey.BACKSPACE], //ESCAPE
+                        [FlxKey.ESCAPE] //ESCAPE
                     ];
                 }
 
@@ -222,5 +225,58 @@ class SaveData {
             default:
                 return null;
         }
+    }
+
+    inline static public function createNewBinds(data:SaveType):Void {
+        switch(data) {
+            case CUSTOM_UI_KEYBINDS:
+                FlxG.save.data.customUIKeys = new Array<Array<FlxKey>>();
+
+                FlxG.save.data.customUIKeys = [
+                    [FlxKey.A, FlxKey.LEFT], //LEFT
+                    [FlxKey.S, FlxKey.DOWN], //DOWN
+                    [FlxKey.W, FlxKey.UP], //UP
+                    [FlxKey.D, FlxKey.RIGHT], //RIGHT
+                    [FlxKey.SPACE], //ACCEPT
+                    [FlxKey.ENTER],  //ACCEPT
+                    [FlxKey.BACKSPACE], //ESCAPE
+                    [FlxKey.ESCAPE] //ESCAPE
+                ];
+            case CUSTOM_KEYBINDS:
+                FlxG.save.data.customKeys = new Array<Array<FlxKey>>();
+
+                FlxG.save.data.customKeys = [
+                    [FlxKey.A, FlxKey.LEFT], //LEFT
+                    [FlxKey.S, FlxKey.DOWN], //DOWN
+                    [FlxKey.W, FlxKey.UP], //UP
+                    [FlxKey.D, FlxKey.RIGHT], //RIGHT
+                    [FlxKey.SPACE] //SPACE
+                ];
+            default:
+                FlxG.save.data.customUIKeys = new Array<Array<FlxKey>>();
+
+                FlxG.save.data.customUIKeys = [
+                    [FlxKey.A, FlxKey.LEFT], //LEFT
+                    [FlxKey.S, FlxKey.DOWN], //DOWN
+                    [FlxKey.W, FlxKey.UP], //UP
+                    [FlxKey.D, FlxKey.RIGHT], //RIGHT
+                    [FlxKey.SPACE], //ACCEPT
+                    [FlxKey.ENTER],  //ACCEPT
+                    [FlxKey.BACKSPACE], //ESCAPE
+                    [FlxKey.ESCAPE] //ESCAPE
+                ];
+
+                FlxG.save.data.customKeys = new Array<Array<FlxKey>>();
+
+                FlxG.save.data.customKeys = [
+                    [FlxKey.A, FlxKey.LEFT], //LEFT
+                    [FlxKey.S, FlxKey.DOWN], //DOWN
+                    [FlxKey.W, FlxKey.UP], //UP
+                    [FlxKey.D, FlxKey.RIGHT], //RIGHT
+                    [FlxKey.SPACE] //SPACE
+                ];
+        }
+
+        throw "Sorry, could not read outdated version of keybind data.\nDon't worry, a fresh new version will be created for you. :)";
     }
 }

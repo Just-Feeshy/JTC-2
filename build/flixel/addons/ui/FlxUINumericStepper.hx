@@ -93,11 +93,11 @@ class FlxUINumericStepper extends FlxUIGroup implements IFlxUIWidget implements 
 
 		if(value == null)
 		{
-			value = 0;
+			value = Math.max(min, 0);
 		}
 		if (value < min)
 		{
-			value = 0;
+			value = Math.max(min, 0);
 		}
 		if (value > max)
 		{
