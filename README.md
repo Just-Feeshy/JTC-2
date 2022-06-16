@@ -9,7 +9,7 @@ The purpose is to allow for fewer restrictions that come with using someone else
 - [Suki](https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w) - Main Playtester
 - [FrogTreat](https://www.instagram.com/frogtreat/) - Director, Animator, and Charter
 - [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Animator, Artist, and Programmer
-- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer
+- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer and Engine Creator
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
 - [JDST](https://twitter.com/JDSTtwt) - Song Composer and Soundfont Creator
 
