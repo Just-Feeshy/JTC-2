@@ -81,6 +81,8 @@ class DialogueCreatorState extends MusicBeatState {
             soundTalking: null,
 
             text: [],
+            font: "pixel",
+            textSize: 32,
 
             leftPortrait: {animations: [], assetID: 2, size: 0.8, x: 0, y: 0},
             rightPortrait: {animations: [], assetID: 1, size: 0.8, x: 0, y: 0},
@@ -201,6 +203,27 @@ class DialogueCreatorState extends MusicBeatState {
 
         if(animSelector != null) {
             animSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(getSprAnimDataName(dialogueSpriteSelector.selectedLabel), true));
+        }
+
+        refreshDisplayText();
+    }
+
+    var displayText:FlxText;
+
+    function refreshDisplayText(text:String = ""):Void {
+        if(displayText != null) {
+            displayText.setPosition(displayText.x + speechBubble.x + 100, displayText.y + speechBubble.y + 100);
+
+            if(text.trim() != "") {
+                displayText.text = text;
+                //displayText.resetText(text);
+                //displayText.start(0.04 / _info.info[dialogueScene].speed, true);
+            }
+        }else {
+            displayText = new FlxText(242, 460, Std.int(FlxG.width * 0.6), "Hello", _info.info[dialogueScene].textSize);
+            displayText.font = Paths.font("PhantomMuff-Full-Letters-1.1.5.ttf");
+            displayText.color = FlxColor.BLACK;
+            add(displayText);
         }
     }
 
@@ -453,7 +476,13 @@ class DialogueCreatorState extends MusicBeatState {
             _file.browse();
         });
 
-        unableLabelText = new FlxText(getTXT.y + getTXT.height + 20, "");
+        var playDialogue:FlxUIButton = new FlxUIButton(10, getTXT.y + getTXT.height + 5, "Play Dialogue", function() {
+            refreshDisplayText(_info.info[dialogueScene].text[1]);
+        });
+        playDialogue.color = FlxColor.LIME;
+        playDialogue.label.color = FlxColor.WHITE;
+
+        unableLabelText = new FlxText(getTXT.x, getTXT.y + getTXT.height + 25, "");
         unableLabelText.color = FlxColor.RED;
 
         narratorDropDown = new FlxUIDropDownMenu(getTXT.x + getTXT.width + 20, 60, FlxUIDropDownMenu.makeStrIdLabelArray(["left portrait", "right portrait"], true), function(choose:String) {
@@ -463,7 +492,9 @@ class DialogueCreatorState extends MusicBeatState {
         tab_group_scene.add(sceneStepper);
         tab_group_scene.add(selectSceneText);
         tab_group_scene.add(getTXT);
+        tab_group_scene.add(playDialogue);
         tab_group_scene.add(narratorDropDown);
+        tab_group_scene.add(unableLabelText);
 
         UI_thingy.addGroup(tab_group_scene);
     }

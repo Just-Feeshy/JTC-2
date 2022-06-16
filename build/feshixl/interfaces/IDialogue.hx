@@ -38,6 +38,8 @@ typedef DialogueData = {
     var soundTalking:ByteArray;
 
     var text:Array<String>;
+    var font:String;
+    var textSize:Int;
 
     var leftPortrait:DialogueSpriteData;
     var rightPortrait:DialogueSpriteData;
