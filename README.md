@@ -13,6 +13,12 @@ The purpose is to allow for fewer restrictions that come with using someone else
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
 - [JDST](https://twitter.com/JDSTtwt) - Song Composer and Soundfont Creator
 
+## Special Thanks:
+- [Duckint](https://github.com/TPWAGC) - Grammer Corrections
+- Sylvefloat - Note Splash Animation
+- [PolybiusProxy](https://github.com/polybiusproxy) and [Datee](https://github.com/datee) - VLC Extenstion
+- Cracsthor - PhantomMuff Font
+
 ## Installation Guide:
 1. [Install Haxe 4.2.5](https://haxe.org/download/version/4.2.5/), as it's the recommended version.
 2. Make sure to install these libraries next:
