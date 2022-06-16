@@ -14,7 +14,7 @@ The purpose is to allow for fewer restrictions that come with using someone else
 - [JDST](https://twitter.com/JDSTtwt) - Song Composer and Soundfont Creator
 
 ## Special Thanks:
-- [Duckint](https://github.com/TPWAGC) - Grammer Corrections
+- [Duckint](https://github.com/TPWAGC) - Grammar Corrections
 - Sylvefloat - Note Splash Animation
 - [PolybiusProxy](https://github.com/polybiusproxy) and [Datee](https://github.com/datee) - VLC Extenstion
 - Cracsthor - PhantomMuff Font
