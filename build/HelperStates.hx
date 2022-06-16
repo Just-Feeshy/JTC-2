@@ -7,6 +7,7 @@ import flixel.addons.ui.FlxUIState;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.util.FlxColor;
+import flixel.FlxSubState;
 import flixel.FlxSprite;
 
 import example_code.TransitionSamples;
@@ -59,12 +60,6 @@ class HelperStates extends FlxUIState {
 	}
 
 	override function create() {
-		super.create();
-
-		if(!transitionSkip) {
-			transitionIn();
-		}
-
 		/**
 		* Interesting, I know.
 		*/
@@ -72,6 +67,14 @@ class HelperStates extends FlxUIState {
 		if(HelperStates.luaExist(Type.getClass(this)))
 			HelperStates.getLua(Type.getClass(this)).execute();
 		#end
+
+		onCreate();
+
+		super.create();
+
+		if(!transitionSkip) {
+			transitionIn();
+		}
 	}
 
 	public function onCreate():Dynamic {
@@ -98,6 +101,10 @@ class HelperStates extends FlxUIState {
 			Register.attachLuaToState(Type.getClass(this), new ModLua(file));
 		}
 		#end
+	}
+
+	public function openSubStateCustom(SubState:FlxSubState):Void {
+		openSubState(SubState);
 	}
 
     function clearStuff():Void {

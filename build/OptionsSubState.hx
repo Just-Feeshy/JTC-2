@@ -17,8 +17,21 @@ import SaveData.SaveType;
 using StringTools;
 
 class OptionsSubState extends MusicBeatSubstate {
+	private var bgBlack:FlxSprite;
+
+
 	public function new() {
 		super();
+
+		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bgBlack.alpha = 0;
+		add(bgBlack);
+
+		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: finishTransition});
+	}
+
+	function finishTransition(twn:FlxTween) {
+		//empty
 	}
 
 	static public function newSubState(type:SaveType):OptionsSubState {
@@ -38,8 +51,6 @@ class OptionsSubState extends MusicBeatSubstate {
 }
 
 class CustomKeys extends OptionsSubState {
-	private var bgBlack:FlxSprite;
-
 	private var keys:Alphabet;
 	private var howManyKey:FlxText;
 
@@ -64,23 +75,19 @@ class CustomKeys extends OptionsSubState {
 		if(keyString.split(" ").length < keyLength) {
 			keyString = "A S W D";
 		}
+	}
 
-		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		bgBlack.alpha = 0;
-		add(bgBlack);
+	override function finishTransition(twn:FlxTween) {
+		keys = new Alphabet(0, 0, keyString, true, false);
+		keys.screenCenter();
+		add(keys);
 
-		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-			keys = new Alphabet(0, 0, keyString, true, false);
-			keys.screenCenter();
-			add(keys);
-
-			howManyKey = new FlxText(0, 0, FlxG.width, "Standard Four Keybinds", 32);
-			howManyKey.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			howManyKey.borderSize = 2;
-			howManyKey.screenCenter(X);
-			howManyKey.y = howManyKey.getScreenCenter(Y) + (keys.height * 1.5);
-			add(howManyKey);
-		}});
+		howManyKey = new FlxText(0, 0, FlxG.width, "Standard Four Keybinds", 32);
+		howManyKey.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		howManyKey.borderSize = 2;
+		howManyKey.screenCenter(X);
+		howManyKey.y = howManyKey.getScreenCenter(Y) + (keys.height * 1.5);
+		add(howManyKey);
 	}
 
 	override function update(elapsed:Float) {
@@ -174,8 +181,6 @@ class CustomKeys extends OptionsSubState {
 }
 
 class CustomUIKeys extends OptionsSubState {
-	private var bgBlack:FlxSprite;
-
 	private var keys:Alphabet;
 	private var howManyKey:FlxText;
 
@@ -202,23 +207,19 @@ class CustomUIKeys extends OptionsSubState {
 		if(keyString.split(" ").length < keyLength) {
 			keyString = "A S W D";
 		}
+	}
 
-		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		bgBlack.alpha = 0;
-		add(bgBlack);
+	override function finishTransition(twn:FlxTween) {
+		keys = new Alphabet(0, 0, keyString, true, false);
+		keys.screenCenter();
+		add(keys);
 
-		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-			keys = new Alphabet(0, 0, keyString, true, false);
-			keys.screenCenter();
-			add(keys);
-
-			howManyKey = new FlxText(0, 0, FlxG.width, "Standard Four Keybinds", 32);
-			howManyKey.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			howManyKey.borderSize = 2;
-			howManyKey.screenCenter(X);
-			howManyKey.y = howManyKey.getScreenCenter(Y) + (keys.height * 1.5);
-			add(howManyKey);
-		}});
+		howManyKey = new FlxText(0, 0, FlxG.width, "Standard Four Keybinds", 32);
+		howManyKey.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		howManyKey.borderSize = 2;
+		howManyKey.screenCenter(X);
+		howManyKey.y = howManyKey.getScreenCenter(Y) + (keys.height * 1.5);
+		add(howManyKey);
 	}
 
 	override function update(elapsed:Float) {
@@ -321,8 +322,6 @@ class CustomUIKeys extends OptionsSubState {
 }
 
 class EraseSave extends OptionsSubState {
-	private var bgBlack:FlxSprite;
-
 	private var choices:Alphabet;
 	private var yourSure:FlxText;
 
@@ -334,23 +333,19 @@ class EraseSave extends OptionsSubState {
 
 	public function new() {
 		super();
+	}
 
-		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		bgBlack.alpha = 0;
-		add(bgBlack);
+	override function finishTransition(twn:FlxTween) {
+		choices = new Alphabet(0, 0, "yes no", true, false);
+		choices.screenCenter();
+		add(choices);
 
-		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-			choices = new Alphabet(0, 0, "yes no", true, false);
-			choices.screenCenter();
-			add(choices);
-
-			yourSure = new FlxText(0, 0, FlxG.width, "Are you sure?", 32);
-			yourSure.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			yourSure.borderSize = 2;
-			yourSure.screenCenter(X);
-			yourSure.y = yourSure.getScreenCenter(Y) + (choices.height * 1.5);
-			add(yourSure);
-		}});
+		yourSure = new FlxText(0, 0, FlxG.width, "Are you sure?", 32);
+		yourSure.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		yourSure.borderSize = 2;
+		yourSure.screenCenter(X);
+		yourSure.y = yourSure.getScreenCenter(Y) + (choices.height * 1.5);
+		add(yourSure);
 	}
 
 	override function update(elapsed:Float) {
@@ -371,10 +366,12 @@ class EraseSave extends OptionsSubState {
 			changingKeys = true;
 
 			if(controls.LEFT_P) {
+				colorSway = 0;
 				section -= 1;
 			}
 
 			if(controls.RIGHT_P) {
+				colorSway = 0;
 				section += 1;
 			}
 
@@ -399,8 +396,6 @@ class EraseSave extends OptionsSubState {
 }
 
 class GammaMenu extends OptionsSubState {
-	private var bgBlack:FlxSprite;
-
 	private var valueTxt:FlxText;
 	private var tutorial:FlxText;
 
@@ -408,25 +403,21 @@ class GammaMenu extends OptionsSubState {
 
 	public function new() {
 		super();
+	}
 
-		bgBlack = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		bgBlack.alpha = 0;
-		add(bgBlack);
+	override function finishTransition(twn:FlxTween) {
+		valueTxt = new FlxText(0, 0, FlxG.width, "< " + SaveData.getData(SaveType.GAMMA) + " >", 64);
+		valueTxt.setFormat("VCR OSD Mono", 64, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		valueTxt.borderSize = 4;
+		valueTxt.screenCenter();
+		add(valueTxt);
 
-		FlxTween.tween(bgBlack, {alpha: 0.5}, 1, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-			valueTxt = new FlxText(0, 0, FlxG.width, "< " + SaveData.getData(SaveType.GAMMA) + " >", 64);
-			valueTxt.setFormat("VCR OSD Mono", 64, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			valueTxt.borderSize = 4;
-			valueTxt.screenCenter();
-			add(valueTxt);
-
-			tutorial = new FlxText(0, 0, FlxG.width, "Use left and right keys", 32);
-			tutorial.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			tutorial.borderSize = 2;
-			tutorial.screenCenter(X);
-			tutorial.y = tutorial.getScreenCenter(Y) + (tutorial.height * 2);
-			add(tutorial);
-		}});
+		tutorial = new FlxText(0, 0, FlxG.width, "Use left and right keys", 32);
+		tutorial.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tutorial.borderSize = 2;
+		tutorial.screenCenter(X);
+		tutorial.y = tutorial.getScreenCenter(Y) + (tutorial.height * 2);
+		add(tutorial);
 	}
 
 	function getShaders():BuiltInShaders {

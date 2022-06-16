@@ -80,7 +80,7 @@ class DialogueCreatorState extends MusicBeatState {
             protagonistTalking: false,
             soundTalking: null,
 
-            text: null,
+            text: [],
 
             leftPortrait: {animations: [], assetID: 2, size: 0.8, x: 0, y: 0},
             rightPortrait: {animations: [], assetID: 1, size: 0.8, x: 0, y: 0},
@@ -431,6 +431,7 @@ class DialogueCreatorState extends MusicBeatState {
     }
 
     var unableLabelText:FlxText;
+    var narratorDropDown:FlxUIDropDownMenu;
 
     function createSceneUI():Void {
         var tab_group_scene = new FlxUI(null, UI_thingy);
@@ -455,7 +456,7 @@ class DialogueCreatorState extends MusicBeatState {
         unableLabelText = new FlxText(getTXT.y + getTXT.height + 20, "");
         unableLabelText.color = FlxColor.RED;
 
-        var narratorDropDown:FlxUINumericStepper = new FlxUINumericStepper(getTXT.x + getTXT.width + 20, 60, FlxUIDropDownMenu.makeStrIdLabelArray(["left portrait", "right portrait"], true), function(choose:String) {
+        narratorDropDown = new FlxUIDropDownMenu(getTXT.x + getTXT.width + 20, 60, FlxUIDropDownMenu.makeStrIdLabelArray(["left portrait", "right portrait"], true), function(choose:String) {
 
         });
 
@@ -622,11 +623,12 @@ class DialogueCreatorState extends MusicBeatState {
 
         if(!foundFile) {
             unableLabel.text = "Unable to compile file:\n" + _file.name;
+            unableLabelText.text = "Unable to compile file:\n" + _file.name;
             return;
         }
 
 		switch(fileStatus) {
-            case OVERRIDE: {
+            case OVERRIDE:
                 if(spriteSelector.selectedLabel.trim() == "") {
                     unableLabel.text = "Unable to compile file:\n" + _file.name + "\n\n" + "You must create an empty asset value.";
                     return;
@@ -652,10 +654,12 @@ class DialogueCreatorState extends MusicBeatState {
 
                 fileType = [];
             case DOCUMENT:
-                
-            }default: {
+                _info.info[dialogueScene].text[0] = narratorDropDown.selectedLabel;
+                _info.info[dialogueScene].text[1] = _file.data.toString();
+
+                fileType = [];
+            default:
                 return;
-            }
         }
 	}
 

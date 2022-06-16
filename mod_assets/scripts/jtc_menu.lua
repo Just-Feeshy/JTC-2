@@ -21,7 +21,6 @@ function onCreate()
 
     for i=0, #presetOptions - 1 do
         if not spriteExist(presetOptions[i + 1]) then
-            print("yea");
             createSprite(presetOptions[i + 1]);
         end
 

@@ -126,7 +126,7 @@ class OptionsMenuState extends MusicBeatState {
 									option.optionSubState = OptionsSubState.newSubState(SaveType.CUSTOM_KEYBINDS);
 									option.optionSubState.cameras = [camSubState];
 
-									openSubStateBlur(option.optionSubState);
+									openSubStateCustom(option.optionSubState);
 								}
 
 								setting(option, "", option.ID);
@@ -142,7 +142,7 @@ class OptionsMenuState extends MusicBeatState {
 									option.optionSubState = OptionsSubState.newSubState(SaveType.CUSTOM_UI_KEYBINDS);
 									option.optionSubState.cameras = [camSubState];
 
-									openSubStateBlur(option.optionSubState);
+									openSubStateCustom(option.optionSubState);
 								}
 
 								setting(option, "", option.ID);
@@ -326,7 +326,7 @@ class OptionsMenuState extends MusicBeatState {
 									option.optionSubState = OptionsSubState.newSubState(SaveType.GAMMA);
 									option.optionSubState.cameras = [camSubState];
 
-									openSubStateBlur(option.optionSubState);
+									openSubStateCustom(option.optionSubState);
 								}
 
 								setting(option, "", option.ID);
@@ -497,7 +497,7 @@ class OptionsMenuState extends MusicBeatState {
 						]
 					}
 				];
-			}default: {
+			}case "none": {
 				optionList = [
 					{
 						catagory: this.catalog,
@@ -557,7 +557,7 @@ class OptionsMenuState extends MusicBeatState {
 									option.optionSubState = OptionsSubState.newSubState(SaveType.ERASE_DATA);
 									option.optionSubState.cameras = [camSubState];
 
-									openSubStateBlur(option.optionSubState);
+									openSubStateCustom(option.optionSubState);
 								}
 
 								setting(option, "", option.ID);
@@ -565,8 +565,56 @@ class OptionsMenuState extends MusicBeatState {
 						]
 					}
 				];
+			}default: {
+				optionList = [
+					{
+						catagory: this.catalog,
+						options: []
+					}
+				];
 			}
 		}
+		
+		super.create();
+
+		#if (USING_LUA && linc_luajit)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			HelperStates.getLua(Type.getClass(this)).set("catalog", catalog);
+			HelperStates.getLua(Type.getClass(this)).set("listSize", optionList[0].options.length);
+
+			HelperStates.getLua(Type.getClass(this)).addCallback("insertOption", function(name:String, anim:String, index:Int) {
+				optionList[0].options.insert(index, new Options(0, index * 10, name, SaveType.NONE, function(option:Options, pressed:Bool) {
+					option.ID = index;
+
+					if(option.optionIcon.animation.curAnim.name != anim)
+						option.optionIcon.animation.play(anim);
+
+					if(pressed) {
+						option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+						option.optionSubState = Register.forNameClass(HelperStates.getLua(Type.getClass(this)).call("createOptionSubState", [option.text]), []);
+
+						if(option.optionSubState != null) {
+							option.optionSubState.cameras = [camSubState];
+							openSubStateCustom(option.optionSubState);
+						}
+					}
+
+					setting(option, "", option.ID);
+				}));
+
+				for(i in index...optionList[0].options.length) {
+					optionList[0].options[i].ID = index;
+					optionList[0].options[i].y = i * 10;
+				}
+			});
+
+			HelperStates.getLua(Type.getClass(this)).addCallback("enterOptionState", function(catalog:String) {
+				FlxG.switchState(new OptionsMenuState(catalog));
+			});
+		}
+		#end
+
+		super.onCreate();
 
 		setCat(curCatalog);
 
@@ -613,9 +661,19 @@ class OptionsMenuState extends MusicBeatState {
 		curOptionSection.cameras = [camNoBlur];
 
 		shouldPress = true;
-
-		super.create();
     }
+
+	override public function onCreate():Dynamic {
+		return null;
+	}
+
+	function optionLuaCallback(name:String):Void {
+		#if (USING_LUA && linc_luajit)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			HelperStates.getLua(Type.getClass(this)).call("whenOptionPressed", [name]);
+		}
+		#end
+	}
 
 	function setControls(option:Options, id:Int):Void {
 		if (FlxG.save.data.dfjk > 3)
@@ -697,7 +755,7 @@ class OptionsMenuState extends MusicBeatState {
 		}
 	}
 
-	public function openSubStateBlur(SubState:FlxSubState):Void {
+	override public function openSubStateCustom(SubState:FlxSubState):Void {
 		changeBlur = true;
 
 		FlxTween.tween(blurEffect, {size: 20}, 0.75, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
@@ -737,10 +795,12 @@ class OptionsMenuState extends MusicBeatState {
 			for(i in 0...optionList[curCatalog].options.length) {
 				var item:Options = optionList[curCatalog].options[i];
 
-				if (item.targetY == 0)
+				if (item.targetY == 0) {
 					item.callback(item, true);
-				else
+					optionLuaCallback(item.text);
+				}else {
 					item.callback(item, false);
+				}
 			}
 		}
 

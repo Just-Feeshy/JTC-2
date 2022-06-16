@@ -205,6 +205,16 @@ class ModLua {
             FlxG.switchState(Register.forNameClass(state, []));
         });
 
+        /**
+        * State must extend from `HelperState`!
+        * @param subState name of the substate class.
+        */
+        Lua_helper.add_callback(lua, "openSubState", function(subState:String) {
+            var state = cast FlxG.state;
+
+            state.openSubStateCustom(Register.forNameClass(subState, []));
+        });
+
         //tweens
         Lua_helper.add_callback(lua, "setCameraZoomTween", function(name:String, value:Float, duration:Float, easing:String) {
             var cam:FlxCamera = luaCameras.get(name);

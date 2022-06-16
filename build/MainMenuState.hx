@@ -282,11 +282,9 @@ class MainMenuState extends MusicBeatState
 	}
 
 	//To call from different segment in code.
-	#if (USING_LUA && linc_luajit)
 	override public function onCreate() {
 		return null;
 	}
-	#end
 
 	var selectedSomethin:Bool = false;
 
