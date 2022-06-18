@@ -34,12 +34,13 @@ typedef DialogueSpriteData = {
 typedef DialogueData = {
     var speed:Float;
 
-    var protagonistTalking:Bool;
-    var soundTalking:ByteArray;
+    var talkingAnimation:String;
 
     var text:Array<String>;
     var font:String;
+    var textColor:Int;
     var textSize:Int;
+    var soundIndex:Int;
 
     var leftPortrait:DialogueSpriteData;
     var rightPortrait:DialogueSpriteData;
@@ -52,4 +53,5 @@ typedef DialogueData = {
 typedef DialogueInfo = {
     var info:Array<DialogueData>;
     var totalSprites:Array<DialogueFileData>;
+    var totalSounds:Array<ByteArray>;
 }

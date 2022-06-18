@@ -96,10 +96,13 @@ class Paths
 
 	inline static public function font(key:String)
 	{
-		return 'assets/fonts/$key';
+		if(Assets.exists(getPreloadPath('fonts/$key'))) {
+			return getPreloadPath('fonts/$key');
+		}else {
+			return null;
+		}
 	}
 
-	//Finally! Theres a console crash log
 	inline static public function mora(key:String, type:String,?library:String)
 	{
 		if(Assets.exists(getPath('feeshdata/$key.$type', TEXT, library)))
