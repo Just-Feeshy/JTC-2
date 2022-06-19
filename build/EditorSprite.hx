@@ -31,6 +31,7 @@ import Std.is as isOfType;
 */
 class EditorSprite extends FlxSprite {
     public var defaultCompiler:Void->Void;
+    public var completeCallback:Void->Void;
 
     var graphics:FlxGraphic;
     var xmlData:Xml;
@@ -111,6 +112,10 @@ class EditorSprite extends FlxSprite {
         }
 
         this.frames = tempFrames;
+
+        if(completeCallback != null) {
+            completeCallback();
+        }
     }
 
     public function getSourceAnimationName():Array<String> {
@@ -164,6 +169,9 @@ class EditorSprite extends FlxSprite {
 
     override function destroy() {
         graphics = FlxDestroyUtil.destroy(graphics);
+
+        defaultCompiler = null;
+        completeCallback = null;
 
         super.destroy();
     }

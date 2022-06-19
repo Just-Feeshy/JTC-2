@@ -12,11 +12,11 @@ import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxColor;
 import flixel.text.FlxText;
-import flixel.system.FlxSound;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
 import feshixl.interfaces.IDialogue;
+import feshixl.sound.FeshSound;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
 import sys.FileSystem;
@@ -77,14 +77,14 @@ class DialogueCreatorState extends MusicBeatState {
 
             talkingAnimation: null,
 
-            text: [],
-            font: Paths.font("PhantomMuff-Full-Letters-1.1.5.ttf"),
+            text: ["", ""],
+            font: Paths.font("PhantomMuff.ttf"),
             textColor: 0xFF000000,
             textSize: 32,
             soundIndex: 0,
 
-            leftPortrait: {animations: [], assetID: 2, size: 0.8, x: 44, y: 360},
-            rightPortrait: {animations: [], assetID: 1, size: 0.8, x: 244, y: 360},
+            leftPortrait: {animations: [], assetID: 2, size: 0.8, x: 200, y: 60},
+            rightPortrait: {animations: [], assetID: 1, size: 0.8, x: 720, y: 60},
             speechBubble: {animations: [], assetID: 0, size: 0.8, x: 144, y: 400}
         }], totalSprites: this.totalSprites, totalSounds: []};
 
@@ -114,6 +114,7 @@ class DialogueCreatorState extends MusicBeatState {
         createDisplayUI();
         createAnimationUI();
         createSceneUI();
+        createExportUI();
 
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
 
@@ -122,6 +123,22 @@ class DialogueCreatorState extends MusicBeatState {
 
     function refreshDisplay():Void {
         _info.totalSprites = totalSprites;
+
+        var leftPortraitAnim:String;
+        var rightPortraitAnim:String;
+        var speechBubbleAnim:String;
+
+        if(leftPortrait != null) {
+            leftPortraitAnim = leftPortrait.animation.name;
+        }
+
+        if(rightPortrait != null) {
+            rightPortraitAnim = rightPortrait.animation.name;
+        }
+
+        if(speechBubble != null) {
+            speechBubbleAnim = speechBubble.animation.name;
+        }
 
         remove(leftPortrait);
         remove(rightPortrait);
@@ -153,13 +170,24 @@ class DialogueCreatorState extends MusicBeatState {
         add(rightPortrait);
         add(speechBubble);
 
+        leftPortrait.completeCallback = function() {
+            implementAnimToSprite(leftPortrait, "left portrait");
+            leftPortrait.playAnim(leftPortraitAnim);
+        }
+
+        rightPortrait.completeCallback = function() {
+            implementAnimToSprite(rightPortrait, "right portrait");
+            rightPortrait.playAnim(rightPortraitAnim);
+        }
+
+        speechBubble.completeCallback = function() {
+            implementAnimToSprite(speechBubble, "speech bubble");
+            speechBubble.playAnim(speechBubbleAnim);
+        }
+
         leftPortrait.compileSprite();
         rightPortrait.compileSprite();
         speechBubble.compileSprite();
-
-        leftPortrait.playAnim(leftPortrait.animation.name);
-        rightPortrait.playAnim(rightPortrait.animation.name);
-        speechBubble.playAnim(speechBubble.animation.name);
 
         refreshDisplayPosition();
 
@@ -195,46 +223,34 @@ class DialogueCreatorState extends MusicBeatState {
             animSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(getSprAnimDataName(dialogueSpriteSelector.selectedLabel), true));
         }
 
-        setSpriteSteppers();
+        if(narratorDropDown != null) {
+            narratorDropDown.selectedLabel = _info.info[dialogueScene].text[0];
 
-        refreshDisplayText();
-        refreshDisplaySound();
-    }
-
-    function refreshSpriteItself():Void {
-        remove(leftPortrait);
-        remove(rightPortrait);
-        remove(speechBubble);
-
-        leftPortrait = FlxDestroyUtil.destroy(leftPortrait);
-        rightPortrait = FlxDestroyUtil.destroy(rightPortrait);
-        speechBubble = FlxDestroyUtil.destroy(speechBubble);
-
-        leftPortrait = new EditorSprite();
-        rightPortrait = new EditorSprite();
-        speechBubble = new EditorSprite();
-
-        leftPortrait.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].leftPortrait.assetID]));
-        rightPortrait.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].rightPortrait.assetID]));
-        speechBubble.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].speechBubble.assetID]));
-
-        leftPortrait.implementBitmap(safelyGetAssetInfo("sprite", totalSprites[_info.info[dialogueScene].leftPortrait.assetID]));
-        rightPortrait.implementBitmap(safelyGetAssetInfo("sprite", totalSprites[_info.info[dialogueScene].rightPortrait.assetID]));
-        speechBubble.implementBitmap(safelyGetAssetInfo("sprite", totalSprites[_info.info[dialogueScene].speechBubble.assetID]));
-
-        speechBubble.defaultCompiler = function() {
-            speechBubble.frames = Paths.getSparrowAtlas("speech_bubble_talking", "shared");
-            speechBubble.animation.addByPrefix("normal", "speech bubble normal", 24, true);
-            speechBubble.playAnim("normal");
+            if(narratorDropDown.selectedLabel == "left portrait") {
+                rightPortrait.visible = false;
+                leftPortrait.visible = true;
+                speechBubble.flipX = true;
+            }else {
+                rightPortrait.visible = true;
+                leftPortrait.visible = false;
+                speechBubble.flipX = false;
+            }
         }
 
-        add(leftPortrait);
-        add(rightPortrait);
-        add(speechBubble);
+        if(sceneStepper != null) {
+            sceneStepper.value = dialogueScene + 1;
+            sceneStepper.max = _info.info.length - 1;
+        }
 
-        leftPortrait.compileSprite();
-        rightPortrait.compileSprite();
-        speechBubble.compileSprite();
+        if(soundIndexStepper != null) {
+            soundIndexStepper.max = _info.totalSounds.length;
+            soundIndexStepper.value = _info.info[dialogueScene].soundIndex;
+        }
+
+        setSpriteSteppers();
+
+        refreshDisplayText(_info.info[dialogueScene].text[1]);
+        refreshDisplaySound();
     }
 
     var displayText:DialogueText;
@@ -261,6 +277,7 @@ class DialogueCreatorState extends MusicBeatState {
         }
 
         if(displayText != null) {
+            displayText.sounds = [FeshSound.loadSoundFromByteArray(_info.totalSounds[_info.info[dialogueScene].soundIndex])];
             displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
             displayText.size = _info.info[dialogueScene].textSize;
 
@@ -269,7 +286,7 @@ class DialogueCreatorState extends MusicBeatState {
                 displayText.start(0.04 / _info.info[dialogueScene].speed, true);
             }
         }else {
-            displayText = new DialogueText(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10, Std.int(FlxG.width * 0.6), "", _info.info[dialogueScene].textSize);
+            displayText = new DialogueText(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10, Std.int(FlxG.width * 0.8), "", _info.info[dialogueScene].textSize);
             add(displayText);
         }
 
@@ -278,11 +295,6 @@ class DialogueCreatorState extends MusicBeatState {
     }
 
     function refreshDisplaySound():Void {
-        if(soundIndexStepper != null) {
-            soundIndexStepper.max = _info.totalSounds.length;
-            _info.info[dialogueScene].soundIndex = Std.int(soundIndexStepper.value);
-        }
-
         if(speedStepper != null) {
             _info.info[dialogueScene].speed = Std.int(speedStepper.value);
         }
@@ -311,6 +323,11 @@ class DialogueCreatorState extends MusicBeatState {
         rightPortrait.y = _info.info[dialogueScene].rightPortrait.y;
         speechBubble.x = _info.info[dialogueScene].speechBubble.x;
         speechBubble.y = _info.info[dialogueScene].speechBubble.y;
+    }
+
+    function clearDisplayText():Void {
+        displayText.resetText(_info.info[dialogueScene].text[1]);
+        displayText.start(0.04 / _info.info[dialogueScene].speed, true);
     }
 
     var dialogueSpriteSelector:FlxUIDropDownMenu;
@@ -364,7 +381,7 @@ class DialogueCreatorState extends MusicBeatState {
                 default: return;
             }
 
-            refreshDisplayPosition();
+            changeSprite = true;
         });
         centerXButton.color = 0x00eeff;
         centerXButton.label.color = FlxColor.WHITE;
@@ -593,6 +610,7 @@ class DialogueCreatorState extends MusicBeatState {
     var speedStepper:FlxUINumericStepper;
     var soundIndexStepper:FlxUINumericStepper;
     var textSizeStepper:FlxUINumericStepper;
+    var sceneStepper:FlxUINumericStepper;
 
     var talkCheckbox:FlxUICheckBox;
 
@@ -600,7 +618,7 @@ class DialogueCreatorState extends MusicBeatState {
         var tab_group_scene = new FlxUI(null, UI_thingy);
         tab_group_scene.name = "Scene";
 
-        var sceneStepper:FlxUINumericStepper = new FlxUINumericStepper(10, 30, 1, 1, 1, _info.info.length);
+        sceneStepper = new FlxUINumericStepper(10, 30, 1, 1, 0, _info.info.length);
         sceneStepper.name = "info_scene";
 
         var selectSceneText:FlxText = new FlxText(sceneStepper.x + sceneStepper.width + 10, 30, "Dialogue Scene");
@@ -616,9 +634,9 @@ class DialogueCreatorState extends MusicBeatState {
             _file.browse();
         });
 
-        var getSound:FlxUIButton = new FlxUIButton(10, getTXT.y + getTXT.height + 5, "Import Sound", function() {
+        var getSound:FlxUIButton = new FlxUIButton(10, getTXT.y + getTXT.height + 5, "Import OGG", function() {
             fileStatus = SOUND;
-            fileType = [".ogg", ".mp3"];
+            fileType = [".ogg"];
 
             _file = new FileReference();
 			_file.addEventListener(Event.SELECT, onSelect);
@@ -631,12 +649,48 @@ class DialogueCreatorState extends MusicBeatState {
         unableLabelOther.color = FlxColor.RED;
 
         var playDialogue:FlxUIButton = new FlxUIButton(10, getSound.y + getSound.height + 50, "Play/Refresh Dialogue", function() {
+            if(narratorDropDown.selectedLabel == "left portrait") {
+                leftPortrait.playAnim(leftPortrait.animation.name);
+            }else {
+                rightPortrait.playAnim(rightPortrait.animation.name);
+            }
+
+            if(soundIndexStepper != null) {
+                _info.info[dialogueScene].soundIndex = Std.int(soundIndexStepper.value);
+            }
+
             refreshDisplayText(_info.info[dialogueScene].text[1]);
             refreshDisplaySound();
         });
         playDialogue.color = FlxColor.LIME;
         playDialogue.label.color = FlxColor.WHITE;
         playDialogue.resize(playDialogue.width, playDialogue.height * 1.5);
+
+        var newDialogueScene:FlxUIButton = new FlxUIButton(playDialogue.x + playDialogue.width + 5, playDialogue.y, "Create New Dialogue Scene", function() {
+            _info.info.push({
+                speed: 1.0,
+    
+                talkingAnimation: null,
+    
+                text: ["", ""],
+                font: Paths.font("PhantomMuff-Full-Letters-1.1.5.ttf"),
+                textColor: 0xFF000000,
+                textSize: 32,
+                soundIndex: 0,
+    
+                leftPortrait: {animations: [], assetID: 2, size: 0.8, x: 200, y: 60},
+                rightPortrait: {animations: [], assetID: 1, size: 0.8, x: 720, y: 60},
+                speechBubble: {animations: [], assetID: 0, size: 0.8, x: 144, y: 400}
+            });
+
+            dialogueScene = _info.info.length - 1;
+            changeSprite = true;
+
+            clearDisplayText();
+        });
+        newDialogueScene.color = FlxColor.GREEN;
+        newDialogueScene.label.color = FlxColor.WHITE;
+        newDialogueScene.resize(newDialogueScene.width, newDialogueScene.height * 1.5);
 
         hexColorInput = new FlxUIInputText(10, playDialogue.y + playDialogue.height + 15, 80, "");
         fontStyleInput = new FlxUIInputText(10, hexColorInput.y + hexColorInput.height + 5, 80, "");
@@ -663,13 +717,34 @@ class DialogueCreatorState extends MusicBeatState {
                 case "left portrait": displayText.attachSprite(leftPortrait);
                 case "right portrait": displayText.attachSprite(rightPortrait);
             }
+
+            if(choose == "left portrait") {
+                rightPortrait.visible = false;
+                leftPortrait.visible = true;
+                speechBubble.flipX = true;
+            }else {
+                rightPortrait.visible = true;
+                leftPortrait.visible = false;
+                speechBubble.flipX = false;
+            }
         });
+
+        if(narratorDropDown.selectedLabel == "left portrait") {
+            rightPortrait.visible = false;
+            leftPortrait.visible = true;
+            speechBubble.flipX = true;
+        }else {
+            rightPortrait.visible = true;
+            leftPortrait.visible = false;
+            speechBubble.flipX = false;
+        }
 
         tab_group_scene.add(sceneStepper);
         tab_group_scene.add(selectSceneText);
         tab_group_scene.add(getTXT);
         tab_group_scene.add(getSound);
         tab_group_scene.add(playDialogue);
+        tab_group_scene.add(newDialogueScene);
         tab_group_scene.add(narratorDropDown);
         tab_group_scene.add(unableLabelOther);
         tab_group_scene.add(hexColorInput);
@@ -685,6 +760,19 @@ class DialogueCreatorState extends MusicBeatState {
         tab_group_scene.add(textSizeText);
 
         UI_thingy.addGroup(tab_group_scene);
+    }
+
+    function createExportUI():Void {
+        var tab_group_export = new FlxUI(null, UI_thingy);
+        tab_group_export.name = "T Export";
+
+        var exportToJson:FlxUIButton = new FlxUIButton(10, 30, "Export", function() {
+            saveLevel();
+        });
+
+        tab_group_export.add(exportToJson);
+
+        UI_thingy.addGroup(tab_group_export);
     }
 
     function getSpriteAnimations(spriteName:String):Array<String> {
