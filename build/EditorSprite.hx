@@ -168,6 +168,7 @@ class EditorSprite extends FlxSprite {
     }
 
     override function destroy() {
+        FlxG.bitmap.remove(graphics);
         graphics = FlxDestroyUtil.destroy(graphics);
 
         defaultCompiler = null;

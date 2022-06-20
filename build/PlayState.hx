@@ -42,10 +42,10 @@ import flixel.util.FlxTimer;
 import betterShit.BetterCams;
 import haxe.Json;
 import lime.utils.Assets;
+import openfl.system.System;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
-import openfl.system.System;
 import feshixl.group.FeshEventGroup;
 import feshixl.interfaces.IDialogue;
 import openfl.Lib;
@@ -223,8 +223,7 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function create() {
-		Cache.clearALLassets();
-		System.gc();
+		Cache.clearNoneCachedAssets();
 
 		FlxG.mouse.visible = false;
 		//testSprite.visible = false;
@@ -433,6 +432,8 @@ class PlayState extends MusicBeatState
 		grpSplash = new FlxTypedGroup<SplashSprite>();
 		add(grpSplash);
 
+		Compile.spawn();
+
 		// startCountdown();
 		generateSong(SONG.song);
 
@@ -538,8 +539,6 @@ class PlayState extends MusicBeatState
 
 		setupExtraKeys();
 		eventLoad();
-
-		Compile.spawn();
 
 		super.create();
 	}

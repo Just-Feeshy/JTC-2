@@ -10,7 +10,6 @@ import sys.thread.Thread;
 import sys.FileSystem;
 import sys.io.File;
 
-import json2object.JsonParser;
 import lime.utils.Assets;
 import haxe.Json;
 
@@ -24,6 +23,8 @@ class CacheState extends MusicBeatState {
     var loading:Alphabet;
 
     var colorSway:Float = 0;
+
+    var timer:Float = 0;
 
     public function new(target:FlxState, stopMusic:Bool) {
         super();
@@ -72,10 +73,16 @@ class CacheState extends MusicBeatState {
             Cache.cacheAsset(cacheList[i], "");
         }
 
-        new FlxTimer().start(0.1, function(tmr:FlxTimer) {
-            LoadingState.loadAndSwitchState(target, stopMusic);
-        });
+        LoadingState.loadAndSwitchState(target, stopMusic);
 	}
+
+    function wait():Void {
+        timer = 0;
+    }
+
+    function switchStateLoad():Void {
+        LoadingState.loadAndSwitchState(target, stopMusic);
+    }
 
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true) {
         if(PlayState.SONG.video != null) {

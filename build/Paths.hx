@@ -6,6 +6,7 @@ import openfl.display.BitmapData;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.AssetType;
+import openfl.media.Sound;
 import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
 
@@ -172,9 +173,15 @@ class Paths
 
 	inline static public function sound(key:String, ?library:String)
 	{
-		if(Assets.exists(getPath('sounds/$key.$SOUND_EXT', SOUND, library)))
+		if(Assets.exists(getPath('sounds/$key.$SOUND_EXT', SOUND, library))) {
+			var cachedSound:Sound = Cache.getSound('sounds/$key.$SOUND_EXT', library);
+
+			if(cachedSound != null) {
+				return cachedSound;
+			}
+
 			return getPath('sounds/$key.$SOUND_EXT', SOUND, library);
-		else {
+		}else {
 			throw ("Error: could not locate sound - " + key);
 			return null;
 		}
@@ -192,9 +199,15 @@ class Paths
 
 	inline static public function voices(song:String)
 	{
-		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT')))
+		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT'))) {
+			var cachedSound:Sound = Cache.getSound('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT'));
+
+			if(cachedSound != null) {
+				return cachedSound;
+			}
+
 			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
-		else {
+		}else {
 			throw ("Error: could not locate voices - " + song + "." + SOUND_EXT);
 			return null;
 		}
@@ -211,7 +224,13 @@ class Paths
 	}
 
 	static function ifImageCached(key:String, ?library:String):FlxGraphic {
-		return Cache.getAsset(key, library);
+		var asset:FlxGraphic = Cache.getAsset(key, library);
+
+		//if(asset != null) {
+		//	trace("cached: " + key);
+		//}
+
+		return asset;
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)
@@ -228,7 +247,7 @@ class Paths
 			library = "";
 		}
 
-		var cachedImage:FlxGraphic = ifImageCached("notes/" + key, library);
+		var cachedImage:FlxGraphic = ifImageCached(key, "");
 
 		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
 			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
@@ -243,7 +262,7 @@ class Paths
 	}
 
 	static public function image(key:String, ?library:String):FlxGraphic {
-		var cachedImage:FlxGraphic = ifImageCached("notes/" + key);
+		var cachedImage:FlxGraphic = ifImageCached(key);
 
 		if(cachedImage != null) {
 			return cachedImage;
