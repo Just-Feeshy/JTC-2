@@ -2136,7 +2136,9 @@ class PlayState extends MusicBeatState
 	
 												combo = 0;
 												misses += 1;
-											}	
+
+												bfMissSing(daNote.noteData);
+											}
 										}
 									}else{
 										if(daNote.tooLate || !daNote.wasGoodHit) {
@@ -2149,6 +2151,8 @@ class PlayState extends MusicBeatState
 	
 												combo = 0;
 												misses += 1;
+
+												bfMissSing(daNote.noteData);
 											}
 										}
 									}
@@ -2648,32 +2652,36 @@ class PlayState extends MusicBeatState
 				boyfriend.stunned = false;
 			});
 
-			if(SONG.fifthKey) {
-				switch (direction)
-				{
-					case 0:
-						boyfriend.playAnim('singLEFTmiss' + playerAltAnim, true);
-					case 1:
-						boyfriend.playAnim('singDOWNmiss' + playerAltAnim, true);
-					case 2:
-						boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
-					case 3:
-						boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
-					case 4:
-						boyfriend.playAnim('singRIGHTmiss' + playerAltAnim, true);
-				}
-			}else {
-				switch (direction)
-				{
-					case 0:
-						boyfriend.playAnim('singLEFTmiss' + playerAltAnim, true);
-					case 1:
-						boyfriend.playAnim('singDOWNmiss' + playerAltAnim, true);
-					case 2:
-						boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
-					case 3:
-						boyfriend.playAnim('singRIGHTmiss' + playerAltAnim, true);
-				}
+			bfMissSing(direction);
+		}
+	}
+
+	function bfMissSing(direction:Int):Void {
+		if(SONG.fifthKey) {
+			switch (direction)
+			{
+				case 0:
+					boyfriend.playAnim('singLEFTmiss' + playerAltAnim, true);
+				case 1:
+					boyfriend.playAnim('singDOWNmiss' + playerAltAnim, true);
+				case 2:
+					boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
+				case 3:
+					boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
+				case 4:
+					boyfriend.playAnim('singRIGHTmiss' + playerAltAnim, true);
+			}
+		}else {
+			switch (direction)
+			{
+				case 0:
+					boyfriend.playAnim('singLEFTmiss' + playerAltAnim, true);
+				case 1:
+					boyfriend.playAnim('singDOWNmiss' + playerAltAnim, true);
+				case 2:
+					boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
+				case 3:
+					boyfriend.playAnim('singRIGHTmiss' + playerAltAnim, true);
 			}
 		}
 	}
