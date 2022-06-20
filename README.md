@@ -32,5 +32,5 @@ newgrounds
 json2object
 ```
 3. Run these commands:
-* `haxelib git linc_luajit https://github.com/nebulazorua/linc_luajit` to install LuaJIT.
+* `haxelib git linc_luajit https://github.com/AndreiRudenko/linc_luajit` to install LuaJIT.
 * `haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc` to install Discord RPC.
