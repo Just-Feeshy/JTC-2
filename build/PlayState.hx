@@ -3028,6 +3028,9 @@ class PlayState extends MusicBeatState
 	function eventLoad():Void {
 		var stepCounter = 0;
 
+		if(SONG.modifiers == null)
+			SONG.modifiers = [];
+
 		while(stepCounter < SONG.modifiers.length) {
 			var gridY = Reflect.field(SONG.modifiers[stepCounter], "modGridY");
 

@@ -16,6 +16,10 @@ import haxe.Json;
 
 import ModInitialize;
 
+#if json2object
+import json2object.JsonParser;
+#end
+
 class CacheState extends MusicBeatState {
     var target:FlxState;
 	var stopMusic = false;
@@ -27,7 +31,7 @@ class CacheState extends MusicBeatState {
 
     var timer:Float = 0;
 
-    public function new(target:FlxState, stopMusic:Bool) {
+    public function new(target:FlxState, stopMusic:Bool):Void {
         super();
 
         this.target = target;
@@ -52,7 +56,7 @@ class CacheState extends MusicBeatState {
         super.create();
     }
 
-    override function update(elapsed:Float) {
+    override function update(elapsed:Float):Void {
         if(loading != null) {
             loading.forEach(function(spr:FlxSprite) {
                 spr.color = FlxColor.fromRGBFloat(0.6 + Math.sin(colorSway * Math.PI) * 0.4,
@@ -65,28 +69,32 @@ class CacheState extends MusicBeatState {
         super.update(elapsed);
     }
 
-    function cacheStuff() {
+    function cacheStuff():Void {
         Cache.clear();
 
-        var cacheList:Array<String> = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")));
-        //var dialogueList:DialogueInfo = 
+        var cacheList:Array<String>;
+        var dialogueList:DialogueInfo;
+        
+        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/dialogue.json', TEXT, ""))) {
+            dialogueList = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/dialogue.json', TEXT, "")));
+        }
 
-        for(i in 0...cacheList.length) {
-            Cache.cacheAsset(cacheList[i], "");
+        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
+            cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")));
+
+            for(i in 0...cacheList.length) {
+                Cache.cacheAsset(cacheList[i], "");
+            }
         }
 
         LoadingState.loadAndSwitchState(target, stopMusic);
 	}
 
-    function wait():Void {
-        timer = 0;
-    }
-
     function switchStateLoad():Void {
         LoadingState.loadAndSwitchState(target, stopMusic);
     }
 
-    static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true) {
+    static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true):Void {
         if(PlayState.SONG.video != null) {
             if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
                 FlxG.switchState(new VideoState(new CacheState(new PlayState(), true), PlayState.SONG.video));
