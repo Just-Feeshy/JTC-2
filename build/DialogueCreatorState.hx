@@ -618,7 +618,7 @@ class DialogueCreatorState extends MusicBeatState {
         var tab_group_scene = new FlxUI(null, UI_thingy);
         tab_group_scene.name = "Scene";
 
-        sceneStepper = new FlxUINumericStepper(10, 30, 1, 1, 0, _info.info.length);
+        sceneStepper = new FlxUINumericStepper(10, 30, 1, 1, 1, _info.info.length);
         sceneStepper.name = "info_scene";
 
         var selectSceneText:FlxText = new FlxText(sceneStepper.x + sceneStepper.width + 10, 30, "Dialogue Scene");
@@ -952,7 +952,7 @@ class DialogueCreatorState extends MusicBeatState {
     }
 
     function saveLevel() {
-        var data:String = Json.stringify(_info, "\t");
+        var data:String = Json.stringify(_info.info, "\t");
 
         if ((data != null) && (data.length > 0))
         {

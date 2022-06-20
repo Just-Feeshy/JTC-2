@@ -2,10 +2,12 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxState;
+import flixel.input.keyboard.FlxKey;
 import sys.io.File;
 import openfl.Lib;
 import openfl.display.FPS;
 import openfl.filters.ShaderFilter;
+import openfl.events.KeyboardEvent;
 import haxe.Json;
 
 import SaveData.SaveType;
@@ -13,7 +15,7 @@ import SaveData.SaveType;
 using StringTools;
 
 class Preloader extends FlxState {
-    override public function create() {
+    override public function create():Void {
         var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
 
         /**
@@ -48,7 +50,11 @@ class Preloader extends FlxState {
 
         trace("FPS: " + Lib.current.stage.frameRate);
 
-        //FlxG.autoPause = false;
+        FlxG.autoPause = false;
+
+        FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, saveVolumeChanges);
+
+        FlxG.sound.volume = FlxG.save.data.volume;
 
         super.create();
 
@@ -56,11 +62,27 @@ class Preloader extends FlxState {
 
         FlxG.switchState(new TitleState());
 
-        //trace();
         Register.compile();
     }
 
-    override function update(elapsed:Float) {
+    /**
+    * Don't you just hate when Friday Night Funkin' blast your ears evertime.
+    */
+    static function saveVolumeChanges(event:KeyboardEvent):Void {
+        var key:FlxKey = event.keyCode;
+
+        if(key == FlxKey.PLUS && FlxG.save.data.volume < 1) {
+            FlxG.save.data.volume += 0.1;
+            FlxG.save.flush();
+        }
+
+        if(key == FlxKey.MINUS && FlxG.save.data.volume > 0) {
+            FlxG.save.data.volume -= 0.1;
+            FlxG.save.flush();
+        }
+    }
+
+    override function update(elapsed:Float):Void {
         super.update(elapsed / 2);
     }
 }

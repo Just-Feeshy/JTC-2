@@ -73,10 +73,10 @@ class CacheState extends MusicBeatState {
         Cache.clear();
 
         var cacheList:Array<String>;
-        var dialogueList:DialogueInfo;
+        var dialogueList:Array<DialogueData>;
         
         if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/dialogue.json', TEXT, ""))) {
-            dialogueList = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/dialogue.json', TEXT, "")));
+            dialogueList = loadDialogue("dialogue");
         }
 
         if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
@@ -89,6 +89,14 @@ class CacheState extends MusicBeatState {
 
         LoadingState.loadAndSwitchState(target, stopMusic);
 	}
+
+    #if json2object
+    function loadDialogue(name:String):Array<DialogueData> {
+        var parser:JsonParser<Array<DialogueData>> = new JsonParser<Array<DialogueData>>();
+
+		return parser.fromJson(File.getContent(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/$name.json', TEXT, "")), '${name}.json');
+    }
+    #end
 
     function switchStateLoad():Void {
         LoadingState.loadAndSwitchState(target, stopMusic);

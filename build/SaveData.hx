@@ -30,6 +30,7 @@ enum SaveType {
     GHOST_TAPPING;
     CUSTOM_MENU_BINDS;
     GAMMA;
+    VOLUME;
     ERASE_DATA;
 }
 
@@ -62,6 +63,7 @@ class SaveData {
         FlxG.save.data.ghostTapping = getData(SaveType.GHOST_TAPPING);
         FlxG.save.data.menuBinds = getData(SaveType.CUSTOM_MENU_BINDS);
         FlxG.save.data.gamma = getData(SaveType.GAMMA);
+        FlxG.save.data.volume = getData(SaveType.VOLUME);
 
         FlxG.save.flush();
     }
@@ -222,6 +224,11 @@ class SaveData {
                     FlxG.save.data.gamma = 1;
 
                 return FlxG.save.data.gamma;
+            case VOLUME:
+                if(FlxG.save.data.volume == null)
+                    FlxG.save.data.volume = 1;
+
+                return FlxG.save.data.volume;
             default:
                 return null;
         }
