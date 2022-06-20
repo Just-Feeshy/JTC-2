@@ -2174,19 +2174,19 @@ class PlayState extends MusicBeatState
 			return;
 
 		var controlHoldArray = [
-			controls.LEFT,
-			controls.DOWN,
-			controls.UP,
-			controls.RIGHT
+			controls.GAME_LEFT,
+			controls.GAME_DOWN,
+			controls.GAME_UP,
+			controls.GAME_RIGHT
 		];
 
 		if(SONG.fifthKey) {
 			controlHoldArray = [
-				controls.LEFT,
-				controls.DOWN,
-				controls.SPACE,
-				controls.UP,
-				controls.RIGHT
+				controls.GAME_LEFT,
+				controls.GAME_DOWN,
+				controls.GAME_SPACE,
+				controls.GAME_UP,
+				controls.GAME_RIGHT
 			];
 		}
 
@@ -2859,7 +2859,7 @@ class PlayState extends MusicBeatState
 
 					var key:Int = (SONG.fifthKey ? 5 : 4);
 
-					if(SaveData.getData(SaveType.SHOW_NOTE_SPLASH))
+					if(SaveData.getData(SaveType.SHOW_NOTE_SPLASH) && !note.isSustainNote)
 						note.splash(grpSplash.members[spr.ID], spr, daRating);
 	
 					/**
