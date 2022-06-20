@@ -29,7 +29,7 @@ flixel-addons
 flixel-ui
 hscript
 newgrounds
-json2object
+json2object 3.10.0
 ```
 3. Run these commands:
 * `haxelib git linc_luajit https://github.com/AndreiRudenko/linc_luajit` to install LuaJIT.
