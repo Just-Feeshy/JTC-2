@@ -6,7 +6,6 @@ import openfl.display.BitmapData;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.AssetType;
-import openfl.media.Sound;
 import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
 
@@ -174,12 +173,6 @@ class Paths
 	inline static public function sound(key:String, ?library:String)
 	{
 		if(Assets.exists(getPath('sounds/$key.$SOUND_EXT', SOUND, library))) {
-			var cachedSound:Sound = Cache.getSound('sounds/$key.$SOUND_EXT', library);
-
-			if(cachedSound != null) {
-				return cachedSound;
-			}
-
 			return getPath('sounds/$key.$SOUND_EXT', SOUND, library);
 		}else {
 			throw ("Error: could not locate sound - " + key);
@@ -200,12 +193,6 @@ class Paths
 	inline static public function voices(song:String)
 	{
 		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT'))) {
-			var cachedSound:Sound = Cache.getSound('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT'));
-
-			if(cachedSound != null) {
-				return cachedSound;
-			}
-
 			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
 		}else {
 			throw ("Error: could not locate voices - " + song + "." + SOUND_EXT);

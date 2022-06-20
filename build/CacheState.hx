@@ -10,6 +10,7 @@ import sys.thread.Thread;
 import sys.FileSystem;
 import sys.io.File;
 
+import feshixl.interfaces.IDialogue;
 import lime.utils.Assets;
 import haxe.Json;
 
@@ -68,6 +69,7 @@ class CacheState extends MusicBeatState {
         Cache.clear();
 
         var cacheList:Array<String> = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")));
+        //var dialogueList:DialogueInfo = 
 
         for(i in 0...cacheList.length) {
             Cache.cacheAsset(cacheList[i], "");
