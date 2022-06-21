@@ -375,6 +375,12 @@ class PlayState extends MusicBeatState
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		dad.refresh(SONG.player2, camPos);
 
+		boyfriend.animation.finishCallback = function(name:String) {
+			if(name != 'idle' && !name.startsWith('dance')) {
+				boyfriend.dance();
+			}
+		}
+
 		if(ChooseFeeshmora.chooseSkin.get("boyfriend").length >= 1) {
 			
 			boyfriend.setColorTransform(
@@ -1875,7 +1881,7 @@ class PlayState extends MusicBeatState
 
 			spawnTime /= Math.min(1, unspawnNotes[0].howSpeed);
 
-			while(unspawnNotes[0].strumTime - Conductor.trackPosition < spawnTime)
+			while(unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.trackPosition < spawnTime)
 			{
 				spawnTime /= Math.min(1, unspawnNotes[0].howSpeed);
 
@@ -2597,7 +2603,6 @@ class PlayState extends MusicBeatState
 			
 						if(note != null) {
 							removeNote(note);
-							break;
 						}else {
 							goodNoteHit(noteSections[n]);
 							pressedNotes.push(noteSections[n]);
