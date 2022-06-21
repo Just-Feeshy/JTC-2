@@ -203,6 +203,8 @@ class PlayState extends MusicBeatState
 
 	public var inCutscene:Bool = false;
 
+	var singAnims:Array<String> = [];
+
 	#if desktop
 	// Discord RPC variables
 	var storyDifficultyText:String = "";
@@ -375,12 +377,6 @@ class PlayState extends MusicBeatState
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		dad.refresh(SONG.player2, camPos);
 
-		boyfriend.animation.finishCallback = function(name:String) {
-			if(name != 'idle' && !name.startsWith('dance')) {
-				boyfriend.dance();
-			}
-		}
-
 		if(ChooseFeeshmora.chooseSkin.get("boyfriend").length >= 1) {
 			
 			boyfriend.setColorTransform(
@@ -543,20 +539,24 @@ class PlayState extends MusicBeatState
 		if(!hasWarning)
 			inDeBenigin();
 
-		setupExtraKeys();
+		setupKeyStuff();
 		eventLoad();
 
 		super.create();
 	}
 
-	function setupExtraKeys() {
+	function setupKeyStuff() {
 		if(SONG.fifthKey) {
+			singAnims = ["singLEFT", "singDOWN", "singUP", "singUP", "singRIGHT"];
+
 			keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
 			keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
 			keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[4];
 			keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
 			keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
 		}else {
+			singAnims = ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
+
 			keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
 			keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
 			keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
@@ -1996,33 +1996,8 @@ class PlayState extends MusicBeatState
 							altAnim = '-alt';
 					}
 
-					if(SONG.fifthKey) {
-						switch (Math.abs(daNote.noteData))
-						{
-							case 0:
-								dad.playAnim('singLEFT' + altAnim, true);
-							case 1:
-								dad.playAnim('singDOWN' + altAnim, true);
-							case 2:
-								dad.playAnim('singUP' + altAnim, true);
-							case 3:
-								dad.playAnim('singUP' + altAnim, true);
-							case 4:
-								dad.playAnim('singRIGHT' + altAnim, true);
-						}
-					}else {
-						switch (Math.abs(daNote.noteData))
-						{
-							case 0:
-								dad.playAnim('singLEFT' + altAnim, true);
-							case 1:
-								dad.playAnim('singDOWN' + altAnim, true);
-							case 2:
-								dad.playAnim('singUP' + altAnim, true);
-							case 3:
-								dad.playAnim('singRIGHT' + altAnim, true);
-						}
-					}
+					dad.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
+					dad.holdTimer = 0;
 
 					Register.events.whenNoteIsPressed(daNote, this);
 					cameraMovement(daNote.noteData, daNote.isSustainNote);
@@ -2149,7 +2124,7 @@ class PlayState extends MusicBeatState
 												combo = 0;
 												misses += 1;
 
-												bfMissSing(daNote.noteData);
+												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))], true);
 											}
 										}
 									}else{
@@ -2164,7 +2139,7 @@ class PlayState extends MusicBeatState
 												combo = 0;
 												misses += 1;
 
-												bfMissSing(daNote.noteData);
+												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))], true);
 											}
 										}
 									}
@@ -2612,13 +2587,9 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
-
-		if (!inCutscene && !paused) {
-			if (boyfriend.holdTimer > Conductor.stepCrochet * 4 * 0.001 && !controlHoldArray.contains(true)) {
-				if (boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
-					boyfriend.dance();
-				}
-			}
+		
+		if (boyfriend.holdTimer > Conductor.stepCrochet * 0.0044 && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
+			boyfriend.dance();
 		}
 
 		playerStrums.forEach(function(spr:Strum) {
@@ -2676,37 +2647,7 @@ class PlayState extends MusicBeatState
 				boyfriend.stunned = false;
 			});
 
-			bfMissSing(direction);
-		}
-	}
-
-	function bfMissSing(direction:Int):Void {
-		if(SONG.fifthKey) {
-			switch (direction)
-			{
-				case 0:
-					boyfriend.playAnim('singLEFTmiss' + playerAltAnim, true);
-				case 1:
-					boyfriend.playAnim('singDOWNmiss' + playerAltAnim, true);
-				case 2:
-					boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
-				case 3:
-					boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
-				case 4:
-					boyfriend.playAnim('singRIGHTmiss' + playerAltAnim, true);
-			}
-		}else {
-			switch (direction)
-			{
-				case 0:
-					boyfriend.playAnim('singLEFTmiss' + playerAltAnim, true);
-				case 1:
-					boyfriend.playAnim('singDOWNmiss' + playerAltAnim, true);
-				case 2:
-					boyfriend.playAnim('singUPmiss' + playerAltAnim, true);
-				case 3:
-					boyfriend.playAnim('singRIGHTmiss' + playerAltAnim, true);
-			}
+			boyfriend.playAnim(singAnims[Std.int(Math.abs(note.noteData))], true);
 		}
 	}
 
@@ -2840,36 +2781,14 @@ class PlayState extends MusicBeatState
 			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract) &&
 			(boyfriend.customAnimation && (boyfriend.animation.curAnim.name.startsWith("sing") ||
 			(boyfriend.animation.curAnim.name == "idle" || boyfriend.animation.curAnim.name.contains("dance"))))) {
-				var animPlay:String = "";
+				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + boyfriend.hasBePlayer;
 
 				if(SONG.fifthKey) {
 					switch (note.noteData)
 					{
-						case 0:
-							animPlay = 'singLEFT' + playerAltAnim + boyfriend.hasBePlayer;
-						case 1:
-							animPlay = 'singDOWN' + playerAltAnim + boyfriend.hasBePlayer;
 						case 2:
 							if(note.noteAbstract == "cherry")
 								animPlay = 'hey';
-							else
-								animPlay = 'singUP' + playerAltAnim + boyfriend.hasBePlayer;
-						case 3:
-							animPlay = 'singUP' + playerAltAnim + boyfriend.hasBePlayer;
-						case 4:
-							animPlay = 'singRIGHT' + playerAltAnim + boyfriend.hasBePlayer;
-					}
-				}else {
-					switch (note.noteData)
-					{
-						case 0:
-							animPlay = 'singLEFT' + playerAltAnim + boyfriend.hasBePlayer;
-						case 1:
-							animPlay = 'singDOWN' + playerAltAnim + boyfriend.hasBePlayer;
-						case 2:
-							animPlay = 'singUP' + playerAltAnim + boyfriend.hasBePlayer;
-						case 3:
-							animPlay = 'singRIGHT' + playerAltAnim + boyfriend.hasBePlayer;
 					}
 				}
 
@@ -2877,7 +2796,9 @@ class PlayState extends MusicBeatState
 				cameraMovement(note.noteData, note.isSustainNote);
 
 				boyfriend.customAnimation = false;
+
 				boyfriend.playAnim(animPlay, true);
+				boyfriend.holdTimer = 0;
 			}
 
 			playerStrums.forEach(function(spr:Strum)

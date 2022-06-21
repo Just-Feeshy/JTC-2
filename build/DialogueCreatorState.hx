@@ -118,6 +118,9 @@ class DialogueCreatorState extends MusicBeatState {
 
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
 
+        var escapeText:FlxText = new FlxText(30, 30, "ESCAPE - To Exit");
+        add(escapeText);
+
         super.create();
     }
 
@@ -952,7 +955,11 @@ class DialogueCreatorState extends MusicBeatState {
     }
 
     function saveLevel() {
-        var data:String = Json.stringify(_info.info, "\t");
+        var json = {
+			"info": _info.info
+		};
+
+        var data:String = Json.stringify(json, "\t");
 
         if ((data != null) && (data.length > 0))
         {
