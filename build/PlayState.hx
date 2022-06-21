@@ -2867,8 +2867,7 @@ class PlayState extends MusicBeatState
 
 					var key:Int = (SONG.fifthKey ? 5 : 4);
 
-					if(SaveData.getData(SaveType.SHOW_NOTE_SPLASH) && !note.isSustainNote)
-						note.splash(grpSplash.members[spr.ID], spr, daRating);
+					note.splash(grpSplash.members[spr.ID], spr, daRating);
 	
 					/**
 					* Old shit made in 2020 while trying to learn how Haxe and HaxeFlixel.

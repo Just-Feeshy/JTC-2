@@ -1,6 +1,6 @@
 import flixel.FlxG;
 
-import example_code.DefaultDialogueBox;
+import template.DialogueScene;
 
 import TranslationSelector;
 import CrewState;

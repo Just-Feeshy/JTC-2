@@ -603,9 +603,11 @@ class Note extends FlxSprite
 				switch(noteAbstract) {
 					default:
 						if(rating == "sick" || rating == "good") {
-							splashThing.texture = "regular/splash";
-							splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
-							splashThing.animation.play('sploosh' + strumNote.ID);
+							if(!isSustainNote && SaveData.getData(SaveType.SHOW_NOTE_SPLASH)) {
+								splashThing.texture = "regular/splash";
+								splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
+								splashThing.animation.play('sploosh' + strumNote.ID);
+							}
 
 							strumNote.setColorTransform(1,1,1,1,0,0,0,0);
 							strumNote.animation.play('confirm');
