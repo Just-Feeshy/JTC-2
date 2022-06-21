@@ -235,9 +235,6 @@ class Character extends EditorSprite
 	{
 		super.playAnim(AnimName, Force, Reversed, Frame);
 
-		if(AnimName != animation.curAnim.name && (AnimName.contains("sing") && !AnimName.contains("miss")))
-			return;
-
 		var daOffset = animOffsets.get(AnimName);
 		if (animOffsets.exists(AnimName))
 		{

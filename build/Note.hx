@@ -760,12 +760,11 @@ class Note extends FlxSprite
 		public function getNoteHittable(list:Array<Note>):Note {
 			for(i in 0...list.length) {
 				if(SaveData.getData(PRESET_INPUTS) == true) {
-					if(Math.abs(list[i].strumTime - strumTime) < 1 && (prevNote != this && (!prevNote.canBeHit && noteData != prevNote.noteData))) {
+					if(Math.abs(Compile.getNoteTime(list[i].strumTime) - Compile.getNoteTime(strumTime)) < 1) {
 						return this;
 					}
 				}else {
-					if((Math.abs(list[i].getNoteY()) < Note.swagWidth || Math.abs(getNoteY()) < Note.swagWidth)
-					&& (prevNote != this && !prevNote.canBeHit && noteData != prevNote.noteData)) {
+					if((Math.abs(list[i].getNoteY()) < Note.swagWidth || Math.abs(getNoteY()) < Note.swagWidth)) {
 						return this;
 					}
 				}

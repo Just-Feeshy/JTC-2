@@ -1491,7 +1491,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function caculateNoteY(targetY:Float, note:Note, downscroll:Bool):Float {
-		var noteCacurations:Float = (targetY - ((Conductor.trackPosition - Compile.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED) * (0.45 *  (downscroll ? -1 : 1) * FlxMath.roundDecimal(note.howSpeed, 2)));
+		var noteCacurations:Float = (targetY - (Conductor.trackPosition - Compile.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * (0.45 *  (downscroll ? -1 : 1) * FlxMath.roundDecimal(note.howSpeed, 2)));
 
 		if(downscroll && note.isSustainNote) {
 			if(note.height < 50 && note.distanceAxis != X) {
@@ -1871,8 +1871,14 @@ class PlayState extends MusicBeatState
 
 		if (unspawnNotes[0] != null)
 		{
-			if (unspawnNotes[0].strumTime - Conductor.trackPosition < 1500)
+			var spawnTime:Float = 3000;
+
+			spawnTime /= Math.min(1, unspawnNotes[0].howSpeed);
+
+			while(unspawnNotes[0].strumTime - Conductor.trackPosition < spawnTime)
 			{
+				spawnTime /= Math.min(1, unspawnNotes[0].howSpeed);
+
 				var dunceNote:Note = unspawnNotes[0];
 				notes.add(dunceNote);
 
@@ -2015,8 +2021,8 @@ class PlayState extends MusicBeatState
 					Register.events.whenNoteIsPressed(daNote, this);
 					cameraMovement(daNote.noteData, daNote.isSustainNote);
 
-					if(modifierCheckList('fair battle'))
-						setHealth(health - 0.014);
+					if(modifierCheckList('fair battle') && health < 0.1)
+						setHealth(health - 0.01);
 
 					opponentStrums.forEach(function(spr:FlxSprite) {
 						if (Math.abs(daNote.noteData) == spr.ID) {
@@ -2556,7 +2562,7 @@ class PlayState extends MusicBeatState
 		if (generatedMusic) {
 			var noteCaculation:Bool = false;
 
-			var noteList:Array<Note> = [];
+			var noteList:Array<Array<Note>> = [];
 			var pressedNotes:Array<Note> = [];
 
 			notes.forEachAlive(function(daNote:Note) {
@@ -2569,22 +2575,35 @@ class PlayState extends MusicBeatState
 				&& !daNote.wasGoodHit && !daNote.isSustainNote) {
 					for(i in 0...controlArray.length) {
 						if(controlArray[i] && daNote.noteData == i) {
-							noteList.push(daNote);
+							if(noteList[i] == null) {
+								noteList[i] = [];
+							}
+
+							noteList[i].push(daNote);
 						}
 					}
 				}
 			});
 
-			noteList.sort((a, b) -> Std.int(Compile.getNoteTime(a.strumTime) - Compile.getNoteTime(b.strumTime)));
+			/**
+			* Better Jack detection.
+			*/
+			for(noteSections in noteList) {
+				if(noteSections != null) {
+					noteSections.sort((a, b) -> Std.int(Compile.getNoteTime(a.strumTime) - Compile.getNoteTime(b.strumTime)));
 
-			for(n in 0...noteList.length) {
-				var note:Note = noteList[n].getNoteHittable(pressedNotes);
-
-				if(note != null) {
-					removeNote(note);
-				}else {
-					goodNoteHit(noteList[n]);
-					pressedNotes.push(noteList[n]);
+					for(n in 0...noteSections.length) {
+						var note:Note = noteSections[n].getNoteHittable(pressedNotes);
+			
+						if(note != null) {
+							removeNote(note);
+							break;
+						}else {
+							goodNoteHit(noteSections[n]);
+							pressedNotes.push(noteSections[n]);
+							break;
+						}
+					}
 				}
 			}
 		}

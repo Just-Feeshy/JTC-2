@@ -9,6 +9,7 @@ class Mod {
     static function onInit() {
         Register.attachLuaToState(MainMenuState, new ModLua(Paths.lua("jtc_menu")));
         Register.attachLuaToState(OptionsMenuState, new ModLua(Paths.lua("modSettings")));
+        Register.implementDialogueToSong("funk-off", DialogueScene);
         Register.add(STAGE, CheesyStage);
 
         /**
