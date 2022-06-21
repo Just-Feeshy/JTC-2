@@ -19,6 +19,7 @@ import polymod.format.ParseRules.TargetSignatureElement;
 #end
 
 import template.CustomNote;
+import SaveData.SaveType;
 
 using StringTools;
 
