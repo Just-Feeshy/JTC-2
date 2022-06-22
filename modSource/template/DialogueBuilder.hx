@@ -268,7 +268,10 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
             return;
         }
 
-        soundBinds[soundBinds[_info[dialogueScene].soundIndex]].volume = FlxG.sound.volume + 0.3;
+        if(FlxG.sound.volume > 0)
+            soundBinds[soundBinds[_info[dialogueScene].soundIndex]].volume = FlxG.sound.volume + 0.3;
+        else
+            soundBinds[soundBinds[_info[dialogueScene].soundIndex]].volume = 0;
 
         super.update(elapsed);
     }
