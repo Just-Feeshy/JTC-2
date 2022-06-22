@@ -268,6 +268,10 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
             return;
         }
 
+        for(i in 0...soundBinds.length) {
+            soundBinds[i].volume = FlxG.sound.volume + 0.3;
+        }
+
         super.update(elapsed);
     }
 
