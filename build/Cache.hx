@@ -57,7 +57,7 @@ class Cache {
 
         if (OpenFlAssets.exists(path, IMAGE)) {
             if(theseAssets.exists(path)) {
-                trace("Retrieved file: " + path);
+                //trace("Retrieved file: " + path);
                 return theseAssets.get(path);
             }else {
                 return null;

@@ -2,7 +2,6 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.FlxCamera;
 import flixel.addons.text.FlxTypeText;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.group.FlxSpriteGroup;
@@ -10,14 +9,12 @@ import flixel.input.FlxKeyManager;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
-import flixel.FlxState;
 
-import feshixl.interfaces.IDialogue;
 import Feeshmora;
 
 using StringTools;
 
-class DialogueBox extends FlxSpriteGroup implements IDialogue
+class DialogueBox extends FlxSpriteGroup
 {
 	var box:FlxSprite;
 
@@ -31,7 +28,7 @@ class DialogueBox extends FlxSpriteGroup implements IDialogue
 
 	var dropText:FlxText;
 
-	public var finishCallback:(dialogue:IDialogue)->Void;
+	public var finishThing:Void->Void;
 
 	var portraitLeft:FlxSprite;
 	var portraitRight:FlxSprite;
@@ -39,13 +36,9 @@ class DialogueBox extends FlxSpriteGroup implements IDialogue
 	var handSelect:FlxSprite;
 	var bgFade:FlxSprite;
 
-	public function new()
+	public function new(talkingRight:Bool = true, ?dialogueList:Array<String>)
 	{
 		super();
-
-		setDialogueScript();
-
-		var talkingRight:Bool = false;
 
 		switch (PlayState.SONG.song.toLowerCase())
 		{
@@ -97,6 +90,8 @@ class DialogueBox extends FlxSpriteGroup implements IDialogue
 				face.setGraphicSize(Std.int(face.width * 6));
 				add(face);
 		}
+
+		this.dialogueList = dialogueList;
 		
 		if (!hasDialog)
 			return;
@@ -161,145 +156,6 @@ class DialogueBox extends FlxSpriteGroup implements IDialogue
 		dialogue = new Alphabet(0, 80, "", false, true);
 		// dialogue.x = 90;
 		// add(dialogue);
-
-		scrollFactor.set();
-	}
-
-	function setDialogueScript():Void {
-		var dialogue:Array<String> = ['blah blah blah', 'coolswag'];
-
-		switch (PlayState.SONG.song.toLowerCase()) {
-			case 'tutorial':
-				dialogue = ["Hey you're pretty cute.", 'Use the arrow keys to keep up \nwith me singing.'];
-			case 'bopeebo':
-				dialogue = [
-					'HEY!',
-					"You think you can just sing\nwith my daughter like that?",
-					"If you want to date her...",
-					"You're going to have to go \nthrough ME first!"
-				];
-			case 'fresh':
-				dialogue = ["Not too shabby boy.", ""];
-			case 'dadbattle':
-				dialogue = [
-					"gah you think you're hot stuff?",
-					"If you can beat me here...",
-					"Only then I will even CONSIDER letting you\ndate my daughter!"
-				];
-			case 'senpai':
-				dialogue = CoolUtil.coolTextFile(Paths.txt('senpai/senpaiDialogue'));
-			case 'roses':
-				dialogue = CoolUtil.coolTextFile(Paths.txt('roses/rosesDialogue'));
-			case 'thorns':
-				dialogue = CoolUtil.coolTextFile(Paths.txt('thorns/thornsDialogue'));
-		}
-
-		this.dialogueList = dialogue;
-	}
-
-	public function createDialogue(state:FlxState):Void {
-		if(PlayState.SONG.song.toLowerCase() == 'roses') {
-			FlxG.sound.play(Paths.sound('ANGRY'));
-		}
-
-		schoolIntro(state);
-	}
-
-	public function destroyDialogue():Void {
-		FlxG.state.remove(this);
-
-		destroy();
-	}
-
-	public function attachToCamera(camera:FlxCamera) {
-		cameras = [camera];
-	}
-
-	function schoolIntro(state:FlxState):Void {
-		var playState:PlayState = cast(state, PlayState);
-
-		var black:FlxSprite = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, FlxColor.BLACK);
-		black.scrollFactor.set();
-		playState.add(black);
-
-		var red:FlxSprite = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFFff1b31);
-		red.scrollFactor.set();
-
-		var senpaiEvil:FlxSprite = new FlxSprite();
-		senpaiEvil.frames = Paths.getSparrowAtlas('weeb/senpaiCrazy');
-		senpaiEvil.animation.addByPrefix('idle', 'Senpai Pre Explosion', 24, false);
-		senpaiEvil.setGraphicSize(Std.int(senpaiEvil.width * 6));
-		senpaiEvil.scrollFactor.set();
-		senpaiEvil.updateHitbox();
-		senpaiEvil.screenCenter();
-
-		if (PlayState.SONG.song.toLowerCase() == 'roses' || PlayState.SONG.song.toLowerCase() == 'thorns')
-		{
-			playState.remove(black);
-
-			if (PlayState.SONG.song.toLowerCase() == 'thorns')
-			{
-				playState.add(red);
-			}
-		}
-
-		new FlxTimer().start(0.3, function(tmr:FlxTimer)
-		{
-			black.alpha -= 0.15;
-
-			if (black.alpha > 0)
-			{
-				tmr.reset(0.3);
-			}
-			else
-			{
-				if (this != null)
-				{
-					playState.inCutscene = true;
-
-					if (PlayState.SONG.song.toLowerCase() == 'thorns')
-					{
-						playState.add(senpaiEvil);
-						senpaiEvil.alpha = 0;
-						new FlxTimer().start(0.3, function(swagTimer:FlxTimer)
-						{
-							senpaiEvil.alpha += 0.15;
-							if (senpaiEvil.alpha < 1)
-							{
-								swagTimer.reset();
-							}
-							else
-							{
-								senpaiEvil.animation.play('idle');
-								FlxG.sound.play(Paths.sound('Senpai_Dies'), 1, false, null, true, function()
-								{
-									playState.remove(senpaiEvil);
-									playState.remove(red);
-									FlxG.camera.fade(FlxColor.WHITE, 0.01, true, function()
-									{
-										playState.add(this);
-									}, true);
-								});
-								new FlxTimer().start(3.2, function(deadTime:FlxTimer)
-								{
-									FlxG.camera.fade(FlxColor.WHITE, 1.6, false);
-								});
-							}
-						});
-					}
-					else
-					{
-						playState.add(this);
-					}
-				}
-				else
-				{
-					finishCallback(this);
-				}
-
-				playState.remove(black);
-			}
-		});
 	}
 
 	var dialogueOpened:Bool = false;
@@ -361,7 +217,7 @@ class DialogueBox extends FlxSpriteGroup implements IDialogue
 
 					new FlxTimer().start(1.2, function(tmr:FlxTimer)
 					{
-						finishCallback(this);
+						finishThing();
 						kill();
 					});
 				}

@@ -85,10 +85,6 @@ class Register {
         addCustomTransition("fade", FadeTransition);
         addCustomTransition("tile", TileTransition);
         addCustomTransition("void", VoidTransition);
-
-        implementDialogueToSong("senpai", DialogueBox);
-        implementDialogueToSong("roses", DialogueBox);
-        implementDialogueToSong("thorns", DialogueBox);
     }
 
     @:access(HelperStates)

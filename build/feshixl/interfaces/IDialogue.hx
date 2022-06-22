@@ -1,5 +1,6 @@
 package feshixl.interfaces;
 
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flixel.FlxCamera;
 import flixel.FlxState;
 
@@ -7,7 +8,7 @@ import openfl.utils.ByteArray;
 
 import ModInitialize;
 
-interface IDialogue {
+interface IDialogue extends IFlxDestroyable {
     var finishCallback:(dialogue:IDialogue)->Void;
 
     function createDialogue(state:FlxState):Void;

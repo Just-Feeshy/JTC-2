@@ -147,7 +147,7 @@ class PlayState extends MusicBeatState
 	private var strumLine:FlxSprite;
 	private var curSection:Int = 0;
 
-	private var camFollow:FlxObject;
+	public var camFollow:FlxObject;
 
 	private static var prevCamFollow:FlxObject;
 
@@ -158,6 +158,7 @@ class PlayState extends MusicBeatState
 
 	private var camZooming:Bool = false;
 	private var curSong:String = "";
+	private var readableSong:String = "";
 
 	private var gfSpeed:Int = 1;
 	private var combo:Int = 0;
@@ -197,6 +198,8 @@ class PlayState extends MusicBeatState
 	public static var campaignScore:Int = 0;
 
 	var defaultCamZoom:Float = 1.05;
+
+	var doof:DialogueBox;
 
 	// how big to stretch the pixel art assets
 	public static var daPixelZoom:Float = 6;
@@ -257,9 +260,11 @@ class PlayState extends MusicBeatState
 		if (SONG == null)
 			SONG = Song.loadFromJson('tutorial');
 
+		readableSong = SONG.song.toLowerCase();
+
 		if(Assets.exists(Paths.getPath('data/warning.txt', TEXT, ""))) //WIP
-			if(Assets.getText(Paths.txt('${SONG.song.toLowerCase()}/warning')) != "" 
-			&& Assets.getText(Paths.txt('${SONG.song.toLowerCase()}/warning')) != null)
+			if(Assets.getText(Paths.txt('${readableSong}/warning')) != "" 
+			&& Assets.getText(Paths.txt('${readableSong}/warning')) != null)
 				hasWarning = true;
 			else
 				hasWarning = false;
@@ -598,10 +603,29 @@ class PlayState extends MusicBeatState
 							});
 						});
 					});
+				case 'senpai' | 'roses' | 'thorns':
+					if(curSong.toLowerCase() == 'roses') {
+						FlxG.sound.play(Paths.sound('ANGRY'));
+					}
+
+					var dialogue:Array<String> = ['blah blah blah', 'coolswag'];
+					var file:String = Paths.txt(readableSong + '/' + readableSong + 'Dialogue');
+
+					if (Assets.exists(file)) {
+						dialogue = CoolUtil.coolTextFile(file);
+					}
+
+					doof = new DialogueBox(false, dialogue);
+					doof.scrollFactor.set();
+					doof.finishThing = startCountdown;
+					doof.cameras = [camHUD];
+
+					schoolIntro(doof);
 				default:
 					var dialogueBox = Type.createInstance(cast Register.dialogues.get(curSong.toLowerCase()), []);
 
 					if(dialogueBox != null) {
+						inCutscene = true;
 						dialogueBox.finishCallback = clearDialogue;
 
 						dialogueBox.createDialogue(this);
@@ -621,9 +645,96 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	function schoolIntro(?dialogueBox:DialogueBox):Void
+	{
+		inCutscene = true;
+
+		var black:FlxSprite = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, FlxColor.BLACK);
+		black.scrollFactor.set();
+		add(black);
+
+		var red:FlxSprite = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFFff1b31);
+		red.scrollFactor.set();
+
+		var senpaiEvil:FlxSprite = new FlxSprite();
+		senpaiEvil.frames = Paths.getSparrowAtlas('weeb/senpaiCrazy');
+		senpaiEvil.animation.addByPrefix('idle', 'Senpai Pre Explosion', 24, false);
+		senpaiEvil.setGraphicSize(Std.int(senpaiEvil.width * 6));
+		senpaiEvil.scrollFactor.set();
+		senpaiEvil.updateHitbox();
+		senpaiEvil.screenCenter();
+		senpaiEvil.x += 300;
+
+		if (readableSong == 'roses' || readableSong == 'thorns')
+		{
+			remove(black);
+
+			if (readableSong == 'thorns')
+			{
+				add(red);
+			}
+		}
+
+		new FlxTimer().start(0.3, function(tmr:FlxTimer)
+		{
+			black.alpha -= 0.15;
+
+			if (black.alpha > 0)
+			{
+				tmr.reset(0.3);
+			}
+			else
+			{
+				if (dialogueBox != null)
+				{
+					if (readableSong == 'thorns')
+					{
+						add(senpaiEvil);
+						senpaiEvil.alpha = 0;
+						new FlxTimer().start(0.3, function(swagTimer:FlxTimer)
+						{
+							senpaiEvil.alpha += 0.15;
+							if (senpaiEvil.alpha < 1)
+							{
+								swagTimer.reset();
+							}
+							else
+							{
+								senpaiEvil.animation.play('idle');
+								FlxG.sound.play(Paths.sound('Senpai_Dies'), 1, false, null, true, function()
+								{
+									remove(senpaiEvil);
+									remove(red);
+									FlxG.camera.fade(FlxColor.WHITE, 0.01, true, function()
+									{
+										add(dialogueBox);
+									}, true);
+								});
+								new FlxTimer().start(3.2, function(deadTime:FlxTimer)
+								{
+									FlxG.camera.fade(FlxColor.WHITE, 1.6, false);
+								});
+							}
+						});
+					}
+					else
+					{
+						add(dialogueBox);
+					}
+				}
+				else
+					startCountdown();
+
+				remove(black);
+			}
+		});
+	}
+
 	function clearDialogue(dialogue:IDialogue) {
 		dialogue.destroyDialogue();
-		dialogue = null;
+
+		camGame.setTrashFilters([]);
+		camHUD.setTrashFilters([]);
 
 		startCountdown();
 	}
@@ -2185,11 +2296,13 @@ class PlayState extends MusicBeatState
 			if(!controlHoldArray[i]) {
 				var spr:Strum = playerStrums.members[i];
 
-				spr.setColorTransform(1,1,1,1,0,0,0,0);
-				spr.animation.play('static');
+				if(spr != null) {
+					spr.setColorTransform(1,1,1,1,0,0,0,0);
+					spr.animation.play('static');
 
-				spr.centerOffsets();
-				spr.centerOrigin();
+					spr.centerOffsets();
+					spr.centerOrigin();
+				}
 			}
 		}
 	}
@@ -2217,7 +2330,7 @@ class PlayState extends MusicBeatState
 
 			if (storyPlaylist.length <= 0)
 			{
-				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				FlxG.sound.playMusic(Paths.music('Main Menu'));
 
 				FlxG.switchState(new StoryMenuState());
 

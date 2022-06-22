@@ -38,6 +38,10 @@ class CoolUtil
 		return dumbArray;
 	}
 
+	public static function readableSongDirectory(path:String):String {
+		return path.replace(' ', '-');
+	}
+
 	public static function calculateAverageColor(bitmap:BitmapData):FlxColor {
 		var red:Float = 0;
 		var green:Float = 0;

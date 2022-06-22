@@ -8,8 +8,6 @@ import openfl.filters.BitmapFilter;
 
 class BetterCams extends FlxCamera {
 
-    public var getFilters(get, never):Array<BitmapFilter>;
-
     private var lockedFilters:Array<BitmapFilter>;
     private var wastefulFilters:Array<BitmapFilter>;
 
@@ -21,8 +19,10 @@ class BetterCams extends FlxCamera {
     public var engineAngle(default, set):Float = 0;
 
     public function new() {
-        lockedFilters = new Array<BitmapFilter>();
-        wastefulFilters = new Array<BitmapFilter>();
+        _filters = [];
+
+        lockedFilters = [];
+        wastefulFilters = [];
 
         filtersEnabled = false;
 
@@ -35,7 +35,6 @@ class BetterCams extends FlxCamera {
     
     public function lockFilter(filters:BitmapFilter):Void {
         lockedFilters.push(filters);
-        setFilters(getFilters);
     }
 
     public function eraseFilters() {
@@ -44,16 +43,11 @@ class BetterCams extends FlxCamera {
         setFilters([]);
     }
 
-    function get_getFilters():Array<BitmapFilter> {
-        var daFilters:Array<BitmapFilter> = _filters;
+    function getFilters():Array<BitmapFilter> {
+        var daFilters:Array<BitmapFilter> = [];
 
-        for(i in 0...lockedFilters.length)
-            if(!daFilters.contains(lockedFilters[i]))
-                daFilters.push(lockedFilters[i]);
-
-        for(i in 0...wastefulFilters.length)
-            if(!daFilters.contains(wastefulFilters[i]))
-                daFilters.push(wastefulFilters[i]);
+        daFilters = _filters.concat(lockedFilters);
+        daFilters = daFilters.concat(wastefulFilters);
 
         return daFilters;
     }
@@ -90,7 +84,7 @@ class BetterCams extends FlxCamera {
 
         super.update(elapsed);
 
-        flashSprite.filters = betterFiltersEnabled ? getFilters : null;
+        flashSprite.filters = betterFiltersEnabled ? getFilters() : null;
     }
 
     override public function destroy():Void {

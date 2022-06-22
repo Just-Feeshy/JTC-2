@@ -138,7 +138,7 @@ class Paths
 		if(Assets.exists(getPath('data/$key.json', TEXT, library)))
 			return getPath('data/$key.json', TEXT, library);
 		else {
-			throw ("Error: could not locate json file - " + key);
+			throw ("Error: could not locate json file - " + getPath('data/$key.json', TEXT, library));
 			return null;
 		}
 	}

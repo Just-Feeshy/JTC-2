@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="jtcPortraitShout.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="jtcPortraitShout0000" x="0" y="0" width="378" height="543"/>
+	<SubTexture name="jtcPortraitShout0001" x="378" y="0" width="378" height="543"/>
+	<SubTexture name="jtcPortraitShout0002" x="756" y="0" width="378" height="543"/>
+	<SubTexture name="jtcPortraitShout0003" x="1134" y="0" width="378" height="543"/>
+	<SubTexture name="jtcPortraitShout0004" x="1512" y="0" width="378" height="543"/>
+</TextureAtlas>

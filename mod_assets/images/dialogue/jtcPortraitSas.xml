@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="jtcPortraitSas.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="jtcPortraitSas0000" x="0" y="0" width="521" height="533"/>
+	<SubTexture name="jtcPortraitSas0001" x="521" y="0" width="521" height="533"/>
+	<SubTexture name="jtcPortraitSas0002" x="1042" y="0" width="521" height="533"/>
+	<SubTexture name="jtcPortraitSas0003" x="0" y="533" width="521" height="533"/>
+	<SubTexture name="jtcPortraitSas0004" x="521" y="533" width="521" height="533"/>
+</TextureAtlas>

@@ -1,6 +1,6 @@
 import flixel.FlxG;
 
-import template.DialogueScene;
+import template.DialogueBuilder;
 
 import TranslationSelector;
 import CrewState;
@@ -9,7 +9,7 @@ class Mod {
     static function onInit() {
         Register.attachLuaToState(MainMenuState, new ModLua(Paths.lua("jtc_menu")));
         Register.attachLuaToState(OptionsMenuState, new ModLua(Paths.lua("modSettings")));
-        Register.implementDialogueToSong("funk-off", DialogueScene);
+        Register.implementDialogueToSong("funk-off", DialogueBoxMod);
         Register.add(STAGE, CheesyStage);
 
         /**

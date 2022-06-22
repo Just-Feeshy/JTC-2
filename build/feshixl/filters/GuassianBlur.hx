@@ -4,12 +4,6 @@ import flixel.system.FlxAssets.FlxShader;
 import openfl.display.BitmapData;
 import flixel.FlxG;
 
-/**
-* Feeshmora's first built-in blur type and easy to use, guassian blur!
-**/
-
-@author('Feeshy')
-
 class GuassianBlur extends FlxShader {
     public var size(get, set):Float;
 
@@ -42,7 +36,7 @@ class GuassianBlur extends FlxShader {
                 }
             }
 
-            Color /= quality * directions - 15.0;
+            Color /= quality * directions;
             gl_FragColor = Color;
         }
     ')

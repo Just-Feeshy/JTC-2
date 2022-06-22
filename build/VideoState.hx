@@ -81,6 +81,15 @@ class VideoState extends HelperStates {
             bitmap.set_height(FlxG.stage.stageWidth / (16 / 9));
         }
 
+        /**
+        * Just incase.
+        */
+        if (FlxG.sound.volume < 0.1) {
+            bitmap.volume = 0;
+        }else {
+            bitmap.volume = FlxG.sound.volume + 0.3;
+        }
+
         bitmap.onComplete = finishedVideo;
         bitmap.onError = onVLCError;
 
