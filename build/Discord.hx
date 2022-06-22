@@ -14,7 +14,6 @@ class DiscordClient
 		DiscordRpc.start({
 			clientID: Paths.modJSON.mod.discord_rpc.ClientID,
 			onReady: onReady,
-			onError: onError,
 			onDisconnected: onDisconnected
 		});
 		trace("Discord Client started.");
@@ -44,11 +43,6 @@ class DiscordClient
 			smallImageKey : Paths.modJSON.mod.discord_rpc.smallImageKey,
 			smallImageText : Paths.modJSON.mod.discord_rpc.smallImageText
 		});
-	}
-
-	static function onError(_code:Int, _message:String)
-	{
-		trace('Error! $_code : $_message');
 	}
 
 	static function onDisconnected(_code:Int, _message:String)

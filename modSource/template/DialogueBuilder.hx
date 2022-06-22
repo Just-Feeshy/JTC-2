@@ -38,9 +38,12 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     var dialogueScene:Int = 0;
 
     var changingScene:Bool;
+    var playSong:Bool;
+
+    var girlfriend:Character;
 
     @:noCompletion var assetBinds:Array<String>;
-    @:noCompletion var soundBinds:Array<String>;
+    @:noCompletion var soundBinds:Array<FlxSound>;
 
     public function new() {
         super();
@@ -141,7 +144,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
             displayText.shouldPlayAnim(_info[dialogueScene].talkingAnimation);
         }
 
-        displayText.sounds = [new FlxSound().loadEmbedded(soundBinds[_info[dialogueScene].soundIndex])];
+        displayText.sounds = [soundBinds[_info[dialogueScene].soundIndex]];
         displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
         displayText.size = _info[dialogueScene].textSize;
 
@@ -180,9 +183,15 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     public function implementSong(path:String, bpm:Int):Void {
+        if(FlxG.sound.music.playing) {
+			FlxG.sound.music.stop();
+        }
+
         Conductor.songPosition = 0;
         Conductor.changeBPM(bpm);
         FlxG.sound.playMusic(path);
+
+        playSong = true;
     }
 
     public function bindAssetToID(ID:Int, path:String):Void {
@@ -191,11 +200,17 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     public function bindSoundToID(ID:Int, path:String):Void {
-        soundBinds[ID] = path;
+        soundBinds[ID] = new FlxSound().loadEmbedded(path);
+    }
+
+    public function bindRawSoundToID(ID:Int, sound:FlxSound):Void {
+        soundBinds[ID] = sound;
     }
 
     public function createDialogue(state:FlxState):Void {
         var playstate:PlayState = cast(state, PlayState);
+
+        girlfriend = playstate.gf;
 
         blurEffect = new GuassianBlur(0);
 
@@ -207,7 +222,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
             @:privateAccess
             playstate.camGame.wastefulFilters.push(new ShaderFilter(blurEffect));
 
-            new FlxTimer().start(0.8, function(tmr:FlxTimer) {
+            new FlxTimer().start(0.3, function(tmr:FlxTimer) {
                 FlxTween.tween(blurEffect, {size: 20}, 0.75, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
                     playstate.openSubState(this);
                     createAfterTransition();
@@ -230,6 +245,10 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     override function update(elapsed:Float):Void {
+        if (FlxG.sound.music != null && playSong) {
+			Conductor.songPosition += FlxG.elapsed * 1000;
+        }
+
         if(controls.ACCEPT && !changingScene && dialogueScene < _info.length) {
             changingScene = true;
 
@@ -252,8 +271,22 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         super.update(elapsed);
     }
 
+    override function beatHit():Void {
+        if(curBeat % 1 == 0) {
+            girlfriend.dance();
+        }
+    }
+
     override function destroy():Void {
         trace("did?");
+
+        girlfriend = null;
+
+        for(i in 0...soundBinds.length) {
+            soundBinds[i] = FlxDestroyUtil.destroy(soundBinds[i]);
+        }
+
+        soundBinds = [];
 
         super.destroy();
     }

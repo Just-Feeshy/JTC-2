@@ -2004,7 +2004,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (generatedMusic)
+		if (generatedMusic && !inCutscene)
 		{
 			keyShit();
 			keyReleased();
