@@ -5,6 +5,7 @@ import feshixl.sound.FeshSound;
 import flixel.system.FlxSound;
 
 import cpp.UInt8;
+
 //oops
 class UselessShit {
     inline static public function beep():FlxSound {

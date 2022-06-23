@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxG;
 import template.DialogueBuilder;
+import flixel.util.FlxColor;
 
 class DialogueBoxMod extends DialogueBuilder {
     public function new() {
@@ -21,6 +22,16 @@ class DialogueBoxMod extends DialogueBuilder {
 
         if(FlxG.save.data.spanish) {
             _info[0].text[1] = "Tú!";
+        }
+    }
+
+    override function refreshDisplay():Void {
+        super.refreshDisplay();
+
+        if(displayText.color == 16766208) {
+            implementShadowTextColor(FlxColor.fromInt(15117568));
+        }else if(displayText.color == 3200456) {
+            implementShadowTextColor(FlxColor.fromInt(2338724));
         }
     }
 }

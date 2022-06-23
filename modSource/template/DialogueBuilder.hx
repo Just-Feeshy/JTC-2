@@ -174,7 +174,6 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         shadowText.size = _info[dialogueScene].textSize;
 
         shadowText.font = _info[dialogueScene].font;
-        shadowText.color = _info[dialogueScene].textColor;
     }
 
     function implementAnimPlay(sprString:String):Void {
@@ -204,6 +203,12 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     public function implementShadowText():Void {
         shadowText = new FlxText(0, 0, Std.int(FlxG.width * 0.8), "", _info[dialogueScene].textSize);
+    }
+
+    public function implementShadowTextColor(color:FlxColor):Void {
+        if(shadowText != null) {
+            shadowText.color = color;
+        }
     }
 
     public function implementSong(path:String, bpm:Int):Void {
