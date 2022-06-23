@@ -231,10 +231,10 @@
 				"size": 0.6
 			},
 			"soundIndex": 1,
-			"font": "assets/fonts/PhantomMuff.ttf",
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
 			"text": [
 				"right portrait",
-				"..."
+				"boop"
 			],
 			"textSize": 32,
 			"leftPortrait": {
@@ -280,7 +280,7 @@
 				"size": 0.6
 			},
 			"soundIndex": 1,
-			"font": "assets/fonts/PhantomMuff.ttf",
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
 			"text": [
 				"right portrait",
 				"Beep?"
@@ -427,7 +427,7 @@
 				"size": 0.6
 			},
 			"soundIndex": 1,
-			"font": "assets/fonts/PhantomMuff.ttf",
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
 			"text": [
 				"right portrait",
 				"Da ba dee da ba die."

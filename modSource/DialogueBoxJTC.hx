@@ -13,7 +13,7 @@ class DialogueBoxJTC extends DialogueBuilder {
     public function new() {
         switch(PlayState.SONG.song.toLowerCase()) {
             case "ping-pong":
-                bothScene = [0, 1];
+                bothScene = [0, 1, 2, 3];
             default:
                 bothScene = [];
         }
