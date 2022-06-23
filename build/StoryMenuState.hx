@@ -228,6 +228,8 @@ class StoryMenuState extends MusicBeatState
 
 			if (controls.ACCEPT)
 			{
+				leftArrow.animation.play('idle');
+				rightArrow.animation.play('idle');
 				selectWeek();
 			}
 		}

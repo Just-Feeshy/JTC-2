@@ -562,7 +562,9 @@ class PlayState extends MusicBeatState
 	}
 
 	function inDeBenigin() {
+		#if !(debug || USING_MOD_DEBUG)
 		if (isStoryMode) {
+		#end
 			switch (curSong.toLowerCase())
 			{
 				case "winter-horrorland":
@@ -626,6 +628,7 @@ class PlayState extends MusicBeatState
 						startCountdown();
 					}
 			}
+		#if !(debug || USING_MOD_DEBUG)
 		}
 		else
 		{
@@ -635,6 +638,7 @@ class PlayState extends MusicBeatState
 					startCountdown();
 			}
 		}
+		#end
 	}
 
 	function schoolIntro(?dialogueBox:DialogueBox):Void

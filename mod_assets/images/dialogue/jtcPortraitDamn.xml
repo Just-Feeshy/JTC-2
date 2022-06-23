@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="jtcPortraitDamn.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="jtcPortraitDamn0000" x="0" y="0" width="367" height="536"/>
+	<SubTexture name="jtcPortraitDamn0001" x="367" y="0" width="367" height="536"/>
+	<SubTexture name="jtcPortraitDamn0002" x="734" y="0" width="367" height="536"/>
+	<SubTexture name="jtcPortraitDamn0003" x="1101" y="0" width="367" height="536"/>
+	<SubTexture name="jtcPortraitDamn0004" x="1468" y="0" width="367" height="536"/>
+</TextureAtlas>

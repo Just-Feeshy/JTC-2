@@ -59,31 +59,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     function createAfterTransition():Void {
-        refreshDisplay();
-    }
-
-    function refreshDisplay():Void {
-        remove(leftPortrait);
-        remove(rightPortrait);
-        remove(speechBubble);
-
-        leftPortrait = FlxDestroyUtil.destroy(leftPortrait);
-        rightPortrait = FlxDestroyUtil.destroy(rightPortrait);
-        speechBubble = FlxDestroyUtil.destroy(speechBubble);
-
         leftPortrait = new EditorSprite();
         rightPortrait = new EditorSprite();
         speechBubble = new EditorSprite();
-
-        try {
-            leftPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].leftPortrait.assetID]);
-            rightPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].rightPortrait.assetID]);
-            speechBubble.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].speechBubble.assetID]);
-        }catch(e) {
-            trace(assetBinds[_info[dialogueScene].leftPortrait.assetID] == null ? "No asset located for 'Left Portrait'" : "");
-            trace(assetBinds[_info[dialogueScene].rightPortrait.assetID] == null ? "No asset located for 'Right Portrait'" : "");
-            trace(assetBinds[_info[dialogueScene].speechBubble.assetID] == null ? "No asset located for 'Speech Bubble'" : "");
-        }
 
         add(leftPortrait);
         add(rightPortrait);
@@ -93,11 +71,35 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         rightPortrait.antialiasing = SaveData.getData(SaveType.GRAPHICS);
         speechBubble.antialiasing = SaveData.getData(SaveType.GRAPHICS);
 
-        refreshDisplayPosition();
+        refreshDisplay();
+    }
 
-        implementAnimPlay("left portrait");
-        implementAnimPlay("right portrait");
-        implementAnimPlay("speech bubble");
+    function refreshDisplay():Void {
+        try {
+            if(_info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
+                leftPortrait.animation.destroyAnimations();
+                leftPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].leftPortrait.assetID]);
+                implementAnimPlay("left portrait");
+            }
+
+            if(_info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
+                rightPortrait.animation.destroyAnimations();
+                rightPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].rightPortrait.assetID]);
+                implementAnimPlay("right portrait");
+            }
+
+            if(_info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
+                speechBubble.animation.destroyAnimations();
+                speechBubble.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].speechBubble.assetID]);
+                implementAnimPlay("speech bubble");
+            }
+        }catch(e) {
+            trace(assetBinds[_info[dialogueScene].leftPortrait.assetID] == null ? "No asset located for 'Left Portrait'" : "");
+            trace(assetBinds[_info[dialogueScene].rightPortrait.assetID] == null ? "No asset located for 'Right Portrait'" : "");
+            trace(assetBinds[_info[dialogueScene].speechBubble.assetID] == null ? "No asset located for 'Speech Bubble'" : "");
+        }
+
+        refreshDisplayPosition();
 
         if(_info[dialogueScene].text[0] == "left portrait") {
             rightPortrait.visible = false;
