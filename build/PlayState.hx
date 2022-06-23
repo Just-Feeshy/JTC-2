@@ -474,7 +474,6 @@ class PlayState extends MusicBeatState
 
 		healthBarBG.screenCenter(X);
 		healthBarBG.scrollFactor.set();
-		add(healthBarBG);
 
 		//Feesh Miss
 		debugText = new FlxText(0, 0, FlxG.width, "Debug Pause State", 32);
@@ -487,7 +486,6 @@ class PlayState extends MusicBeatState
 		counterTxt.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		counterTxt.antialiasing = FlxG.save.data.showAntialiasing;
 		counterTxt.scrollFactor.set();
-		add(counterTxt);
 
 		iconP1 = new HealthIcon(SONG.player1, true, SONG.bpm);
 		
@@ -514,14 +512,8 @@ class PlayState extends MusicBeatState
 
 		healthBar.createFilledBar(CoolUtil.calculateAverageColor(iconP2.updateFramePixels()), CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
 
-		// healthBar
-		add(healthBar);
-
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
-
-		add(iconP1);
-		add(iconP2);
 
 		strumLineNotes.cameras = [camNOTE];
 		notes.cameras = [camNOTE];
@@ -995,6 +987,12 @@ class PlayState extends MusicBeatState
 	function startCountdown():Void {
 		FlxG.sound.music.stop();
 		inCutscene = false;
+
+		add(healthBarBG);
+		add(healthBar);
+		add(counterTxt);
+		add(iconP1);
+		add(iconP2);
 
 		generateStaticArrows(0);
 		generateStaticArrows(1);

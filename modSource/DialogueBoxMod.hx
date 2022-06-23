@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxG;
 import template.DialogueBuilder;
 
 class DialogueBoxMod extends DialogueBuilder {
@@ -15,5 +16,11 @@ class DialogueBoxMod extends DialogueBuilder {
 
         bindSoundToID(0, Paths.sound("jtcText"));
         bindRawSoundToID(1, UselessShit.beep());
+
+        implementShadowText();
+
+        if(FlxG.save.data.spanish) {
+            _info[0].text[1] = "Tú!";
+        }
     }
 }

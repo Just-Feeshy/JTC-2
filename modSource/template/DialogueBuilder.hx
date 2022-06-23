@@ -5,6 +5,8 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.util.FlxDestroyUtil;
+import flixel.util.FlxColor;
+import flixel.text.FlxText;
 import flixel.system.FlxSound;
 import flixel.util.FlxTimer;
 import flixel.FlxCamera;
@@ -42,16 +44,18 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     var girlfriend:Character;
 
+    @:noCompletion var shadowText:FlxText;
+
     @:noCompletion var assetBinds:Array<String>;
     @:noCompletion var soundBinds:Array<FlxSound>;
 
     public function new() {
+        _info = parseJSON();
+
         super();
 
         assetBinds = [];
         soundBinds = [];
-
-        _info = parseJSON();
     }
 
     function createAfterTransition():Void {
@@ -105,12 +109,20 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
             speechBubble.flipX = false;
         }
 
+        if(shadowText != null) {
+            add(shadowText);
+        }
+
         if(displayText == null) {
             displayText = new DialogueText(0, 0, Std.int(FlxG.width * 0.8), "", _info[dialogueScene].textSize);
             add(displayText);
         }
         
         refreshDisplayText(_info[dialogueScene].text[1]);
+
+        if(shadowText != null) {
+            refreshShadowText();
+        }
 
         changingScene = false;
         dialogueScene++;
@@ -157,6 +169,14 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         displayText.color = _info[dialogueScene].textColor;
     }
 
+    function refreshShadowText() {
+        shadowText.setPosition(displayText.x + 2, displayText.y + 2);
+        shadowText.size = _info[dialogueScene].textSize;
+
+        shadowText.font = _info[dialogueScene].font;
+        shadowText.color = _info[dialogueScene].textColor;
+    }
+
     function implementAnimPlay(sprString:String):Void {
         var dialogueInfo:DialogueSpriteData = null;
         var spr:EditorSprite = null;
@@ -180,6 +200,10 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
             spr.animation.addByPrefix(animationInfo.name, animationInfo.prefix, animationInfo.framerate, animationInfo.looped);
             spr.animation.play(animationInfo.name);
         }
+    }
+
+    public function implementShadowText():Void {
+        shadowText = new FlxText(0, 0, Std.int(FlxG.width * 0.8), "", _info[dialogueScene].textSize);
     }
 
     public function implementSong(path:String, bpm:Int):Void {
@@ -262,10 +286,15 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
             displayText = FlxDestroyUtil.destroy(displayText);
 
+            shadowText = FlxDestroyUtil.destroy(shadowText);
+
             FlxTween.tween(blurEffect, {size: 0}, 0.75, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
                 finishCallback(this);
             }});
-            return;
+        }
+
+        if(shadowText != null && displayText != null) {
+            shadowText.text = displayText.text;
         }
 
         if(dialogueScene < _info.length) {
