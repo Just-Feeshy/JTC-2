@@ -87,7 +87,9 @@ class CacheState extends MusicBeatState {
             }
         }
 
-        LoadingState.loadAndSwitchState(target, stopMusic);
+        new FlxTimer().start(0.1, function(tmr:FlxTimer) {
+            LoadingState.loadAndSwitchState(target, stopMusic);
+        });
 	}
 
     #if json2object

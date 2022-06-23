@@ -161,6 +161,7 @@ class PlayState extends MusicBeatState
 	private var readableSong:String = "";
 
 	private var gfSpeed:Int = 1;
+	private var dadSpeed:Int = 2;
 	private var combo:Int = 0;
 
 	private var healthBarBG:FlxSprite;
@@ -1594,14 +1595,11 @@ class PlayState extends MusicBeatState
 
 	function longConditionForNote(daNote:Note, center:Float):Bool {
 		if(daNote.downscrollNote) {
-			if(daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= center
-			&& (!daNote.mustPress || (daNote.wasGoodHit || (daNote.prevNote.wasGoodHit && !daNote.canBeHit)))) {
+			if(daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= center) {
 				return true;
 			}
 		}else {
-			if (daNote.isSustainNote
-			&& daNote.y + daNote.offset.y * daNote.scale.y <= center
-			&& (!daNote.mustPress || (daNote.wasGoodHit || (daNote.prevNote.wasGoodHit && !daNote.canBeHit)))) {
+			if (daNote.y + daNote.offset.y * daNote.scale.y <= center) {
 				return true;
 			}
 		}
@@ -2078,7 +2076,8 @@ class PlayState extends MusicBeatState
 				daNote.setNoteAxis(daNote.distanceAxis);
 
 				// fixed it kinda
-				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)) {
+				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)
+				&& (!daNote.mustPress || (daNote.wasGoodHit || (daNote.prevNote.wasGoodHit && !daNote.canBeHit)))) {
 					if(longConditionForNote(daNote, centerNote)) {
 						if(daNote.downscrollNote) {
 							var swagRect = new FlxRect(0, 0, daNote.frameWidth, daNote.frameHeight);
@@ -3183,10 +3182,6 @@ class PlayState extends MusicBeatState
 			}
 			// else
 			// Conductor.changeBPM(SONG.bpm);
-
-			// Dad doesnt interupt his own notes
-			if (SONG.notes[Math.floor(curStep / 16)].mustHitSection)
-				dad.dance();
 		}
 		// FlxG.log.add('change bpm' + SONG.notes[Std.int(curStep / 16)].changeBPM);
 		wiggleShit.update(Conductor.crochet);
@@ -3216,6 +3211,12 @@ class PlayState extends MusicBeatState
 			gf.dance();
 		}
 
+		if(dad.animation.curAnim != null) {
+			if (curBeat % dadSpeed == 0 && !dad.animation.curAnim.name.startsWith("sing")) {
+				dad.dance();
+			}
+		}
+
 		if (!boyfriend.animation.curAnim.name.startsWith("sing"))
 		{
 			if(boyfriend.animation.curAnim.name.startsWith("dodge") && boyfriend.animation.finished)
@@ -3242,6 +3243,7 @@ class PlayState extends MusicBeatState
 
 	override public function destroy() {
 		Compile.kill();
+		Cache.clear();
 		
 		super.destroy();
 	}

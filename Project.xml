@@ -44,7 +44,7 @@
 	<!-- Engine Customization -->
 	<define name="USING_LUA" />
 	<define name="USING_DLLS" />
-	<define name="USING_MOD_DEBUG" />
+	<!-- <define name="USING_MOD_DEBUG" /> -->
 
 	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
 	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>

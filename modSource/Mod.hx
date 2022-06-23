@@ -11,6 +11,7 @@ class Mod {
         Register.attachLuaToState(OptionsMenuState, new ModLua(Paths.lua("modSettings")));
         Register.implementDialogueToSong("funk-off", DialogueBoxJTC);
         Register.implementDialogueToSong("ping-pong", DialogueBoxJTC);
+        Register.implementDialogueToSong("i-am-blue", DialogueBoxJTC);
         Register.add(STAGE, CheesyStage);
 
         /**

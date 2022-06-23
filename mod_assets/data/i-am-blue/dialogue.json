@@ -1,0 +1,788 @@
+{
+	"info": [
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"HELL YEAH!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitTogether",
+						"name": "together",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 210,
+				"y": 36,
+				"assetID": 6,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"Man, that was so *cold* it gave me *chills*!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitTogether",
+						"name": "together",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 210,
+				"y": 36,
+				"assetID": 6,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"Hah, okay, okay, you got me.."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShrug",
+						"name": "shrug",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 190,
+				"y": 60,
+				"assetID": 7,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"..I was just messing around."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitSas",
+						"name": "sas",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"I think you're really funkin' *cool*!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShout",
+						"name": "shout",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 3200456,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [
+					{
+						"prefix": "bfPortraitCool",
+						"name": "bf",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 720,
+				"y": 172,
+				"assetID": 5,
+				"size": 0.6
+			},
+			"soundIndex": 1,
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			"text": [
+				"right portrait",
+				"Bibbidi Bobbidi Boo!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"Haha, woah there, don't get ahead of yourself."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitSas",
+						"name": "sas",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"I'm still AT LEAST ^2 cooler than you."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShout",
+						"name": "shout",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"But there's nothing wrong in trying, *frostbite*."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitSas",
+						"name": "sas",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"You know, you don't gotta be as *cool* as ME to be the *coolest* YOU."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShrug",
+						"name": "shrug",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 190,
+				"y": 60,
+				"assetID": 7,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"We're literally cartoon characters, so we can be whatever the funk we want."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitPingPong",
+						"name": "pingpong",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 8,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 3200456,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [
+					{
+						"prefix": "bfPortraitCool",
+						"name": "bf",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 720,
+				"y": 172,
+				"assetID": 5,
+				"size": 0.6
+			},
+			"soundIndex": 1,
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			"text": [
+				"right portrait",
+				"Skra ta ta ta ta!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"Hell yeah brother! So be the *coolest* 'Boyfriend.xml' you can be!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShout",
+						"name": "shout",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"Well then, let's wrap this rap up."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShrug",
+						"name": "shrug",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 190,
+				"y": 60,
+				"assetID": 7,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"There's only one song left."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShrug",
+						"name": "shrug",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 190,
+				"y": 60,
+				"assetID": 7,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"You guys had other.. funkin' planned for tonight anyways, right?"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitSas",
+						"name": "sas",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
+				"size": 0.8
+			}
+		}
+	]
+}

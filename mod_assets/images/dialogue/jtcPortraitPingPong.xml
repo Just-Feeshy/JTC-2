@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="jtcPortraitPingPong.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="jtcPortraitPingPong0000" x="0" y="0" width="310" height="496"/>
+	<SubTexture name="jtcPortraitPingPong0001" x="310" y="0" width="310" height="496"/>
+	<SubTexture name="jtcPortraitPingPong0002" x="620" y="0" width="310" height="496"/>
+	<SubTexture name="jtcPortraitPingPong0003" x="0" y="496" width="310" height="496"/>
+	<SubTexture name="jtcPortraitPingPong0004" x="310" y="496" width="310" height="496"/>
+</TextureAtlas>

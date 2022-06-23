@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="jtcPortraitTogether.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="jtcPortraitTogether0000" x="0" y="0" width="1173" height="644"/>
+	<SubTexture name="jtcPortraitTogether0001" x="1233" y="0" width="1173" height="644"/>
+	<SubTexture name="jtcPortraitTogether0002" x="2466" y="0" width="1173" height="644"/>
+	<SubTexture name="jtcPortraitTogether0003" x="0" y="704" width="1173" height="644"/>
+	<SubTexture name="jtcPortraitTogether0004" x="1233" y="704" width="1173" height="644"/>
+</TextureAtlas>
