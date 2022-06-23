@@ -19,10 +19,6 @@ class DialogueBoxMod extends DialogueBuilder {
         bindRawSoundToID(1, UselessShit.beep());
 
         implementShadowText();
-
-        if(FlxG.save.data.spanish) {
-            _info[0].text[1] = "Tú!";
-        }
     }
 
     override function refreshDisplay():Void {

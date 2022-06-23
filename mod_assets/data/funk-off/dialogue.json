@@ -283,6 +283,153 @@
 			"font": "assets/fonts/PhantomMuff.ttf",
 			"text": [
 				"right portrait",
+				"Beep?"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"What? Don't 'Beep' me bro, you know who I am!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShout",
+						"name": "shout",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"Everyone knows JTC, I'm the coolest motherfunker around here."
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitSas",
+						"name": "sas",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 3200456,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [
+					{
+						"prefix": "bfPortraitNormal",
+						"name": "bf",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 720,
+				"y": 172,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"soundIndex": 1,
+			"font": "assets/fonts/PhantomMuff.ttf",
+			"text": [
+				"right portrait",
 				"Da ba dee da ba die."
 			],
 			"textSize": 32,
@@ -374,6 +521,55 @@
 			"text": [
 				"left portrait",
 				"Let's go right now!"
+			],
+			"textSize": 32,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShout",
+						"name": "shout",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"textColor": 16766208,
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			},
+			"soundIndex": 0,
+			"font": "mod_assets/fonts/cheese.otf",
+			"text": [
+				"left portrait",
+				"Show me that 'sweet sweet swag' you're talking about."
 			],
 			"textSize": 32,
 			"leftPortrait": {
