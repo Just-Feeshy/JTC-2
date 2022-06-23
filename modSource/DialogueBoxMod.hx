@@ -28,6 +28,8 @@ class DialogueBoxMod extends DialogueBuilder {
     override function refreshDisplay():Void {
         super.refreshDisplay();
 
+        speechBubble.flipX = !speechBubble.flipX;
+
         if(displayText.color == 16766208) {
             implementShadowTextColor(FlxColor.fromInt(15117568));
         }else if(displayText.color == 3200456) {
