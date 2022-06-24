@@ -44,9 +44,14 @@ typedef Title_Menu = {
     var credit_engine_creator:Bool;
 
     var mod_creators:Array<String>;
-    var waky:Array<String>;
+    var waky:Array<Waky>;
 
     var random_waky:Array<Array<String>>;
+}
+
+typedef Waky = {
+    var texts:Array<String>;
+    var addon:Bool;
 }
 
 typedef WeekInfo = {

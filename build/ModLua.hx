@@ -13,6 +13,8 @@ import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.FlxSprite;
 
+import feshixl.shaders.ShaderHandler;
+
 import SaveData.SaveType;
 
 using StringTools;
@@ -25,6 +27,7 @@ class ModLua {
     public var luaScript(default, null):String;
 
     public var luaSprites(default, null):Map<String, FlxSprite> = new Map<String, FlxSprite>();
+    public var luaShaders(default, null):Map<String, ShaderHandler> = new Map<String, ShaderHandler>();
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
 
     private var luaTweens:Map<String, FlxTween> = new Map<String, FlxTween>();
@@ -54,6 +57,9 @@ class ModLua {
         set("inRapBattle", false);
 
         set('curBpm', Conductor.bpm);
+
+        set('crochet', Conductor.crochet);
+        set('stepCrochet', Conductor.stepCrochet);
 
         /**
         * No really point on this, unless if you homebrew a mod made with this "engine" to the switch.
@@ -228,6 +234,40 @@ class ModLua {
                 luaTweens.remove(name);
             }}));
         });
+
+        //shaders
+        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, path:String) {
+            if(luaShaders.exists(name)) {
+                return;
+            }
+
+            name = name.replace('.', '');
+
+            luaShaders.set(name, new ShaderHandler());
+        });
+
+        Lua_helper.add_callback(lua, "implementShaderFile", function(name:String, path:String) {
+            var shader:ShaderHandler = luaShaders.get(name);
+
+            if(shader != null) {
+                shader.implementFragmentShader(Paths.shader(path));
+            }
+        });
+
+        Lua_helper.add_callback(lua, "attachShaderToSprite", function(name:String, spriteName:String) {
+            var shader:ShaderHandler = luaShaders.get(name);
+            var sprite:FlxSprite = luaSprites.get(spriteName);
+
+            if(shader == null) {
+                return;
+            }
+
+            if(sprite == null) {
+                return;
+            }
+
+            shader.attachBitmapData(sprite.framePixels);
+        });
         #end
     }
 
@@ -313,9 +353,6 @@ class ModLua {
         #end
     }
 
-    /**
-    * It's a recursion function to allow for smoother execution.
-    */
     #if (USING_LUA && linc_luajit)
     public function convertToLua(args:Array<Dynamic>, index:Int = 0):Int {
         if(index < args.length) {

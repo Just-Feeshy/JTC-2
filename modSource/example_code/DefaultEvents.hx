@@ -101,8 +101,12 @@ class DefaultEvents implements IFeshEvent {
                 }
             }
         }else if(eventName == "clear events") {
-            if(PlayState.modStorage.contains(eventName)) {
-                PlayState.modStorage.remove(eventName);
+            if(PlayState.modStorage.contains(eventValue)) {
+                PlayState.modStorage.remove(eventValue);
+            }
+
+            if(PlayState.modStorage.contains(eventValue2)) {
+                PlayState.modStorage.remove(eventValue2);
             }
         }else if(eventName == "clear all") {
             PlayState.modStorage.splice(0, PlayState.modStorage.length);

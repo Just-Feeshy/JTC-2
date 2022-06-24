@@ -39,9 +39,6 @@ class TitleState extends MusicBeatState
 	var textGroup:FlxGroup;
 	var ngSpr:FlxSprite;
 
-	var userIcon:FlxSpriteGroup;
-	var userName:FlxTypedGroup<FlxText>;
-
 	var credits:Array<String> = Paths.modJSON.title_menu.mod_creators;
 
 	override public function create():Void
@@ -57,11 +54,6 @@ class TitleState extends MusicBeatState
 		**/
 
 		PlayerSettings.init();
-
-		// DEBUG BULLSHIT
-
-		userIcon = new FlxSpriteGroup();
-		userName = new FlxTypedGroup<FlxText>();
 
 		NGio.noLogin(APIStuff.API);
 
@@ -281,10 +273,8 @@ class TitleState extends MusicBeatState
 		super.update(elapsed);
 	}
 
-	function createCoolText(textArray:Array<String>)
-	{
-		for (i in 0...textArray.length)
-		{
+	function createCoolText(textArray:Array<String>):Void {
+		for (i in 0...textArray.length) {
 			var money:Alphabet = new Alphabet(0, 0, textArray[i], true, false);
 			money.screenCenter(X);
 			money.y += (i * 60) + 200;
@@ -293,37 +283,19 @@ class TitleState extends MusicBeatState
 		}
 	}
 
-	function addMoreText(text:String, ?image:Array<String>)
-	{
+	function addMoreText(text:String):Void {
 		var coolText:Alphabet = new Alphabet(0, 0, text, true, false);
 		coolText.screenCenter(X);
 		coolText.y += (textGroup.length * 60) + 200;
 		credGroup.add(coolText);
 		textGroup.add(coolText);
+	}
 
-		if(image != null && !skippedIntro) {
-			for(i in 0...image.length) {
-				var profile:FlxSprite = new FlxSprite(0, 350).loadGraphic(Paths.image('credits/'+image[i]));
-				profile.setGraphicSize(200);
-				profile.updateHitbox();
-				profile.antialiasing = true;
+	function addMultipleText(textArray:Array<String>):Void {
+		var index:Int = 0;
 
-				if(i >= 1) {
-					profile.x = (userIcon.members[i-1].width + 30) * i;
-				}
-
-				userIcon.add(profile);
-			}
-			
-			userIcon.screenCenter(X);
-			add(userIcon);
-
-			for(i in 0...image.length) {
-				var name:FlxText = new FlxText(userIcon.members[i].x+(userIcon.members[i].width/image[i].length), userIcon.members[i].y + (userIcon.members[i].width + 20), 0, image[i], 24);
-				userName.add(name);
-			}
-
-			add(userName);
+		while(index < textArray.length) {
+			addMoreText(textArray[index++]);
 		}
 	}
 
@@ -333,12 +305,6 @@ class TitleState extends MusicBeatState
 		{
 			credGroup.remove(textGroup.members[0], true);
 			textGroup.remove(textGroup.members[0], true);
-		}
-
-		if(userIcon.members[0] != null) {
-			userIcon.clear();
-			userName.clear();
-			remove(userName);
 		}
 	}
 
@@ -356,52 +322,23 @@ class TitleState extends MusicBeatState
 
 		FlxG.log.add(curBeat);
 
-		switch (curBeat)
-		{
-			case 1:
-				createCoolText(['ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er']);
-			// credTextShit.visible = true;
-			case 3:
-				addMoreText('present');
-			// credTextShit.text += '\npresent...';
-			// credTextShit.addText();
-			case 4:
-				deleteCoolText();
-			case 5:
-				if(Paths.modJSON.title_menu.credit_engine_creator)
-					createCoolText(['FeeshX and Feeshmora']);
-				else
-					createCoolText([Paths.modJSON.title_menu.waky[0]]);
-			case 7:
-				if(Paths.modJSON.title_menu.credit_engine_creator)
-					addMoreText('Made By', ['Feeshy']);
-				else
-					addMoreText(Paths.modJSON.title_menu.waky[1]);
-			case 8:
-				deleteCoolText();
-			case 9:
-				if(credits[credits.length - 1].length > 0) {
+		if(curBeat < Paths.modJSON.title_menu.waky.length) {
+			if(Paths.modJSON.title_menu.waky[curBeat].addon) {
+				addMultipleText(Paths.modJSON.title_menu.waky[curBeat].texts);
+			}else {
+				if(Paths.modJSON.title_menu.waky[curBeat].texts.length > 0) {
 					deleteCoolText();
-					addMoreText('Mod Created By', credits);
-				}else {
-					deleteCoolText();
-					addMoreText(Paths.modJSON.title_menu.waky[2]);
-				}	
-			// credTextShit.visible = true;
-			case 11:
-				deleteCoolText();
-				createCoolText(Paths.modJSON.title_menu.random_waky[FlxG.random.int(0, Paths.modJSON.title_menu.random_waky.length-1)]);
-			case 12:
-				deleteCoolText();
-				createCoolText(Paths.modJSON.title_menu.random_waky[FlxG.random.int(0, Paths.modJSON.title_menu.random_waky.length-1)]);
-			case 13:
-				deleteCoolText();
-			// credTextShit.visible = true;
-			case 14:
-				createCoolText(Paths.modJSON.title_menu.random_waky[FlxG.random.int(0, Paths.modJSON.title_menu.random_waky.length-1)]);
-			// credTextShit.text += '\nNight';
-			case 15:
-				skipIntro();
+				}
+
+				createCoolText(Paths.modJSON.title_menu.waky[curBeat].texts);
+			}
+		}else if(curBeat - (Paths.modJSON.title_menu.waky.length - 1) < Paths.modJSON.title_menu.random_waky.length) {
+			var thisBeat:Int = curBeat - (Paths.modJSON.title_menu.waky.length - 1);
+
+			deleteCoolText();
+			createCoolText(Paths.modJSON.title_menu.random_waky[FlxG.random.int(0, Paths.modJSON.title_menu.random_waky.length-1)]);
+		}else {
+			skipIntro();
 		}
 	}
 
@@ -416,13 +353,6 @@ class TitleState extends MusicBeatState
 			FlxG.camera.flash(FlxColor.WHITE, 4);
 			remove(credGroup);
 			skippedIntro = true;
-
-			if(userIcon.members[0] != null) {
-				userIcon.clear();
-				userName.clear();
-				remove(userName);
-				remove(userIcon);
-			}
 		}
 	}
 

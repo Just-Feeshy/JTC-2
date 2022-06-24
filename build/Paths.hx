@@ -143,6 +143,15 @@ class Paths
 		}
 	}
 
+	inline static public function shader(key:String, ?library:String) {
+		if(Assets.exists(getPath('shaders/$key', TEXT, library)))
+			return getPath('shaders/$key', TEXT, library);
+		else {
+			throw ("Error: could not locate glsl file - " + getPath('shaders/$key', TEXT, library));
+			return null;
+		}
+	}
+
 	inline static public function getPackerAtlas(key:String, ?library:String, ?cache:Bool)
 	{
 		var cacheFile:String = "";

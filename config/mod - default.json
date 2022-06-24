@@ -125,9 +125,12 @@
         ],
 
         "waky": [
-            "Your A",
-            "Sussy Baka",
-            "Filler"
+            {"texts": [], "addon": false},
+            {"texts": ["ninjamuffin99", "phantomArcade", "kawaisprite", "evilsk8er"], "addon": false},
+            {"texts": [], "addon": false},
+            {"texts": ["present"], "addon": true},
+            {"texts": [], "addon": false},
+            {"texts": [], "addon": false}
         ],
 
         "random_waky": [

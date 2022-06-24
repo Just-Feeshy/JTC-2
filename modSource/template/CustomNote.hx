@@ -6,8 +6,6 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 abstract class CustomNote {
     public var ID(default, set):Int; //Puts a specific number for this addon to get proper location.
 
-    public function new() {}
-
     public function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void { //What happens when this note is press by the player.
         return;
     }
