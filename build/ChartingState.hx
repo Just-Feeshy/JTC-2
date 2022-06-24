@@ -133,7 +133,8 @@ class ChartingState extends MusicBeatState
 	];
 
 	//Event Stuff
-	public static final daList:Array<String> = ['flip chart', 'fair battle', 'fade battle', 'blind effect', 'X Sway', 'note woggle', 'camera move', 'clear stuff'];
+	public static final daList:Array<String> = ['flip chart', 'fair battle', 'fade battle', 'blind effect', 'X Sway', 'note woggle', 'camera move', 'clear events', 'clear all'];
+	
 	private static final simpleList:Array<Array<String>> = [
 		['alt animation', "Value 1 - Sets a suffix after the idle and sing\nanimation name.\nValue 2 - Character side to set (Boyfriend's Side or Dad's Side)"],
 		['jumpspeed', "Value 1 - Multiply regular scroll speed by this value.\nValue 2 - Set tween value of scroll speed transition."],
@@ -142,7 +143,8 @@ class ChartingState extends MusicBeatState
 		['strum bounce', "Value 1 - Set size value.\nValue 2 - Set X offset value for player strum."],
 		['note rewind', "Value 1 - Set rewind value.\nValue 2 - Set tween value to the rewind speed."],
 		['character change', "Value 1 - New character's name.\nValue 2 - Character to change \n(Boyfriend's Side, Dad's Side, Girlfriend's Side)"],
-		['clear stuff', "Value 1 - nothing.\nValue 2 - nothing."]
+		['clear events', "Value 1 - Event's name.\nValue 2 - Second event's name. (optional)"],
+		['clear all', "Value 1 - nothing.\nValue 2 - nothing."]
 	];
 
 	private var selectingShader:BuiltInShaders;
@@ -162,7 +164,8 @@ class ChartingState extends MusicBeatState
 		'strum bounce' => "Other",
 		'note rewind' => "Other",
 		'character change' => "Other",
-		'clear stuff' => "Other"
+		'clear events' => "Other",
+		'clear all' => "Other"
 	];
 
 	override function create()
@@ -556,7 +559,7 @@ class ChartingState extends MusicBeatState
 				case "opponent change":
 					createEvent.modValue = makeOtherValue.text.toLowerCase();
 					createEvent.modValueTwo = otherTwoValueLabel.text.toLowerCase();
-				case "clear array":
+				case "clear all":
 					createEvent.modValue = null;
 					createEvent.modValueTwo = null;
 			}

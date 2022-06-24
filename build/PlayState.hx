@@ -201,6 +201,7 @@ class PlayState extends MusicBeatState
 	var defaultCamZoom:Float = 1.05;
 
 	var doof:DialogueBox;
+	var events:FeshEventGroup;
 
 	// how big to stretch the pixel art assets
 	public static var daPixelZoom:Float = 6;
@@ -332,6 +333,12 @@ class PlayState extends MusicBeatState
 
 		for(i in 0...Register.stages.length) {
 			stageGroup.add(cast Type.createInstance(Register.stages[i], [curStage]));
+		}
+
+		events = new FeshEventGroup();
+
+		for(i in 0...Register.events.length) {
+			stageGroup.add(cast Type.createInstance(Register.events[i], []));
 		}
 
 		if(waterBlur[0] == null)
@@ -1665,7 +1672,7 @@ class PlayState extends MusicBeatState
 				iconP1.animation.play('bf-old');
 		}
 
-		Register.events.whenGameIsRunning(modStorage, this);
+		events.whenGameIsRunning(modStorage, this);
 
 		super.update(elapsed);
 
@@ -2111,7 +2118,7 @@ class PlayState extends MusicBeatState
 					dad.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
 					dad.holdTimer = 0;
 
-					Register.events.whenNoteIsPressed(daNote, this);
+					events.whenNoteIsPressed(daNote, this);
 					cameraMovement(daNote.noteData, daNote.isSustainNote);
 
 					if(modifierCheckList('fair battle') && health < 0.1)
@@ -2906,7 +2913,7 @@ class PlayState extends MusicBeatState
 					}
 				}
 
-				Register.events.whenNoteIsPressed(note, this);
+				events.whenNoteIsPressed(note, this);
 				cameraMovement(note.noteData, note.isSustainNote);
 
 				boyfriend.customAnimation = false;
@@ -3124,11 +3131,10 @@ class PlayState extends MusicBeatState
 		value = value.toLowerCase();
 		value2 = value2.toLowerCase();
 
-		Register.events.whenTriggered(skill, value, value2, this);
+		events.whenTriggered(skill, value, value2, this);
 	}
 
 	//Getter Function
-
 	override function get_songPos():Float
 		return Conductor.trackPosition;
 

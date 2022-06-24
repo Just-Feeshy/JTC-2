@@ -66,7 +66,7 @@ class Register {
 
     #if !macro
     @:allow(PlayState)
-    private static var events:FeshEventGroup = new FeshEventGroup();
+    private static var events:Array<Class<IFeshEvent>> = [];
 
     @:allow(PlayState)
     private static var stages:Array<Class<StageBuilder>> = [DefaultStage];
@@ -75,12 +75,11 @@ class Register {
     private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
 
     @:allow(Preloader)
-    @:access(HelperStates.transitionBuilds)
     private static function setup() {
         /**
         * Default initialization for game.
         */
-        add(EVENT, new DefaultEvents());
+        add(EVENT, DefaultEvents);
 
         addCustomTransition("fade", FadeTransition);
         addCustomTransition("tile", TileTransition);
@@ -131,12 +130,13 @@ class Register {
     public static function add(addonType:ClassType, addonClass:Dynamic):Void {
         switch(addonType) {
             case EVENT:
-                var daEvent:IFeshEvent = addonClass;
+                var daEvent:Class<IFeshEvent> = addonClass;
 
-                if(!events.members.contains(daEvent))
-                    events.add(daEvent);
+                if(!events.contains(daEvent))
+                    events.push(daEvent);
             case STAGE:
-                stages.push(addonClass);
+                if(!stages.contains(addonClass))
+                    stages.push(addonClass);
         }
     }
 

@@ -1,5 +1,6 @@
 package feshixl.group;
 
+import flixel.FlxBasic;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 
 import PlayState;
