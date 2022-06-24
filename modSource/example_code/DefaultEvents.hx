@@ -26,7 +26,7 @@ class DefaultEvents implements IFeshEvent {
     private var offsetBounce:Int = 0;
 
     public function new() {
-        return;
+        //empty
     }
 
     public function whenTriggered(eventName:String, eventValue:String, eventValue2:String, playState:PlayState) {
@@ -101,12 +101,12 @@ class DefaultEvents implements IFeshEvent {
                 }
             }
         }else if(eventName == "clear events") {
-            if(playState.modStorage.contains(eventName)) {
-                playState.modStorage.remove(eventName);
+            if(PlayState.modStorage.contains(eventName)) {
+                PlayState.modStorage.remove(eventName);
             }
         }else if(eventName == "clear all") {
-            playState.modStorage.splice(0, modStorage.length);
-            playState.modStorage = [];
+            PlayState.modStorage.splice(0, modStorage.length);
+            PlayState.modStorage = [];
         }
     }
 
