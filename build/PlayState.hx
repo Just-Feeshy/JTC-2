@@ -46,6 +46,7 @@ import openfl.system.System;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
+import openfl.events.KeyboardEvent;
 import feshixl.group.FeshEventGroup;
 import feshixl.interfaces.IDialogue;
 import openfl.Lib;
@@ -551,22 +552,66 @@ class PlayState extends MusicBeatState
 		super.create();
 	}
 
-	function setupKeyStuff() {
+	function setupKeyStuff():Void {
 		if(SONG.fifthKey) {
 			singAnims = ["singLEFT", "singDOWN", "singUP", "singUP", "singRIGHT"];
-
-			keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
-			keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-			keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[4];
-			keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
-			keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
 		}else {
 			singAnims = ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
+		}
 
-			keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
-			keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-			keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
-			keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
+		switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
+			case 0:
+				if(SONG.fifthKey) {
+					keysMatrix[0] = [FlxKey.A, FlxKey.LEFT];
+					keysMatrix[1] = [FlxKey.S, FlxKey.DOWN];
+					keysMatrix[4] = [FlxKey.SPACE];
+					keysMatrix[2] = [FlxKey.W, FlxKey.UP];
+					keysMatrix[3] = [FlxKey.D, FlxKey.RIGHT];
+				}else {
+					keysMatrix[0] = [FlxKey.A, FlxKey.LEFT];
+					keysMatrix[1] = [FlxKey.S, FlxKey.DOWN];
+					keysMatrix[2] = [FlxKey.W, FlxKey.UP];
+					keysMatrix[3] = [FlxKey.D, FlxKey.RIGHT];
+				}
+			case 1:
+				if(SONG.fifthKey) {
+					keysMatrix[0] = [FlxKey.D, FlxKey.LEFT];
+					keysMatrix[1] = [FlxKey.F, FlxKey.DOWN];
+					keysMatrix[4] = [FlxKey.SPACE];
+					keysMatrix[2] = [FlxKey.J, FlxKey.UP];
+					keysMatrix[3] = [FlxKey.K, FlxKey.RIGHT];
+				}else {
+					keysMatrix[0] = [FlxKey.D, FlxKey.LEFT];
+					keysMatrix[1] = [FlxKey.F, FlxKey.DOWN];
+					keysMatrix[2] = [FlxKey.J, FlxKey.UP];
+					keysMatrix[3] = [FlxKey.K, FlxKey.RIGHT];
+				}
+			case 2:
+				if(SONG.fifthKey) {
+					keysMatrix[0] = [FlxKey.Z, FlxKey.LEFT];
+					keysMatrix[1] = [FlxKey.X, FlxKey.DOWN];
+					keysMatrix[4] = [FlxKey.SPACE];
+					keysMatrix[2] = [ONE, NUMPADONE, FlxKey.UP];
+					keysMatrix[3] = [TWO, NUMPADTWO, FlxKey.RIGHT];
+				}else {
+					keysMatrix[0] = [FlxKey.Z, FlxKey.LEFT];
+					keysMatrix[1] = [FlxKey.X, FlxKey.DOWN];
+					keysMatrix[2] = [ONE, NUMPADONE, FlxKey.UP];
+					keysMatrix[3] = [TWO, NUMPADTWO, FlxKey.RIGHT];
+				}
+			case 3:
+				if(SONG.fifthKey) {
+					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
+					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
+					keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[4];
+					keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
+					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
+				}else {
+					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
+					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
+					keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
+					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
+				}
 		}
 	}
 
@@ -1088,6 +1133,9 @@ class PlayState extends MusicBeatState
 						}
 					});
 					FlxG.sound.play(Paths.sound('intro1'), 0.6);
+
+					FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyShit);
+					FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, keyReleased);
 				case 3:
 					var go:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[2]));
 					go.scrollFactor.set();
@@ -1539,6 +1587,8 @@ class PlayState extends MusicBeatState
 			}
 			#end
 		}
+
+		setupKeyStuff();
 
 		super.closeSubState();
 	}
@@ -2014,8 +2064,7 @@ class PlayState extends MusicBeatState
 
 		if (generatedMusic && !inCutscene)
 		{
-			keyShit();
-			keyReleased();
+			defaultGameStuff();
 
 			if(trippyFog.alpha == 0.5) {
 				var curBet:Float = CustomNoteHandler.yourNoteData.get("trippy")*(Conductor.bpm/120);
@@ -2243,7 +2292,8 @@ class PlayState extends MusicBeatState
 												combo = 0;
 												misses += 1;
 
-												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))], true);
+												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 											}
 										}
 									}else{
@@ -2258,7 +2308,8 @@ class PlayState extends MusicBeatState
 												combo = 0;
 												misses += 1;
 
-												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))], true);
+												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 											}
 										}
 									}
@@ -2279,29 +2330,12 @@ class PlayState extends MusicBeatState
 		#end
 	}
 
-	function keyReleased() {
+	function keyReleased(e:KeyboardEvent) {
 		if(paused && inCutscene)
 			return;
 
-		var controlHoldArray = [
-			controls.GAME_LEFT,
-			controls.GAME_DOWN,
-			controls.GAME_UP,
-			controls.GAME_RIGHT
-		];
-
-		if(SONG.fifthKey) {
-			controlHoldArray = [
-				controls.GAME_LEFT,
-				controls.GAME_DOWN,
-				controls.GAME_SPACE,
-				controls.GAME_UP,
-				controls.GAME_RIGHT
-			];
-		}
-
-		for(i in 0...controlHoldArray.length) {
-			if(!controlHoldArray[i]) {
+		for(i in 0...keysMatrix.length) {
+			if(getKeyHit(e.keyCode, i)) {
 				var spr:Strum = playerStrums.members[i];
 
 				if(spr != null) {
@@ -2594,64 +2628,18 @@ class PlayState extends MusicBeatState
 		curSection += 1;
 	}
 
-	function getKey(key:FlxKey) {
-		if(key != FlxKey.NONE) {
-			for(i in 0...keysMatrix.length) {
-				if(keysMatrix[i].contains(key)) {
-					trace(i);
-					return i;
-				}
-			}
-		}
-
-		return -1;
-	}
-
-	private function keyShit():Void
-	{
+	function defaultGameStuff():Void {
 		if(paused && inCutscene)
 			return;
 
-		var controlReleaseArray:Array<Bool> = [
-			controls.GAME_LEFT_R,
-			controls.GAME_DOWN_R,
-			controls.GAME_UP_R,
-			controls.GAME_RIGHT_R
-		];
-
-		var controlArray:Array<Bool> = [
-			controls.GAME_LEFT_P,
-			controls.GAME_DOWN_P,
-			controls.GAME_UP_P,
-			controls.GAME_RIGHT_P
-		];
-
-		var controlHoldArray:Array<Bool> = [
+		var controlHoldArray = [
 			controls.GAME_LEFT,
 			controls.GAME_DOWN,
 			controls.GAME_UP,
 			controls.GAME_RIGHT
 		];
 
-		// I could care less about fixing input tbh
-
 		if(SONG.fifthKey) {
-			controlReleaseArray = [
-				controls.GAME_LEFT_R,
-				controls.GAME_DOWN_R,
-				controls.GAME_SPACE_R,
-				controls.GAME_UP_R,
-				controls.GAME_RIGHT_R
-			];
-
-			controlArray = [
-				controls.GAME_LEFT_P,
-				controls.GAME_DOWN_P,
-				controls.GAME_SPACE_P,
-				controls.GAME_UP_P,
-				controls.GAME_RIGHT_P
-			];
-			
 			controlHoldArray = [
 				controls.GAME_LEFT,
 				controls.GAME_DOWN,
@@ -2661,22 +2649,34 @@ class PlayState extends MusicBeatState
 			];
 		}
 
-		if (generatedMusic) {
+		notes.forEachAlive(function(daNote:Note) {
+			if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate
+			&& !daNote.wasGoodHit && controlHoldArray[daNote.noteData] && daNote.isSustainNote) {
+				goodNoteHit(daNote);
+			}
+		});
+
+		if (boyfriend.holdTimer > Conductor.stepCrochet * 0.0044 && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
+			boyfriend.dance();
+		}
+	}
+
+	function keyShit(e:KeyboardEvent):Void
+	{
+		if(paused && inCutscene)
+			return;
+
+		if (generatedMusic && FlxG.keys.checkStatus(e.keyCode, JUST_PRESSED)) {
 			var noteCaculation:Bool = false;
 
 			var noteList:Array<Array<Note>> = [];
 			var pressedNotes:Array<Note> = [];
 
 			notes.forEachAlive(function(daNote:Note) {
-				if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate
-				&& !daNote.wasGoodHit && controlHoldArray[daNote.noteData] && daNote.isSustainNote) {
-					goodNoteHit(daNote);
-				}
-
 				if(daNote.canBeHit && daNote.mustPress && !daNote.tooLate
 				&& !daNote.wasGoodHit && !daNote.isSustainNote) {
-					for(i in 0...controlArray.length) {
-						if(controlArray[i] && daNote.noteData == i) {
+					for(i in 0...keysMatrix.length) {
+						if(getKeyHit(e.keyCode, i) && daNote.noteData == i) {
 							if(noteList[i] == null) {
 								noteList[i] = [];
 							}
@@ -2686,6 +2686,8 @@ class PlayState extends MusicBeatState
 					}
 				}
 			});
+
+			var counter:Int = 0;
 
 			/**
 			* Better Jack detection.
@@ -2705,22 +2707,42 @@ class PlayState extends MusicBeatState
 							break;
 						}
 					}
+				}else {
+					counter++;
 				}
 			}
-		}
-		
-		if (boyfriend.holdTimer > Conductor.stepCrochet * 0.0044 && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
-			boyfriend.dance();
-		}
 
-		playerStrums.forEach(function(spr:Strum) {
-			if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-				if(controlArray[spr.ID] && spr.animation.curAnim.name != 'confirm') {
-					spr.animation.play('pressed');
+			if(counter == noteList.length) {
+				if(!GhostTapping.ghostTap) {
+					for(i in 0...keysMatrix.length) {
+						if(keysMatrix[i].contains(e.keyCode)) {
+							noteMiss(i);
+							break;
+						}
+					}
+				}else {
 					missClicks++;
 				}
+
+				counter = 0;
 			}
-		});
+
+			playerStrums.forEach(function(spr:Strum) {
+				if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+					if(getKeyHit(e.keyCode, spr.ID) && spr.animation.curAnim.name != 'confirm') {
+						spr.animation.play('pressed');
+					}
+				}
+			});
+		}
+	}
+
+	function getKeyHit(keyCode:Int, id:Int):Bool {
+		if(keysMatrix[id].contains(keyCode)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	function noteMiss(direction:Int = 1, ?note:Note, ?evenTho:Bool = false):Void
@@ -2739,16 +2761,8 @@ class PlayState extends MusicBeatState
 			{
 				gf.playAnim('sad');
 			}
-			combo = 0;
 
-			//if(note != null) {
-			//	if(note.noteAbstract != "poison" && note.noteAbstract != "spiritual star")
-					//FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-				// FlxG.sound.play(Paths.sound('missnote1'), 1, false);
-				// FlxG.log.add('played imss note');
-			//} else {
-			//	FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-			//}
+			combo = 0;
 
 			if(note == null) {
 				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
@@ -2768,7 +2782,8 @@ class PlayState extends MusicBeatState
 				boyfriend.stunned = false;
 			});
 
-			boyfriend.playAnim(singAnims[Std.int(Math.abs(note.noteData))], true);
+			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+			boyfriend.playAnim(singAnims[direction] + "miss", true);
 		}
 	}
 
@@ -2932,8 +2947,6 @@ class PlayState extends MusicBeatState
 						spr.ifCustom = "regular";
 
 					var key:Int = (SONG.fifthKey ? 5 : 4);
-
-					note.splash(grpSplash.members[spr.ID], spr, daRating);
 	
 					/**
 					* Old shit made in 2020 while trying to learn how Haxe and HaxeFlixel.
@@ -3049,6 +3062,12 @@ class PlayState extends MusicBeatState
 							spr.setColorTransform(1,1,1,1,0,0,0,0);
 					}
 				}}
+			});
+
+			playerStrums.forEach(function(spr:Strum) {
+				if (Math.abs(note.noteData) == spr.ID) {
+					note.splash(grpSplash.members[spr.ID], spr, daRating);
+				}
 			});
 
 			if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract))
@@ -3248,6 +3267,9 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function destroy() {
+		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyShit);
+		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, keyReleased);
+
 		Compile.kill();
 		Cache.clear();
 		

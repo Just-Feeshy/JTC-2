@@ -12,6 +12,7 @@ import openfl.events.UncaughtErrorEvent;
 import openfl.errors.Error;
 import openfl.Lib;
 
+import haxe.CallStack;
 import lime.ui.Window;
 import haxe.Json;
 
@@ -118,22 +119,28 @@ class Preloader extends FlxState {
         File.saveContent("./crash-reports/" + modName + "_" + timeStap + ".txt",
             "Uncaught Error: " + Std.string(event.error) + "\n\n" + error.getStackTrace() + "\n\n" + contactInfo
         );
-        #end
+
+        var callStack:Array<StackItem> = CallStack.exceptionStack(true);
+
+        var errMsg:String = "";
+
+        for (stackItem in callStack) {
+            switch (stackItem) {
+                case FilePos(s, file, line, column):
+                    errMsg += "Called from " + file + " (line " + line + ")\n";
+                default:
+                    Sys.println(stackItem);
+            }
+        }
 
         FlxG.sound.music.stop();
         DiscordClient.shutdown();
 
-        var shittyOutputArray:Array<String> = error.getStackTrace().split("(");
-        var shittyOutput:String = "";
-
-        for(i in 1...shittyOutputArray.length) {
-            if(shittyOutputArray[i].replace(")", "").trim() != "") {
-                shittyOutput += "Called from " + shittyOutputArray[i].replace(")", "") + "\n";
-            }
-        }
+        FlxG.sound.muted = true;
 
         var prevWindow:Window = Lib.current.stage.window;
-        new CrashLogDisplay(prevWindow).attachReport([shittyOutput, "Uncaught Error: " + Std.string(event.error)]);
+        new CrashLogDisplay(prevWindow).attachReport([errMsg, "Uncaught Error: " + Std.string(event.error)]);
+        #end
     }
 
     override function update(elapsed:Float):Void {
