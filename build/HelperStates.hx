@@ -63,7 +63,7 @@ class HelperStates extends FlxUIState {
 		/**
 		* Interesting, I know.
 		*/
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			HelperStates.getLua(Type.getClass(this)).execute();
 		#end
@@ -78,7 +78,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function onCreate():Dynamic {
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			return HelperStates.getLua(Type.getClass(this)).call("onCreate", []);
 		#end
@@ -87,14 +87,14 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function callLua(name:String, args:Array<Dynamic>) {
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			HelperStates.getLua(Type.getClass(this)).call(name, args);
 		#end
 	}
 
 	public function resetScript() {
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			var file:String = HelperStates.getLua(Type.getClass(this)).luaScript;
 
@@ -119,7 +119,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	override function destroy() {
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).close();
 		}

@@ -1,6 +1,6 @@
 package;
 
-#if (USING_LUA && linc_luajit)
+#if (USING_LUA && linc_luajit_basic)
 import llua.Lua;
 import llua.LuaL;
 import llua.State;
@@ -20,7 +20,7 @@ import SaveData.SaveType;
 using StringTools;
 
 class ModLua {
-    #if (USING_LUA && linc_luajit)
+    #if (USING_LUA && linc_luajit_basic)
     private var lua:State = null;
     #end
 
@@ -37,7 +37,7 @@ class ModLua {
     }
 
     public function execute() {
-        #if (USING_LUA && linc_luajit)
+        #if (USING_LUA && linc_luajit_basic)
         lua = LuaL.newstate();
 		LuaL.openlibs(lua);
 		Lua.init_callbacks(lua);
@@ -272,13 +272,13 @@ class ModLua {
     }
 
     public function addCallback(name:String, method:Dynamic) {
-        #if (USING_LUA && linc_luajit)
+        #if (USING_LUA && linc_luajit_basic)
         Lua_helper.add_callback(lua, name, method);
         #end
     }
 
     public function set(variable:String, data:Dynamic) {
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(lua == null) {
 			return;
 		}
@@ -289,7 +289,7 @@ class ModLua {
 	}
 
     public function call(event:String, args:Array<Dynamic>, index:Int = 0):Dynamic {
-        #if (USING_LUA && linc_luajit)
+        #if (USING_LUA && linc_luajit_basic)
         if(lua == null) {
             trace("Error: Something went wrong with lua.");
             return 0;
@@ -333,7 +333,7 @@ class ModLua {
     }
 
     public function close() {
-        #if (USING_LUA && linc_luajit)
+        #if (USING_LUA && linc_luajit_basic)
         if(lua == null) {
             return;
         }
@@ -353,7 +353,7 @@ class ModLua {
         #end
     }
 
-    #if (USING_LUA && linc_luajit)
+    #if (USING_LUA && linc_luajit_basic)
     public function convertToLua(args:Array<Dynamic>, index:Int = 0):Int {
         if(index < args.length) {
             Convert.toLua(lua, args[index]);

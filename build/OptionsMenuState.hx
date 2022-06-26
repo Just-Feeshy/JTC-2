@@ -577,7 +577,7 @@ class OptionsMenuState extends MusicBeatState {
 		
 		super.create();
 
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).set("catalog", catalog);
 			HelperStates.getLua(Type.getClass(this)).set("listSize", optionList[0].options.length);
@@ -668,7 +668,7 @@ class OptionsMenuState extends MusicBeatState {
 	}
 
 	function optionLuaCallback(name:String):Void {
-		#if (USING_LUA && linc_luajit)
+		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).call("whenOptionPressed", [name]);
 		}
