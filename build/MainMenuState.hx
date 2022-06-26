@@ -95,7 +95,7 @@ class MainMenuState extends MusicBeatState
 		Conductor.songPosition = 0;
 
 		camX = new BetterCams();
-		//camMenu = new BetterCams();
+		camMenu = new BetterCams();
 		camNoBump = new BetterCams();
 		camX.bgColor.alpha = 0;
 		camNoBump.bgColor.alpha = 0;

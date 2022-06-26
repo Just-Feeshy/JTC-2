@@ -123,8 +123,17 @@ class Preloader extends FlxState {
         FlxG.sound.music.stop();
         DiscordClient.shutdown();
 
+        var shittyOutputArray:Array<String> = error.getStackTrace().split("(");
+        var shittyOutput:String = "";
+
+        for(i in 1...shittyOutputArray.length) {
+            if(shittyOutputArray[i].replace(")", "").trim() != "") {
+                shittyOutput += "Called from " + shittyOutputArray[i].replace(")", "") + "\n";
+            }
+        }
+
         var prevWindow:Window = Lib.current.stage.window;
-        new CrashLogDisplay(prevWindow).attachReport([error.getStackTrace()]);
+        new CrashLogDisplay(prevWindow).attachReport([shittyOutput, "Uncaught Error: " + Std.string(event.error)]);
     }
 
     override function update(elapsed:Float):Void {

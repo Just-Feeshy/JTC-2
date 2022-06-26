@@ -165,8 +165,8 @@
 	<!--<haxedef name="FLX_NO_SOUND_SYSTEM" />-->
 
 	<!--Debugger for crash log-->
-	<haxedef name="HXCPP_CHECK_POINTER" if="desktop"/>
-	<haxedef name="HXCPP_STACK_LINE" if="desktop"/>
+	<haxedef name="HXCPP_CHECK_POINTER" if="release"/>
+	<haxedef name="HXCPP_STACK_LINE" if="release"/>
 
 	<!--Disable the Flixel core focus lost screen-->
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />

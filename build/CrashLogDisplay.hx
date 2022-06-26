@@ -56,7 +56,7 @@ class CrashLogDisplay extends Sprite {
          * Lmao
          */
         var erect:Rectangle = createRectPanel(backgroundData);
-        _panel = createPanel(backgroundData, erect, new Point(0, 15), 0);
+        _panel = createPanel(backgroundData, erect, new Point(0, -5), 0);
 
         var _title:FlxText = createText("Game Crashed!", Paths.font("OpenSans-Bold.ttf"), 64);
 
@@ -75,11 +75,15 @@ class CrashLogDisplay extends Sprite {
     }
 
     public function attachReport(info:Array<String>):Void {
-        var _frontEndInfo:FlxText = createText(info[0].trim(), Paths.font("OpenSans-Regular.ttf"), 32);
+        var _frontEndInfo:FlxText = createText(info[0].trim(), Paths.font("OpenSans-Regular.ttf"), 24);
+        var _uncaughtInfo:FlxText = createText(info[1].trim(), Paths.font("OpenSans-Regular.ttf"), 24);
 
         @:privateAccess {
-            _frontEndInfo._matrix.translate(_panel.x + 5, _panel.y + 5);
+            _frontEndInfo._matrix.translate((backgroundData.width - _frontEndInfo.width) / 2, _panel.y + 5);
             _frontEndInfo.drawTextFieldTo(backgroundData);
+
+            _uncaughtInfo._matrix.translate(5, backgroundData.height - _uncaughtInfo.height - 5);
+            _uncaughtInfo.drawTextFieldTo(backgroundData);
         }
     }
 
@@ -98,7 +102,7 @@ class CrashLogDisplay extends Sprite {
             (bitmapData.width - width) / 2,
             (bitmapData.height - height) / 2,
             width,
-            height
+            height + 5
         );
 
         return _sourceRect;
