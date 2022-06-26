@@ -76,6 +76,7 @@ class PlayState extends MusicBeatState
 	private var curChar:String = '';
 	private var camMovementPos:FlxPoint;
 	private var prevTrackPos:Float = 0;
+	private var prevDadNoteData:Int = -1;
 
 	private var healthTween:FlxTween;
 
@@ -2116,7 +2117,6 @@ class PlayState extends MusicBeatState
 					}
 
 					dad.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
-					dad.holdTimer = 0;
 
 					events.whenNoteIsPressed(daNote, this);
 					cameraMovement(daNote.noteData, daNote.isSustainNote);

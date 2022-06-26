@@ -127,9 +127,9 @@ class DialogueCreatorState extends MusicBeatState {
     function refreshDisplay():Void {
         _info.totalSprites = totalSprites;
 
-        var leftPortraitAnim:String;
-        var rightPortraitAnim:String;
-        var speechBubbleAnim:String;
+        var leftPortraitAnim:String = null;
+        var rightPortraitAnim:String = null;
+        var speechBubbleAnim:String = null;
 
         if(leftPortrait != null) {
             leftPortraitAnim = leftPortrait.animation.name;

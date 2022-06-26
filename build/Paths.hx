@@ -71,7 +71,7 @@ class Paths
 			return '$library:assets/$library/$file';
 	}
 
-	inline static function getPreloadPath(file:String)
+	inline static public function getPreloadPath(file:String)
 	{
 		if(FileSystem.exists('mod_assets/$file'))
 			return 'mod_assets/$file';
