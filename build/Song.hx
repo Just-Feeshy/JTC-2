@@ -30,6 +30,7 @@ typedef SwagSong =
 
 	var validScore:Bool;
 	var fifthKey:Bool;
+	var modifyFPS:Bool;
 	var colorMapping:Int;
 	var fps:Int;
 
@@ -51,6 +52,7 @@ class Song
 	public var needsVoices:Bool = true;
 	public var speed:Float = 1;
 	public var colorMapping:Int;
+	public var modifyFPS:Bool;
 	public var fps:Int;
 
 	public var player1X:Float;

@@ -5,6 +5,8 @@ import flixel.util.FlxSave;
 import flixel.util.FlxDestroyUtil;
 import flixel.input.keyboard.FlxKey;
 
+import openfl.display.FPS;
+
 enum SaveType {
     NONE;
     DOWNSCROLL;
@@ -32,9 +34,19 @@ enum SaveType {
     GAMMA;
     VOLUME;
     ERASE_DATA;
+    SHOW_FPS;
+    SHOW_MEMORY;
 }
 
 class SaveData {
+    @:allow(Preloader)
+    @:allow(OptionsMenuState)
+    static private var globalFPS:FPS;
+
+    @:allow(Preloader)
+    @:allow(OptionsMenuState)
+    static private var globalMEM:Memory;
+
     /**
     * POSSIBLITIY: Make a `saveServer()` method.
     */
@@ -64,8 +76,12 @@ class SaveData {
         FlxG.save.data.menuBinds = getData(SaveType.CUSTOM_MENU_BINDS);
         FlxG.save.data.gamma = getData(SaveType.GAMMA);
         FlxG.save.data.volume = getData(SaveType.VOLUME);
+        FlxG.save.data.showFPS = getData(SaveType.SHOW_FPS);
+        FlxG.save.data.showMEM = getData(SaveType.SHOW_MEMORY);
 
         FlxG.save.flush();
+
+        refreshData();
     }
 
     inline static public function getData(data:SaveType):Dynamic {
@@ -132,14 +148,14 @@ class SaveData {
             case SET_FPS_DEFAULT:
                 #if (haxe >= "4.2.1")
                 if (FlxG.save.data.lowFps == null)
-                    FlxG.save.data.lowFps = 100;
+                    FlxG.save.data.lowFps = 60;
                 else if(!Std.isOfType(FlxG.save.data.lowFps, Int))
-                    FlxG.save.data.lowFps = 100;
+                    FlxG.save.data.lowFps = 60;
                 #else
                 if (FlxG.save.data.lowFps == null)
-                    FlxG.save.data.lowFps = 100;
+                    FlxG.save.data.lowFps = 60;
                 else if(!Std.is(FlxG.save.data.lowFps, Int))
-                    FlxG.save.data.lowFps = 100;
+                    FlxG.save.data.lowFps = 60;
                 #end
 
                 return FlxG.save.data.lowFps;
@@ -216,7 +232,7 @@ class SaveData {
                 return FlxG.save.data.menuBinds;
             case FPS_MULTIPLIER:
                 if(FlxG.save.data.fpsMulti == null)
-                    FlxG.save.data.fpsMulti = 1;
+                    FlxG.save.data.fpsMulti = 2;
 
                 return FlxG.save.data.fpsMulti;
             case GAMMA:
@@ -229,8 +245,60 @@ class SaveData {
                     FlxG.save.data.volume = 1;
 
                 return FlxG.save.data.volume;
+            case SHOW_FPS:
+                if(FlxG.save.data.showFPS == null)
+                    FlxG.save.data.showFPS = false;
+
+                if(FlxG.save.data.showFPS) { //Just in case.
+                    #if !mobile
+                    openfl.Lib.current.addChild(SaveData.globalFPS);
+                    #end
+                }else {
+                    #if !mobile
+                    openfl.Lib.current.removeChild(SaveData.globalFPS);
+                    #end
+                }
+
+                return FlxG.save.data.showFPS;
+            case SHOW_MEMORY:
+                if(FlxG.save.data.showMEM == null)
+                    FlxG.save.data.showMEM = false;
+
+                if(FlxG.save.data.showMEM) { //Just in case.
+                    #if !mobile
+                    openfl.Lib.current.addChild(SaveData.globalMEM);
+                    #end
+                }else {
+                    #if !mobile
+                    openfl.Lib.current.removeChild(SaveData.globalMEM);
+                    #end
+                }
+
+                return FlxG.save.data.showMEM;
             default:
                 return null;
+        }
+    }
+
+    inline static function refreshData():Void {
+        if(FlxG.save.data.showFPS) {
+            #if !mobile
+            openfl.Lib.current.addChild(SaveData.globalFPS);
+            #end
+        }else {
+            #if !mobile
+            openfl.Lib.current.removeChild(SaveData.globalFPS);
+            #end
+        }
+
+        if(FlxG.save.data.showMEM) {
+            #if !mobile
+            openfl.Lib.current.addChild(SaveData.globalMEM);
+            #end
+        }else {
+            #if !mobile
+            openfl.Lib.current.removeChild(SaveData.globalMEM);
+            #end
         }
     }
 

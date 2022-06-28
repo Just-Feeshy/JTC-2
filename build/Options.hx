@@ -11,16 +11,12 @@ import SaveData.SaveType;
 
 class Options extends Alphabet {
     public var optionIcon:FlxSprite;
-
     public var inputDetector:Bool = false;
-    
     public var optionTitle(default, set):Bool = false;
-
     public var optionSubState:OptionsSubState;
-
     public var saveType(default, null):SaveType;
-
     public var callback:Options->Bool->Void;
+    public var description:String;
 
     public function new(x:Float, y:Float, text:String = "", saveType:SaveType, ?Callback:Options->Bool->Void) {
         super(0, y, text, true, false, x + 40);

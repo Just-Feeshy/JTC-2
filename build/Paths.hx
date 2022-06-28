@@ -99,7 +99,7 @@ class Paths
 		if(Assets.exists(getPreloadPath('fonts/$key'))) {
 			return getPreloadPath('fonts/$key');
 		}else {
-			return null;
+			return "";
 		}
 	}
 
@@ -108,8 +108,8 @@ class Paths
 		if(Assets.exists(getPath('feeshdata/$key.$type', TEXT, library)))
 			return getPath('feeshdata/$key.$type', TEXT, library);
 		else {
-			throw ("Error: could not locate file - " + '$key.$type');
-			return null;
+			trace("Error: could not locate file - " + '$key.$type');
+			return "";
 		}
 	}
 
@@ -118,8 +118,8 @@ class Paths
 		if(Assets.exists(getPath('data/$key.txt', TEXT, library)))
 			return getPath('data/$key.txt', TEXT, library);
 		else {
-			throw ("Warning: could not locate text file - " + key);
-			return null;
+			trace("Warning: could not locate text file - " + key);
+			return "";
 		}
 	}
 
@@ -128,8 +128,8 @@ class Paths
 		if(Assets.exists(getPath('pakdata/$key.pak', TEXT, library)))
 			return getPath('pakdata/$key.pak', TEXT, library);
 		else {
-			throw ("Error: could not locate pak file - " + key);
-			return null;
+			trace("Error: could not locate pak file - " + key);
+			return "";
 		}
 	}
 
@@ -138,8 +138,8 @@ class Paths
 		if(Assets.exists(getPath('data/$key.json', TEXT, library)))
 			return getPath('data/$key.json', TEXT, library);
 		else {
-			throw ("Error: could not locate json file - " + getPath('data/$key.json', TEXT, library));
-			return null;
+			trace("Error: could not locate json file - " + getPath('data/$key.json', TEXT, library));
+			return "";
 		}
 	}
 
@@ -147,8 +147,8 @@ class Paths
 		if(Assets.exists(getPath('shaders/$key', TEXT, library)))
 			return getPath('shaders/$key', TEXT, library);
 		else {
-			throw ("Error: could not locate glsl file - " + getPath('shaders/$key', TEXT, library));
-			return null;
+			trace("Error: could not locate glsl file - " + getPath('shaders/$key', TEXT, library));
+			return "";
 		}
 	}
 
@@ -170,7 +170,7 @@ class Paths
 		if(Assets.exists(file('images/' + cacheFile + key + '.txt', library))) {
 			return FlxAtlasFrames.fromSpriteSheetPacker(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.txt', library));
 		}else {
-			throw ("Error: could not locate asset - " + file('images/' + cacheFile + key + '.txt', library));
+			trace("Error: could not locate asset - " + file('images/' + cacheFile + key + '.txt', library));
 			return null;
 		}
 	}
@@ -184,8 +184,8 @@ class Paths
 		if(Assets.exists(getPath('sounds/$key.$SOUND_EXT', SOUND, library))) {
 			return getPath('sounds/$key.$SOUND_EXT', SOUND, library);
 		}else {
-			throw ("Error: could not locate sound - " + key);
-			return null;
+			trace("Error: could not locate sound - " + key);
+			return "";
 		}
 	}
 
@@ -194,8 +194,8 @@ class Paths
 		if(Assets.exists(getPath('music/$key.$SOUND_EXT', MUSIC, library)))
 			return getPath('music/$key.$SOUND_EXT', MUSIC, library);
 		else {
-			throw ("Error: could not locate music - " + key);
-			return null;
+			trace("Error: could not locate music - " + key);
+			return "";
 		}
 	}
 
@@ -204,8 +204,8 @@ class Paths
 		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT'))) {
 			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
 		}else {
-			throw ("Error: could not locate voices - " + song + "." + SOUND_EXT);
-			return null;
+			trace("Error: could not locate voices - " + song + "." + SOUND_EXT);
+			return "";
 		}
 	}
 	
@@ -214,8 +214,8 @@ class Paths
 		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT')))
 			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT');
 		else {
-			throw ("Error: could not locate instrumental - " + song + "." + SOUND_EXT);
-			return null;
+			trace("Error: could not locate instrumental - " + song + "." + SOUND_EXT);
+			return "";
 		}
 	}
 
@@ -248,7 +248,7 @@ class Paths
 		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
 			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
 		}else {
-			throw ("Error: could not locate asset - " + file('images/' + cacheFile + key + '.xml', library));
+			trace("Error: could not locate asset - " + file('images/' + cacheFile + key + '.xml', library));
 			return null;
 		}
 	}
@@ -271,7 +271,7 @@ class Paths
 			graphics.persist = false;
 			return graphics;
 		}else {
-			//throw ("Error: could not locate asset - " + file('images/$key.png', library));
+			//trace("Error: could not locate asset - " + file('images/$key.png', library));
 			return null;
 		}
 	}
@@ -280,8 +280,8 @@ class Paths
 		if(Assets.exists(getPath('scripts/$key.lua', TEXT, null))) {
 			return getPath('scripts/$key.lua', TEXT, null);
 		}else {
-			throw ("Error: could not locate asset - " + getPath('scripts/$key.lua', TEXT, null));
-			return null;
+			trace("Error: could not locate asset - " + getPath('scripts/$key.lua', TEXT, null));
+			return "";
 		}
 	}
 }

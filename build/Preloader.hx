@@ -10,7 +10,6 @@ import openfl.filters.ShaderFilter;
 import openfl.events.KeyboardEvent;
 import openfl.events.UncaughtErrorEvent;
 import openfl.errors.Error;
-import openfl.Lib;
 
 import haxe.CallStack;
 import lime.ui.Window;
@@ -34,11 +33,10 @@ using StringTools;
 
 class Preloader extends FlxState {
     override function create():Void {
-        var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
+        SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
+        SaveData.globalMEM = new Memory(10, 15, 0xFFFFFF);
 
-        #if !mobile
-		Lib.current.addChild(new FPS(10, 3, 0xFFFFFF));
-		#end
+        var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
 
         if(File.getContent(Paths.mora("shaders", "json")).length < 11)
             File.saveContent(Paths.mora("shaders", "json"), Json.stringify([0,0,0,0,0]));

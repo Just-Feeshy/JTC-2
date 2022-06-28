@@ -1020,23 +1020,23 @@ class PlayState extends MusicBeatState
 		if(modStorage.length > 0 && modStorage.contains(mod))
 			return true;
 
-		if(mod == "flip chart" && FlxG.save.data.flip && SONG.modifiers[0] == null)
+		if(mod == "flip chart" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.flip #end && SONG.modifiers[0] == null)
 			return true;
-		else if(mod == "custom hell" && FlxG.save.data.customhell)
+		else if(mod == "custom hell" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.customhell #end)
 			return true;
-		else if(mod == "safe balls" && FlxG.save.data.safeballs)
+		else if(mod == "safe balls" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.safeballs #end)
 			return true;
-		else if(mod == "get good" && FlxG.save.data.perfectMode >= 1)
+		else if(mod == "get good" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.perfectMode >= 1 #end)
 			return true;
-		else if(mod == "fair battle" && FlxG.save.data.fair && SONG.modifiers[0] == null)
+		else if(mod == "fair battle" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.fair #end && SONG.modifiers[0] == null)
 			return true;
-		else if(mod == "fade battle" && FlxG.save.data.fade && SONG.modifiers[0] == null)
+		else if(mod == "fade battle" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.fade #end && SONG.modifiers[0] == null)
 			return true;
-		else if(mod == "blind effect" && FlxG.save.data.blind && SONG.modifiers[0] == null)
+		else if(mod == "blind effect" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.blind #end && SONG.modifiers[0] == null)
 			return true;
-		else if(mod == "note woggle" && FlxG.save.data.xWobble && SONG.modifiers[0] == null)
+		else if(mod == "note woggle" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.xWobble #end && SONG.modifiers[0] == null)
 			return true;
-		else if(mod == "camera move" && FlxG.save.data.camMove && SONG.modifiers[0] == null)
+		else if(mod == "camera move" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.camMove #end && SONG.modifiers[0] == null)
 			return true;
 		else
 			return false;
@@ -1729,17 +1729,14 @@ class PlayState extends MusicBeatState
 
 		noteBeat = curBeat;
 
-		if(playFPS != null && Lib.current.stage.frameRate < playFPS) {
+		if(playFPS != null && Lib.current.stage.frameRate < playFPS && SONG.modifyFPS) {
 			Lib.current.stage.frameRate = playFPS * SaveData.getData(SaveType.FPS_MULTIPLIER);
 			Main.framerate = playFPS;
 		}
 
 		accTotal = Math.floor(Math.min(maxAcc, Math.max(0, Math.floor(accuracy*100)/100))*100)/100;
 
-		if(GhostTapping.ghostTap && FlxG.save.data.showstuff) {
-			counterTxt.text = 'Accuracy: ' + accTotal + '%' + '       ' + 'Ghost Taps: ' + missClicks + '       ' + 'Misses: ' + misses + '       ' + 'Score: ' + songScore;
-			counterTxt.screenCenter(X);
-		}else if(FlxG.save.data.showstuff) {
+		if(FlxG.save.data.showstuff) {
 			counterTxt.text = 'Accuracy: ' + accTotal + '%' + '       ' + 'Miss Clicks: ' + missClicks + '       ' + 'Misses: ' + misses + '       ' + 'Score: ' + songScore;
 			counterTxt.screenCenter(X);
 		}else
@@ -2170,8 +2167,8 @@ class PlayState extends MusicBeatState
 					events.whenNoteIsPressed(daNote, this);
 					cameraMovement(daNote.noteData, daNote.isSustainNote);
 
-					if(modifierCheckList('fair battle') && health < 0.1)
-						setHealth(health - 0.01);
+					if(modifierCheckList('fair battle') && health > 0.1)
+						setHealth(health - 0.02);
 
 					opponentStrums.forEach(function(spr:FlxSprite) {
 						if (Math.abs(daNote.noteData) == spr.ID) {
@@ -2331,7 +2328,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function keyReleased(e:KeyboardEvent) {
-		if(paused && inCutscene)
+		if(paused || inCutscene)
 			return;
 
 		for(i in 0...keysMatrix.length) {
@@ -2629,7 +2626,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function defaultGameStuff():Void {
-		if(paused && inCutscene)
+		if(paused || inCutscene)
 			return;
 
 		var controlHoldArray = [
@@ -2663,7 +2660,7 @@ class PlayState extends MusicBeatState
 
 	function keyShit(e:KeyboardEvent):Void
 	{
-		if(paused && inCutscene)
+		if(paused || inCutscene)
 			return;
 
 		if (generatedMusic && FlxG.keys.checkStatus(e.keyCode, JUST_PRESSED)) {

@@ -92,6 +92,7 @@ class MainMenuState extends MusicBeatState
 	#end
 
 	override function create() {
+		FlxG.mouse.visible = false;
 		Conductor.songPosition = 0;
 
 		camX = new BetterCams();
@@ -324,7 +325,7 @@ class MainMenuState extends MusicBeatState
 				FlxG.switchState(new TitleState());
 			}
 
-			if (controls.ACCEPT || FlxG.mouse.justPressed)
+			if (controls.ACCEPT)
 			{
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('confirmMenu'));

@@ -190,6 +190,7 @@ class ChartingState extends MusicBeatState
 				speed: 1,
 				validScore: false,
 				fifthKey: false,
+				modifyFPS: false,
 				colorMapping: 0,
 				fps: 100,
 
@@ -688,10 +689,16 @@ class ChartingState extends MusicBeatState
 			updateGrid();
 		};
 
-		var check_hit:FlxUICheckBox = new FlxUICheckBox(75, 145-(check_mute_inst.height*2), null, null, "OSU Hit Sounds", 100);
+		var check_hit:FlxUICheckBox = new FlxUICheckBox(75, 145-(check_mute_inst.height*2), null, null, "OSU Hit Sounds", 80);
 		check_hit.checked = false;
 		check_hit.callback = function() {
 			playOSU_Sound = check_hit.checked;
+		}
+
+		var mod_check:FlxUICheckBox = new FlxUICheckBox(75 + check_hit.width, 145-(check_mute_inst.height*2), null, null, "Modify FPS", 70);
+		mod_check.checked = false;
+		mod_check.callback = function() {
+			_song.modifyFPS = mod_check.checked;
 		}
 
 		var check_mute_inst_game:FlxUICheckBox = new FlxUICheckBox(10, 145+(check_mute_inst.height*1.5), null, null, "Mute Instrumental (in game)", 100);
@@ -783,6 +790,7 @@ class ChartingState extends MusicBeatState
 		tab_group_song.add(check_mute_inst_game);
 		tab_group_song.add(check_hit);
 		tab_group_song.add(check_fifth);
+		tab_group_song.add(mod_check);
 		tab_group_song.add(saveButton);
 		tab_group_song.add(reloadSong);
 		tab_group_song.add(reloadSongJson);
@@ -1118,7 +1126,9 @@ class ChartingState extends MusicBeatState
 			{
 				if (nums.value <= 60)
 					nums.value = 60;
-				Lib.current.stage.frameRate = Std.int(nums.value) * SaveData.getData(SaveType.FPS_MULTIPLIER);
+
+				if(_song.modifyFPS)
+					Lib.current.stage.frameRate = Std.int(nums.value) * SaveData.getData(SaveType.FPS_MULTIPLIER);
 				_song.fps = Std.int(nums.value);
 			}
 			else if (wname == 'song_mapping') {
