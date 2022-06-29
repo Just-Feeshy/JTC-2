@@ -611,17 +611,13 @@ class Note extends FlxSprite
 							}
 
 							strumNote.setColorTransform(1,1,1,1,0,0,0,0);
-							strumNote.animation.play('confirm');
-
-							strumNote.centerOffsets();
-							strumNote.offset.x -= 13;
-							strumNote.offset.y -= 13;
+							strumNote.playAnim('confirm');
 						}
 				}
 			}
 		}
 
-		function setupPrefixes() {
+		function setupPrefixes():Void {
 			animation.addByPrefix('greenScroll', 'green0');
 			animation.addByPrefix('redScroll', 'red0');
 			animation.addByPrefix('blueScroll', 'blue0');

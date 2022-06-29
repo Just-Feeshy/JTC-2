@@ -2,8 +2,7 @@ import flixel.FlxG;
 
 import template.DialogueBuilder;
 
-import TranslationSelector;
-import CrewState;
+import ImportModStuff;
 
 class Mod {
     static function onInit() {
@@ -17,7 +16,7 @@ class Mod {
         /**
         * HaxeFlixel's way of doing saves is really good.
         */
-        if(FlxG.save.data.spanish != null) {
+        if(FlxG.save.data.spanish == null) {
             FlxG.save.data.spanish = false;
         }
     }

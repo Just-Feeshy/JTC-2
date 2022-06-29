@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxAxes;
+import flixel.util.FlxColor;
 
 class Strum extends FlxSprite {
 	public var ifCustom:String = "regular";
@@ -13,6 +14,8 @@ class Strum extends FlxSprite {
 	public var prevVisible:Bool = true;
 	public var onlyVisible:Bool = true;
 
+	private var rendered:Bool = false;
+
 	override public function new(x:Float, y:Float) {
 		super(x, y);
 		
@@ -22,9 +25,18 @@ class Strum extends FlxSprite {
 			visible = false;
 	}
 
+	public function playAnim(anim:String, ?force:Bool = false):Void {
+		animation.play(anim, force);
+		centerOffsets();
+		centerOrigin();
+
+		if(anim == "pressed")
+			indevRenderer();
+	}
+
 	/**
 	*Use this function instead of the visible value.
-	**/
+	*/
 	public function setVisibility(visibility:Bool):Bool {
 		prevVisible = visible;
 		visible = visibility;
@@ -45,7 +57,16 @@ class Strum extends FlxSprite {
 			return x;
 	}
 
-	override function update(elapsed:Float) {
+	function indevRenderer():Void {
+		/*
+		if(rendered)return;
+		rendered = true;
+
+		@:privateAccess trace(_frame.matrix);
+		*/
+	}
+
+	override function update(elapsed:Float):Void {
 		super.update(elapsed / (FlxG.save.data.showAntialiasing ? 1 : 1.5));
 
 		if (animation.finished && ifOpponent && animation.curAnim.name == 'confirm') {

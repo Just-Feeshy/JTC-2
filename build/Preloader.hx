@@ -34,7 +34,7 @@ using StringTools;
 class Preloader extends FlxState {
     override function create():Void {
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
-        SaveData.globalMEM = new Memory(10, 15, 0xFFFFFF);
+        SaveData.globalMEM = new Memory(10, 18, 0xFFFFFF);
 
         var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
 

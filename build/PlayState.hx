@@ -2727,7 +2727,7 @@ class PlayState extends MusicBeatState
 			playerStrums.forEach(function(spr:Strum) {
 				if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
 					if(getKeyHit(e.keyCode, spr.ID) && spr.animation.curAnim.name != 'confirm') {
-						spr.animation.play('pressed');
+						spr.playAnim('pressed');
 					}
 				}
 			});
@@ -2950,7 +2950,7 @@ class PlayState extends MusicBeatState
 					*/
 					try{ switch(spr.ifCustom) {
 						case "reverse":
-							spr.animation.play('static');
+							spr.playAnim('static');
 							spr.setColorTransform(3,3,0,0.75,0,0,0,0);
 
 							var reverse:FlxSprite = new FlxSprite(spr.x-(spr.width/2), spr.y-(spr.width/2)).loadGraphic(Paths.image('reverse'));
@@ -2976,7 +2976,7 @@ class PlayState extends MusicBeatState
 								reverse = null;
 							});
 						case "poison":
-							spr.animation.play('static');
+							spr.playAnim('static');
 							spr.setColorTransform(0.5,0,1.5,0.75,0,0,0,0);
 
 							if(FlxG.save.data.showEffect) {
@@ -2992,7 +2992,7 @@ class PlayState extends MusicBeatState
 								});
 							});
 						case "reverse poison":
-							spr.animation.play('static');
+							spr.playAnim('static');
 							spr.setColorTransform(0.5,0,1.5,1.5,0,0,0,0);
 
 							var reverse:FlxSprite = new FlxSprite(spr.x-(spr.width/2), spr.y-(spr.width/2)).loadGraphic(Paths.image('reversePoison'));
@@ -3025,7 +3025,7 @@ class PlayState extends MusicBeatState
 								});
 							});
 						case "spiritual star":
-							spr.animation.play('static');
+							spr.playAnim('static');
 							FlxG.sound.play(Paths.sound("spoopyChild"));
 							FlxTween.tween(spr, {onlyFans: 0}, 0.5, {ease: FlxEase.quadIn});
 
@@ -3033,7 +3033,7 @@ class PlayState extends MusicBeatState
 								FlxTween.tween(spr, {onlyFans: 1}, 0.5, {ease: FlxEase.quadOut});
 							});
 						case "trippy":
-							spr.animation.play('static');
+							spr.playAnim('static');
 
 							var swirl:FlxSprite = new FlxSprite(spr.x-(spr.width/4), spr.y-(spr.width/4));
 							swirl.frames = Paths.getSparrowAtlas('notes/trippy/NOTE_assets');
@@ -3055,7 +3055,7 @@ class PlayState extends MusicBeatState
 								swirl = null;
 							});
 						case "side note":
-							spr.animation.play('static');
+							spr.playAnim('static');
 							spr.setColorTransform(1,1,1,1,0,0,0,0);
 					}
 				}}
