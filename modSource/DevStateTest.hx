@@ -1,5 +1,7 @@
 package;
 
-class DevStateTest extends HelperState {
-    
+class DevStateTest extends HelperStates {
+    public function new() {
+        super();
+    }
 }

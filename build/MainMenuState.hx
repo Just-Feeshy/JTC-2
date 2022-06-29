@@ -64,19 +64,23 @@ private class StupidVibeShader extends FlxShader {
 class MainMenuState extends MusicBeatState
 {
 	//Cameras
-	private var camX:BetterCams;
-	private var camMenu:BetterCams;
-	private var camNoBump:BetterCams;
+	var camX:BetterCams;
+	var camMenu:BetterCams;
+	var camNoBump:BetterCams;
 
 	var curSelected:Int = 0;
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var displayChain:FlxSpriteGroup;
 
-	private var fromFreeplay:Bool;
+	var fromFreeplay:Bool;
 
 	var camFollow:FlxObject;
 	var secondCam:FlxObject;
+
+	var blurSize:Int = 0;
+	var saturationBackground:Float = 1;
+	var saturationMenu:Float = 1;
 
 	public function new(?fromFreeplay:Bool) {
 		if(fromFreeplay)
@@ -106,8 +110,8 @@ class MainMenuState extends MusicBeatState
 		FlxG.cameras.add(camNoBump);
 
 		FlxCamera.defaultCameras = [camMenu];
-		FlxG.camera.setFilters([new BlurFilter(10, 10, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(1.25))]);
-		camNoBump.setFilters([new ShaderFilter(new StupidVibeShader(1.1))]);
+		FlxG.camera.setFilters([new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(saturationBackground))]);
+		camNoBump.setFilters([new ShaderFilter(new StupidVibeShader(saturationMenu))]);
 
 		PlayState.hasWarning = true;
 
@@ -236,6 +240,24 @@ class MainMenuState extends MusicBeatState
 				}
 
 				displayChain.add(spr);
+			});
+
+			HelperStates.getLua(Type.getClass(this)).addCallback("setBackgroundBlur", function(blurSize:Int) {
+				this.blurSize = blurSize;
+
+				FlxG.camera.setFilters([new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(saturationBackground))]);
+			});
+
+			HelperStates.getLua(Type.getClass(this)).addCallback("setBackgroundSaturation", function(saturation:Float) {
+				this.saturationBackground = saturation;
+
+				FlxG.camera.setFilters([new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(saturationBackground))]);
+			});
+
+			HelperStates.getLua(Type.getClass(this)).addCallback("setMenuSaturation", function(saturation:Float) {
+				this.saturationMenu = saturation;
+
+				camNoBump.setFilters([new ShaderFilter(new StupidVibeShader(saturationMenu))]);
 			});
 		}
 

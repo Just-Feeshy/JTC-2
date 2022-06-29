@@ -17,6 +17,10 @@ function setupCustomOptions()
 end
 
 function onCreate()
+    setBackgroundBlur(10)
+    setBackgroundSaturation(1.25)
+    setMenuSaturation(1.1)
+
     setScrollFactorToSprite('chainGroup', 1, 1);
 
     for i=0, #presetOptions - 1 do
