@@ -950,7 +950,7 @@ class DialogueCreatorState extends MusicBeatState {
         var key:FlxKey = event.keyCode;
 
         if(key == FlxKey.ESCAPE) {
-            FlxG.switchState(new OptionsMenuState("editiors"));
+            FlxG.switchState(new OptionsMenuState("editors"));
         }
     }
 

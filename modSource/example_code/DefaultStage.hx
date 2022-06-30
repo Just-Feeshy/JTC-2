@@ -302,7 +302,7 @@ class DefaultStage extends StageBuilder {
                 bg.scale.set(6, 6);
                 addToStage(bg);
 			}
-			default: {
+			case 'stage': {
                 directory = "week1";
 
                 setDefaultCameraZoom(0.90);
