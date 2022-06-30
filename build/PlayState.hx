@@ -163,7 +163,7 @@ class PlayState extends MusicBeatState
 	private var readableSong:String = "";
 
 	private var gfSpeed:Int = 1;
-	private var dadSpeed:Int = 2;
+	private var dadSpeed:Int = 1;
 	private var combo:Int = 0;
 
 	private var healthBarBG:FlxSprite;
