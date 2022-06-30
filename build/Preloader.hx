@@ -114,9 +114,10 @@ class Preloader extends FlxState {
 
         var modName:String = Paths.modJSON.mod.name.replace(" ", "-");
 
-        File.saveContent("./crash-reports/" + modName + "_" + timeStap + ".txt",
-            "Uncaught Error: " + Std.string(event.error) + "\n\n" + error.getStackTrace() + "\n\n" + contactInfo
-        );
+        try {
+            File.saveContent("./crash-reports/" + modName + "_" + timeStap + ".txt",
+                "Uncaught Error: " + Std.string(event.error) + "\n\n" + error.getStackTrace() + "\n\n" + contactInfo
+            );
 
         var callStack:Array<StackItem> = CallStack.exceptionStack(true);
 
@@ -139,6 +140,9 @@ class Preloader extends FlxState {
         var prevWindow:Window = Lib.current.stage.window;
         new CrashLogDisplay(prevWindow).attachReport([errMsg, "Uncaught Error: " + Std.string(event.error)]);
         #end
+        }catch(e:haxe.Exception) {
+            trace(event.error);
+        }
     }
 
     override function update(elapsed:Float):Void {
