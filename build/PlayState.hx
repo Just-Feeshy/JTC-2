@@ -564,9 +564,9 @@ class PlayState extends MusicBeatState
 				if(SONG.fifthKey) {
 					keysMatrix[0] = [FlxKey.A, FlxKey.LEFT];
 					keysMatrix[1] = [FlxKey.S, FlxKey.DOWN];
-					keysMatrix[4] = [FlxKey.SPACE];
-					keysMatrix[2] = [FlxKey.W, FlxKey.UP];
-					keysMatrix[3] = [FlxKey.D, FlxKey.RIGHT];
+					keysMatrix[2] = [FlxKey.SPACE];
+					keysMatrix[3] = [FlxKey.W, FlxKey.UP];
+					keysMatrix[4] = [FlxKey.D, FlxKey.RIGHT];
 				}else {
 					keysMatrix[0] = [FlxKey.A, FlxKey.LEFT];
 					keysMatrix[1] = [FlxKey.S, FlxKey.DOWN];
@@ -577,9 +577,9 @@ class PlayState extends MusicBeatState
 				if(SONG.fifthKey) {
 					keysMatrix[0] = [FlxKey.D, FlxKey.LEFT];
 					keysMatrix[1] = [FlxKey.F, FlxKey.DOWN];
-					keysMatrix[4] = [FlxKey.SPACE];
-					keysMatrix[2] = [FlxKey.J, FlxKey.UP];
-					keysMatrix[3] = [FlxKey.K, FlxKey.RIGHT];
+					keysMatrix[2] = [FlxKey.SPACE];
+					keysMatrix[3] = [FlxKey.J, FlxKey.UP];
+					keysMatrix[4] = [FlxKey.K, FlxKey.RIGHT];
 				}else {
 					keysMatrix[0] = [FlxKey.D, FlxKey.LEFT];
 					keysMatrix[1] = [FlxKey.F, FlxKey.DOWN];
@@ -590,9 +590,9 @@ class PlayState extends MusicBeatState
 				if(SONG.fifthKey) {
 					keysMatrix[0] = [FlxKey.Z, FlxKey.LEFT];
 					keysMatrix[1] = [FlxKey.X, FlxKey.DOWN];
-					keysMatrix[4] = [FlxKey.SPACE];
-					keysMatrix[2] = [ONE, NUMPADONE, FlxKey.UP];
-					keysMatrix[3] = [TWO, NUMPADTWO, FlxKey.RIGHT];
+					keysMatrix[2] = [FlxKey.SPACE];
+					keysMatrix[3] = [ONE, NUMPADONE, FlxKey.UP];
+					keysMatrix[4] = [TWO, NUMPADTWO, FlxKey.RIGHT];
 				}else {
 					keysMatrix[0] = [FlxKey.Z, FlxKey.LEFT];
 					keysMatrix[1] = [FlxKey.X, FlxKey.DOWN];
@@ -603,9 +603,9 @@ class PlayState extends MusicBeatState
 				if(SONG.fifthKey) {
 					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
 					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-					keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[4];
 					keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
 					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
+					keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[4];
 				}else {
 					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
 					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
