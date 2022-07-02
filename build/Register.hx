@@ -27,14 +27,6 @@ import Std.isOfType;
 import Std.is as isOfType;
 #end
 
-/**
-#if (crashdumper && !macro)
-import crashdumper.SessionData;
-import crashdumper.CrashDumper;
-import feshixl.FeshCrashDumper;
-#end
-**/
-
 import sys.io.File;
 
 using StringTools;
@@ -75,10 +67,11 @@ class Register {
     private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
 
     @:allow(Preloader)
-    private static function setup() {
+    private inline static function setup() {
         /**
         * Default initialization for game.
         */
+
         add(EVENT, DefaultEvents);
 
         addCustomTransition("fade", FadeTransition);
@@ -87,30 +80,30 @@ class Register {
     }
 
     @:access(HelperStates)
-    public static function attachLuaToState(state:Class<Dynamic>, luaClass:ModLua) {
+    public inline static function attachLuaToState(state:Class<Dynamic>, luaClass:ModLua) {
 		#if (USING_LUA && linc_luajit)
 		HelperStates.scriptsInStates.set(Type.getClassName(state), luaClass);
 		#end
 	}
 
     @:access(HelperStates)
-    public static function detachLuaFromState(state:Class<Dynamic>) {
+    public inline static function detachLuaFromState(state:Class<Dynamic>) {
         #if (USING_LUA && linc_luajit)
         HelperStates.scriptsInStates.remove(Type.getClassName(state));
         #end
     }
 
     @:access(HelperStates.transitionBuilds)
-    public static function addCustomTransition(transition:String, transOBJ:Class<TransitionBuilder>) {
+    public inline static function addCustomTransition(transition:String, transOBJ:Class<TransitionBuilder>) {
         HelperStates.transitionBuilds.set(transition, transOBJ);
     }
 
     @:access(HelperStates.transitionBuilds)
-    public static function removeCustomTransition(transition:String) {
+    public inline static function removeCustomTransition(transition:String) {
         HelperStates.transitionBuilds.remove(transition);
     }
 
-    public static function getInGameCharacter(character:CharacterRole):Character {
+    public inline static function getInGameCharacter(character:CharacterRole):Character {
         if(isOfType(FlxG.state, PlayState)) {
             var playstate:PlayState = cast(FlxG.state, PlayState);
 
@@ -127,7 +120,7 @@ class Register {
         return null;
     }
 
-    public static function add(addonType:ClassType, addonClass:Dynamic):Void {
+    public inline static function add(addonType:ClassType, addonClass:Dynamic):Void {
         switch(addonType) {
             case EVENT:
                 var daEvent:Class<IFeshEvent> = addonClass;
@@ -140,15 +133,15 @@ class Register {
         }
     }
 
-    public static function implementDialogueToSong(name:String, dialogueClass:Class<IDialogue>) {
+    public inline static function implementDialogueToSong(name:String, dialogueClass:Class<IDialogue>) {
         dialogues.set(name, dialogueClass);
     }
 
-    public static function implementCustomNote(name:String, addonClass:Class<CustomNote>) {
+    public inline static function implementCustomNote(name:String, addonClass:Class<CustomNote>) {
         CustomNoteHandler.customNoteAddon.set(name, addonClass);
     }
 
-    public static function getWeekFromSong(song:String):Int {
+    public inline static function getWeekFromSong(song:String):Int {
         var week:Int = 0;
 
         /*
@@ -162,15 +155,15 @@ class Register {
             week++;
         }
 
-        throw "Error: song not found in method - getWeekFromSong";
+        trace("Error: song not found in method - getWeekFromSong");
         return -1;
     }
 
-    public static function forNameClass(type:String, args:Array<Dynamic>):Dynamic {
+    public inline static function forNameClass(type:String, args:Array<Dynamic>):Dynamic {
         return Type.createInstance(Type.resolveClass(type), args);
     }
 
-    public static function getFlxEaseByString(ease:String) {
+    public inline static function getFlxEaseByString(ease:String) {
 		switch(ease.toLowerCase().trim()) {
 			case 'backin':
                 return FlxEase.backIn;

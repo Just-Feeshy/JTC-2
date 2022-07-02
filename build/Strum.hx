@@ -5,7 +5,7 @@ import flixel.FlxSprite;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
 
-class Strum extends FlxSprite {
+class Strum extends EditorSprite {
 	public var ifCustom:String = "regular";
 	public var ifOpponent:Bool;
 	public var onlyFans:Float;
@@ -25,12 +25,13 @@ class Strum extends FlxSprite {
 			visible = false;
 	}
 
-	public function playAnim(anim:String, ?force:Bool = false):Void {
-		animation.play(anim, force);
+	override function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+		super.playAnim(AnimName, Force, Reversed, Frame);
+		
 		centerOffsets();
 		centerOrigin();
 
-		if(anim == "pressed")
+		if(AnimName == "pressed")
 			indevRenderer();
 	}
 

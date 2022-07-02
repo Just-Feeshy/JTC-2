@@ -51,9 +51,6 @@ class Character extends EditorSprite
 		curCharacter = character;
 		this.isPlayer = isPlayer;
 
-		if(FlxG.save.data.showAntialiasing)
-			antialiasing = true;
-
 		switch (character)
 		{
 			/**

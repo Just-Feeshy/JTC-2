@@ -3,6 +3,8 @@ package;
 import flixel.FlxSprite;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 
+import SaveData.SaveType;
+
 typedef DelayedAnimation = {
     var animation:String;
     var timer:Float;
@@ -17,6 +19,7 @@ class DelaySprite extends FlxSprite {
         super(X, Y, SimpleGraphic);
 
         readyPlayAnim = [];
+        antialiasing = SaveData.getData(SaveType.GRAPHICS);
     }
 
     public function playAnim(Anim:String, Timer:Float) {

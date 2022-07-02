@@ -23,7 +23,7 @@ import SaveData.SaveType;
 
 using StringTools;
 
-class Note extends FlxSprite
+class Note extends EditorSprite
 {
 	public static final swagWidth:Float = 160 * 0.7;
 	public static final PURP_NOTE:Int = 0;

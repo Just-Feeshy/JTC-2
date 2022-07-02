@@ -15,6 +15,8 @@ import openfl.utils.ByteArray;
 import openfl.display.BitmapData;
 import haxe.xml.Access;
 
+import SaveData.SaveType;
+
 #if (haxe_ver >= 4.2)
 import Std.isOfType;
 #else
@@ -38,6 +40,8 @@ class EditorSprite extends FlxSprite {
 
     public function new(?X:Float = 0, ?Y:Float = 0, ?SimpleGraphic:FlxGraphicAsset) {
         super(X, Y, SimpleGraphic);
+
+        antialiasing = SaveData.getData(SaveType.GRAPHICS);
     }
 
     public function implementBitmap(image:ByteArray):Void {
