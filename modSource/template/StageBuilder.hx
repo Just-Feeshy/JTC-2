@@ -34,6 +34,11 @@ abstract class StageBuilder extends FlxBasic {
             FlxG.state.add(thing);
     }
 
+    public function removeFromStage(thing:FlxBasic):Void {
+        if(isOfType(FlxG.state, PlayState))
+            FlxG.state.remove(thing);
+    }
+
     public function configStage():Void {
         //empty method
     }

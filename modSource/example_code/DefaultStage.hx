@@ -368,7 +368,13 @@ class DefaultStage extends StageBuilder {
     override public function whenCreatingScene():Void {
         super.whenCreatingScene();
 
+		removeFromStage(Register.getInGameCharacter(BOYFRIEND));
+		removeFromStage(Register.getInGameCharacter(OPPONENT));
+
         addToStage(limo);
+
+		addToStage(Register.getInGameCharacter(BOYFRIEND));
+		addToStage(Register.getInGameCharacter(OPPONENT));
     }
 
     function lightningStrikeShit():Void {

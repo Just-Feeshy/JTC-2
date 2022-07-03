@@ -808,12 +808,12 @@ class PlayState extends MusicBeatState
 		if(!createdCharacters) {
 			add(gf);
 
+			add(dad);
+			add(boyfriend);
+
 			stageGroup.forEach(function(stage:StageBuilder) {
 				stage.whenCreatingScene();
 			});
-
-			add(dad);
-			add(boyfriend);
 		} else {
 			return;
 		}
