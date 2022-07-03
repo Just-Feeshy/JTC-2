@@ -263,6 +263,8 @@ class ChartingState extends MusicBeatState
 			mainGrid = 10;
 		}
 
+		dummyArrow = new FlxSprite().makeGraphic(GRID_SIZE, GRID_SIZE);
+
 		gridLayout = new FlxTypedGroup<FlxSprite>();
 		add(gridLayout);
 
@@ -314,9 +316,6 @@ class ChartingState extends MusicBeatState
 
 		strumLine = new FlxSprite(0, 50).makeGraphic(Std.int(GRID_SIZE * mainGrid), 4);
 		add(strumLine);
-
-		dummyArrow = new FlxSprite().makeGraphic(GRID_SIZE, GRID_SIZE);
-		add(dummyArrow);
 
 		var tabs = [
 			{name: "Song", label: 'Song'},
@@ -2023,15 +2022,16 @@ class ChartingState extends MusicBeatState
 
 		gridLayout.add(gridBG2);
 		gridLayout.add(gridBG);
+		gridLayout.add(dummyArrow);
 
 		if(check_show_extra != null) {
 			if(check_show_extra.checked) {
-				var gridBlackLineH:FlxSprite = new FlxSprite(0, gridBG2.height).makeGraphic(GRID_SIZE * mainGrid, 2, FlxColor.BLACK);
+				var gridBlackLineH:FlxSprite = new FlxSprite(-1, gridBG2.height).makeGraphic(GRID_SIZE * mainGrid, 2, FlxColor.BLACK);
 				gridLayout.add(gridBlackLineH);
 			}
 		}
 
-		var gridBlackLineV:FlxSprite = new FlxSprite(gridBG.x + gridBG.width / 2).makeGraphic(2, Std.int(totalHeight), FlxColor.BLACK);
+		var gridBlackLineV:FlxSprite = new FlxSprite(gridBG.x + gridBG.width / 2, -1).makeGraphic(2, Std.int(totalHeight), FlxColor.BLACK);
 		gridLayout.add(gridBlackLineV);
 			
 		setupNotes(sectionInfo, curSection, 0);
