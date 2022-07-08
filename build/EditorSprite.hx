@@ -92,7 +92,7 @@ class EditorSprite extends FlxSprite {
             var flipY = (texture.has.flipY && texture.att.flipY == "true");
 
             var rect = FlxRect.get(Std.parseFloat(texture.att.x), Std.parseFloat(texture.att.y), Std.parseFloat(texture.att.width),
-                Std.parseFloat(texture.att.height) - 1);
+                Std.parseFloat(texture.att.height));
 
             var size = if (trimmed)
             {
