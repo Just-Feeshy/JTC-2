@@ -407,7 +407,7 @@ class Note extends EditorSprite
 					}
 	
 					if(prevNote.noteAbstract != "poison" && prevNote.noteAbstract != "reverse poison")
-						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
+						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed + 1;
 
 					if(prevNote.noteAbstract == "poison" || prevNote.noteAbstract == "reverse poison")
 						prevNote.setGraphicSize(Std.int(prevNote.width*1.5));
