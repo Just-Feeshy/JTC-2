@@ -28,7 +28,7 @@
 	<SubTexture name="left press0002" x="463" y="389" width="146" height="149"/>
 	<SubTexture name="left press0003" x="463" y="389" width="146" height="149"/>
 	<SubTexture name="pruple end hold0000" x="1220" y="447" width="50" height="64"/>
-	<SubTexture name="purple0000" x="630" y="232" width="154" height="157"/>
+	<SubTexture name="purple0000" x="630" y="232" width="154" height="158"/>
 	<SubTexture name="purple hold piece0000" x="1420" y="449" width="50" height="44"/>
 	<SubTexture name="red0000" x="476" y="232" width="154" height="157"/>
 	<SubTexture name="red hold end0000" x="1070" y="442" width="50" height="64"/>
@@ -50,9 +50,9 @@
 	<SubTexture name="up press0002" x="1850" y="308" width="153" height="150"/>
 	<SubTexture name="up press0003" x="1850" y="308" width="153" height="150"/>
 
-	<SubTexture name="diamond0000" x="0" y="835" width="167" height="167"/>
-	<SubTexture name="arrowSPACE0000" x="167" y="835" width="167" height="167"/>
-	<SubTexture name="space confirm0000" x="334" y="835" width="167" height="167" frameX="11" frameY="10" frameWidth="167" frameHeight="167"/>
-	<SubTexture name="space confirm0001" x="501" y="835" width="167" height="167" frameX="11" frameY="10" frameWidth="167" frameHeight="167"/>
-	<SubTexture name="space press0000" x="668" y="835" width="167" height="167"/>
+	<SubTexture name="diamond0000" x="0" y="835" width="167" height="168"/>
+	<SubTexture name="arrowSPACE0000" x="167" y="835" width="167" height="168"/>
+	<SubTexture name="space confirm0000" x="334" y="835" width="167" height="168" frameX="11" frameY="10" frameWidth="167" frameHeight="168"/>
+	<SubTexture name="space confirm0001" x="501" y="835" width="167" height="168" frameX="11" frameY="10" frameWidth="167" frameHeight="168"/>
+	<SubTexture name="space press0000" x="668" y="835" width="167" height="168"/>
 </TextureAtlas>
