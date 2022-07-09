@@ -21,6 +21,8 @@ class Character extends EditorSprite
 	private var finalizedX:Float;
 	private var finalizedY:Float;
 
+	private var rendered:Bool;
+
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
 	public var debugMode:Bool = false;
@@ -230,6 +232,11 @@ class Character extends EditorSprite
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void
 	{
+		if(!rendered) {
+			updateFrameSizeOffset(0, -1);
+			rendered = true;
+		}
+
 		if(AnimName.startsWith('sing'))
 			animation.reset();
 

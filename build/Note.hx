@@ -407,7 +407,7 @@ class Note extends EditorSprite
 					}
 	
 					if(prevNote.noteAbstract != "poison" && prevNote.noteAbstract != "reverse poison")
-						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed + 1;
+						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
 
 					if(prevNote.noteAbstract == "poison" || prevNote.noteAbstract == "reverse poison")
 						prevNote.setGraphicSize(Std.int(prevNote.width*1.5));
@@ -611,7 +611,7 @@ class Note extends EditorSprite
 							}
 
 							strumNote.setColorTransform(1,1,1,1,0,0,0,0);
-							strumNote.playAnim('confirm');
+							strumNote.playAnim('confirm', true);
 						}
 				}
 			}

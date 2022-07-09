@@ -6,6 +6,8 @@ import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
 
 class Strum extends EditorSprite {
+	public var noteData:Int = 0;
+
 	public var ifCustom:String = "regular";
 	public var ifOpponent:Bool;
 	public var onlyFans:Float;
@@ -26,6 +28,11 @@ class Strum extends EditorSprite {
 	}
 
 	override function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+		if(AnimName == 'confirm' && !rendered) {
+			updateFrameSizeOffset(0, -1, 'confirm');
+			rendered = true;
+		}
+
 		super.playAnim(AnimName, Force, Reversed, Frame);
 		
 		centerOffsets();
@@ -69,6 +76,8 @@ class Strum extends EditorSprite {
 
 	override function update(elapsed:Float):Void {
 		super.update(elapsed / (FlxG.save.data.showAntialiasing ? 1 : 1.5));
+
+		yAngle -= (elapsed) * (Conductor.bpm/120) * 2;
 
 		if (animation.finished && ifOpponent && animation.curAnim.name == 'confirm') {
 			animation.play('static');

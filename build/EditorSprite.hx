@@ -2,6 +2,8 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.FlxCamera;
+import flixel.util.FlxColor;
 import flixel.graphics.FlxGraphic;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -9,7 +11,7 @@ import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
-
+import flixel.math.FlxMatrix;
 import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
 import openfl.display.BitmapData;
@@ -32,6 +34,21 @@ import Std.is as isOfType;
 * @author Feeshy
 */
 class EditorSprite extends FlxSprite {
+    /**
+    * Rotate angle's pitch axis.
+    */
+    public var xAngle(default, set):Float = 0;
+
+    /**
+    * Rotate angle's yaw axis.
+    */
+    public var yAngle(default, set):Float = 0;
+
+    /**
+    * Rotate angle's row axis.
+    */
+    public var zAngle(get, never):Float;
+
     public var defaultCompiler:Void->Void;
     public var completeCallback:Void->Void;
 
@@ -130,7 +147,6 @@ class EditorSprite extends FlxSprite {
         if(this.frames != null) {
             while(index < this.frames.frames.length) {
                 if(!frameName.contains(this.frames.frames[index].name.split("0")[0])) {
-                    //trace(this.frames.frames[index].name);
                     frameName.push(this.frames.frames[index].name.split("0")[0]);
                 }
 
@@ -170,6 +186,86 @@ class EditorSprite extends FlxSprite {
             animation.play(AnimName, Force, Reversed, Frame);
         }
     }
+
+    public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
+        var frameIndex:Int = 0;
+
+        while(frameIndex < frames.frames.length) {
+            if(name == frames.frames[frameIndex].name || name == null) {
+                frames.frames[frameIndex].frame.width += width;
+                frames.frames[frameIndex].frame.height += height;
+            }
+
+            frameIndex++;
+        }
+    }
+
+    @:noCompletion
+    function set_xAngle(Value:Float):Float {
+        var newAngle = (xAngle != Value);
+		var ret = Value;
+		if (newAngle) {
+			_angleChanged = true;
+		}
+
+        xAngle = ret;
+		return ret;
+    }
+
+    @:noCompletion
+    function set_yAngle(Value:Float):Float {
+        var newAngle = (yAngle != Value);
+		var ret = Value;
+		if (newAngle) {
+			_angleChanged = true;
+		}
+
+        yAngle = ret;
+		return ret;
+    }
+
+    @:noCompletion
+    override function set_angle(Value:Float):Float {
+        var newAngle = (angle != Value);
+		var ret = Value;
+		if (newAngle) {
+			_angleChanged = true;
+		}
+
+        angle = ret;
+		return ret;
+    }
+
+    @:noCompletion
+    function get_zAngle():Float {
+        return angle;
+    }
+
+    @:noCompletion
+    override function drawComplex(camera:FlxCamera):Void {
+		_frame.prepareMatrix(_matrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
+		_matrix.translate(-origin.x, -origin.y);
+		_matrix.scale(scale.x, scale.y);
+
+		if (bakedRotationAngle <= 0) {
+			updateTrig();
+
+			if (angle != 0 || xAngle != 0 || yAngle != 0) {
+                animation.update(0);
+                _matrix.rotateWithTrig3D(xAngle, yAngle, zAngle);
+            }
+		}
+
+		_point.add(origin.x, origin.y);
+		_matrix.translate(_point.x, _point.y);
+
+		if (isPixelPerfectRender(camera)) {
+			_matrix.tx = Math.floor(_matrix.tx);
+			_matrix.ty = Math.floor(_matrix.ty);
+		}
+
+		camera.drawPixels(_frame, framePixels, _matrix, colorTransform, blend, antialiasing, shader);
+	}
 
     override function destroy() {
         FlxG.bitmap.remove(graphics);

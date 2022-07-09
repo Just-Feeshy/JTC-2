@@ -1355,6 +1355,9 @@ class PlayState extends MusicBeatState
 			else
 				babyArrow = new Strum(42, strumLine.y);
 
+			babyArrow.noteData = i;
+			babyArrow.yAngle = (babyArrow.noteData * 15);
+
 			if(SONG.fifthKey) {
 				switch (curStage)
 				{
@@ -2170,17 +2173,9 @@ class PlayState extends MusicBeatState
 					if(modifierCheckList('fair battle') && health > 0.1)
 						setHealth(health - 0.02);
 
-					opponentStrums.forEach(function(spr:FlxSprite) {
+					opponentStrums.forEach(function(spr:Strum) {
 						if (Math.abs(daNote.noteData) == spr.ID) {
-							spr.animation.play('confirm', true);
-						}
-
-						if (spr.animation.curAnim.name == 'confirm' && !CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract) && !isPixel) {
-							spr.centerOffsets();
-							spr.offset.x -= 13;
-							spr.offset.y -= 13;
-						}else {
-							spr.centerOffsets();
+							spr.playAnim('confirm', true);
 						}
 					});
 
@@ -2206,12 +2201,20 @@ class PlayState extends MusicBeatState
 					daNote.setXaxis(addToNoteX(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote));
 					daNote.setNoteAngle(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].angle);
 					daNote.setNoteAlpha(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
+
+					//Nothing planned for now.
+					daNote.xAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
+					daNote.yAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
 				}
 				else {
 					daNote.setVisibility(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
 					daNote.setXaxis(addToNoteX(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote));
 					daNote.setNoteAngle(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle);
 					daNote.setNoteAlpha(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
+
+					//Nothing planned for now.
+					daNote.xAngle = opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
+					daNote.yAngle = opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
 				}
 
 				if (daNote.isSustainNote) {
