@@ -22,7 +22,7 @@ class PauseSubState extends MusicBeatSubstate
 
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Change Controls', 'Assign Controller', 'Exit to menu'];
+	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Change Controls', 'Exit to menu'];
 	var curSelected:Int = 0;
 
 	var pauseMusic:FlxSound;
@@ -155,21 +155,10 @@ class PauseSubState extends MusicBeatSubstate
 					}
 
 					otherStuff.x = FlxG.width - (otherStuff.width + 20);
-				case "Assign Controller":
-					cast(FlxG.state, PlayState).detectedGamepad = (FlxG.gamepads.lastActive != null ? true : false);
-
-					if(menuItems[curSelected] == "Assign Controller") {
-						if(cast(FlxG.state, PlayState).detectedGamepad)
-							otherStuff.text = "STATUS: CONNECTED";
-						else
-							otherStuff.text = "STATUS: NONE";
-					}
-
-					otherStuff.x = FlxG.width - (otherStuff.width + 20);
 			}
 		}
 
-		if(menuItems[curSelected] == "Change Controls" || menuItems[curSelected] == "Assign Controller") {
+		if(menuItems[curSelected] == "Change Controls") {
 			if(!doneHover) {
 				doneHover = true;
 				FlxTween.tween(otherStuff, {alpha: 1, y: otherStuff.y - 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0});
@@ -211,11 +200,6 @@ class PauseSubState extends MusicBeatSubstate
 				case 3:
 					otherStuff.text = "SCHEME: "+"CUSTOM";
 			}
-		}else if(menuItems[curSelected] == "Assign Controller") {
-			if(cast(FlxG.state, PlayState).detectedGamepad)
-				otherStuff.text = "STATUS: CONNECTED";
-			else
-				otherStuff.text = "STATUS: NONE";
 		}
 
 		otherStuff.x = FlxG.width - (otherStuff.width + 20);

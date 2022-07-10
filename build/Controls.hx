@@ -813,8 +813,7 @@ class Controls extends FlxActionSet
 
 	inline function addGamepadLiteral(id:Int, ?buttonMap:Map<Control, Array<FlxGamepadInputID>>):Void
 	{
-		if(!gamepadsAdded.contains(id))
-			gamepadsAdded.push(id);
+		gamepadsAdded.push(id);
 
 		#if (haxe >= "4.0.0")
 		for (control => buttons in buttonMap)
@@ -851,11 +850,11 @@ class Controls extends FlxActionSet
 			Control.DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN],
 			Control.LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
 			Control.RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
-			Control.GAME_LEFT => [LEFT_TRIGGER_BUTTON],
-			Control.GAME_DOWN => [LEFT_TRIGGER],
-			Control.GAME_UP => [RIGHT_TRIGGER_BUTTON],
-			Control.GAME_RIGHT => [RIGHT_TRIGGER],
-			Control.GAME_SPACE => [X],
+			Control.GAME_LEFT => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]],
+			Control.GAME_DOWN => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]],
+			Control.GAME_UP => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]],
+			Control.GAME_RIGHT => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]],
+			Control.GAME_SPACE => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[4]],
 			Control.PAUSE => [START],
 			Control.RESET => [Y]
 		]);
@@ -868,11 +867,11 @@ class Controls extends FlxActionSet
 			Control.DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN, RIGHT_STICK_DIGITAL_DOWN],
 			Control.LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT, RIGHT_STICK_DIGITAL_LEFT],
 			Control.RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT, RIGHT_STICK_DIGITAL_RIGHT],
-			Control.GAME_LEFT => [LEFT_TRIGGER_BUTTON],
-			Control.GAME_DOWN => [LEFT_TRIGGER],
-			Control.GAME_UP => [RIGHT_TRIGGER_BUTTON],
-			Control.GAME_RIGHT => [RIGHT_TRIGGER],
-			Control.GAME_SPACE => [X],
+			Control.GAME_LEFT => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]],
+			Control.GAME_DOWN => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]],
+			Control.GAME_UP => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]],
+			Control.GAME_RIGHT => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]],
+			Control.GAME_SPACE => [SaveData.getData(CUSTOM_GAMEPAD_BINDS)[4]],
 			Control.PAUSE => [START],
 			//Swap Y and X for switch
 			Control.RESET => [Y],

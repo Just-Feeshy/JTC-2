@@ -47,6 +47,7 @@ import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
 import openfl.events.KeyboardEvent;
+import openfl.events.Event;
 import feshixl.group.FeshEventGroup;
 import feshixl.interfaces.IDialogue;
 import openfl.Lib;
@@ -112,7 +113,6 @@ class PlayState extends MusicBeatState
 
 	//Controls
 	private var keysMatrix:Array<Array<Int>> = [];
-	public var detectedGamepad:Bool;
 
 	//Da Variables
 	private var misses:Int = 0;
@@ -261,8 +261,6 @@ class PlayState extends MusicBeatState
 
 		persistentUpdate = true;
 		persistentDraw = true;
-
-		detectedGamepad = (FlxG.gamepads.lastActive != null ? true : false);
 
 		if (SONG == null)
 			SONG = Song.loadFromJson('tutorial');
@@ -617,7 +615,18 @@ class PlayState extends MusicBeatState
 				}
 		}
 
-
+		if(SONG.fifthKey) {
+			keysMatrix[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
+			keysMatrix[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
+			keysMatrix[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[4]);
+			keysMatrix[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
+			keysMatrix[4].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
+		}else {
+			keysMatrix[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
+			keysMatrix[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
+			keysMatrix[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
+			keysMatrix[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
+		}
 	}
 
 	function inDeBenigin() {
@@ -1141,6 +1150,8 @@ class PlayState extends MusicBeatState
 
 					FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyShit);
 					FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, keyReleased);
+					FlxG.stage.addEventListener(GamepadEvent.BUTTON_DOWN, keyShit);
+					FlxG.stage.addEventListener(GamepadEvent.BUTTON_UP, keyReleased);
 				case 3:
 					var go:FlxSprite = new FlxSprite().loadGraphic(Paths.image(introAlts[2]));
 					go.scrollFactor.set();
@@ -2335,12 +2346,20 @@ class PlayState extends MusicBeatState
 		#end
 	}
 
-	function keyReleased(e:KeyboardEvent) {
+	function keyReleased(e:Event) {
 		if(paused || inCutscene)
 			return;
 
+		var event = cast e;
+		var controlCode:Int = -2;
+
+		if(event is KeyboardEvent)
+			controlCode = event.keyCode;
+		else if(event is GamepadEvent)
+			controlCode = event.buttonCode;
+
 		for(i in 0...keysMatrix.length) {
-			if(getKeyHit(e.keyCode, i)) {
+			if(getKeyHit(controlCode, i)) {
 				var spr:Strum = playerStrums.members[i];
 
 				if(spr != null) {
@@ -2666,12 +2685,39 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	function keyShit(e:KeyboardEvent):Void
+	function keyShit(e:Event):Void
 	{
 		if(paused || inCutscene)
 			return;
 
-		if ((generatedMusic && FlxG.keys.checkStatus(e.keyCode, JUST_PRESSED))) {
+		var event = cast e;
+		var controlCode:Int = -2;
+
+		if(event is KeyboardEvent)
+			controlCode = event.keyCode;
+		else if(event is GamepadEvent)
+			controlCode = event.buttonCode;
+
+		var checkControlStatus:Bool = false;
+
+		var controlArray = [
+			controls.GAME_LEFT_P,
+			controls.GAME_DOWN_P,
+			controls.GAME_UP_P,
+			controls.GAME_RIGHT_P
+		];
+
+		if(SONG.fifthKey) {
+			controlArray = [
+				controls.GAME_LEFT_P,
+				controls.GAME_DOWN_P,
+				controls.GAME_SPACE_P,
+				controls.GAME_UP_P,
+				controls.GAME_RIGHT_P
+			];
+		}
+
+		if (generatedMusic && (FlxG.keys.checkStatus(controlCode, JUST_PRESSED) || controlArray.contains(true))) {
 			var noteCaculation:Bool = false;
 
 			var noteList:Array<Array<Note>> = [];
@@ -2681,7 +2727,7 @@ class PlayState extends MusicBeatState
 				if(daNote.canBeHit && daNote.mustPress && !daNote.tooLate
 				&& !daNote.wasGoodHit && !daNote.isSustainNote) {
 					for(i in 0...keysMatrix.length) {
-						if(getKeyHit(e.keyCode, i) && daNote.noteData == i) {
+						if(getKeyHit(controlCode, i) && daNote.noteData == i) {
 							if(noteList[i] == null) {
 								noteList[i] = [];
 							}
@@ -2720,7 +2766,7 @@ class PlayState extends MusicBeatState
 			if(counter == noteList.length) {
 				if(!GhostTapping.ghostTap) {
 					for(i in 0...keysMatrix.length) {
-						if(keysMatrix[i].contains(e.keyCode)) {
+						if(keysMatrix[i].contains(controlCode)) {
 							noteMiss(i);
 							break;
 						}
@@ -2734,7 +2780,7 @@ class PlayState extends MusicBeatState
 
 			playerStrums.forEach(function(spr:Strum) {
 				if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-					if(getKeyHit(e.keyCode, spr.ID) && spr.animation.curAnim.name != 'confirm') {
+					if(getKeyHit(controlCode, spr.ID) && spr.animation.curAnim.name != 'confirm') {
 						spr.playAnim('pressed');
 					}
 				}
@@ -3274,6 +3320,8 @@ class PlayState extends MusicBeatState
 	override public function destroy() {
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyShit);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, keyReleased);
+		FlxG.stage.removeEventListener(GamepadEvent.BUTTON_DOWN, keyShit);
+		FlxG.stage.removeEventListener(GamepadEvent.BUTTON_UP, keyReleased);
 
 		Compile.kill();
 		Cache.clear();

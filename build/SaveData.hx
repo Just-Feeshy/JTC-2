@@ -220,11 +220,11 @@ class SaveData {
                 return FlxG.save.data.customUIKeys;
             case CUSTOM_GAMEPAD_BINDS:
                 if(FlxG.save.data.gamepadBinds == null) {
-                    FlxG.save.data.gamepadBinds = new Array<FlxGamepadInputID>();
+                    FlxG.save.data.gamepadBinds = new Array<Int>();
 
                     FlxG.save.data.gamepadBinds = [
-                        FlxGamepadInputID.LEFT_TRIGGER_BUTTON, //LEFT
-                        FlxGamepadInputID.LEFT_TRIGGER, //DOWN
+                        FlxGamepadInputID.LEFT_TRIGGER, //LEFT
+                        FlxGamepadInputID.LEFT_TRIGGER_BUTTON, //DOWN
                         FlxGamepadInputID.RIGHT_TRIGGER_BUTTON, //UP
                         FlxGamepadInputID.RIGHT_TRIGGER, //RIGHT
                         FlxGamepadInputID.X //SPACE
