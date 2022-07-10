@@ -224,8 +224,8 @@ class SaveData {
 
                     FlxG.save.data.gamepadBinds = [
                         FlxGamepadInputID.LEFT_TRIGGER, //LEFT
-                        FlxGamepadInputID.LEFT_TRIGGER_BUTTON, //DOWN
-                        FlxGamepadInputID.RIGHT_TRIGGER_BUTTON, //UP
+                        FlxGamepadInputID.LEFT_SHOULDER, //DOWN
+                        FlxGamepadInputID.RIGHT_SHOULDER, //UP
                         FlxGamepadInputID.RIGHT_TRIGGER, //RIGHT
                         FlxGamepadInputID.X //SPACE
                     ];
