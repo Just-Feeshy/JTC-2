@@ -26,14 +26,14 @@
     ],
 
     "main_menu": {
-        "background_image": "funkstreet",
+        "background_image": "stage1",
         "bpm": 97
     },
 
     "weeks": {
         "week_0": {
             "week_name": "Joul The Cool",
-            "week_background": "funkstreet",
+            "week_background": "stage2",
             "week_unlocked": true,
 
             "week_data": [

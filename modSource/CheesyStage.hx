@@ -2,6 +2,7 @@ package;
 
 import template.StageBuilder;
 
+import flixel.FlxG;
 import flixel.FlxSprite;
 
 class CheesyStage extends StageBuilder {
@@ -12,7 +13,7 @@ class CheesyStage extends StageBuilder {
             case "funkstreet":
                 setDefaultCameraZoom(0.75);
 
-				var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('funkstreet'));
+				var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stage' + FlxG.random.int(1,3)));
 				bg.antialiasing = true;
 				bg.scrollFactor.set(0.95, 0.95);
 				bg.active = false;

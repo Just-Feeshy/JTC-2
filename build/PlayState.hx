@@ -111,7 +111,8 @@ class PlayState extends MusicBeatState
 	private var trippyShader:ShaderFilter;
 
 	//Controls
-	private var keysMatrix:Array<Array<FlxKey>> = [];
+	private var keysMatrix:Array<Array<Int>> = [];
+	public var detectedGamepad:Bool;
 
 	//Da Variables
 	private var misses:Int = 0;
@@ -260,6 +261,8 @@ class PlayState extends MusicBeatState
 
 		persistentUpdate = true;
 		persistentDraw = true;
+
+		detectedGamepad = (FlxG.gamepads.lastActive != null ? true : false);
 
 		if (SONG == null)
 			SONG = Song.loadFromJson('tutorial');
@@ -603,9 +606,9 @@ class PlayState extends MusicBeatState
 				if(SONG.fifthKey) {
 					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
 					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-					keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
-					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
-					keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[4];
+					keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[4];
+					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[2];
+					keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[3];
 				}else {
 					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
 					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
@@ -613,6 +616,8 @@ class PlayState extends MusicBeatState
 					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
 				}
 		}
+
+
 	}
 
 	function inDeBenigin() {
@@ -1754,7 +1759,7 @@ class PlayState extends MusicBeatState
 		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength - FlxG.sound.music.time);
 		#end
 
-		if (FlxG.keys.justPressed.ENTER && startedCountdown && canPause)
+		if (controls.PAUSE && startedCountdown && canPause)
 		{
 			persistentUpdate = false;
 			persistentDraw = true;
@@ -2666,7 +2671,7 @@ class PlayState extends MusicBeatState
 		if(paused || inCutscene)
 			return;
 
-		if (generatedMusic && FlxG.keys.checkStatus(e.keyCode, JUST_PRESSED)) {
+		if ((generatedMusic && FlxG.keys.checkStatus(e.keyCode, JUST_PRESSED))) {
 			var noteCaculation:Bool = false;
 
 			var noteList:Array<Array<Note>> = [];

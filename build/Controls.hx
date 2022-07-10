@@ -728,7 +728,7 @@ class Controls extends FlxActionSet
 					inline bindKeys(Control.GAME_RIGHT, [K, FlxKey.RIGHT]);
 					inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
 					inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
-					inline bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);
+					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
 					inline bindKeys(Control.RESET, [R]);
 					inline bindKeys(Control.CHEAT, []);
 				case Duo(true):
@@ -742,6 +742,7 @@ class Controls extends FlxActionSet
 					inline bindKeys(Control.GAME_RIGHT, [D, FlxKey.RIGHT]);
 					inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
 					inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
+					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
 					inline bindKeys(Control.RESET, [R]);
 					inline bindKeys(Control.CHEAT, []);
 				case Duo(false):
@@ -755,6 +756,7 @@ class Controls extends FlxActionSet
 					inline bindKeys(Control.GAME_RIGHT, [TWO, NUMPADTWO, FlxKey.RIGHT]);
 					inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
 					inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE, P]);
+					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
 					inline bindKeys(Control.RESET, [R]);
 					inline bindKeys(Control.CHEAT, []);
 				case None: // nothing
@@ -769,7 +771,7 @@ class Controls extends FlxActionSet
 					inline bindKeys(Control.GAME_RIGHT, SaveData.getData(CUSTOM_KEYBINDS)[3]);
 					inline bindKeys(Control.ACCEPT, [SaveData.getData(CUSTOM_UI_KEYBINDS)[4][0], SaveData.getData(CUSTOM_UI_KEYBINDS)[5][0]]);
 					inline bindKeys(Control.BACK, [SaveData.getData(CUSTOM_UI_KEYBINDS)[6][0], SaveData.getData(CUSTOM_UI_KEYBINDS)[7][0]]);
-					inline bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);
+					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
 					inline bindKeys(Control.RESET, [R]);
 					inline bindKeys(Control.CHEAT, []);
 			}
@@ -811,7 +813,8 @@ class Controls extends FlxActionSet
 
 	inline function addGamepadLiteral(id:Int, ?buttonMap:Map<Control, Array<FlxGamepadInputID>>):Void
 	{
-		gamepadsAdded.push(id);
+		if(!gamepadsAdded.contains(id))
+			gamepadsAdded.push(id);
 
 		#if (haxe >= "4.0.0")
 		for (control => buttons in buttonMap)
@@ -848,6 +851,11 @@ class Controls extends FlxActionSet
 			Control.DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN],
 			Control.LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
 			Control.RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
+			Control.GAME_LEFT => [LEFT_TRIGGER_BUTTON],
+			Control.GAME_DOWN => [LEFT_TRIGGER],
+			Control.GAME_UP => [RIGHT_TRIGGER_BUTTON],
+			Control.GAME_RIGHT => [RIGHT_TRIGGER],
+			Control.GAME_SPACE => [X],
 			Control.PAUSE => [START],
 			Control.RESET => [Y]
 		]);
@@ -860,10 +868,14 @@ class Controls extends FlxActionSet
 			Control.DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN, RIGHT_STICK_DIGITAL_DOWN],
 			Control.LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT, RIGHT_STICK_DIGITAL_LEFT],
 			Control.RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT, RIGHT_STICK_DIGITAL_RIGHT],
+			Control.GAME_LEFT => [LEFT_TRIGGER_BUTTON],
+			Control.GAME_DOWN => [LEFT_TRIGGER],
+			Control.GAME_UP => [RIGHT_TRIGGER_BUTTON],
+			Control.GAME_RIGHT => [RIGHT_TRIGGER],
+			Control.GAME_SPACE => [X],
 			Control.PAUSE => [START],
 			//Swap Y and X for switch
 			Control.RESET => [Y],
-			Control.CHEAT => [X]
 		]);
 		#end
 	}

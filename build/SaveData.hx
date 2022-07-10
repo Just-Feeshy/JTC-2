@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.util.FlxSave;
 import flixel.util.FlxDestroyUtil;
 import flixel.input.keyboard.FlxKey;
+import flixel.input.gamepad.FlxGamepadInputID;
 
 import openfl.display.FPS;
 
@@ -28,6 +29,7 @@ enum SaveType {
     CACHE_ASSETS;
     CUSTOM_KEYBINDS;
     CUSTOM_UI_KEYBINDS;
+    CUSTOM_GAMEPAD_BINDS;
     CAMERA_MOVEMENT_MOD;
     GHOST_TAPPING;
     CUSTOM_MENU_BINDS;
@@ -78,6 +80,7 @@ class SaveData {
         FlxG.save.data.volume = getData(SaveType.VOLUME);
         FlxG.save.data.showFPS = getData(SaveType.SHOW_FPS);
         FlxG.save.data.showMEM = getData(SaveType.SHOW_MEMORY);
+        FlxG.save.data.gamepadBinds = getData(SaveType.CUSTOM_GAMEPAD_BINDS);
 
         FlxG.save.flush();
 
@@ -215,6 +218,20 @@ class SaveData {
                 }
 
                 return FlxG.save.data.customUIKeys;
+            case CUSTOM_GAMEPAD_BINDS:
+                if(FlxG.save.data.gamepadBinds == null) {
+                    FlxG.save.data.gamepadBinds = new Array<FlxGamepadInputID>();
+
+                    FlxG.save.data.gamepadBinds = [
+                        FlxGamepadInputID.LEFT_TRIGGER_BUTTON, //LEFT
+                        FlxGamepadInputID.LEFT_TRIGGER, //DOWN
+                        FlxGamepadInputID.RIGHT_TRIGGER_BUTTON, //UP
+                        FlxGamepadInputID.RIGHT_TRIGGER, //RIGHT
+                        FlxGamepadInputID.X //SPACE
+                    ];
+                }
+
+                return FlxG.save.data.gamepadBinds;
             case CAMERA_MOVEMENT_MOD:
                 if(FlxG.save.data.camMove == null)
                     FlxG.save.data.camMove = false;

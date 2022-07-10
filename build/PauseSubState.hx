@@ -22,7 +22,7 @@ class PauseSubState extends MusicBeatSubstate
 
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Change Controls', 'Exit to menu'];
+	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Change Controls', 'Assign Controller', 'Exit to menu'];
 	var curSelected:Int = 0;
 
 	var pauseMusic:FlxSound;
@@ -58,17 +58,6 @@ class PauseSubState extends MusicBeatSubstate
 
 
 		otherStuff = new FlxText(20, 15 + 96, 0, "", 32);
-		
-		switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
-			case 0:
-				otherStuff.text = "SCHEME: "+"WASD";
-			case 1:
-				otherStuff.text = "SCHEME: "+"DFJK";
-			case 2:
-				otherStuff.text = "SCHEME: "+"ZX12";
-			case 3:
-				otherStuff.text = "SCHEME: "+"CUSTOM";
-		}
 
 		otherStuff.scrollFactor.set();
 		otherStuff.setFormat(Paths.font('vcr.ttf'), 32);
@@ -166,10 +155,21 @@ class PauseSubState extends MusicBeatSubstate
 					}
 
 					otherStuff.x = FlxG.width - (otherStuff.width + 20);
+				case "Assign Controller":
+					cast(FlxG.state, PlayState).detectedGamepad = (FlxG.gamepads.lastActive != null ? true : false);
+
+					if(menuItems[curSelected] == "Assign Controller") {
+						if(cast(FlxG.state, PlayState).detectedGamepad)
+							otherStuff.text = "STATUS: CONNECTED";
+						else
+							otherStuff.text = "STATUS: NONE";
+					}
+
+					otherStuff.x = FlxG.width - (otherStuff.width + 20);
 			}
 		}
 
-		if(menuItems[curSelected] == "Change Controls") {
+		if(menuItems[curSelected] == "Change Controls" || menuItems[curSelected] == "Assign Controller") {
 			if(!doneHover) {
 				doneHover = true;
 				FlxTween.tween(otherStuff, {alpha: 1, y: otherStuff.y - 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0});
@@ -199,6 +199,26 @@ class PauseSubState extends MusicBeatSubstate
 			curSelected = menuItems.length - 1;
 		if (curSelected >= menuItems.length)
 			curSelected = 0;
+
+		if(menuItems[curSelected] == "Change Controls") {
+			switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
+				case 0:
+					otherStuff.text = "SCHEME: "+"WASD";
+				case 1:
+					otherStuff.text = "SCHEME: "+"DFJK";
+				case 2:
+					otherStuff.text = "SCHEME: "+"ZX12";
+				case 3:
+					otherStuff.text = "SCHEME: "+"CUSTOM";
+			}
+		}else if(menuItems[curSelected] == "Assign Controller") {
+			if(cast(FlxG.state, PlayState).detectedGamepad)
+				otherStuff.text = "STATUS: CONNECTED";
+			else
+				otherStuff.text = "STATUS: NONE";
+		}
+
+		otherStuff.x = FlxG.width - (otherStuff.width + 20);
 
 		var bullShit:Int = 0;
 
