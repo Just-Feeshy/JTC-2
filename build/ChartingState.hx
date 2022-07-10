@@ -1953,6 +1953,11 @@ class ChartingState extends MusicBeatState
 
 		gridBG = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * _song.notes[curSection].lengthInSteps * (zoomList[zoomMeter]/100)));
 
+		if(strumLine != null) {
+			strumLine.makeGraphic(Std.int(GRID_SIZE * mainGrid), 4);
+			strumLine.updateHitbox();
+		}
+
 		var totalHeight:Float = gridBG.height;
 
 		if(UI_Modifiers != null)
