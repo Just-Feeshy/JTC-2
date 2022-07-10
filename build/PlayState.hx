@@ -114,13 +114,15 @@ class PlayState extends MusicBeatState
 
 	//Da Variables
 	private var misses:Int = 0;
+	private var missesHold:Int = 0;
 	private var missClicks:Int = 0;
-	private var accuracy:Float = 100;
-	private var maxAcc:Float = 100;
-	private var accTotal:Float = 100;
+	private var totalNotesLoaded:Int = 0;
 	private var defaultBlur:Float = 0;
 	private var playFPS:Null<Int> = Main.framerate;
 	private var counterTxt:FlxText;
+
+	private var accTotal(get, never):Float;
+	private var totalRatingAcc:Float = 0;
 
 	public static var hasWarning:Bool = true;
 	public static var curStage:String = '';
@@ -1340,6 +1342,7 @@ class PlayState extends MusicBeatState
 		// playerCounter += 1;
 
 		unspawnNotes.sort(sortByShit);
+		totalNotesLoaded = unspawnNotes.length;
 		generatedMusic = true;
 	}
 
@@ -1747,8 +1750,6 @@ class PlayState extends MusicBeatState
 			Lib.current.stage.frameRate = playFPS * SaveData.getData(SaveType.FPS_MULTIPLIER);
 			Main.framerate = playFPS;
 		}
-
-		accTotal = Math.floor(Math.min(maxAcc, Math.max(0, Math.floor(accuracy*100)/100))*100)/100;
 
 		if(FlxG.save.data.showstuff) {
 			counterTxt.text = 'Accuracy: ' + accTotal + '%' + '       ' + 'Miss Clicks: ' + missClicks + '       ' + 'Misses: ' + misses + '       ' + 'Score: ' + songScore;
@@ -2262,15 +2263,7 @@ class PlayState extends MusicBeatState
 						if (daNote.isSustainNote && daNote.wasGoodHit)
 							{
 								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract))
-									setHealth(health + 0.010);		
-								
-								if(maxAcc < 99) {
-									accuracy += 0.05;
-									maxAcc += 0.05;
-								}
-	
-								if(maxAcc > 100)
-									maxAcc = 100;
+									setHealth(health + 0.010);
 
 								removeNote(daNote);
 							}
@@ -2284,45 +2277,34 @@ class PlayState extends MusicBeatState
 										setHealth(health - 0.069);
 
 									vocals.volume = 0;
-	
-									if(SONG.fifthKey)
-										accuracy -= 0.5 * GhostTapping.consequence;
-									else
-										accuracy -= 1;
 								}	
 			
-								if(!daNote.isSustainNote) {
-									if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
-										if(daNote.tooLate || !daNote.wasGoodHit) {
-											if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
-												
-												if(SONG.fifthKey)
-													maxAcc -= 0.25;
-												else
-													maxAcc -= 0.5;
-	
-												combo = 0;
+								if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
+									if(daNote.tooLate || !daNote.wasGoodHit) {
+										if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
+											combo = 0;
+
+											if(daNote.isSustainNote)
+												missesHold += 1;
+											else
 												misses += 1;
 
-												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
-											}
+											FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+											boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 										}
-									}else{
-										if(daNote.tooLate || !daNote.wasGoodHit) {
-											if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
+									}
+								}else{
+									if(daNote.tooLate || !daNote.wasGoodHit) {
+										if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
+											combo = 0;
 											
-												if(SONG.fifthKey)
-													maxAcc -= 0.25;
-												else
-													maxAcc -= 0.5;
-	
-												combo = 0;
+											if(daNote.isSustainNote)
+												missesHold += 1;
+											else
 												misses += 1;
 
-												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
-											}
+											FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+											boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 										}
 									}
 								}
@@ -2488,8 +2470,7 @@ class PlayState extends MusicBeatState
 
 			daRating = 'shit';
 			score = 50;
-			maxAcc -= 0.06 * GhostTapping.consequence;
-			accuracy -= 0.75 * GhostTapping.consequence;
+			totalRatingAcc -= 0.75 * GhostTapping.consequence;
 			combo = 0;
 
 			setHealth(health - 0.005);
@@ -2502,8 +2483,7 @@ class PlayState extends MusicBeatState
 
 			daRating = 'bad';
 			score = 100;
-			maxAcc -= 0.0 * GhostTapping.consequence;
-			accuracy -= 0.50 * GhostTapping.consequence;
+			totalRatingAcc -= 0.50 * GhostTapping.consequence;
 			combo = 0;
 
 			setHealth(health - 0.002);
@@ -2517,25 +2497,12 @@ class PlayState extends MusicBeatState
 
 			daRating = 'good';
 			score = 200;
-			maxAcc -= 0.02 * GhostTapping.consequence;
-			accuracy -= 0.25 * GhostTapping.consequence;
+			totalRatingAcc -= 0.10 * GhostTapping.consequence;
 		}else {
 			daRating = 'sick';
 		}
 
-		if(daRating == 'sick') {
-			accuracy += 0.11 / GhostTapping.consequence;
-		}
-
 		songScore += Std.int(score / GhostTapping.consequence);
-
-		/* if (combo > 60)
-				daRating = 'sick';
-			else if (combo > 12)
-				daRating = 'good'
-			else if (combo > 4)
-				daRating = 'bad';
-		 */
 
 		var pixelShitPart1:String = "";
 		var pixelShitPart2:String = '';
@@ -3200,6 +3167,10 @@ class PlayState extends MusicBeatState
 		return playerStrums;
 	}
 
+	function get_accTotal():Float {
+		return Math.floor(((totalNotesLoaded - misses - missesHold + totalRatingAcc)/totalNotesLoaded)*10000)/100;
+	}
+
 	override function stepHit()
 	{
 		super.stepHit();
@@ -3207,11 +3178,6 @@ class PlayState extends MusicBeatState
 		if ((FlxG.sound.music.time > Conductor.trackPosition + 20 || FlxG.sound.music.time < Conductor.trackPosition - 20) && !paused)
 		{
 			resyncVocals();
-		}
-
-		if (dad.curCharacter == 'spooky' && curStep % 4 == 2)
-		{
-			// dad.dance();
 		}
 
 		if(CustomNoteHandler.yourNoteData["side note"] != null) {

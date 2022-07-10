@@ -47,6 +47,7 @@ class Note extends EditorSprite
 	public var canBeHit:Bool = false;
 	public var tooLate:Bool = false;
 	public var wasGoodHit:Bool = false;
+	public var isEndStrum:Bool = false;
 
 	public var caculatePos:Float = 0;
 	public var distanceAxis:FlxAxes;
@@ -335,6 +336,8 @@ class Note extends EditorSprite
 					x += 30;
 
 				if(PlayState.SONG.fifthKey) {
+					isEndStrum = true;
+
 					switch (noteData)
 					{
 						case 2:
@@ -375,6 +378,8 @@ class Note extends EditorSprite
 
 				if (prevNote.isSustainNote)
 				{
+					prevNote.isEndStrum = false;
+
 					if(PlayState.SONG.fifthKey) {
 						switch (prevNote.noteData)
 						{
