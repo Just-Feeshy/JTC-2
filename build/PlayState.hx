@@ -1370,7 +1370,6 @@ class PlayState extends MusicBeatState
 				babyArrow = new Strum(42, strumLine.y);
 
 			babyArrow.noteData = i;
-			babyArrow.yAngle = (babyArrow.noteData * 15);
 
 			if(SONG.fifthKey) {
 				switch (curStage)

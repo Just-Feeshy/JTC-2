@@ -7,8 +7,7 @@ import flash.geom.Matrix;
  * It mostly copies Matrix class, but with some additions for
  * faster rotation by 90 degrees.
  */
-class FlxMatrix extends Matrix
-{
+class FlxMatrix extends Matrix {
 	/**
 	 * Rotates this matrix, but takes the values of sine and cosine,
 	 * so it might be useful when you rotate multiple matrices by the same angle

@@ -47,7 +47,7 @@ class EditorSprite extends FlxSprite {
     /**
     * Rotate angle's row axis.
     */
-    public var zAngle(get, never):Float;
+    public var zAngle(get, set):Float;
 
     public var defaultCompiler:Void->Void;
     public var completeCallback:Void->Void;
@@ -239,6 +239,12 @@ class EditorSprite extends FlxSprite {
     @:noCompletion
     function get_zAngle():Float {
         return angle;
+    }
+
+    @:noCompletion
+    function set_zAngle(Value:Float):Float {
+        angle = Value;
+        return Value;
     }
 
     @:noCompletion
