@@ -1,0 +1,61 @@
+package example_code;
+
+import template.CustomNote;
+
+import flixel.math.FlxMath;
+
+/**
+* A tad bit more difficult to understand compared to the others.
+*/
+class ReverseNote extends CustomNoteTemplate {
+    var oppositeID:Int = 0;
+    var angle:Float = 0;
+
+    override function whenIsFirstRendered(note:Note, totalNotesInSection:Int) {
+        oppositeID = Std.int(Math.abs(note.noteData - (totalNotesInSection - 1)));
+        note.playAnim(Note.getColorFacing(oppositeID) + "Scroll");
+    }
+
+    override function whenNoteIsHit(strumNote:Strum):Bool {
+        @:privateAccess
+        if(!strumNote.animation._animations.exists("reverse confirm")) {
+            strumNote.animation.destroyAnimations();
+            strumNote.twoInOneFrames(Paths.getSparrowAtlas('NOTE_assets', null, true), Paths.getSparrowAtlas('notes/reverse/CONFIRM_assets'));
+            strumNote.animation.addByPrefix("confirm reverse", strumNote.direction + " confirm reverse", 24, false);
+            strumNote.setupAnimations();
+        }
+
+        strumNote.setColorTransform(1,1,1,1,0,0,0,0);
+        strumNote.playAnim('confirm reverse', true);
+
+        return false;
+    }
+
+    override function setNoteAngle(note:Note, value:Float):Float {
+        if(note.getNoteStrumPosition(75) < 1) {
+            angle = FlxMath.lerp(180, 0, note.getNoteStrumPosition(75));
+
+            if(angle > 90 && note.animation.curAnim.name == Note.getColorFacing(oppositeID) + "Scroll") {
+                note.playAnim(Note.getColorFacing(note.noteData) + "Scroll");
+            }
+        }
+
+        if(angle > 90) {
+            return 180 - angle;
+        }else {
+            return angle;
+        }
+    }
+
+    override function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float {
+        if(note.getNoteStrumPosition(75) < 1) {
+            return FlxMath.lerp(x, strums[oppositeID].x, note.getNoteStrumPosition(75));
+        }
+
+        return strums[oppositeID].x;
+    }
+
+    override function cantHaveHold():Bool {
+        return true;
+    }
+}

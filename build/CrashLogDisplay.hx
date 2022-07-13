@@ -39,6 +39,7 @@ class CrashLogDisplay extends Sprite {
         Mouse.show();
 
         var window:Window = Lib.current.stage.application.createWindow(attributes);
+        window.onClose.add(__closeApplication.bind(window));
 
         @:privateAccess {
             Lib.current.stage.application.__windows.shift();
@@ -149,5 +150,10 @@ class CrashLogDisplay extends Sprite {
         }
 
         return new Rectangle(xPos, yPos, _rect.width, _rect.height);
+    }
+
+    @:noCompletion
+    function __closeApplication(window:Window):Void {
+        Sys.exit(0);
     }
 }

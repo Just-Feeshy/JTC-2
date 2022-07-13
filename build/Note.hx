@@ -65,7 +65,7 @@ class Note extends EditorSprite
 
 	public var trail:FlxTypedGroup<FlxSprite>;
 
-	public var hasCustomAddon:CustomNote;
+	public var hasCustomAddon:ICustomNote;
 
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
@@ -82,7 +82,7 @@ class Note extends EditorSprite
 			distanceAxis = Y;
 
 			switch(noteType) {
-				case "reverse" | "reverse poison":
+				case "reverse poison":
 					downscrollNote = !FlxG.save.data.helpme;
 					howSpeed += 0.5;
 				case "side note":
@@ -561,13 +561,13 @@ class Note extends EditorSprite
 			}else if(noteAbstract == "ghost") {
 				alpha = Math.min(getNoteStrumPosition(250), fadeValue);
 			}else if(hasCustomAddon != null) {
-				alpha = Math.min(hasCustomAddon.setNoteAlpha(value), fadeValue);
+				alpha = Math.min(hasCustomAddon.setNoteAlpha(this, value), fadeValue);
 			}
 		}
 
 		public function setNoteAngle(value:Float) {
 			if(hasCustomAddon != null) {
-				angle = hasCustomAddon.setNoteAngle(value);
+				angle = hasCustomAddon.setNoteAngle(this, value);
 			} else {
 				if(!isSustainNote && noteAbstract != "spiritual star" && noteAbstract != "cherry") {
 					angle = value;
@@ -582,20 +582,20 @@ class Note extends EditorSprite
 			return ((Conductor.trackPosition - Compile.getNoteTime(strumTime)) * Note.AFFECTED_SCROLLSPEED) * (0.45 * FlxMath.roundDecimal(howSpeed, 2));
 		}
 
-		public function getNoteStrumPosition(offset:Int):Float {
+		public function getNoteStrumPosition(offset:Int = 0):Float {
 			return Math.max(0, (((Conductor.trackPosition - strumTime) * (-0.45 * FlxMath.roundDecimal(howSpeed * AFFECTED_SCROLLSPEED, 2))) - offset)/100);
 		}
 
 		public function setVisibility(visibility:Bool) {
 			if(hasCustomAddon != null)
-				visible = hasCustomAddon.setVisibility(visibility);
+				visible = hasCustomAddon.setVisibility(this, visibility);
 			else
 				visible = visibility;
 		}
 
-		public function setXaxis(alreadyX:Float) {
+		public function setXaxis(strums:Array<Strum>, alreadyX:Float) {
 			if(hasCustomAddon != null)
-				setInverseAxis(distanceAxis, hasCustomAddon.setXPosition(alreadyX));
+				setInverseAxis(distanceAxis, hasCustomAddon.setXPosition(this, strums, alreadyX));
 			else {
 				if(noteAbstract != "side note")
 					setInverseAxis(distanceAxis, alreadyX);
@@ -608,17 +608,26 @@ class Note extends EditorSprite
 			}else {
 				switch(noteAbstract) {
 					default:
-						if(rating == "sick" || rating == "good") {
+						if((rating == "sick" || rating == "good") && splashThing != null) {
 							if(!isSustainNote && SaveData.getData(SaveType.SHOW_NOTE_SPLASH)) {
 								splashThing.texture = "regular/splash";
 								splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
 								splashThing.animation.play('sploosh' + strumNote.ID);
 							}
-
-							strumNote.setColorTransform(1,1,1,1,0,0,0,0);
-							strumNote.playAnim('confirm', true);
 						}
 				}
+			}
+		}
+
+		public function hit(strumNote:Strum):Void {
+			if(hasCustomAddon != null) {
+				if(hasCustomAddon.whenNoteIsHit(strumNote)) {
+					strumNote.setColorTransform(1,1,1,1,0,0,0,0);
+					strumNote.playAnim('confirm', true);
+				}
+			}else {
+				strumNote.setColorTransform(1,1,1,1,0,0,0,0);
+				strumNote.playAnim('confirm', true);
 			}
 		}
 
@@ -640,8 +649,8 @@ class Note extends EditorSprite
 			animation.addByPrefix('bluehold', 'blue hold piece');
 		}
 
-		function getAddon():CustomNote {
-			var customNote:CustomNote = cast Type.createInstance(CustomNoteHandler.customNoteAddon.get(noteAbstract), []);
+		function getAddon():ICustomNote {
+			var customNote:ICustomNote = cast Type.createInstance(CustomNoteHandler.customNoteAddon.get(noteAbstract), []);
 
 			if(customNote != null) {
 				if(customNote.playerShouldntHit() && !CustomNoteHandler.dontHitNotes.contains(noteAbstract))
@@ -661,7 +670,7 @@ class Note extends EditorSprite
 			super.update(elapsed / tickDivider);
 
 			if(ifPlayState) {
-				if((noteAbstract == "reverse" || noteAbstract == "reverse poison") && !reverseDebounce) {
+				if(noteAbstract == "reverse poison" && !reverseDebounce) {
 					if(getNoteStrumPosition(250) == 0) {
 						reverseDebounce = true;
 
@@ -772,6 +781,27 @@ class Note extends EditorSprite
 			}
 
 			return null;
+		}
+
+		static public function getColorFacing(noteID:Int):String {
+			if(PlayState.SONG.fifthKey) {
+				switch(noteID) {
+					case 0: return "purple";
+					case 1: return "blue";
+					case 2: return "diamond";
+					case 3: return "green";
+					case 4: return "red";
+				}
+			}else {
+				switch(noteID) {
+					case 0: return "purple";
+					case 1: return "blue";
+					case 2: return "green";
+					case 3: return "red";
+				}
+			}
+
+			return "";
 		}
 
 		override function destroy() {

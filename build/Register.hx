@@ -6,9 +6,10 @@ import haxe.macro.Type;
 
 #if !macro
 import example_code.TransitionSamples;
-
+import example_code.NoteSamples;
 import example_code.DefaultEvents;
 import example_code.DefaultStage;
+
 import template.TransitionBuilder;
 import template.CustomNote;
 import template.StageBuilder;
@@ -77,6 +78,8 @@ class Register {
         addCustomTransition("fade", FadeTransition);
         addCustomTransition("tile", TileTransition);
         addCustomTransition("void", VoidTransition);
+
+        implementCustomNote("reverse", ReverseNote);
     }
 
     @:access(HelperStates)
@@ -137,7 +140,7 @@ class Register {
         dialogues.set(name, dialogueClass);
     }
 
-    public inline static function implementCustomNote(name:String, addonClass:Class<CustomNote>) {
+    public inline static function implementCustomNote(name:String, addonClass:Class<ICustomNote>) {
         CustomNoteHandler.customNoteAddon.set(name, addonClass);
     }
 

@@ -7,6 +7,7 @@ import flixel.util.FlxColor;
 import flixel.graphics.FlxGraphic;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
@@ -15,6 +16,7 @@ import flixel.math.FlxMatrix;
 import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
 import openfl.display.BitmapData;
+import openfl.geom.Point;
 import haxe.xml.Access;
 
 import SaveData.SaveType;
@@ -137,6 +139,28 @@ class EditorSprite extends FlxSprite {
         if(completeCallback != null) {
             completeCallback();
         }
+    }
+
+    public function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):Void {
+        var bitmapCum:BitmapData = new BitmapData(firstF.parent.width, firstF.parent.height + secondF.parent.height, FlxColor.TRANSPARENT);
+
+        bitmapCum.copyPixels(firstF.parent.bitmap, firstF.parent.bitmap.rect, new Point(0, 0));
+        bitmapCum.copyPixels(secondF.parent.bitmap, secondF.parent.bitmap.rect, new Point(0, firstF.parent.height));
+
+        var tempFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxG.bitmap.add(bitmapCum));
+        var frameIndex:Int = 0;
+
+        while(frameIndex < firstF.frames.length + secondF.frames.length) {
+            if(frameIndex >= firstF.frames.length) {
+                tempFrames.pushFrame(secondF.frames[frameIndex - firstF.frames.length]);
+            }else {
+                tempFrames.pushFrame(firstF.frames[frameIndex]);
+            }
+
+            frameIndex++;
+        }
+
+        frames = tempFrames;
     }
 
     public function getSourceAnimationName():Array<String> {

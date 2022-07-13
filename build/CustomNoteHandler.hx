@@ -12,14 +12,14 @@ class CustomNoteHandler {
     public static var yourNoteData:Map<String, Dynamic>;
 
     public static final dontHitNotes:Array<String> = ['poison', 'spiritual star', 'trippy', 'reverse poison', 'planet notes'];
-    public static final noNoteAbstractStrum:Array<String> = ["reverse", "poison", "spiritual star", "trippy", "reverse poison", "ocean", "side note" , "planet notes"];
+    public static final noNoteAbstractStrum:Array<String> = ["poison", "spiritual star", "trippy", "reverse poison", "ocean", "side note" , "planet notes"];
     public static final ouchyNotes:Array<String> = ['poison', 'trippy', 'reverse poison', 'planet notes'];
     public static final lowNotesTick:Array<String> = ['poison', 'regular', 'reverse', 'ocean', 'side note'];
 
     @:allow(Note.getAddon)
     @:allow(Register.implementCustomNote)
     @:allow(ChartingState.addNoteUI)
-    private static var customNoteAddon:Map<String, Class<CustomNote>> = new Map<String, Class<CustomNote>>();
+    private static var customNoteAddon:Map<String, Class<ICustomNote>> = new Map<String, Class<ICustomNote>>();
 
     static public function spawn() {
         triggerWarning = [

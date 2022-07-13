@@ -59,7 +59,7 @@ class Preloader extends FlxState {
 
         trace("FPS: " + Lib.current.stage.frameRate);
 
-        FlxG.autoPause = false;
+        //FlxG.autoPause = false;
         
         //Initalize events
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, saveVolumeChanges);

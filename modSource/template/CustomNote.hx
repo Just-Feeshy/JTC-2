@@ -3,38 +3,69 @@ package template;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 
-abstract class CustomNote {
-    public var ID(default, set):Int; //Puts a specific number for this addon to get proper location.
+interface ICustomNote {
+    function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void; //What happens when this note is press by the player.
+    function useCustomPrefix(note:Note):Bool; //Use your own animation prefixes for this note.
+    function shouldBeIgnored():Bool; //Should the opponent ignore this note.
+    function whenNoteIsHit(strumNote:Strum):Bool; //When this note is either hit by player or opponent.
+    function createSplashSprite(splash:SplashSprite, strumNote:Strum, rating:String):Void; //Create a custom splash effect for this note when it is hit.
+    function whenIsFirstRendered(note:Note, totalNotesInSection:Int):Void; //When the note is first rendered in game.
+    function whenIsSpawned(note:Note):Void; //What happens when this note is spawned in the game.
+    function whenTiggerSceneActived():Void; //When this note first appears in game.
+    function trailUpdate(note:Note):Void; //Give these notes bonus sprites some coded animation.
+    function noteUpdate(note:Note):Void; //Update this note in game.
+    function setNoteAlpha(note:Note, alpha:Float):Float; //Set custom alpha value for this note.
+    function setNoteAngle(note:Note, angle:Float):Float; //Set custom angle value for this note.
+    function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float; //Set custom x value for this note.
+    function setVisibility(note:Note, staticArrowVisible:Bool):Bool; //Set this note visible.
+    function getTrailGroup():FlxTypedGroup<FlxSprite>; //Add a custom trail to this note.
+    function hasOppositeScroll():Bool; //If this note goes on the scroll intended to be in.
+    function cantHaveHold():Bool; //If this note should have holds or not.
+    function getIndividualSpeed():Float; //How much faster this note is compared to a regular note.
+    function playerShouldntHit():Bool; //If player shouldn't hit this note.
+    function noDefaultSplash():Bool; //If this note shouldn't play the default note splash.
+    function giveHealth():Float; //How much health is given to the player when this note is hit.
+    function getWobblePower():Int; //How much wobble effect should this note have.
+}
 
-    public function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void { //What happens when this note is press by the player.
+class CustomNoteTemplate implements ICustomNote {
+    public function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void {
         return;
     }
 
-    public function useCustomPrefix(note:Note):Bool { //Use your own animation prefixes for this note.
+    public function useCustomPrefix(note:Note):Bool {
         return false;
     }
 
-    public function shouldBeIgnored():Bool { //Should the opponent ignore this note.
+    public function shouldBeIgnored():Bool {
         return false;
     }
 
-    public function createSplashSprite(splash:SplashSprite, strumNote:Strum, rating:String):Void { //Create splash when this note is hit.
+    public function whenNoteIsHit(strumNote:Strum):Bool {
+        return true; //Should play the default glow animation for strum.
+    }
+
+    public function createSplashSprite(splash:SplashSprite, strumNote:Strum, rating:String):Void {
         return;
     }
 
-    public function whenIsSpawned(note:Note):Void { //What happens when this note is spawned in the game. (This event function is looped)
+    public function whenIsFirstRendered(note:Note, totalNotesInSection:Int):Void {
         return;
     }
 
-    public function whenTiggerSceneActived():Void { //When this note first appears in game.
+    public function whenIsSpawned(note:Note):Void {
         return;
     }
 
-    public function trailUpdate(note:Note):Void { //Give these notes bonus sprites some coded animation.
+    public function whenTiggerSceneActived():Void {
         return;
     }
 
-    public function noteUpdate(note:Note):Void { //Update this note in game.
+    public function trailUpdate(note:Note):Void {
+        return;
+    }
+
+    public function noteUpdate(note:Note):Void {
         return;
     }
 
@@ -42,69 +73,51 @@ abstract class CustomNote {
         return false;
     }
 
-    public function setNoteAlpha(alpha:Float) { //Set custom alpha value for this note.
+    public function setNoteAlpha(note:Note, alpha:Float):Float {
         return alpha;
     }
 
-    public function setNoteAngle(angle:Float) { //Set custom angle value for this note.
+    public function setNoteAngle(note:Note, angle:Float):Float {
         return angle;
     }
 
-    public function setXPosition(x:Float) { //Set custom x value for this note.
+    public function setXPosition(note:Note, strums:Array<Strum>, x:Float) {
         return x;
     }
 
-    public function setVisibility(staticArrowVisible:Bool) { //Set this note visible.
+    public function setVisibility(note:Note, staticArrowVisible:Bool) {
         return staticArrowVisible;
     }
 
-    public function getTrailGroup():FlxTypedGroup<FlxSprite> { //Add a custom trail to this note.
+    public function getTrailGroup():FlxTypedGroup<FlxSprite> {
         return null;
     }
 
-    public function hasOppositeScroll():Bool { //If this note goes on the scroll intended to be in.
+    public function hasOppositeScroll():Bool {
         return false;
     }
 
-    public function cantHaveHold():Bool { //If this note should have holds or not.
+    public function cantHaveHold():Bool {
         return false;
     }
 
-    public function getIndividualSpeed():Float { //How much faster this note is compared to a regular note.
+    public function getIndividualSpeed():Float {
         return 0;
     }
 
-    public function playerShouldntHit():Bool { //If player shouldn't hit this note.
+    public function playerShouldntHit():Bool {
         return false;
     }
 
-    public function noDefaultSplash():Bool { //If this note shouldn't play the default note splash.
+    public function noDefaultSplash():Bool {
         return false;
     }
 
-    public function giveHealth():Float { //How much health is given to the player when this note is hit.
+    public function giveHealth():Float {
         return 0;
     }
 
-    public function getWobblePower():Int { //How much wobble effect should this note have.
+    public function getWobblePower():Int {
         return 0;
-    }
-
-    inline function set_ID(compileID:Int):Int {
-        if(Compile.tempNoteAbstracts.length > 0 && Compile.preloadAddon)
-            return compileID;
-
-        return ID;
-    }
-}
-
-class EventAddon {
-
-    //This addon is still in development.
-
-    public function new(){};
-
-    public function update():Void { //
-    
     }
 }

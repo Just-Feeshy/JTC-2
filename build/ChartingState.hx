@@ -938,10 +938,10 @@ class ChartingState extends MusicBeatState
 
 		var noteAddons:Array<String> = new Array<String>();
 
-		//trace(CustomNoteHandler.customNoteAddon[0]);
-
-		for(v in CustomNoteHandler.customNoteAddon.keys())
-			noteAddons.push(v);
+		for(v in CustomNoteHandler.customNoteAddon.keys()) {
+			if(!noteAddons.contains(v) && !DaNotes.contains(v))
+				noteAddons.push(v);
+		}
 
 		tab_group_note = new FlxUI(null, UI_box);
 		tab_group_note.name = 'Note';

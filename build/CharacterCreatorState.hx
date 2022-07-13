@@ -527,6 +527,7 @@ class CharacterCreatorState extends MusicBeatState {
                 changeCharacter = true;
 
                 characterAutosave.get(character.curCharacter).animations.set(animNameInput.text, {
+                    name: "",
                     prefix: prefixInput.text.trim(),
                     framerate: Std.int(framerateChange.value),
                     looped: loopAnim.checked,
