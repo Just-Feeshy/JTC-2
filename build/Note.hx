@@ -794,6 +794,14 @@ class Note extends EditorSprite
 			return null;
 		}
 
+		public function missDamage():Float {
+			if(hasCustomAddon != null) {
+				return hasCustomAddon.missNoteDamage();
+			}else {
+				return 0.069;
+			}
+		}
+
 		static public function getColorFacing(noteID:Int):String {
 			if(PlayState.SONG.fifthKey) {
 				switch(noteID) {

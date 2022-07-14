@@ -25,7 +25,9 @@ interface ICustomNote {
     function getIndividualSpeed():Float; //How much faster this note is compared to a regular note.
     function playerShouldntHit():Bool; //If player shouldn't hit this note.
     function noDefaultSplash():Bool; //If this note shouldn't play the default note splash.
+    function tweenHealthGive():Bool; //If when you get health from this note it should be tweened.
     function giveHealth():Float; //How much health is given to the player when this note is hit.
+    function missNoteDamage():Float; //How much damage is given to the player when this note is missed.
     function getWobblePower():Int; //How much wobble effect should this note have.
 }
 
@@ -114,8 +116,16 @@ class CustomNoteTemplate implements ICustomNote {
         return false;
     }
 
+    public function tweenHealthGive():Bool {
+        return false;
+    }
+
     public function giveHealth():Float {
         return 0;
+    }
+
+    public function missNoteDamage():Float {
+        return 0.069;
     }
 
     public function getWobblePower():Int {

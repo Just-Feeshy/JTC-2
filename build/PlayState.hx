@@ -2046,7 +2046,7 @@ class PlayState extends MusicBeatState
 									if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note")
 										setHealth(health - 2);
 									else
-										setHealth(health - 0.069);
+										setHealth(daNote.missDamage());
 
 									vocals.volume = 0;
 								}
@@ -2511,7 +2511,6 @@ class PlayState extends MusicBeatState
 				playerStrums.forEach(function(spr:Strum) {
 					if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
 						if(controlArray[spr.noteData]) {
-							trace("lmao");
 							spr.playAnim('pressed');
 						}
 					}

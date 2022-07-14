@@ -72,9 +72,9 @@ class ReverseNote extends CustomNoteTemplate {
         }
 
         if(angle > 90) {
-            return 180 - angle;
+            return value + (180 - angle);
         }else {
-            return angle;
+            return value + angle;
         }
     }
 
@@ -84,6 +84,10 @@ class ReverseNote extends CustomNoteTemplate {
         }
 
         return strums[oppositeID].x;
+    }
+
+    override function missNoteDamage():Float {
+        return 0.14;
     }
 
     override function noDefaultSplash():Bool {

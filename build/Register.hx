@@ -80,6 +80,7 @@ class Register {
         addCustomTransition("void", VoidTransition);
 
         implementCustomNote("reverse", ReverseNote);
+        implementCustomNote("poison", PoisonNote);
     }
 
     @:access(HelperStates)
