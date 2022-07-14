@@ -852,180 +852,6 @@ class PlayState extends MusicBeatState
 		trippyFog.cameras = [camNOTE];
 	}
 
-	public function triggerScene(note:Note) {
-		if(CustomNoteHandler.triggerWarning[note.noteAbstract] == null || (curStage == "school" || curStage == "schoolEvil"))
-			return;
-
-		if(triggerGroup == null) {
-			triggerGroup = new FlxTypedGroup<FlxSprite>();
-			triggerGroup.cameras = [camSCENERY];
-			add(triggerGroup);
-		}
-
-		if(triggerGroup.members[0] == null) {
-			switch(note.noteAbstract) {
-				case "reverse":
-					var noteBITCH:FlxSprite = new FlxSprite().loadGraphic(Paths.image('reverseScene'));
-					noteBITCH.setGraphicSize(Std.int(noteBITCH.width/1.75));
-					noteBITCH.updateHitbox();
-					noteBITCH.cameras = [camSCENERY];
-					noteBITCH.antialiasing = true;
-					noteBITCH.alpha = 0;
-					noteBITCH.screenCenter();
-					triggerGroup.add(noteBITCH);
-
-					var noteRings:FeeshSprite = new FeeshSprite(0, 0, "rings");
-					noteRings.cameras = [camSCENERY];
-					noteRings.antialiasing = true;
-					noteRings.alpha = 0;
-					noteRings.screenCenter();
-					triggerGroup.add(noteRings);
-
-					FlxTween.tween(camSCENERY, {zoom: 1.5}, 0.85, {ease: FlxEase.quadOut});
-					FlxTween.tween(noteBITCH, {alpha: 0.5}, 0.75, {ease: FlxEase.quadOut});
-					FlxTween.tween(noteRings, {alpha: 0.5}, 0.75, {ease: FlxEase.quadOut});
-
-					CustomNoteHandler.triggerWarning[note.noteAbstract] = true;
-					
-					new FlxTimer().start(0.75, function(tick:FlxTimer) {
-						FlxTween.tween(noteBITCH, {alpha: 0}, 0.1, {ease: FlxEase.quadOut});
-						FlxTween.tween(noteRings, {alpha: 0}, 0.1, {ease: FlxEase.quadOut});
-
-						new FlxTimer().start(0.1, function(tick:FlxTimer) {
-							camSCENERY.zoom = 1;
-							triggerGroup.clear();
-
-							noteBITCH.kill();
-							noteBITCH.destroy();
-
-							noteRings.kill();
-							noteRings.destroy();
-						});
-					});
-				case "reverse poison":
-					var noteBITCH:FlxSprite = new FlxSprite().loadGraphic(Paths.image('skullpog'));
-					noteBITCH.setGraphicSize(Std.int(noteBITCH.width/3));
-					noteBITCH.updateHitbox();
-					noteBITCH.cameras = [camSCENERY];
-					noteBITCH.antialiasing = true;
-					noteBITCH.alpha = 0.75;
-					noteBITCH.screenCenter();
-					triggerGroup.add(noteBITCH);
-
-					var noteRings:FeeshSprite = new FeeshSprite(0, 0, "rings", true);
-					noteRings.cameras = [camSCENERY];
-					noteRings.antialiasing = true;
-					noteRings.alpha = 0.75;
-					noteRings.screenCenter();
-					triggerGroup.add(noteRings);
-
-					FlxTween.tween(camSCENERY, {zoom: 2}, 1.1, {ease: FlxEase.quadOut});
-					FlxTween.tween(noteBITCH, {alpha: 0}, 1, {ease: FlxEase.quadOut});
-					FlxTween.tween(noteRings, {alpha: 0}, 1, {ease: FlxEase.quadOut});
-
-					FlxG.sound.play(Paths.sound('poison'));
-					CustomNoteHandler.triggerWarning[note.noteAbstract] = true;
-
-					new FlxTimer().start(1.1, function(tick:FlxTimer) {
-						camSCENERY.zoom = 1;
-						triggerGroup.clear();
-
-						noteBITCH.kill();
-						noteBITCH.destroy();
-
-						noteRings.kill();
-						noteRings.destroy();
-					});				
-				case "poison":
-					var noteBITCH:FlxSprite = new FlxSprite().loadGraphic(Paths.image('skull'));
-					noteBITCH.setGraphicSize(Std.int(noteBITCH.width/1.75));
-					noteBITCH.updateHitbox();
-					noteBITCH.cameras = [camSCENERY];
-					noteBITCH.antialiasing = true;
-					noteBITCH.alpha = 0;
-					noteBITCH.screenCenter();
-					triggerGroup.add(noteBITCH);
-
-					FlxTween.tween(camSCENERY, {zoom: 1.5}, 0.85, {ease: FlxEase.quadOut});
-					FlxTween.tween(noteBITCH, {alpha: 0.5}, 0.75, {ease: FlxEase.quadOut});
-
-					FlxG.sound.play(Paths.sound('poison'));
-					CustomNoteHandler.triggerWarning[note.noteAbstract] = true;
-					
-					new FlxTimer().start(0.75, function(tick:FlxTimer) {
-						FlxTween.tween(noteBITCH, {alpha: 0}, 0.1, {ease: FlxEase.quadOut});
-
-						new FlxTimer().start(0.1, function(tick:FlxTimer) {
-							camSCENERY.zoom = 1;
-							triggerGroup.clear();
-
-							noteBITCH.kill();
-							noteBITCH.destroy();
-						});
-					});
-				case "spiritual star":
-					CustomNoteHandler.triggerWarning[note.noteAbstract] = true;
-
-					var dedBF:Character = new Character(0, 0, 'bf');
-					dedBF.cameras = [camSCENERY];
-					dedBF.antialiasing = true;
-					dedBF.alpha = 0;
-					dedBF.flipX = true;
-					dedBF.screenCenter();
-					triggerGroup.add(dedBF);
-
-					FlxTween.tween(camSCENERY, {zoom: 1.5}, 0.85, {ease: FlxEase.quadOut});
-					FlxTween.tween(dedBF, {alpha: 0.25}, 0.75, {ease: FlxEase.quadOut});
-
-					dedBF.playAnim('firstDeath');
-
-					new FlxTimer().start(0.75, function(tick:FlxTimer) {
-						FlxTween.tween(dedBF, {alpha: 0}, 0.1, {ease: FlxEase.quadOut});
-
-						new FlxTimer().start(0.1, function(tick:FlxTimer) {
-							camSCENERY.zoom = 1;
-							triggerGroup.clear();
-
-							dedBF.kill();
-							dedBF.destroy();
-						});
-					});
-				case "side note":
-					var blackBox:FlxSprite = new FlxSprite().makeGraphic(FlxG.width * 3, FlxG.height * 3, FlxColor.BLACK);
-					blackBox.screenCenter();
-					blackBox.scrollFactor.set();
-					blackBox.alpha = 0;
-					triggerGroup.add(blackBox);
-
-					CustomNoteHandler.yourNoteData[note.noteAbstract] = new FlxSprite().loadGraphic(Paths.image('warningScene'));
-					CustomNoteHandler.yourNoteData[note.noteAbstract].scrollFactor.set();
-					CustomNoteHandler.yourNoteData[note.noteAbstract].alpha = 0.25;
-					CustomNoteHandler.yourNoteData[note.noteAbstract].screenCenter();
-					triggerGroup.add(CustomNoteHandler.yourNoteData[note.noteAbstract]);
-					
-					FlxTween.tween(blackBox, {alpha: 1}, 0.1, {ease: FlxEase.quadOut});
-					CustomNoteHandler.triggerWarning[note.noteAbstract] = true;
-
-					FlxFlicker.flicker(CustomNoteHandler.yourNoteData[note.noteAbstract], 0.75, Conductor.stepCrochet/1000, false, false, function(flick:FlxFlicker) {
-						FlxTween.tween(blackBox, {alpha: 0}, 0.1, {ease: FlxEase.quadIn});
-
-						new FlxTimer().start(0.1, function(tick:FlxTimer) {
-							triggerGroup.clear();
-
-							blackBox.kill();
-							blackBox.destroy();
-
-							CustomNoteHandler.yourNoteData[note.noteAbstract].kill();
-							CustomNoteHandler.yourNoteData[note.noteAbstract].destroy();
-							CustomNoteHandler.yourNoteData[note.noteAbstract] = null;
-						});
-					});
-				//default:
-					
-			}
-		}
-	}
-
 	var startTimer:FlxTimer;
 	var perfectMode:Bool = false;
 
@@ -2041,9 +1867,6 @@ class PlayState extends MusicBeatState
 					}
 					else
 					{
-						if(!CustomNoteHandler.triggerWarning[daNote.noteAbstract] && CustomNoteHandler.triggerWarning[daNote.noteAbstract] != null)
-							triggerScene(daNote);
-	
 						if(daNote.noteAbstract == "trippy" && trippyShader == null) {
 							trippyWiggle.effectType = WiggleEffectType.DREAMY;
 		                    trippyWiggle.waveSpeed = 1;
@@ -2160,6 +1983,13 @@ class PlayState extends MusicBeatState
 					//Nothing planned for now.
 					daNote.xAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
 					daNote.yAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
+
+					if (daNote.isSustainNote) {
+						if(daNote.prevNote.isSustainNote)
+							daNote.setXaxisSustain(playerStrums.members, daNote.prevNote.getInverseAxis(daNote.prevNote.distanceAxis));
+						else
+							daNote.setXaxisSustain(playerStrums.members, daNote.getInverseAxis(daNote.distanceAxis) + (daNote.prevNote.width / 3));
+					}
 				}
 				else {
 					daNote.setVisibility(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
@@ -2170,13 +2000,13 @@ class PlayState extends MusicBeatState
 					//Nothing planned for now.
 					daNote.xAngle = opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
 					daNote.yAngle = opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
-				}
 
-				if (daNote.isSustainNote) {
-					if(daNote.prevNote.isSustainNote)
-						daNote.setInverseAxis(daNote.distanceAxis, daNote.prevNote.getInverseAxis(daNote.prevNote.distanceAxis));
-					else
-						daNote.setInverseAxis(daNote.distanceAxis, daNote.getInverseAxis(daNote.distanceAxis) + (daNote.prevNote.width / 3));
+					if (daNote.isSustainNote) {
+						if(daNote.prevNote.isSustainNote)
+							daNote.setXaxisSustain(opponentStrums.members, daNote.prevNote.getInverseAxis(daNote.prevNote.distanceAxis));
+						else
+							daNote.setXaxisSustain(opponentStrums.members, daNote.getInverseAxis(daNote.distanceAxis) + (daNote.prevNote.width / 3));
+					}
 				}
 
 				if(modifierCheckList('note woggle') && Main.feeshmoraModifiers) {
@@ -2219,7 +2049,7 @@ class PlayState extends MusicBeatState
 										setHealth(health - 0.069);
 
 									vocals.volume = 0;
-								}	
+								}
 			
 								if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
 									if(daNote.tooLate || !daNote.wasGoodHit) {

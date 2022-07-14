@@ -11,12 +11,13 @@ interface ICustomNote {
     function createSplashSprite(splash:SplashSprite, strumNote:Strum, rating:String):Void; //Create a custom splash effect for this note when it is hit.
     function whenIsFirstRendered(note:Note, totalNotesInSection:Int):Void; //When the note is first rendered in game.
     function whenIsSpawned(note:Note):Void; //What happens when this note is spawned in the game.
-    function whenTiggerSceneActived():Void; //When this note first appears in game.
-    function trailUpdate(note:Note):Void; //Give these notes bonus sprites some coded animation.
+    function trailUpdate(trail:FlxTypedGroup<FlxSprite>):Void; //Update trail attaced to this note. @param trail could be null.
     function noteUpdate(note:Note):Void; //Update this note in game.
+    function makeLongNoteLong():Bool; //Make the long of this note long in size.
     function setNoteAlpha(note:Note, alpha:Float):Float; //Set custom alpha value for this note.
     function setNoteAngle(note:Note, angle:Float):Float; //Set custom angle value for this note.
-    function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float; //Set custom x value for this note.
+    function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float; //Set custom x value for this regular note.
+    function setSustainXPosition(note:Note, strums:Array<Strum>, x:Float):Float; //Set custom x value for this long note.
     function setVisibility(note:Note, staticArrowVisible:Bool):Bool; //Set this note visible.
     function getTrailGroup():FlxTypedGroup<FlxSprite>; //Add a custom trail to this note.
     function hasOppositeScroll():Bool; //If this note goes on the scroll intended to be in.
@@ -57,11 +58,7 @@ class CustomNoteTemplate implements ICustomNote {
         return;
     }
 
-    public function whenTiggerSceneActived():Void {
-        return;
-    }
-
-    public function trailUpdate(note:Note):Void {
+    public function trailUpdate(trail:FlxTypedGroup<FlxSprite>):Void {
         return;
     }
 
@@ -69,8 +66,8 @@ class CustomNoteTemplate implements ICustomNote {
         return;
     }
 
-    public function allowRatingUssage():Bool { //
-        return false;
+    public function makeLongNoteLong():Bool {
+        return true;
     }
 
     public function setNoteAlpha(note:Note, alpha:Float):Float {
@@ -82,6 +79,10 @@ class CustomNoteTemplate implements ICustomNote {
     }
 
     public function setXPosition(note:Note, strums:Array<Strum>, x:Float) {
+        return x;
+    }
+
+    public function setSustainXPosition(note:Note, strums:Array<Strum>, x:Float) {
         return x;
     }
 

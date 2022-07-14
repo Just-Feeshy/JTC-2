@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.FlxState;
 import flixel.addons.ui.FlxUIState;
+import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.util.FlxColor;
@@ -110,8 +111,8 @@ class HelperStates extends FlxUIState {
     function clearStuff():Void {
 		if(!isOfType(this, PlayState)) {
 			if(PlayState.camNOTE != null) {
-				PlayState.camHUD = null;
-				PlayState.camNOTE = null;
+				PlayState.camHUD = FlxDestroyUtil.destroy(PlayState.camHUD);
+				PlayState.camNOTE = FlxDestroyUtil.destroy(PlayState.camNOTE);
 			}
 
 			PlayState.modStorage = [];

@@ -126,8 +126,6 @@ class Note extends EditorSprite
 			}
 
 			switch(noteType) {
-				case "poison" | "reverse poison":
-					ignore = true;
 				default:
 					ignore = false;
 
@@ -286,8 +284,6 @@ class Note extends EditorSprite
 							trailSpirit.updateHitbox();
 							trailSpirit.alpha = 0.5;
 							trailSpirit.angle = angle;
-							trailSpirit.cameras = [PlayState.camNOTE];
-							//trailSpirit.setColorTransform(1,1,1,1.5,0,0,0,0);
 
 							trail.add(trailSpirit);
 						}
@@ -369,9 +365,6 @@ class Note extends EditorSprite
 				}
 	
 				updateHitbox();
-
-				if(noteAbstract != "poison" && prevNote.noteAbstract != "reverse poison")
-					x -= width;
 	
 				if (PlayState.curStage.startsWith('school'))
 					x += 30;
@@ -411,11 +404,12 @@ class Note extends EditorSprite
 						}
 					}
 	
-					if(prevNote.noteAbstract != "poison" && prevNote.noteAbstract != "reverse poison")
+					if(hasCustomAddon != null) {
+						if(hasCustomAddon.makeLongNoteLong())
+							prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
+					}else {
 						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
-
-					if(prevNote.noteAbstract == "poison" || prevNote.noteAbstract == "reverse poison")
-						prevNote.setGraphicSize(Std.int(prevNote.width*1.5));
+					}
 
 					prevNote.updateHitbox();
 					// prevNote.setGraphicSize();
@@ -516,7 +510,7 @@ class Note extends EditorSprite
 			if(hasCustomAddon != null) {
 				hasCustomAddon.pressedByPlayer(this, boyfriend, dad, girlfriend);
 			}else {
-				if(noteAbstract == "poison" || noteAbstract == "reverse poison") {
+				if(noteAbstract == "reverse poison") {
 					boyfriend.playAnim('poisoned', true);
 					girlfriend.playAnim('scared', true);
 				}else if(noteAbstract == "spiritual star") {
@@ -591,6 +585,13 @@ class Note extends EditorSprite
 				visible = hasCustomAddon.setVisibility(this, visibility);
 			else
 				visible = visibility;
+		}
+
+		public function setXaxisSustain(strums:Array<Strum>, alreadyX:Float) {
+			if(hasCustomAddon != null)
+				setInverseAxis(distanceAxis, hasCustomAddon.setSustainXPosition(this, strums, alreadyX));
+			else
+				setInverseAxis(distanceAxis, alreadyX);
 		}
 
 		public function setXaxis(strums:Array<Strum>, alreadyX:Float) {
@@ -739,7 +740,7 @@ class Note extends EditorSprite
 				}
 
 				if(hasCustomAddon != null && ifPlayState)
-					hasCustomAddon.trailUpdate(this);
+					hasCustomAddon.trailUpdate(trail);
 			}
 
 			if(noteAbstract == "cherry") {

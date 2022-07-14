@@ -8,7 +8,6 @@ import template.CustomNote;
 class CustomNoteHandler {
     private static var funni:Bool = false;
 
-    public static var triggerWarning:Map<String, Bool>;
     public static var yourNoteData:Map<String, Dynamic>;
 
     public static final dontHitNotes:Array<String> = ['poison', 'spiritual star', 'trippy', 'reverse poison', 'planet notes'];
@@ -22,16 +21,8 @@ class CustomNoteHandler {
     private static var customNoteAddon:Map<String, Class<ICustomNote>> = new Map<String, Class<ICustomNote>>();
 
     static public function spawn() {
-        triggerWarning = [
-            "reverse" => false,
-            "spiritual star" => false,
-            "poison" => false,
-            "reverse poison" => false,
-            "side note" => false,
-            "ocean" => false
-        ];
 
-        //Your custom static note data
+        //custom static note data
         yourNoteData = [
             "trippy" => 0,
             "side note" => null

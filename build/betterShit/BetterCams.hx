@@ -90,10 +90,14 @@ class BetterCams extends FlxCamera {
     override public function destroy():Void {
         super.destroy();
 
-        lockedFilters.splice(0, lockedFilters.length);
+        if(lockedFilters != null)
+            lockedFilters.splice(0, lockedFilters.length);
+
         lockedFilters = null;
 
-        wastefulFilters.splice(0, wastefulFilters.length);
+        if(wastefulFilters != null)
+            wastefulFilters.splice(0, wastefulFilters.length);
+
         wastefulFilters = null;
     }
 

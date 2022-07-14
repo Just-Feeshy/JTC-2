@@ -2,7 +2,32 @@ package example_code;
 
 import template.CustomNote;
 
+import flixel.FlxG;
 import flixel.math.FlxMath;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
+
+/**
+* A tad bit simpler to understand compared to the others.
+*/
+class PoisonNote extends CustomNoteTemplate {
+    override function whenIsSpawned(note:Note):Void {
+        if(note.prevNote != null) {
+            if(note.prevNote.isSustainNote) {
+                note.prevNote.setGraphicSize(Std.int(note.prevNote.width * FlxG.random.float(0.75, 1.5)));
+                note.prevNote.updateHitbox();
+            }
+        }
+    }
+
+    override function shouldBeIgnored():Bool {
+        return true;
+    }
+
+    override function makeLongNoteLong():Bool {
+        return false;
+    }
+}
 
 /**
 * A tad bit more difficult to understand compared to the others.
@@ -18,7 +43,7 @@ class ReverseNote extends CustomNoteTemplate {
 
     override function whenNoteIsHit(strumNote:Strum):Bool {
         @:privateAccess
-        if(!strumNote.animation._animations.exists("reverse confirm")) {
+        if(!strumNote.animation._animations.exists("confirm reverse")) {
             strumNote.animation.destroyAnimations();
             strumNote.twoInOneFrames(Paths.getSparrowAtlas('NOTE_assets', null, true), Paths.getSparrowAtlas('notes/reverse/CONFIRM_assets'));
             strumNote.animation.addByPrefix("confirm reverse", strumNote.direction + " confirm reverse", 24, false);
