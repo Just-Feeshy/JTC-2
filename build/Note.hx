@@ -604,6 +604,16 @@ class Note extends EditorSprite
 
 		public function splash(splashThing:SplashSprite, strumNote:Strum, rating:String):Void {
 			if(hasCustomAddon != null) {
+				if(!hasCustomAddon.noDefaultSplash()) {
+					if((rating == "sick" || rating == "good") && splashThing != null) {
+						if(!isSustainNote && SaveData.getData(SaveType.SHOW_NOTE_SPLASH)) {
+							splashThing.texture = "regular/splash";
+							splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
+							splashThing.animation.play('sploosh' + strumNote.ID);
+						}
+					}
+				}
+
 				hasCustomAddon.createSplashSprite(splashThing, strumNote, rating);
 			}else {
 				switch(noteAbstract) {

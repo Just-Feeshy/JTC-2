@@ -38,6 +38,8 @@ class SplashSprite extends FlxSprite {
             animation.addByPrefix('sploosh2', 'up splash', 24, false);
             animation.addByPrefix('sploosh3', 'right splash', 24, false);
         }
+
+        animation.addByPrefix('reverse sploosh', 'reverse splash', 24, false);
     }
 
     function set_texture(value:String):String {

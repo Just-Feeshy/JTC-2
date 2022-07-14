@@ -31,9 +31,15 @@ class ReverseNote extends CustomNoteTemplate {
         return false;
     }
 
+    override function createSplashSprite(splash:SplashSprite, strumNote:Strum, rating:String) {
+        splash.texture = "regular/splash";
+        splash.setPosition(strumNote.x-(splash.width/3), strumNote.y-(splash.height/3));
+        splash.animation.play('reverse sploosh');
+    }
+
     override function setNoteAngle(note:Note, value:Float):Float {
-        if(note.getNoteStrumPosition(75) < 1) {
-            angle = FlxMath.lerp(180, 0, note.getNoteStrumPosition(75));
+        if(note.getNoteStrumPosition(100) < 1) {
+            angle = FlxMath.lerp(180, 0, note.getNoteStrumPosition(100));
 
             if(angle > 90 && note.animation.curAnim.name == Note.getColorFacing(oppositeID) + "Scroll") {
                 note.playAnim(Note.getColorFacing(note.noteData) + "Scroll");
@@ -48,11 +54,15 @@ class ReverseNote extends CustomNoteTemplate {
     }
 
     override function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float {
-        if(note.getNoteStrumPosition(75) < 1) {
-            return FlxMath.lerp(x, strums[oppositeID].x, note.getNoteStrumPosition(75));
+        if(note.getNoteStrumPosition(100) < 1) {
+            return FlxMath.lerp(x, strums[oppositeID].x, note.getNoteStrumPosition(100));
         }
 
         return strums[oppositeID].x;
+    }
+
+    override function noDefaultSplash():Bool {
+        return true;
     }
 
     override function cantHaveHold():Bool {
