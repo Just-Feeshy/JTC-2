@@ -1,17 +1,19 @@
 package;
 
 import flixel.FlxSprite;
-import flixel.animation.FlxAnimationController;
 
+/**
+* To simple to be an `EditorSprite`
+*/
 class SplashSprite extends FlxSprite {
-    public var texture(default, set):String = "";
-
-    public var buildAnim:Void->Void;
+    @:allow(Note)
+    @:allow(PlayState)
+    private var texture(default, set):String = "";
 
     private var prevTexture:String = "";
 
     public function new() {
-        super(0, 0);
+        super();
     }
 
     public function loadAnims(txtr:String):Void {
@@ -21,8 +23,9 @@ class SplashSprite extends FlxSprite {
         setGraphicSize(Std.int(Note.swagWidth*4));
 		updateHitbox();
 
-        if(txtr == "regular/splash")
+        if(txtr == "regular/splash") {
             defaultStrumAnim();
+        }
     }
 
     function defaultStrumAnim():Void {

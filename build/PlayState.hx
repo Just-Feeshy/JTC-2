@@ -33,7 +33,7 @@ import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
-import flixel.ui.FlxBar;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxCollision;
 import flixel.util.FlxColor;
 import flixel.util.FlxSort;
@@ -48,6 +48,7 @@ import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.group.FeshEventGroup;
 import feshixl.interfaces.IDialogue;
+import feshixl.ui.FeshBar;
 import openfl.Lib;
 
 import example_code.DefaultStage;
@@ -83,6 +84,8 @@ class PlayState extends MusicBeatState
 	public var camPos:FlxPoint;
 	public var flipWiggle:Int = 1;
 	public var health:Float = 1;
+
+	private var prevHealth:Float = 0;
 
 	public var opponentAltAnim:String = "";
 	public var playerAltAnim:String = "";
@@ -168,7 +171,7 @@ class PlayState extends MusicBeatState
 	private var combo:Int = 0;
 
 	private var healthBarBG:FlxSprite;
-	private var healthBar:FlxBar;
+	private var healthBar:FeshBar;
 
 	private var generatedMusic:Bool = false;
 	private var startingSong:Bool = false;
@@ -177,6 +180,9 @@ class PlayState extends MusicBeatState
 	private var iconP2:HealthIcon;
 
 	public var camGame:BetterCams;
+
+	var playerIconColor:FlxColor;
+	var opponentIconColor:FlxColor;
 
 	var halloweenBG:FlxSprite;
 	var isHalloween:Bool = false;
@@ -517,11 +523,13 @@ class PlayState extends MusicBeatState
 
 		iconP2 = new HealthIcon(SONG.player2, false);
 
-		healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+		healthBar = new FeshBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
 			'health', 0, 2);
 		healthBar.scrollFactor.set();
 
-		healthBar.createFilledBar(CoolUtil.calculateAverageColor(iconP2.updateFramePixels()), CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
+		playerIconColor = CoolUtil.calculateAverageColor(iconP1.updateFramePixels());
+		opponentIconColor = CoolUtil.calculateAverageColor(iconP2.updateFramePixels());
+		healthBar.createFilledBar(opponentIconColor, playerIconColor);
 
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
@@ -805,11 +813,19 @@ class PlayState extends MusicBeatState
 		startCountdown();
 	}
 
-	function setHealth(hp:Float) {
-		final tempHealth:Float = health;
+	function setHealth(hp:Float, shouldTween:Bool = true) {
+		if(healthTween != null) {
+			healthTween.cancel();
+			healthTween.destroy();
 
-		if(Math.abs(health - tempHealth) > 0.01) {
-			healthTween = FlxTween.tween(this, {health: hp}, Math.abs(health - tempHealth), {ease: FlxEase.quadOut});
+			health = prevHealth;
+		}
+
+		final tempHealth:Float = health;
+		prevHealth = hp;
+
+		if(Math.abs(hp - tempHealth) > 0.02) {
+			healthTween = FlxTween.tween(this, {health: hp}, Math.abs(hp - tempHealth) * 2, {ease: FlxEase.quadOut});
 		}else {
 			health = hp;
 		}
@@ -1038,6 +1054,8 @@ class PlayState extends MusicBeatState
 
 	private function generateSong(dataPath:String):Void
 	{
+		var loadedSplashAnimations:Array<String> = [];
+
 		// FlxG.log.add(ChartParser.parse());
 		var keys:Int = 4;
 
@@ -1067,6 +1085,19 @@ class PlayState extends MusicBeatState
 
 		if(SONG.fifthKey)
 			keys = 5;
+
+		for (i in 0...keys) {
+			var splashSprite:SplashSprite = new SplashSprite();
+
+			if(SaveData.getData(SaveType.SHOW_NOTE_SPLASH) ) {
+				splashSprite.texture = "regular/splash";
+				splashSprite.animation.play('sploosh0');
+				splashSprite.animation.curAnim.curFrame = splashSprite.animation.curAnim.numFrames;
+				grpSplash.add(splashSprite);
+
+				loadedSplashAnimations.push(splashSprite.texture);
+			}
+		}
 
 		for (section in noteData)
 		{
@@ -1105,6 +1136,18 @@ class PlayState extends MusicBeatState
 				swagNote.refresh(SONG.fifthKey);
 				swagNote.refresh(SONG.fifthKey, true);
 
+				for (i in 0...keys) {
+					var splashSprite:SplashSprite = new SplashSprite();
+		
+					if(swagNote.hasCustomAddon != null && !loadedSplashAnimations.contains(swagNote.hasCustomAddon.getSplashTexture())) {
+						splashSprite.texture = swagNote.hasCustomAddon.getSplashTexture();
+						swagNote.hasCustomAddon.createSplashSprite(splashSprite, FlxRect.get(), "sick");
+						loadedSplashAnimations.push(splashSprite.texture);
+
+						Cache.cacheAsset("notes/" + swagNote.hasCustomAddon.getSplashTexture(), "");
+					}
+				}
+
 				if(daNoteAbstract != null && !Compile.tempNoteAbstracts.contains(daNoteAbstract))
 					Compile.tempNoteAbstracts.push(daNoteAbstract);
 				
@@ -1112,9 +1155,6 @@ class PlayState extends MusicBeatState
 					swagNote.howSpeed = songNotes[4];
 
 				swagNote.setupPosition = Compile.compilePosition(daStrumTime);
-
-				if(swagNote.noteAbstract == "reverse poison" && gottaHitNote)
-					swagNote.noteData = Std.int(Math.abs(swagNote.noteData-(keys-1)));
 
 				var susLength:Float = swagNote.sustainLength;
 
@@ -1146,9 +1186,6 @@ class PlayState extends MusicBeatState
 					else
 						sustainNote.destroy();
 
-					if(sustainNote.noteAbstract == "reverse poison" && gottaHitNote)
-						sustainNote.noteData = Std.int(Math.abs(sustainNote.noteData-(keys-1)));
-
 					sustainNote.mustPress = gottaHitNote;
 
 					if (sustainNote.mustPress)
@@ -1172,6 +1209,7 @@ class PlayState extends MusicBeatState
 
 		unspawnNotes.sort(sortByShit);
 		totalNotesLoaded = unspawnNotes.length;
+		loadedSplashAnimations = [];
 		generatedMusic = true;
 	}
 
@@ -1190,7 +1228,6 @@ class PlayState extends MusicBeatState
 
 		for (i in 0...keys)
 		{
-			var splashSprite:SplashSprite = new SplashSprite();
 			var babyArrow:Strum;
 
 			if(SONG.fifthKey)
@@ -1318,13 +1355,6 @@ class PlayState extends MusicBeatState
 			babyArrow.x += 50;
 			babyArrow.x += ((FlxG.width / 2) * player);
 
-			if(FlxG.save.data.showEffect && player == 1) {
-				splashSprite.texture = "regular/splash";
-				splashSprite.animation.play('sploosh0');
-				splashSprite.animation.curAnim.curFrame = splashSprite.animation.curAnim.numFrames;
-				grpSplash.add(splashSprite);
-			}
-
 			strumLineNotes.add(babyArrow);
 
 			Compile.strumSize.push([babyArrow.scale.x, babyArrow.scale.y]);
@@ -1437,13 +1467,25 @@ class PlayState extends MusicBeatState
 	}
 
 	function longConditionForNote(daNote:Note, center:Float):Bool {
-		if(daNote.downscrollNote) {
-			if(daNote.y - daNote.offset.y * daNote.scale.y + daNote.height >= center) {
-				return true;
-			}
+		if(daNote.distanceAxis == X) {
+			if(daNote.downscrollNote) {
+				if(daNote.getNoteAxis(daNote.distanceAxis) - daNote.offset.x * daNote.scale.x + daNote.width >= center) {
+					return true;
+				}
+			}else {
+				if (daNote.getNoteAxis(daNote.distanceAxis) + daNote.offset.x * daNote.scale.x <= center) {
+					return true;
+				}
+			}	
 		}else {
-			if (daNote.y + daNote.offset.y * daNote.scale.y <= center) {
-				return true;
+			if(daNote.downscrollNote) {
+				if(daNote.getNoteAxis(daNote.distanceAxis) - daNote.offset.y * daNote.scale.y + daNote.height >= center) {
+					return true;
+				}
+			}else {
+				if (daNote.getNoteAxis(daNote.distanceAxis) + daNote.offset.y * daNote.scale.y <= center) {
+					return true;
+				}
 			}
 		}
 
@@ -1860,44 +1902,35 @@ class PlayState extends MusicBeatState
 			//Nothing here!
 			notes.forEachAlive(function(daNote:Note)
 			{
-				if (daNote.y > FlxG.height)
-					{
-						daNote.active = false;
-						daNote.visible = false;
+				if(!((daNote.y > FlxG.height) || (daNote.x > FlxG.width))) {
+					if(daNote.noteAbstract == "trippy" && trippyShader == null) {
+						trippyWiggle.effectType = WiggleEffectType.DREAMY;
+						trippyWiggle.waveSpeed = 1;
+						trippyWiggle.waveFrequency = Math.PI * 15;
+
+						trippyShader = new ShaderFilter(trippyWiggle.shader);
 					}
-					else
-					{
-						if(daNote.noteAbstract == "trippy" && trippyShader == null) {
-							trippyWiggle.effectType = WiggleEffectType.DREAMY;
-		                    trippyWiggle.waveSpeed = 1;
-							trippyWiggle.waveFrequency = Math.PI * 15;
 
-							trippyShader = new ShaderFilter(trippyWiggle.shader);
-						}
+					switch(daNote.noteAbstract) {
+						case "side note":
+							if(daNote.isSustainNote) {
+								if(camNOTE.camNoteWOBBLE == null) {
+									camNOTE.createNoteCam(daNote.noteAbstract);
 
-						switch(daNote.noteAbstract) {
-							case "side note":
-								if(daNote.isSustainNote) {
-									if(camNOTE.camNoteWOBBLE == null) {
-										camNOTE.createNoteCam(daNote.noteAbstract);
+									FlxG.cameras.remove(camNOTE, false);
+									FlxG.cameras.add(camNOTE);
+									FlxG.cameras.remove(camHUD, false);
+									FlxG.cameras.add(camHUD);
+								}	
 
-										FlxG.cameras.remove(camNOTE, false);
-										FlxG.cameras.add(camNOTE);
-										FlxG.cameras.remove(camHUD, false);
-										FlxG.cameras.add(camHUD);
-									}	
+								daNote.cameras = [camNOTE.camNoteWOBBLE];
 
-									daNote.cameras = [camNOTE.camNoteWOBBLE];
+								if(!daNote.prevNote.isSustainNote)
+									daNote.prevNote.trail.cameras = [camNOTE.camNoteWOBBLE];
+							}
 
-									if(!daNote.prevNote.isSustainNote)
-										daNote.prevNote.trail.cameras = [camNOTE.camNoteWOBBLE];
-								}
-
-						}	
-
-						daNote.visible = true;
-						daNote.active = true;
-					}
+					}	
+				}
 				var strumPos:Float = 0;
 
 				if(daNote.mustPress)
@@ -2034,19 +2067,17 @@ class PlayState extends MusicBeatState
 					{
 						if (daNote.isSustainNote && daNote.wasGoodHit)
 							{
-								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract))
-									setHealth(health + 0.010);
-
 								removeNote(daNote);
 							}
 							else 
 							{
 								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
 	
-									if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note")
+									if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note") {
 										setHealth(health - 2);
-									else
-										setHealth(daNote.missDamage());
+									}else{
+										setHealth(health - daNote.missDamage());
+									}
 
 									vocals.volume = 0;
 								}
@@ -2262,11 +2293,6 @@ class PlayState extends MusicBeatState
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 0.2)
 		{
-			if(!isPixel && FlxG.save.data.showEffect) {
-				grpSplash.members[id].setPosition(playerStrums.members[id].x-(grpSplash.members[id].width/3), playerStrums.members[id].y-(grpSplash.members[id].height/3));
-				grpSplash.members[id].animation.play('sploosh' + id);
-			}
-
 			daRating = 'good';
 			score = 200;
 			totalRatingAcc -= 0.10 * GhostTapping.consequence;
@@ -2504,9 +2530,9 @@ class PlayState extends MusicBeatState
 							break;
 						}
 					}
-				}else {
-					missClicks++;
 				}
+
+				missClicks++;
 
 				playerStrums.forEach(function(spr:Strum) {
 					if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
@@ -2571,19 +2597,11 @@ class PlayState extends MusicBeatState
 		{
 			if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)){
 
-				if(note.noteAbstract == "poison" || note.noteAbstract == "reverse poison") {
-					for(i in 0...150) {
-						new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-							setHealth(health - (0.001));
-						});
-					}
-				}else if(note.noteAbstract == "trippy")	{
+				if(note.noteAbstract == "trippy")	{
 					setHealth(health - 0.3);
 				}else if(note.noteAbstract == "planet notes") {
 					setHealth(health - 0.4);
 				}
-
-				noteMiss(note.noteData, note, true);
 			}
 
 			if (!note.isSustainNote && !CustomNoteHandler.dontHitNotes.contains(note.noteAbstract))
@@ -2592,20 +2610,7 @@ class PlayState extends MusicBeatState
 				combo += 1;
 			}
 
-			if(note.noteAbstract == "regular" || note.noteAbstract == "ghost") {
-
-				if (note.noteData >= 0)
-					setHealth(health + 0.023);
-				else
-					setHealth(health + 0.004);
-			}else if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
-
-				if (note.noteData >= 0)
-					setHealth(health + 0.004);
-			}
-
-			if(note.hasCustomAddon != null)
-				setHealth(health + note.hasCustomAddon.giveHealth());
+			setHealth(health + note.giveHealth());
 
 			if(note.noteAbstract == "spiritual star")
 				setHealth(health - 0.054);
@@ -2723,109 +2728,20 @@ class PlayState extends MusicBeatState
 						spr.ifCustom = note.noteAbstract;
 					else
 						spr.ifCustom = "regular";
-
-					var key:Int = (SONG.fifthKey ? 5 : 4);
-	
-					/**
-					* Old shit made in 2020 while trying to learn how Haxe and HaxeFlixel.
-					*/
-					switch(spr.ifCustom) {
-						case "poison":
-							spr.playAnim('static');
-							spr.setColorTransform(0.5,0,1.5,0.75,0,0,0,0);
-
-							if(FlxG.save.data.showEffect) {
-								grpSplash.members[spr.ID].setPosition(spr.x-(grpSplash.members[spr.ID].width/3), spr.y-(grpSplash.members[spr.ID].height/3));
-								grpSplash.members[spr.ID].animation.play('sploosh' + spr.ID);
-							}	
-
-							new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-								FlxG.sound.play(Paths.sound("poison"));
-
-								new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-									spr.setColorTransform(1,1,1,1,0,0,0,0);
-								});
-							});
-						case "reverse poison":
-							spr.playAnim('static');
-							spr.setColorTransform(0.5,0,1.5,1.5,0,0,0,0);
-
-							var reverse:FlxSprite = new FlxSprite(spr.x-(spr.width/2), spr.y-(spr.width/2)).loadGraphic(Paths.image('reversePoison'));
-							reverse.setGraphicSize(Std.int(spr.width*2));
-							reverse.updateHitbox();
-							reverse.cameras = [camNOTE];
-							reverse.antialiasing = FlxG.save.data.showAntialiasing;
-							reverse.alpha = 1;
-
-							if(FlxG.save.data.showEffect)
-								add(reverse);
-
-							if(FlxG.save.data.showEffect) {
-								FlxTween.tween(reverse, {angle: 270}, 0.6, {ease: FlxEase.quadIn});
-								FlxTween.tween(reverse, {alpha: 0}, 0.5, {ease: FlxEase.sineOut});
-
-								grpSplash.members[spr.ID].setPosition(spr.x-(grpSplash.members[spr.ID].width/3), spr.y-(grpSplash.members[spr.ID].height/3));
-								grpSplash.members[spr.ID].animation.play('sploosh' + spr.ID);
-							}	
-
-							new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-								FlxG.sound.play(Paths.sound("poison"));
-
-								new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-
-									if(FlxG.save.data.showEffect)
-										remove(reverse);
-
-									reverse = null;
-								});
-							});
-						case "spiritual star":
-							spr.playAnim('static');
-							FlxG.sound.play(Paths.sound("spoopyChild"));
-							FlxTween.tween(spr, {onlyFans: 0}, 0.5, {ease: FlxEase.quadIn});
-
-							new FlxTimer().start(5, function(tmr:FlxTimer) {
-								FlxTween.tween(spr, {onlyFans: 1}, 0.5, {ease: FlxEase.quadOut});
-							});
-						case "trippy":
-							spr.playAnim('static');
-
-							var swirl:FlxSprite = new FlxSprite(spr.x-(spr.width/4), spr.y-(spr.width/4));
-							swirl.frames = Paths.getSparrowAtlas('notes/trippy/NOTE_assets');
-							swirl.animation.addByPrefix('spiral', 'swirl');
-							swirl.updateHitbox();
-							swirl.cameras = [camNOTE];
-							swirl.antialiasing = FlxG.save.data.showAntialiasing;
-							swirl.alpha = 0.5;
-							add(swirl);
-
-							swirl.animation.play('spiral');
-
-							FlxTween.tween(swirl, {angle: 270}, 0.3*(Conductor.bpm/120), {ease: FlxEase.quadIn});
-							FlxTween.tween(swirl, {alpha: 0}, 0.25*(Conductor.bpm/120), {ease: FlxEase.sineOut});
-
-							new FlxTimer().start(0.25, function(tmr:FlxTimer) {
-								swirl.kill();
-								remove(swirl);
-								swirl = null;
-							});
-						case "side note":
-							spr.playAnim('static');
-							spr.setColorTransform(1,1,1,1,0,0,0,0);
-					}
 				}
 
 				if (Math.abs(note.noteData) == spr.ID) {
 					note.hit(spr);
-					note.splash(grpSplash.members[spr.ID], spr, daRating);
+
+					if(!isPixel)
+						note.splash(grpSplash.members[spr.ID], spr, daRating);
 				}
 			});
 
-			if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract))
-				return;
-
-			note.wasGoodHit = true;
-			vocals.volume = 1;
+			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
+				note.wasGoodHit = true;
+				vocals.volume = 1;
+			}
 
 			if (!note.isSustainNote)
 			{
@@ -2859,6 +2775,8 @@ class PlayState extends MusicBeatState
 	}
 
 	function removeNote(note:Note) {
+		note.active = false;
+
 		note.kill();
 
 		if(note.trail != null)						
@@ -3017,6 +2935,8 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function destroy() {
+		FlxG.sound.destroy();
+
 		Compile.kill();
 		Cache.clear();
 		

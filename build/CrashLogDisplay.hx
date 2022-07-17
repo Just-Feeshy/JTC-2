@@ -41,8 +41,10 @@ class CrashLogDisplay extends Sprite {
         var window:Window = Lib.current.stage.application.createWindow(attributes);
         window.onClose.add(__closeApplication.bind(window));
 
+        prevWindow.stage.removeChildren(0, prevWindow.stage.numChildren);
+        prevWindow.onClose.add(__closeApplication.bind(prevWindow));
+
         @:privateAccess {
-            Lib.current.stage.application.__windows.shift();
             Lib.current.stage = window.stage;
         }
 

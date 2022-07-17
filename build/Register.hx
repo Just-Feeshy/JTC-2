@@ -81,6 +81,7 @@ class Register {
 
         implementCustomNote("reverse", ReverseNote);
         implementCustomNote("poison", PoisonNote);
+        implementCustomNote("reverse poison", ReversePoisonNote);
     }
 
     @:access(HelperStates)

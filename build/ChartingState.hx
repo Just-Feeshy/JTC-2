@@ -396,6 +396,8 @@ class ChartingState extends MusicBeatState
 
 		add(curRenderedSustains);
 		add(curRenderedNotes);
+
+		updateHeads();
 	}
 
 	function setStage() {

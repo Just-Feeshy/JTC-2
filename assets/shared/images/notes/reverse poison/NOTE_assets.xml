@@ -3,8 +3,16 @@
 	<!-- Created with Adobe Animate version 22.0.3.179 -->
 	<!-- http://www.adobe.com/products/animate.html -->
 	<SubTexture name="blue0000" x="0" y="0" width="157" height="154"/>
+	<SubTexture name="blue hold end0000" x="308" y="175" width="46" height="46"/>
+	<SubTexture name="blue hold piece0000" x="308" y="175" width="46" height="46"/>
 	<SubTexture name="diamond0000" x="157" y="0" width="175" height="175"/>
 	<SubTexture name="green0000" x="332" y="0" width="157" height="154"/>
+	<SubTexture name="green hold end0000" x="308" y="175" width="46" height="46"/>
+	<SubTexture name="green hold piece0000" x="308" y="175" width="46" height="46"/>
+	<SubTexture name="pruple end hold0000" x="308" y="175" width="46" height="46"/>
 	<SubTexture name="purple0000" x="0" y="175" width="154" height="157"/>
+	<SubTexture name="purple hold piece0000" x="308" y="175" width="46" height="46"/>
 	<SubTexture name="red0000" x="154" y="175" width="154" height="157"/>
+	<SubTexture name="red hold end0000" x="308" y="175" width="46" height="46"/>
+	<SubTexture name="red hold piece0000" x="308" y="175" width="46" height="46"/>
 </TextureAtlas>

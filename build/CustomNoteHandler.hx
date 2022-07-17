@@ -10,10 +10,10 @@ class CustomNoteHandler {
 
     public static var yourNoteData:Map<String, Dynamic>;
 
-    public static final dontHitNotes:Array<String> = ['poison', 'spiritual star', 'trippy', 'reverse poison', 'planet notes'];
-    public static final noNoteAbstractStrum:Array<String> = ["poison", "spiritual star", "trippy", "reverse poison", "ocean", "side note" , "planet notes"];
-    public static final ouchyNotes:Array<String> = ['poison', 'trippy', 'reverse poison', 'planet notes'];
-    public static final lowNotesTick:Array<String> = ['poison', 'regular', 'reverse', 'ocean', 'side note'];
+    public static final dontHitNotes:Array<String> = [];
+    public static final noNoteAbstractStrum:Array<String> = [];
+    public static final ouchyNotes:Array<String> = [];
+    public static final lowNotesTick:Array<String> = ['poison', 'regular', 'reverse', 'reverse poison'];
 
     @:allow(Note.getAddon)
     @:allow(Register.implementCustomNote)

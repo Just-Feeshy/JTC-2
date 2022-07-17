@@ -111,6 +111,9 @@ class HelperStates extends FlxUIState {
     function clearStuff():Void {
 		if(!isOfType(this, PlayState)) {
 			if(PlayState.camNOTE != null) {
+				FlxG.cameras.remove(PlayState.camHUD);
+				FlxG.cameras.remove(PlayState.camNOTE);
+
 				PlayState.camHUD = FlxDestroyUtil.destroy(PlayState.camHUD);
 				PlayState.camNOTE = FlxDestroyUtil.destroy(PlayState.camNOTE);
 			}

@@ -28,7 +28,7 @@ import Std.is as isOfType;
 #end
 
 /**
-* This sprite class was made to make creator/editior states easier to configure
+* This sprite class was made to make `FlxSprite` easier to configure
 * which would also allow the user to easily cutomize said sprite for there mod.
 *
 * TODO: Get animations from json too.

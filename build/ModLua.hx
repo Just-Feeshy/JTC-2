@@ -339,11 +339,27 @@ class ModLua {
         }
 
         if(luaSprites != null) {
+            for(k in luaSprites.keys()) {
+                var spr:FlxSprite = luaSprites.get(k);
+
+                if(spr != null) {
+                    spr.destroy();
+                }
+            }
+
             luaSprites.clear();
             luaSprites = null;
         }
 
         if(luaCameras != null) {
+            for(k in luaCameras.keys()) {
+                var cam:FlxCamera = luaCameras.get(k);
+
+                if(cam != null) {
+                    cam.destroy();
+                }
+            }
+
             luaCameras.clear();
             luaCameras = null;
         }

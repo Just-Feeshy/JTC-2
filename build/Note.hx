@@ -6,12 +6,15 @@ import flixel.util.FlxAxes;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFilterFrames;
+import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxTimer;
 import flixel.util.FlxDestroyUtil;
+import flixel.system.FlxSound;
 import betterShit.BetterCams;
 
 #if polymod
@@ -39,6 +42,8 @@ class Note extends EditorSprite
 	public var howSpeed:Float = 0;
 	public var setupPosition:Float = 0;
 
+	public var sound:FlxSound;
+
 	public var strumTime:Float = 0;
 	public var swayTime:Float = 0;
 
@@ -50,6 +55,9 @@ class Note extends EditorSprite
 	public var isEndStrum:Bool = false;
 
 	public var caculatePos:Float = 0;
+
+	public var noteOffset:FlxPoint;
+
 	public var distanceAxis:FlxAxes;
 
 	public var sustainLength:Float = 0;
@@ -70,11 +78,12 @@ class Note extends EditorSprite
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
 
-	private var reverseDebounce:Bool = false;
-
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?noteType:String = "regular",  ?ifcircle:Bool, ?ifPlayState:Bool)
 		{
 			super();
+
+			noteOffset = FlxPoint.get();
+
 			noteAbstract = noteType;
 			howSpeed = PlayState.SONG.speed;
 			hasCustomAddon = getAddon();
@@ -82,38 +91,11 @@ class Note extends EditorSprite
 			distanceAxis = Y;
 
 			switch(noteType) {
-				case "reverse poison":
-					downscrollNote = !FlxG.save.data.helpme;
-					howSpeed += 0.5;
-				case "side note":
-					downscrollNote = FlxG.save.data.helpme;
-					howSpeed += 0.75;
 				default:
 					downscrollNote = FlxG.save.data.helpme;
 			}
 
 			switch(noteType) {
-				case "spiritual star":
-					isSustainNote = false;
-					wasSustainNote = true;
-				case "reverse":
-					isSustainNote = false;
-					wasSustainNote = true;
-				case "ghost":
-					isSustainNote = false;
-					wasSustainNote = true;
-				case "cherry":
-					isSustainNote = false;
-					wasSustainNote = true;
-				case "trippy":
-					isSustainNote = false;
-					wasSustainNote = true;
-				case "planet notes":
-					isSustainNote = false;
-					wasSustainNote = true;
-				case "side note":
-					isSustainNote = false;
-					wasSustainNote = true;
 				default:
 					isSustainNote = sustainNote;
 
@@ -138,8 +120,16 @@ class Note extends EditorSprite
 					downscrollNote = !FlxG.save.data.helpme;
 
 				howSpeed += hasCustomAddon.getIndividualSpeed();
+
+				if(downscrollNote) {
+					noteOffset.x = -hasCustomAddon.getNoteOffsetX(isSustainNote);
+					noteOffset.y = -hasCustomAddon.getNoteOffsetY(isSustainNote);
+				}else {
+					noteOffset.x = hasCustomAddon.getNoteOffsetX(isSustainNote);
+					noteOffset.y = hasCustomAddon.getNoteOffsetY(isSustainNote);
+				}
 			}
-	
+
 			if(CustomNoteHandler.lowNotesTick.contains(noteType))
 				tickDivider = 1.5;
 
@@ -149,8 +139,8 @@ class Note extends EditorSprite
 			x += 50;
 			// MAKE SURE ITS DEFINITELY OFF SCREEN?
 			y -= 2000;
+
 			this.strumTime = strumTime;
-	
 			this.noteData = noteData;
 
 			this.ifPlayState = ifPlayState;
@@ -275,18 +265,6 @@ class Note extends EditorSprite
 
 						if(trail != null)
 							trail.cameras = [PlayState.camNOTE];
-
-						if(noteType == "reverse poison" && !isSustainNote && ifPlayState) {
-							trail = new FlxTypedGroup<FlxSprite>();
-
-							var trailSpirit:FlxSprite = new FlxSprite(this.x-(this.width/2), this.y-(this.width/2)).loadGraphic(Paths.image('reversePoison'));
-							trailSpirit.setGraphicSize(Std.int(this.width*2));
-							trailSpirit.updateHitbox();
-							trailSpirit.alpha = 0.5;
-							trailSpirit.angle = angle;
-
-							trail.add(trailSpirit);
-						}
 					}
 			}
 	
@@ -509,38 +487,35 @@ class Note extends EditorSprite
 		public function pressedByPlayer(boyfriend:Boyfriend, dad:Character, girlfriend:Character):Void {
 			if(hasCustomAddon != null) {
 				hasCustomAddon.pressedByPlayer(this, boyfriend, dad, girlfriend);
-			}else {
-				if(noteAbstract == "reverse poison") {
-					boyfriend.playAnim('poisoned', true);
-					girlfriend.playAnim('scared', true);
-				}else if(noteAbstract == "spiritual star") {
-					boyfriend.playAnim('AHHHHH', true);
-					girlfriend.playAnim('cheer', true);
-				}else if(noteAbstract == "side note") {
-					boyfriend.playAnim('dodge', true);
-				}
 			}
 		}
 
 		public function getInverseAxis(ax:FlxAxes):Float {
 			if(ax == FlxAxes.Y)
-				return x;
+				return x - noteOffset.x;
 			else
-				return y;
+				return y + noteOffset.x;
 		}
 
-		public function setInverseAxis(ax:FlxAxes, value:Float) {
+		public function setInverseAxis(ax:FlxAxes, value:Float):Void {
 			if(ax == FlxAxes.Y)
-				x = value;
+				x = value + noteOffset.x;
 			else
-				y = value;
+				y = value - noteOffset.x;
 		}
 
-		public function setNoteAxis(ax:FlxAxes) {
+		public function getNoteAxis(ax:FlxAxes):Float {
 			if(ax == FlxAxes.Y)
-				y = caculatePos;
+				return caculatePos;
 			else
-				x = caculatePos;
+				return caculatePos;
+		}
+
+		public function setNoteAxis(ax:FlxAxes):Void {
+			if(ax == FlxAxes.Y)
+				y = caculatePos + noteOffset.y;
+			else
+				x = caculatePos - noteOffset.y;
 		}
 
 		//More complicated method
@@ -559,7 +534,7 @@ class Note extends EditorSprite
 			}
 		}
 
-		public function setNoteAngle(value:Float) {
+		public function setNoteAngle(value:Float):Void {
 			if(hasCustomAddon != null) {
 				angle = hasCustomAddon.setNoteAngle(this, value);
 			} else {
@@ -604,27 +579,27 @@ class Note extends EditorSprite
 		}
 
 		public function splash(splashThing:SplashSprite, strumNote:Strum, rating:String):Void {
+			if(!SaveData.getData(SaveType.SHOW_NOTE_SPLASH) && !isSustainNote)
+				return;
+
 			if(hasCustomAddon != null) {
 				if(!hasCustomAddon.noDefaultSplash()) {
 					if((rating == "sick" || rating == "good") && splashThing != null) {
-						if(!isSustainNote && SaveData.getData(SaveType.SHOW_NOTE_SPLASH)) {
-							splashThing.texture = "regular/splash";
-							splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
-							splashThing.animation.play('sploosh' + strumNote.ID);
-						}
+						splashThing.texture = "regular/splash";
+						splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
+						splashThing.animation.play('sploosh' + strumNote.ID);
 					}
 				}
 
-				hasCustomAddon.createSplashSprite(splashThing, strumNote, rating);
+				splashThing.texture = hasCustomAddon.getSplashTexture();
+				hasCustomAddon.createSplashSprite(splashThing, FlxRect.get(strumNote.x, strumNote.y, strumNote.width, strumNote.height), rating);
 			}else {
 				switch(noteAbstract) {
 					default:
 						if((rating == "sick" || rating == "good") && splashThing != null) {
-							if(!isSustainNote && SaveData.getData(SaveType.SHOW_NOTE_SPLASH)) {
-								splashThing.texture = "regular/splash";
-								splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
-								splashThing.animation.play('sploosh' + strumNote.ID);
-							}
+							splashThing.texture = "regular/splash";
+							splashThing.setPosition(strumNote.x-(splashThing.width/3), strumNote.y-(splashThing.height/3));
+							splashThing.animation.play('sploosh' + strumNote.ID);
 						}
 				}
 			}
@@ -632,6 +607,19 @@ class Note extends EditorSprite
 
 		public function hit(strumNote:Strum):Void {
 			if(hasCustomAddon != null) {
+				var soundName:String = hasCustomAddon.playSoundWhenNoteIsHit(mustPress, isSustainNote);
+
+				if(soundName.trim() != "") {
+					if(sound == null)sound = new FlxSound();
+
+					sound.loadEmbedded(Paths.sound(soundName));
+					
+					if(sound.name != soundName && !sound.playing) {
+						FlxG.sound.list.add(sound);
+						sound.play();
+					}
+				}
+
 				if(hasCustomAddon.whenNoteIsHit(strumNote)) {
 					strumNote.setColorTransform(1,1,1,1,0,0,0,0);
 					strumNote.playAnim('confirm', true);
@@ -670,8 +658,12 @@ class Note extends EditorSprite
 				if(customNote.noDefaultSplash() && !CustomNoteHandler.noNoteAbstractStrum.contains(noteAbstract))
 					CustomNoteHandler.noNoteAbstractStrum.push(noteAbstract);
 
-				if(customNote.giveHealth() < 0 && !CustomNoteHandler.ouchyNotes.contains(noteAbstract))
+				if(customNote.giveHealth(isSustainNote) < 0 && !CustomNoteHandler.ouchyNotes.contains(noteAbstract)) {
 					CustomNoteHandler.ouchyNotes.push(noteAbstract);
+
+					if(!CustomNoteHandler.dontHitNotes.contains(noteAbstract))
+						CustomNoteHandler.dontHitNotes.push(noteAbstract);
+				}
 			}
 	
 			return customNote;
@@ -679,22 +671,6 @@ class Note extends EditorSprite
 
 		override function update(elapsed:Float) {
 			super.update(elapsed / tickDivider);
-
-			if(ifPlayState) {
-				if(noteAbstract == "reverse poison" && !reverseDebounce) {
-					if(getNoteStrumPosition(250) == 0) {
-						reverseDebounce = true;
-
-						if(PlayState.SONG.fifthKey)
-							noteData = Std.int(Math.abs(noteData-(5-1)));
-						else
-							noteData = Std.int(Math.abs(noteData-(4-1)));
-
-						refresh(PlayState.SONG.fifthKey);
-						refresh(PlayState.SONG.fifthKey, true);
-					}
-				}
-			}
 
 			if(hasCustomAddon != null)
 				hasCustomAddon.noteUpdate(this);
@@ -730,13 +706,6 @@ class Note extends EditorSprite
 
 					trail.members[0].y = y-(height/4);
 					trail.members[0].x = x-(width/4);
-				}
-
-				if(noteAbstract == "reverse poison") {
-					trail.members[0].angle += 4.5*(Conductor.bpm/120);
-
-					trail.members[0].y = y-(width/2.5);
-					trail.members[0].x = x-(width/2);
 				}
 
 				if(hasCustomAddon != null && ifPlayState)
@@ -794,6 +763,14 @@ class Note extends EditorSprite
 			return null;
 		}
 
+		public function giveHealth():Float {
+			if(hasCustomAddon != null) {
+				return hasCustomAddon.giveHealth(isSustainNote);
+			}else {
+				return 0.023;
+			}
+		}
+
 		public function missDamage():Float {
 			if(hasCustomAddon != null) {
 				return hasCustomAddon.missNoteDamage();
@@ -823,7 +800,7 @@ class Note extends EditorSprite
 			return "";
 		}
 
-		override function destroy() {
+		override function destroy():Void {
 			super.destroy();
 
 			hasCustomAddon = null;
