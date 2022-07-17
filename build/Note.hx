@@ -579,7 +579,7 @@ class Note extends EditorSprite
 		}
 
 		public function splash(splashThing:SplashSprite, strumNote:Strum, rating:String):Void {
-			if(!SaveData.getData(SaveType.SHOW_NOTE_SPLASH) && !isSustainNote)
+			if(!SaveData.getData(SaveType.SHOW_NOTE_SPLASH) || isSustainNote)
 				return;
 
 			if(hasCustomAddon != null) {
