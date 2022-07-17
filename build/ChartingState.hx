@@ -933,6 +933,8 @@ class ChartingState extends MusicBeatState
 	var subLabel:FlxText;
 	var singleNoteSpeed:FlxUINumericStepper;
 	var noteSpeedLabel:FlxText;
+	var noteTagInput:FlxUIInputText;
+	var noteTagText:FlxText;
 	
 	function addNoteUI():Void
 	{
@@ -964,6 +966,8 @@ class ChartingState extends MusicBeatState
 			subDivideDummy.visible = check_extra_stuff.checked;
 			subLabel.visible = check_extra_stuff.checked;
 			singleNoteSpeed.visible = check_extra_stuff.checked;
+			noteTagInput.visible = check_extra_stuff.checked;
+			noteTagText.visible = check_extra_stuff.checked;
 			noteSpeedLabel.visible = check_extra_stuff.checked;
 		};
 
@@ -995,6 +999,12 @@ class ChartingState extends MusicBeatState
 		noteSpeedLabel = new FlxText(subDivideDummy.x + 65,singleNoteSpeed.y,'Note Speed');
 		noteSpeedLabel.visible = false;
 
+		noteTagInput = new FlxUIInputText(noteTypeEffect.x, subDivideDummy.y, 80, "");
+		noteTagInput.visible = false;
+
+		noteTagText = new FlxText(noteTagInput.x, noteTagInput.y - noteTagInput.height - 2, 'Custom Tag');
+		noteTagText.visible = false;
+
 		tab_group_note.add(writingNotesText);
 		tab_group_note.add(stepperSusLength);
 		tab_group_note.add(susLabel);
@@ -1005,6 +1015,8 @@ class ChartingState extends MusicBeatState
 		tab_group_note.add(singleNoteSpeed);
 		tab_group_note.add(noteSpeedLabel);
 		tab_group_note.add(noteTypeEffect);
+		tab_group_note.add(noteTagInput);
+		tab_group_note.add(noteTagText);
 
 		if(noteAddons[0] != null)
 			tab_group_note.add(noteAddonEffect);
@@ -1269,6 +1281,8 @@ class ChartingState extends MusicBeatState
 			subLabel.visible = false;
 			singleNoteSpeed.visible = false;
 			noteSpeedLabel.visible = false;
+			noteTagInput.visible = false;
+			noteTagText.visible = false;
 			stepperSpeed.visible = true;
 			speedLabel.visible = true;
 		}else if(check_extra_stuff.checked && stepperSpeed.visible) {
@@ -1544,6 +1558,8 @@ class ChartingState extends MusicBeatState
 
 		curRenderedNotes.forEachAlive(function(note:Note) {
 			if(note.strumTime <= Conductor.songPosition) {
+				note.color = FlxColor.fromRGB(200, 200, 200, 255);
+
 				if(note.strumTime > lastSongPosition && FlxG.sound.music.playing && note.noteData > -1) {
 					if(playOSU_Sound_RIGHT && Math.ceil(note.x / GRID_SIZE) > Math.ceil(mainGrid/2) - 1) {
 						FlxG.sound.play(Paths.sound('hitChart'), 2);
@@ -1553,6 +1569,8 @@ class ChartingState extends MusicBeatState
 						FlxG.sound.play(Paths.sound('hitChart'), 2);
 					}
 				}
+			}else {
+				note.color = FlxColor.WHITE;
 			}
 		});
 
@@ -1581,6 +1599,7 @@ class ChartingState extends MusicBeatState
 
 		lastSongPosition = Conductor.songPosition;
 		lastMetronomeStep = curStep;
+
 		super.update(elapsed);
 	}
 
@@ -1943,8 +1962,11 @@ class ChartingState extends MusicBeatState
 
 	function updateNoteUI():Void
 	{
-		if (curSelectedNote != null)
+		if (curSelectedNote != null) {
 			stepperSusLength.value = curSelectedNote[2];
+			singleNoteSpeed.value = curSelectedNote[4];
+			noteTagInput.text = curSelectedNote[5];
+		}
 	}
 
 	function updateGrid():Void
@@ -1967,6 +1989,7 @@ class ChartingState extends MusicBeatState
 
 		while (curRenderedNotes.members.length > 0)
 		{
+			remove(curRenderedNotes.members[0].modifiedSymbol);
 			curRenderedNotes.remove(curRenderedNotes.members[0], true);
 		}
 
@@ -2082,6 +2105,7 @@ class ChartingState extends MusicBeatState
 			var daSus = i[2];
 			var daNoteType = i[3];
 			var daSpeed = i[4];
+			var daTag = i[5];
 
 			var note:Note = new Note(daStrumTime, daNoteInfo % Math.floor(mainGrid/2), null, false, daNoteType);
 			note.sustainLength = daSus;
@@ -2089,6 +2113,22 @@ class ChartingState extends MusicBeatState
 			note.updateHitbox();
 			note.x = Math.floor(daNoteInfo * GRID_SIZE);
 			note.y = getYfromNotes((daStrumTime - sectionStartTime(section))) + yOffset;
+			
+			if(daTag != null) {
+				if(StringTools.trim(daTag) != "") {
+					note.tag = daTag;
+				}
+			}
+
+			if(StringTools.trim(note.tag) != "") {
+				note.placeModifierSymbol("T");
+			}
+
+			if(daSpeed > 0) {
+				note.placeModifierSymbol("S");
+			}
+
+			add(note.modifiedSymbol);
 
 			note.refresh(_song.fifthKey);
 
@@ -2208,18 +2248,26 @@ class ChartingState extends MusicBeatState
 
 		var noteStrum = getStrumTime(dummyArrow.y % (gridBG.y + gridBG.height)) + sectionStartTime(curSection + extraSection);
 		var noteData = Math.floor(FlxG.mouse.x / GRID_SIZE);
+		var noteSpeed:Null<Float> = 0;
+		var noteTag:String = null;
 		var noteSus = 0;
-		var noteSpeed = singleNoteSpeed.value;
+			
+		if(check_extra_stuff.checked) {
+			if(singleNoteSpeed.value != stepperSpeed.value)
+				noteSpeed = singleNoteSpeed.value;
+			
+			noteTag = noteTagInput.text;
+		}
 
 		if (n != null) {
 			n.noteAbstract = wtfIsNote;
-			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? mainGrid/2 : 0), n.sustainLength, n.noteAbstract, n.howSpeed]);
+			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? mainGrid/2 : 0), n.sustainLength, n.noteAbstract, n.howSpeed, n.tag]);
 		}
 		else {
 			if(!check_extra_stuff.checked)
 				noteSpeed = 0;
 
-			_song.notes[curSection + extraSection].sectionNotes.push([noteStrum, noteData, noteSus, wtfIsNote, noteSpeed]);
+			_song.notes[curSection + extraSection].sectionNotes.push([noteStrum, noteData, noteSus, wtfIsNote, noteSpeed, noteTag]);
 		}
 
 		curSelectedNote = _song.notes[curSection + extraSection].sectionNotes[_song.notes[curSection + extraSection].sectionNotes.length - 1];

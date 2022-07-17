@@ -81,29 +81,3 @@ class ChooseFeeshmora {
         return parser.fromJson(File.getContent(Paths.mora("skins", "json")), "skins.json").get(switcher).length;
     }
 }
-
-class FeeshSprite extends FlxSprite {
-	public var curAbstract:String = "rings";
-
-	public function new(x:Float, y:Float, ?ab:String = "rings", ?secondSprite:Bool = false) {
-		super(x, y);
-		curAbstract = ab;
-
-        antialiasing = true;
-
-		switch (curAbstract) {
-			case "rings":
-                if(secondSprite)
-                    loadGraphic(Paths.image('reversePoison'));
-                else
-				    loadGraphic(Paths.image('reverse'));
-		}
-	}
-
-	override function update(elapsed:Float) {
-		if(curAbstract == "rings")
-			angle += Conductor.bpm/120;
-
-		super.update(elapsed);
-	}
-}

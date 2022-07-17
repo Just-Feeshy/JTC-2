@@ -1151,8 +1151,11 @@ class PlayState extends MusicBeatState
 				if(daNoteAbstract != null && !Compile.tempNoteAbstracts.contains(daNoteAbstract))
 					Compile.tempNoteAbstracts.push(daNoteAbstract);
 				
-				if(songNotes[4] >= 0.1)
+				if(songNotes[4] > 0)
 					swagNote.howSpeed = songNotes[4];
+
+				if(songNotes[5] != null)
+					swagNote.tag = songNotes[5];
 
 				swagNote.setupPosition = Compile.compilePosition(daStrumTime);
 

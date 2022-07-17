@@ -15,6 +15,7 @@ import flixel.tweens.FlxEase;
 import flixel.util.FlxTimer;
 import flixel.util.FlxDestroyUtil;
 import flixel.system.FlxSound;
+import flixel.text.FlxText;
 import betterShit.BetterCams;
 
 #if polymod
@@ -77,6 +78,13 @@ class Note extends EditorSprite
 
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
+
+	@:allow(ChartingState.addNote)
+	@:allow(ChartingState.setupNotes)
+	@:allow(PlayState.generateSong)
+	public var tag(default, null):String = "";
+
+	public var modifiedSymbol:FlxText;
 
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?noteType:String = "regular",  ?ifcircle:Bool, ?ifPlayState:Bool)
 		{
@@ -234,27 +242,6 @@ class Note extends EditorSprite
 								setupPrefixes();
 						}else {
 							setupPrefixes();
-						}
-
-						//trace(FeeshMain.getAddonThing(noteType, PlaceHolder.placeholderAddon, "customNote") + " " + noteType);
-						
-						if(noteType == "trippy" && ifPlayState) {
-							trail = new FlxTypedGroup<FlxSprite>();
-
-							var trailSpirit:FlxSprite = new FlxSprite(this.x, this.y);
-							trailSpirit.frames = Paths.getNoteAtlas('$noteType/NOTE_assets');
-
-							trailSpirit.animation.addByPrefix('spiral', 'swirl');
-
-							trailSpirit.updateHitbox();
-							trailSpirit.alpha = 0.25;
-							trailSpirit.angle = angle;
-							trailSpirit.cameras = [PlayState.camNOTE];
-							//trailSpirit.setColorTransform(1,1,1,1.5,0,0,0,0);
-
-							trailSpirit.animation.play('spiral');
-
-							trail.add(trailSpirit);
 						}
 
 						setGraphicSize(Std.int(width * 0.7));
@@ -481,6 +468,16 @@ class Note extends EditorSprite
 						}
 					}	
 				}
+			}
+		}
+
+		public function placeModifierSymbol(char:String = "M"):Void {
+			if(modifiedSymbol == null) {
+				modifiedSymbol = new FlxText(0, 0, 0, char, 24);
+				modifiedSymbol.setFormat(Paths.font("PhantomMuff.ttf"), 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+				modifiedSymbol.antialiasing = this.antialiasing;
+			}else {
+				modifiedSymbol.text += char;
 			}
 		}
 
@@ -740,10 +737,13 @@ class Note extends EditorSprite
 					wasGoodHit = true;
 			}
 		
-			if (tooLate)
-			{
+			if (tooLate) {
 				if (alpha > 0.3)
 					alpha = 0.3;
+			}
+
+			if(modifiedSymbol != null) {
+				modifiedSymbol.setPosition(this.x + ((this.width - modifiedSymbol.width) / 2), this.y + ((this.height - modifiedSymbol.height) / 2));
 			}
 		}
 
@@ -800,11 +800,29 @@ class Note extends EditorSprite
 			return "";
 		}
 
+		@:noCompletion
+		override function set_visible(Value:Bool):Bool {
+			if(modifiedSymbol != null) {
+				modifiedSymbol.visible = Value;
+			}
+
+			return visible = Value;
+		}
+
+		override function kill():Void {
+			if(modifiedSymbol != null) {
+				modifiedSymbol.kill();
+			}
+
+			super.kill();
+		}
+
 		override function destroy():Void {
 			super.destroy();
 
 			hasCustomAddon = null;
 
 			trail = FlxDestroyUtil.destroy(trail);
+			modifiedSymbol = FlxDestroyUtil.destroy(modifiedSymbol);
 		}
 }

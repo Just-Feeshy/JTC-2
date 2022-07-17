@@ -29,8 +29,7 @@ class ModLua {
     public var luaSprites(default, null):Map<String, FlxSprite> = new Map<String, FlxSprite>();
     public var luaShaders(default, null):Map<String, ShaderHandler> = new Map<String, ShaderHandler>();
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
-
-    private var luaTweens:Map<String, FlxTween> = new Map<String, FlxTween>();
+    public var luaTweens:Map<String, FlxTween> = new Map<String, FlxTween>();
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
@@ -197,6 +196,18 @@ class ModLua {
             FlxG.state.add(spr);
         });
 
+        Lua_helper.add_callback(lua, "doTweenSpriteAngle", function(name:String, value:Dynamic, duration:Float, ease:String) {
+			var spr:FlxSprite = getSprite(name);
+
+			if(spr != null) {
+				luaTweens.set(name, FlxTween.tween(spr, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+						call('onTweenCompleted', [name]);
+					}
+				}));
+			}
+		});
+
         Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Int) {
             var cam:FlxCamera = luaCameras.get(name);
 
@@ -362,6 +373,20 @@ class ModLua {
 
             luaCameras.clear();
             luaCameras = null;
+        }
+
+        if(luaTweens != null) {
+            for(k in luaTweens.keys()) {
+                var tween:FlxTween = luaTweens.get(k);
+
+                if(tween != null) {
+                    tween.cancel();
+                    tween.destroy();
+                }
+            }
+
+            luaTweens.clear();
+            luaTweens = null;
         }
 
         Lua.close(lua);
