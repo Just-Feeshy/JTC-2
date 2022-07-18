@@ -41,6 +41,15 @@
                 "Ping-Pong",
                 "I-Am-Blue"
             ]
+        },
+        "week_1": {
+            "week_name": "Frostbite",
+            "week_background": "funkroad-layout",
+            "week_unlocked": true,
+
+            "week_data": [
+                "Frostbeat"
+            ]
         }
     },
 

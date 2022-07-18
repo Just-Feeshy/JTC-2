@@ -19,6 +19,10 @@ import SaveData.SaveType;
 
 using StringTools;
 
+/**
+* Honestly, modcharts are my least concern, since this is mostly an object-orientated fnf engine.
+*/
+
 class ModLua {
     #if (USING_LUA && linc_luajit_basic)
     private var lua:State = null;
@@ -196,16 +200,60 @@ class ModLua {
             FlxG.state.add(spr);
         });
 
-        Lua_helper.add_callback(lua, "doTweenSpriteAngle", function(name:String, value:Dynamic, duration:Float, ease:String) {
-			var spr:FlxSprite = getSprite(name);
+        Lua_helper.add_callback(lua, "doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+			var obj = getObjectFromMap(vars);
 
-			if(spr != null) {
-				luaTweens.set(name, FlxTween.tween(spr, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+			if(obj != null) {
+				luaTweens.set(name, FlxTween.tween(vars, {x: value}, duration, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
 						call('onTweenCompleted', [name]);
 					}
 				}));
 			}
+		});
+
+        Lua_helper.add_callback(lua, "doTweenY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+			var obj = getObjectFromMap(vars);
+
+			if(obj != null) {
+				luaTweens.set(name, FlxTween.tween(vars, {y: value}, duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+						call('onTweenCompleted', [name]);
+					}
+				}));
+			}
+		});
+
+        Lua_helper.add_callback(lua, "doTweenAngle", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+			var obj = getObjectFromMap(vars);
+
+			if(obj != null) {
+				luaTweens.set(name, FlxTween.tween(vars, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+						call('onTweenCompleted', [name]);
+					}
+				}));
+			}
+		});
+
+        Lua_helper.add_callback(lua, "doTweenAlpha", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+			var obj = getObjectFromMap(vars);
+
+			if(obj != null) {
+				luaTweens.set(name, FlxTween.tween(vars, {alpha: value}, duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+						call('onTweenCompleted', [name]);
+					}
+				}));
+			}
+		});
+
+        Lua_helper.add_callback(lua, "cancelTween", function(name:String) {
+			cancelTween(name);
 		});
 
         Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Int) {
@@ -280,6 +328,24 @@ class ModLua {
             shader.attachBitmapData(sprite.framePixels);
         });
         #end
+    }
+
+    public function getObjectFromMap(name:String):Dynamic {
+        var obj:Dynamic = null;
+
+        if(luaSprites.exists(name))
+            obj = luaSprites.get(name);
+
+        if(luaCameras.exists(name))
+            obj = luaCameras.get(name);
+
+        return obj;
+    }
+
+    public function cancelTween(name:String) {
+        luaTweens.get(name).cancel();
+        luaTweens.get(name).destroy();
+        luaTweens.remove(name);
     }
 
     public function addCallback(name:String, method:Dynamic) {

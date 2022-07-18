@@ -31,6 +31,14 @@ class DeathNote extends CustomNoteTemplate {
     override function cantHaveHold():Bool {
         return true;
     }
+
+    override function shouldBeIgnored():Bool {
+        return true;
+    }
+
+    override function noDefaultSplash():Bool {
+        return true;
+    }
 }
 
 class CheeseNote extends CustomNoteTemplate {

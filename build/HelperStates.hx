@@ -1,15 +1,16 @@
 package;
 
 import flixel.FlxG;
-import flixel.graphics.FlxGraphic;
+import flixel.FlxCamera;
 import flixel.FlxState;
-import flixel.addons.ui.FlxUIState;
-import flixel.util.FlxDestroyUtil;
-import flixel.math.FlxPoint;
-import flixel.math.FlxRect;
-import flixel.util.FlxColor;
 import flixel.FlxSubState;
 import flixel.FlxSprite;
+import flixel.graphics.FlxGraphic;
+import flixel.addons.ui.FlxUIState;
+import flixel.util.FlxDestroyUtil;
+import flixel.util.FlxColor;
+import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
 
 import example_code.TransitionSamples;
 import template.TransitionBuilder;
@@ -87,10 +88,46 @@ class HelperStates extends FlxUIState {
 		return null;
 	}
 
-	public function callLua(name:String, args:Array<Dynamic>) {
+	public function addCallback(name:String, method:Dynamic):Void {
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			HelperStates.getLua(Type.getClass(this)).addCallback(name, method);
+		}
+		#end
+	}
+
+	public function attachCamera(name:String, cam:FlxCamera):Void {
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			if(!HelperStates.getLua(Type.getClass(this)).luaCameras.exists(name))
+				HelperStates.getLua(Type.getClass(this)).luaCameras.set(name, cam);
+		}
+		#end
+	}
+
+	public function attachSprite(name:String, spr:FlxSprite):Void {
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			if(!HelperStates.getLua(Type.getClass(this)).luaSprites.exists(name))
+				HelperStates.getLua(Type.getClass(this)).luaSprites.set(name, spr);
+		}
+		#end
+	}
+
+	public function callLua(name:String, args:Array<Dynamic>):Dynamic {
 		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this)))
-			HelperStates.getLua(Type.getClass(this)).call(name, args);
+			return HelperStates.getLua(Type.getClass(this)).call(name, args);
+		#end
+
+		return null;
+	}
+
+	public function setLua(variable:String, data:Dynamic):Void {
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			HelperStates.getLua(Type.getClass(this)).set(variable, data);
+		}
 		#end
 	}
 

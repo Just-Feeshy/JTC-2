@@ -116,6 +116,7 @@ class PlayState extends MusicBeatState
 	private var keysMatrix:Array<Array<Int>> = [];
 
 	//Da Variables
+	private var hits:Int = 0;
 	private var misses:Int = 0;
 	private var missesHold:Int = 0;
 	private var missClicks:Int = 0;
@@ -141,6 +142,8 @@ class PlayState extends MusicBeatState
 
 	//public var testers(default, set):Int;
 
+	private var curSection:Int = 0;
+
 	private var vocals:FlxSound;
 
 	public var dad:Character;
@@ -151,7 +154,6 @@ class PlayState extends MusicBeatState
 	public var unspawnNotes:Array<Note> = [];
 
 	private var strumLine:FlxSprite;
-	private var curSection:Int = 0;
 
 	public var camFollow:FlxObject;
 
@@ -840,6 +842,12 @@ class PlayState extends MusicBeatState
 			stageGroup.forEach(function(stage:StageBuilder) {
 				stage.whenCreatingScene();
 			});
+
+			#if (USING_LUA && linc_luajit_basic)
+			if(HelperStates.luaExist(Type.getClass(this))) {
+				generateStaticLua();
+			}
+			#end
 		} else {
 			return;
 		}
@@ -911,8 +919,9 @@ class PlayState extends MusicBeatState
 		startedCountdown = true;
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;
-
 		Conductor.trackPosition = Conductor.songPosition;
+
+		setLua("startedCountdown", true);
 
 		var swagCounter:Int = 0;
 
@@ -1867,6 +1876,8 @@ class PlayState extends MusicBeatState
 
 			FlxG.camera.zoom = defaultCamZoom;
 
+			setLua("inGameOver", true);
+
 			openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
 
 			// FlxG.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
@@ -2011,19 +2022,10 @@ class PlayState extends MusicBeatState
 					removeNote(daNote);
 				}
 
-				if(daNote.noteAbstract == "side note") {
-				
-					if(daNote.mustPress) {
-						daNote.setInverseAxis(daNote.distanceAxis, addToNoteX(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis) + (Conductor.trackPosition - Compile.getNoteTime(daNote.strumTime)) * (0.45 * FlxMath.roundDecimal(daNote.howSpeed * Note.AFFECTED_SCROLLSPEED, 2)), daNote));
-					}else {
-						daNote.setInverseAxis(daNote.distanceAxis, addToNoteX(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis) + (Conductor.trackPosition - Compile.getNoteTime(daNote.strumTime)) * (-0.45 * FlxMath.roundDecimal(daNote.howSpeed * Note.AFFECTED_SCROLLSPEED, 2)), daNote));
-					}
-				}
-
 				if (daNote.mustPress) {
 					daNote.setVisibility(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
-					daNote.setXaxis(playerStrums.members, addToNoteX(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote));
-					daNote.setNoteAngle(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].angle);
+					daNote.setXaxis(playerStrums.members, addToNoteX(addLuaToX(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote), daNote));
+					daNote.setNoteAngle(addLuaToAngle(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote));
 					daNote.setNoteAlpha(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
 
 					//Nothing planned for now.
@@ -2039,8 +2041,8 @@ class PlayState extends MusicBeatState
 				}
 				else {
 					daNote.setVisibility(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
-					daNote.setXaxis(opponentStrums.members, addToNoteX(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote));
-					daNote.setNoteAngle(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle);
+					daNote.setXaxis(opponentStrums.members, addToNoteX(addLuaToX(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote), daNote));
+					daNote.setNoteAngle(addLuaToAngle(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote));
 					daNote.setNoteAlpha(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
 
 					//Nothing planned for now.
@@ -2145,6 +2147,12 @@ class PlayState extends MusicBeatState
 						removeNote(daNote);
 					}
 			});
+
+			#if (USING_LUA && linc_luajit_basic)
+			if(HelperStates.luaExist(Type.getClass(this))) {
+				updateLuaVars();
+			}
+			#end
 		}
 
 		#if debug
@@ -2775,6 +2783,8 @@ class PlayState extends MusicBeatState
 			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 				note.wasGoodHit = true;
 				vocals.volume = 1;
+
+				hits++;
 			}
 
 			if (!note.isSustainNote) {
@@ -2817,6 +2827,115 @@ class PlayState extends MusicBeatState
 
 		notes.remove(note, true);
 		note.destroy();
+	}
+
+	function addLuaToX(daX:Float, note:Note):Float {
+		var xLua:Null<Float> = callLua("addToNoteX", [daX, note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
+		var finalLuaVar:Float = daX;
+
+		if(xLua != null)
+			finalLuaVar = xLua + daX;
+
+		return finalLuaVar;
+	}
+
+	function addLuaToAngle(daAngle:Float, note:Note):Float {
+		var xLua:Null<Float> = callLua("addToNoteAngle", [daAngle, note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
+		var finalLuaVar:Float = daAngle;
+
+		if(xLua != null)
+			finalLuaVar = xLua + daAngle;
+
+		return finalLuaVar;
+	}
+
+	/**
+	* Reason why the variables are named the same as Psych Engine is so transferring lua scripts can be easier.
+	*/
+
+	function generateStaticLua():Void {
+		attachCamera("camHUD", camHUD);
+		attachCamera("camGAME", FlxG.camera);
+		attachCamera("camNOTE", camNOTE);
+
+		setLua("songName", PlayState.SONG.song);
+		setLua("isStoryMode", PlayState.isStoryMode);
+		setLua("startedCountdown", false);
+		setLua("difficulty", PlayState.storyDifficulty);
+		setLua("difficultyName", CoolUtil.difficultyArray[PlayState.storyDifficulty]);
+		setLua("week", Paths.modJSON.weeks.get("week_" + PlayState.storyWeek).week_name.toUpperCase());
+		setLua("weekRaw", PlayState.storyWeek);
+		setLua("hasCutscene", PlayState.SONG.video != null ? true : false);
+		setLua("inGameOver", false);
+
+		setLua("defaultBoyfriendX", boyfriend.x);
+		setLua("defaultBoyfriendY", boyfriend.y);
+		setLua("defaultOpponentX", dad.x);
+		setLua("defaultOpponentY", dad.y);
+		setLua("defaultGirlfriendX", gf.x);
+		setLua("defaultGirlfriendY", gf.y);
+
+		setLua("defaultOpponentStrum0X", PlayState.opponentStrums.members[0].x);
+		setLua("defaultOpponentStrum1X", PlayState.opponentStrums.members[1].x);
+		setLua("defaultOpponentStrum2X", PlayState.opponentStrums.members[2].x);
+		setLua("defaultOpponentStrum3X", PlayState.opponentStrums.members[3].x);
+
+		setLua("defaultOpponentStrum0Y", PlayState.opponentStrums.members[0].y);
+		setLua("defaultOpponentStrum1Y", PlayState.opponentStrums.members[1].y);
+		setLua("defaultOpponentStrum2Y", PlayState.opponentStrums.members[2].y);
+		setLua("defaultOpponentStrum3Y", PlayState.opponentStrums.members[3].y);
+
+		setLua("defaultPlayerStrum0X", PlayState.playerStrums.members[0].x);
+		setLua("defaultPlayerStrum1X", PlayState.playerStrums.members[1].x);
+		setLua("defaultPlayerStrum2X", PlayState.playerStrums.members[2].x);
+		setLua("defaultPlayerStrum3X", PlayState.playerStrums.members[3].x);
+
+		setLua("defaultPlayerStrum0Y", PlayState.playerStrums.members[0].y);
+		setLua("defaultPlayerStrum1Y", PlayState.playerStrums.members[1].y);
+		setLua("defaultPlayerStrum2Y", PlayState.playerStrums.members[2].y);
+		setLua("defaultPlayerStrum3Y", PlayState.playerStrums.members[3].y);
+
+		if(PlayState.opponentStrums.members.length > 4 && PlayState.playerStrums.members.length > 4) {
+			setLua("defaultOpponentStrum4X", PlayState.opponentStrums.members[4].x);
+			setLua("defaultOpponentStrum4Y", PlayState.opponentStrums.members[4].y);
+			setLua("defaultPlayerStrum4X", PlayState.opponentStrums.members[4].x);
+			setLua("defaultPlayerStrum4Y", PlayState.opponentStrums.members[4].y);
+		}
+
+		addCallback("setOpponentStrumPos", function(id:Int, x:Int, y:Int) {
+			PlayState.opponentStrums.members[id].x = x;
+			PlayState.opponentStrums.members[id].y = y;
+		});
+
+		addCallback("setPlayerStrumPos", function(id:Int, x:Int, y:Int) {
+			PlayState.playerStrums.members[id].x = x;
+			PlayState.playerStrums.members[id].y = y;
+		});
+	}
+
+	function updateLuaVars():Void {
+		setLua('cameraX', camFollow.x);
+		setLua('cameraY', camFollow.y);
+
+		setLua("score", songScore);
+		setLua("misses", misses);
+		setLua("hits", hits);
+
+		setLua("boyfriendName", boyfriend.curCharacter);
+		setLua("dadName", dad.curCharacter);
+		setLua("gfName", gf.curCharacter);
+
+		setLua('downscroll', SaveData.getData(DOWNSCROLL));
+		setLua('framerate', Lib.current.stage.frameRate);
+		setLua('ghostTapping', GhostTapping.ghostTap);
+		setLua("songLength", FlxG.sound.music.length);
+	}
+
+	function updatePerSectionLuaVars():Void {
+		setLua("bpm", PlayState.SONG.bpm);
+		setLua("scrollspeed", PlayState.SONG.speed);
+		setLua("mustHitSection", SONG.notes[Std.int(curStep / 16)].mustHitSection);
+		setLua("altAnim", SONG.notes[Math.floor(curStep / 16)].altAnim);
 	}
 
 	function eventLoad():Void {
@@ -2920,11 +3039,18 @@ class PlayState extends MusicBeatState
 			camNOTE.zoom += 6 * FlxG.elapsed;
 		}
 
-		if (camZooming && FlxG.camera.zoom < 1.35 && curBeat % 4 == 0)
-		{
-			FlxG.camera.zoom += 15 * FlxG.elapsed;
-			camHUD.zoom += 6 * FlxG.elapsed;
-			camNOTE.zoom += 6 * FlxG.elapsed;
+		if(curBeat % 4 == 0) {
+			if (camZooming && FlxG.camera.zoom < 1.35) {
+				FlxG.camera.zoom += 15 * FlxG.elapsed;
+				camHUD.zoom += 6 * FlxG.elapsed;
+				camNOTE.zoom += 6 * FlxG.elapsed;
+			}
+	
+			#if (USING_LUA && linc_luajit_basic)
+			if(HelperStates.luaExist(Type.getClass(this))) {
+				updatePerSectionLuaVars();
+			}
+			#end
 		}
 
 		iconP1.setGraphicSize(Std.int(iconP1.width + 30));

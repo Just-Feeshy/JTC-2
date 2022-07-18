@@ -66,8 +66,11 @@ abstract class StageBuilder extends FlxBasic {
         }
     }
 
-    @:allow(PlayState)
-    private function setCamPos(camPos:FlxPoint):FlxPoint {
+    public function modifyNotesDirectly(note:Note) {
+        //empty
+    }
+
+    public function setCamPos(camPos:FlxPoint):FlxPoint {
         return null;
     }
 
