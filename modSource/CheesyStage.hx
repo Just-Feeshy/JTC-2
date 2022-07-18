@@ -4,6 +4,7 @@ import template.StageBuilder;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.math.FlxPoint;
 
 class CheesyStage extends StageBuilder {
     public function new(stage:String) {

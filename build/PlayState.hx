@@ -1745,7 +1745,8 @@ class PlayState extends MusicBeatState
 						camFollowX = dad.getMidpoint().x - 100;
 				}
 
-				camPos.setPosition(camFollowX, camFollowY);
+				camPos.x = camFollowX;
+				camPos.y = camFollowY;
 
 				if (dad.curCharacter == 'mom')
 					vocals.volume = 1;
@@ -1782,7 +1783,8 @@ class PlayState extends MusicBeatState
 						camFollowY = boyfriend.getMidpoint().y - 200;
 				}
 
-				camPos.setPosition(camFollowX, camFollowY);
+				camPos.x = camFollowX;
+				camPos.y = camFollowY;
 
 				if (SONG.song.toLowerCase() == 'tutorial')
 				{

@@ -2,6 +2,7 @@ package template;
 
 import flixel.FlxG;
 import flixel.FlxBasic;
+import flixel.math.FlxPoint;
 
 #if (haxe_ver >= 4.2)
 import Std.isOfType;
