@@ -181,19 +181,13 @@ class PlayState extends MusicBeatState
 
 	public var camGame:BetterCams;
 
+	var customNoteSprites:FlxTypedGroup<FlxSprite>;
+
 	var playerIconColor:FlxColor;
 	var opponentIconColor:FlxColor;
 
 	var halloweenBG:FlxSprite;
 	var isHalloween:Bool = false;
-
-	var phillyCityLights:FlxTypedGroup<FlxSprite>;
-	var phillyTrain:FlxSprite;
-	var trainSound:FlxSound;
-
-	var limo:FlxSprite;
-	var grpLimoDancers:FlxTypedGroup<BackgroundDancer>;
-	var fastCar:FlxSprite;
 
 	var upperBoppers:FlxSprite;
 	var bottomBoppers:FlxSprite;
@@ -1099,6 +1093,10 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		customNoteSprites = new FlxTypedGroup<FlxSprite>();
+		customNoteSprites.cameras = [camNOTE];
+		add(customNoteSprites);
+
 		for (section in noteData)
 		{
 			var coolSection:Int = Std.int(section.lengthInSteps / keys);
@@ -1124,7 +1122,7 @@ class PlayState extends MusicBeatState
 				if(modifierCheckList('custom hell') && Main.feeshmoraModifiers)
 					daNoteAbstract = CoolUtil.coolTextFile(Paths.pak('mapHandler'))[FlxG.random.int(1, CoolUtil.coolTextFile(Paths.pak('mapHandler')).length-1)];
 
-				var oldNote:Note;
+		 		var oldNote:Note;
 				if (unspawnNotes.length > 0)
 					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 				else
@@ -1527,7 +1525,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(wobbleStrength > 0 && !note.isSustainNote)
-			modWobble = wobbleStrength * Math.sin(noteCacurations * Math.PI * 0.005);
+			modWobble = flipWiggle * (wobbleStrength * Math.sin(noteCacurations * Math.PI * 0.005));
 
 		return alreadyX + modWobble;
 	}
@@ -1747,7 +1745,7 @@ class PlayState extends MusicBeatState
 						camFollowX = dad.getMidpoint().x - 100;
 				}
 
-				camFollow.setPosition(camFollowX + camMovementPos.x, camFollowY + camMovementPos.y);
+				camPos.setPosition(camFollowX, camFollowY);
 
 				if (dad.curCharacter == 'mom')
 					vocals.volume = 1;
@@ -1784,13 +1782,23 @@ class PlayState extends MusicBeatState
 						camFollowY = boyfriend.getMidpoint().y - 200;
 				}
 
-				camFollow.setPosition(camFollowX + camMovementPos.x, camFollowY + camMovementPos.y);
+				camPos.setPosition(camFollowX, camFollowY);
 
 				if (SONG.song.toLowerCase() == 'tutorial')
 				{
 					FlxTween.tween(FlxG.camera, {zoom: 1}, (Conductor.stepCrochet * 4 / 1000), {ease: FlxEase.elasticInOut});
 				}
 			}
+
+			stageGroup.forEach(function(stage:StageBuilder) {
+				var newCamPos:FlxPoint = stage.setCamPos(camPos);
+
+				if(newCamPos != null) {
+					camPos = newCamPos;
+				}
+			});
+
+			camFollow.setPosition(camPos.x + camMovementPos.x, camPos.y + camMovementPos.y);
 		}
 
 		if (camZooming)
@@ -2045,13 +2053,26 @@ class PlayState extends MusicBeatState
 					}
 				}
 
+				var noteShouldWobble:Bool = false;
+
 				if(modifierCheckList('note woggle') && Main.feeshmoraModifiers) {
-					if(daNote.isSustainNote && modifierCheckList('note woggle')) {
+					noteShouldWobble = true;
+				}
+
+				if(daNote.hasCustomAddon != null) {
+					if(daNote.hasCustomAddon.getWobblePower() > 0) {
+						noteShouldWobble = true;
+					}
+				}
+
+				if(noteShouldWobble) {
+					if(daNote.isSustainNote) {
 						if(camNOTE.camNoteWOBBLE == null) {
 							camNOTE.createNoteCam(daNote.noteAbstract);
 			
 							FlxG.cameras.remove(camNOTE, false);
 							FlxG.cameras.add(camNOTE);
+							FlxG.cameras.add(camNOTE.camNoteWOBBLE);
 							FlxG.cameras.remove(camHUD, false);
 							FlxG.cameras.add(camHUD);
 						}
@@ -2059,7 +2080,7 @@ class PlayState extends MusicBeatState
 						if(!daNote.cameras.contains(camNOTE.camNoteWOBBLE))
 							daNote.cameras = [camNOTE.camNoteWOBBLE];
 					}
-				}else if(!modifierCheckList('note woggle') && Main.feeshmoraModifiers) {
+				}else if(!noteShouldWobble) {
 					if(daNote.cameras.contains(camNOTE.camNoteWOBBLE) && daNote.noteAbstract != "side note")
 						daNote.cameras = [camNOTE];
 				}
@@ -2741,13 +2762,20 @@ class PlayState extends MusicBeatState
 				}
 			});
 
+			if(note.hasCustomAddon != null) {
+				var noteSprite:FlxSprite = note.hasCustomAddon.createSpriteWhenHit();
+
+				if(noteSprite != null) {
+					customNoteSprites.add(noteSprite);
+				}
+			}
+
 			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 				note.wasGoodHit = true;
 				vocals.volume = 1;
 			}
 
-			if (!note.isSustainNote)
-			{
+			if (!note.isSustainNote) {
 				removeNote(note);
 			}
 		}

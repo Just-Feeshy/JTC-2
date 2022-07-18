@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="NOTE_assets.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="DEATHdown0000" x="50" y="50" width="204" height="260"/>
+	<SubTexture name="DEATHdown0001" x="304" y="50" width="204" height="260"/>
+	<SubTexture name="DEATHdown0002" x="558" y="50" width="204" height="260"/>
+	<SubTexture name="DEATHleft0000" x="812" y="50" width="204" height="260"/>
+	<SubTexture name="DEATHleft0001" x="1066" y="50" width="204" height="260"/>
+	<SubTexture name="DEATHleft0002" x="1320" y="50" width="204" height="260"/>
+	<SubTexture name="DEATHright0000" x="1574" y="50" width="204" height="260"/>
+	<SubTexture name="DEATHright0001" x="50" y="360" width="204" height="260"/>
+	<SubTexture name="DEATHright0002" x="304" y="360" width="204" height="260"/>
+	<SubTexture name="DEATHup0000" x="558" y="360" width="204" height="260"/>
+	<SubTexture name="DEATHup0001" x="812" y="360" width="204" height="260"/>
+	<SubTexture name="DEATHup0002" x="1066" y="360" width="204" height="260"/>
+</TextureAtlas>

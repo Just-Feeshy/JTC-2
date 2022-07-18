@@ -27,6 +27,18 @@ class CheesyStage extends StageBuilder {
 				stageCurtains.active = false;
 
 				addToStage(stageCurtains);
+			case "funkroad":
+				setDefaultCameraZoom(0.50);
+
+
         }
     }
+
+	override function setCamPos(camPos:FlxPoint):FlxPoint {
+		if(stage == "funkroad") {
+			return FlxPoint.get(Register.getInGameCharacter(GIRLFRIEND).x, Register.getInGameCharacter(GIRLFRIEND).y);
+		}
+
+		return null;
+	}
 }

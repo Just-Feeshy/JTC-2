@@ -238,7 +238,7 @@ class Note extends EditorSprite
 							animation.addByPrefix('purpleScroll', 'planet right');
 							animation.addByPrefix('diamondScroll', 'planet down');
 						}else if(hasCustomAddon != null) {
-							if(!hasCustomAddon.useCustomPrefix(this))
+							if(!hasCustomAddon.useCustomPrefix(animation))
 								setupPrefixes();
 						}else {
 							setupPrefixes();

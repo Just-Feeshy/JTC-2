@@ -2,11 +2,12 @@ package template;
 
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.animation.FlxAnimationController;
 import flixel.math.FlxRect;
 
 interface ICustomNote {
     function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void; //What happens when this note is press by the player.
-    function useCustomPrefix(note:Note):Bool; //Use your own animation prefixes for this note.
+    function useCustomPrefix(animation:FlxAnimationController):Bool; //Use your own animation prefixes for this note.
     function shouldBeIgnored():Bool; //Should the opponent ignore this note.
     function whenNoteIsHit(strumNote:Strum):Bool; //When this note is either hit by player or opponent.
     function createSpriteWhenHit():FlxSprite; //When this note is hit, then the sprite returned will be added in the game. (If null, nothing will be added.)
@@ -41,7 +42,7 @@ class CustomNoteTemplate implements ICustomNote {
         return;
     }
 
-    public function useCustomPrefix(note:Note):Bool {
+    public function useCustomPrefix(animation:FlxAnimationController):Bool {
         return false;
     }
 
@@ -142,14 +143,14 @@ class CustomNoteTemplate implements ICustomNote {
     }
 
     public function giveHealth(isSustain:Bool):Float {
-        return 0.004;
+        return 0.023;
     }
 
     public function missNoteDamage():Float {
         return 0.069;
     }
 
-    public function getWobblePower():Int {
+    public function getWobblePower():UInt {
         return 0;
     }
 }

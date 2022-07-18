@@ -1558,8 +1558,6 @@ class ChartingState extends MusicBeatState
 
 		curRenderedNotes.forEachAlive(function(note:Note) {
 			if(note.strumTime <= Conductor.songPosition) {
-				note.color = FlxColor.fromRGB(200, 200, 200, 255);
-
 				if(note.strumTime > lastSongPosition && FlxG.sound.music.playing && note.noteData > -1) {
 					if(playOSU_Sound_RIGHT && Math.ceil(note.x / GRID_SIZE) > Math.ceil(mainGrid/2) - 1) {
 						FlxG.sound.play(Paths.sound('hitChart'), 2);
@@ -1569,8 +1567,6 @@ class ChartingState extends MusicBeatState
 						FlxG.sound.play(Paths.sound('hitChart'), 2);
 					}
 				}
-			}else {
-				note.color = FlxColor.WHITE;
 			}
 		});
 

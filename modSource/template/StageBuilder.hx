@@ -66,6 +66,11 @@ abstract class StageBuilder extends FlxBasic {
     }
 
     @:allow(PlayState)
+    private function setCamPos(camPos:FlxPoint):FlxPoint {
+        return null;
+    }
+
+    @:allow(PlayState)
     private function curBeat():Void {
         //Empty
     }

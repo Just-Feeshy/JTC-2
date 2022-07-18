@@ -3,6 +3,7 @@ package;
 import WiggleEffect.WiggleEffectType;
 import flixel.FlxCamera;
 import flixel.FlxG;
+import flixel.util.FlxDestroyUtil;
 import openfl.filters.ShaderFilter;
 import openfl.filters.BitmapFilter;
 import flash.filters.BlurFilter;
@@ -24,7 +25,6 @@ class CameraNote extends BetterCams {
                 camNoteWOBBLE = new FlxCamera();
                 camNoteWOBBLE.bgColor.alpha = 0;
                 camNoteWOBBLE.setFilters([new ShaderFilter(noteWiggleFLAG.shader)]);
-                FlxG.cameras.add(camNoteWOBBLE);
 
                 noteWiggleFLAG.effectType = WiggleEffectType.DREAMY;
 		        noteWiggleFLAG.waveSpeed = 1;
@@ -59,7 +59,10 @@ class CameraNote extends BetterCams {
     }
 
     override function destroy() {
-        if(camNoteWOBBLE != null)
-            camNoteWOBBLE.destroy();
+        FlxG.cameras.remove(camNoteWOBBLE, false);
+
+        camNoteWOBBLE = FlxDestroyUtil.destroy(camNoteWOBBLE);
+
+        super.destroy();
     }
 }
