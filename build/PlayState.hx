@@ -2929,6 +2929,7 @@ class PlayState extends MusicBeatState
 		setLua('framerate', Lib.current.stage.frameRate);
 		setLua('ghostTapping', GhostTapping.ghostTap);
 		setLua("songLength", FlxG.sound.music.length);
+		setLua("trackPosition", Conductor.trackPosition);
 	}
 
 	function updatePerSectionLuaVars():Void {
