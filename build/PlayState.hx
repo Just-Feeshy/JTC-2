@@ -2857,9 +2857,9 @@ class PlayState extends MusicBeatState
 	
 	function getLuaScript():Void {
 		#if (USING_LUA && linc_luajit_basic)
-		if(Assets.exists(getPath('scripts/$key.lua', TEXT, null))) {
+		if(Assets.exists(Paths.getPath('scripts/${"stage/" + curStage.toLowerCase()}.lua', TEXT, null))) {
 			Register.detachLuaFromState(PlayState);
-			Register.attachLuaToState(PlayState, Paths.lua("stage/" + curStage.toLowerCase()));
+			Register.attachLuaToState(PlayState, new ModLua(Paths.lua("stage/" + curStage.toLowerCase())));
 		}
 		#end
 	}
