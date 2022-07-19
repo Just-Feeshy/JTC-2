@@ -94,7 +94,8 @@ class Register {
     @:access(HelperStates)
     public inline static function detachLuaFromState(state:Class<Dynamic>) {
         #if (USING_LUA && linc_luajit)
-        HelperStates.scriptsInStates.remove(Type.getClassName(state));
+        if(HelperStates.scriptsInStates.exists(Type.getClassName(state)))
+            HelperStates.scriptsInStates.remove(Type.getClassName(state));
         #end
     }
 

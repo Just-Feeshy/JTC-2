@@ -346,6 +346,8 @@ class PlayState extends MusicBeatState
 			stageGroup.add(cast Type.createInstance(Register.events[i], []));
 		}
 
+		getLuaScript();
+
 		if(waterBlur[0] == null)
 			waterBlur.push(new BlurFilter(defaultBlur, defaultBlur, BitmapFilterQuality.HIGH));
 
@@ -2852,6 +2854,15 @@ class PlayState extends MusicBeatState
 	/**
 	* Reason why the variables are named the same as Psych Engine is so transferring lua scripts can be easier.
 	*/
+	
+	function getLuaScript():Void {
+		#if (USING_LUA && linc_luajit_basic)
+		if(Assets.exists(getPath('scripts/$key.lua', TEXT, null))) {
+			Register.detachLuaFromState(PlayState);
+			Register.attachLuaToState(PlayState, Paths.lua("stage/" + curStage.toLowerCase()));
+		}
+		#end
+	}
 
 	function generateStaticLua():Void {
 		attachCamera("camHUD", camHUD);
@@ -2929,7 +2940,7 @@ class PlayState extends MusicBeatState
 		setLua('framerate', Lib.current.stage.frameRate);
 		setLua('ghostTapping', GhostTapping.ghostTap);
 		setLua("songLength", FlxG.sound.music.length);
-		setLua("trackPosition", Conductor.trackPosition);
+		setLua("trackPos", Conductor.trackPosition);
 	}
 
 	function updatePerSectionLuaVars():Void {

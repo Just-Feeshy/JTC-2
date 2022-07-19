@@ -342,19 +342,19 @@ class ModLua {
         return obj;
     }
 
-    public function cancelTween(name:String) {
+    public function cancelTween(name:String):Void {
         luaTweens.get(name).cancel();
         luaTweens.get(name).destroy();
         luaTweens.remove(name);
     }
 
-    public function addCallback(name:String, method:Dynamic) {
+    public function addCallback(name:String, method:Dynamic):Void {
         #if (USING_LUA && linc_luajit_basic)
         Lua_helper.add_callback(lua, name, method);
         #end
     }
 
-    public function set(variable:String, data:Dynamic) {
+    public function set(variable:String, data:Dynamic):Void {
 		#if (USING_LUA && linc_luajit_basic)
 		if(lua == null) {
 			return;
@@ -409,7 +409,7 @@ class ModLua {
         return spr;
     }
 
-    public function close() {
+    public function close():Void {
         #if (USING_LUA && linc_luajit_basic)
         if(lua == null) {
             return;
