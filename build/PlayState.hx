@@ -2922,14 +2922,21 @@ class PlayState extends MusicBeatState
 
 		makeTweenNoteLua();
 
-		addCallback("setOpponentStrumPos", function(id:Int, x:Int, y:Int) {
-			PlayState.opponentStrums.members[id].x = x;
-			PlayState.opponentStrums.members[id].y = y;
+		addCallback("setNoteStrumPos", function(id:Int, x:Int, y:Int) {
+			var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+			strumOBJ.x = x;
+			strumOBJ.y = y;
 		});
 
-		addCallback("setPlayerStrumPos", function(id:Int, x:Int, y:Int) {
-			PlayState.playerStrums.members[id].x = x;
-			PlayState.playerStrums.members[id].y = y;
+		addCallback("setNoteStrumAngle", function(id:Int, angle:Int) {
+			var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+			strumOBJ.angle = angle;
+		});
+
+		addCallback("setPlayerStrumDirection", function(id:Int, angle:Int) {
+			var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+			strumOBJ.directionAngle = angle;
 		});
 	}
 
@@ -2967,6 +2974,19 @@ class PlayState extends MusicBeatState
 
 				if(strumOBJ != null) {
 					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+						onComplete: function(twn:FlxTween) {
+							getModLua().luaTweens.remove(name);
+							callLua('onTweenCompleted', [name]);
+						}
+					}));
+				}
+			});
+
+			addCallback("noteTweenDirection", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				if(strumOBJ != null) {
+					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {directionAngle: value}, duration, {ease: Register.getFlxEaseByString(ease),
 						onComplete: function(twn:FlxTween) {
 							getModLua().luaTweens.remove(name);
 							callLua('onTweenCompleted', [name]);
