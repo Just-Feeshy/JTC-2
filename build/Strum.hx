@@ -14,6 +14,8 @@ class Strum extends EditorSprite {
 	public var onlyFans:Float;
 	public var xAxis:Bool;
 
+	public var directionAngle:Float = 0;
+
 	public var prevVisible:Bool = true;
 	public var onlyVisible:Bool = true;
 
@@ -23,6 +25,7 @@ class Strum extends EditorSprite {
 		super(x, y);
 		
 		onlyFans = 1;
+		directionAngle = 0;
 
 		if(PlayState.modifierCheckList('blind effect'))
 			visible = false;
@@ -58,20 +61,6 @@ class Strum extends EditorSprite {
 		prevVisible = visible;
 		visible = visibility;
 		return visible;
-	}
-
-	public function getInverseAxis(ax:FlxAxes):Float {
-		if(ax == FlxAxes.Y)
-			return x;
-		else
-			return y;
-	}
-
-	public function getRegularAxis(ax:FlxAxes):Float {
-		if(ax == FlxAxes.Y)
-			return y;
-		else
-			return x;
 	}
 
 	function indevRenderer():Void {

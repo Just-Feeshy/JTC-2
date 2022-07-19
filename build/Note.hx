@@ -2,7 +2,6 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.util.FlxAxes;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFilterFrames;
@@ -16,6 +15,7 @@ import flixel.util.FlxTimer;
 import flixel.util.FlxDestroyUtil;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
+import feshixl.math.FeshMath;
 import betterShit.BetterCams;
 
 #if polymod
@@ -59,8 +59,6 @@ class Note extends EditorSprite
 
 	public var noteOffset:FlxPoint;
 
-	public var distanceAxis:FlxAxes;
-
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
 	public var wasSustainNote:Bool = false;
@@ -95,8 +93,6 @@ class Note extends EditorSprite
 			noteAbstract = noteType;
 			howSpeed = PlayState.SONG.speed;
 			hasCustomAddon = getAddon();
-
-			distanceAxis = Y;
 
 			switch(noteType) {
 				default:
@@ -487,32 +483,20 @@ class Note extends EditorSprite
 			}
 		}
 
-		public function getInverseAxis(ax:FlxAxes):Float {
-			if(ax == FlxAxes.Y)
-				return x - noteOffset.x;
-			else
-				return y + noteOffset.x;
+		public function getInverseAxis():Float {
+			return x;
 		}
 
-		public function setInverseAxis(ax:FlxAxes, value:Float):Void {
-			if(ax == FlxAxes.Y)
-				x = value + noteOffset.x;
-			else
-				y = value - noteOffset.x;
+		public function setInverseAxis(strumPos:Float, strumAngle:Float):Void {
+			x = (strumPos + noteOffset.x) + Math.sin(FeshMath.radians(strumAngle)) * caculatePos;
 		}
 
-		public function getNoteAxis(ax:FlxAxes):Float {
-			if(ax == FlxAxes.Y)
-				return caculatePos;
-			else
-				return caculatePos;
+		public function getNoteAxis():Float {
+			return y;
 		}
 
-		public function setNoteAxis(ax:FlxAxes):Void {
-			if(ax == FlxAxes.Y)
-				y = caculatePos + noteOffset.y;
-			else
-				x = caculatePos - noteOffset.y;
+		public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
+			y = (strumPos + noteOffset.y) + Math.cos(FeshMath.radians(strumAngle)) * caculatePos;
 		}
 
 		//More complicated method
@@ -531,15 +515,18 @@ class Note extends EditorSprite
 			}
 		}
 
-		public function setNoteAngle(value:Float):Void {
+		public function setNoteAngle(value:Float, value2:Float):Void {
 			if(hasCustomAddon != null) {
-				angle = hasCustomAddon.setNoteAngle(this, value);
+				if(!isSustainNote) {
+					angle = hasCustomAddon.setNoteAngle(this, value);
+				}else {
+					angle = hasCustomAddon.setNoteAngle(this, value2);
+				}
 			} else {
-				if(!isSustainNote && noteAbstract != "spiritual star" && noteAbstract != "cherry") {
+				if(!isSustainNote) {
 					angle = value;
-				}else if(isSustainNote) {
-					if(distanceAxis == FlxAxes.X)
-						angle = value - 90;
+				}else {
+					angle = value2;
 				}
 			}
 		}
@@ -559,19 +546,18 @@ class Note extends EditorSprite
 				visible = visibility;
 		}
 
-		public function setXaxisSustain(strums:Array<Strum>, alreadyX:Float) {
+		public function setXaxisSustain(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
 			if(hasCustomAddon != null)
-				setInverseAxis(distanceAxis, hasCustomAddon.setSustainXPosition(this, strums, alreadyX));
+				setInverseAxis(hasCustomAddon.setSustainXPosition(this, strums, alreadyX), strumAngle);
 			else
-				setInverseAxis(distanceAxis, alreadyX);
+				setInverseAxis(alreadyX, strumAngle);
 		}
 
-		public function setXaxis(strums:Array<Strum>, alreadyX:Float) {
+		public function setXaxis(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
 			if(hasCustomAddon != null)
-				setInverseAxis(distanceAxis, hasCustomAddon.setXPosition(this, strums, alreadyX));
+				setInverseAxis(hasCustomAddon.setXPosition(this, strums, alreadyX), strumAngle);
 			else {
-				if(noteAbstract != "side note")
-					setInverseAxis(distanceAxis, alreadyX);
+				setInverseAxis(alreadyX, strumAngle);
 			}
 		}
 

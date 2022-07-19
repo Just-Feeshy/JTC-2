@@ -13,4 +13,12 @@ class FeshMath {
 		else
 			return value;
     }
+
+	/**
+	 * Converts specified angle in degrees to radians.
+	 * @return angle in radians
+	 */
+	public inline static function radians(deg:Float):Float {
+		return deg * (Math.PI / 180);
+	}
 }

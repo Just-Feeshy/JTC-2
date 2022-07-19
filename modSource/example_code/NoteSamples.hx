@@ -217,7 +217,7 @@ class ReversePoisonNote extends ReverseNote {
 
     override function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float {
         if(note.isSustainNote && note.prevNote != null) {
-            return note.prevNote.getInverseAxis(note.distanceAxis);
+            return note.prevNote.getInverseAxis();
         }
 
         return super.setXPosition(note, strums, x);

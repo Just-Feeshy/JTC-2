@@ -88,6 +88,16 @@ class HelperStates extends FlxUIState {
 		return null;
 	}
 
+	public function getModLua():ModLua {
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			return HelperStates.getLua(Type.getClass(this));
+		}
+		#end
+
+		return null;
+	}
+
 	public function addCallback(name:String, method:Dynamic):Void {
 		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {

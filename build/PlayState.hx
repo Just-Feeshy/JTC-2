@@ -1479,36 +1479,24 @@ class PlayState extends MusicBeatState
 	}
 
 	function longConditionForNote(daNote:Note, center:Float):Bool {
-		if(daNote.distanceAxis == X) {
-			if(daNote.downscrollNote) {
-				if(daNote.getNoteAxis(daNote.distanceAxis) - daNote.offset.x * daNote.scale.x + daNote.width >= center) {
-					return true;
-				}
-			}else {
-				if (daNote.getNoteAxis(daNote.distanceAxis) + daNote.offset.x * daNote.scale.x <= center) {
-					return true;
-				}
-			}	
+		if(daNote.downscrollNote) {
+			if(daNote.getNoteAxis() - daNote.offset.y * daNote.scale.y + daNote.height >= center) {
+				return true;
+			}
 		}else {
-			if(daNote.downscrollNote) {
-				if(daNote.getNoteAxis(daNote.distanceAxis) - daNote.offset.y * daNote.scale.y + daNote.height >= center) {
-					return true;
-				}
-			}else {
-				if (daNote.getNoteAxis(daNote.distanceAxis) + daNote.offset.y * daNote.scale.y <= center) {
-					return true;
-				}
+			if (daNote.getNoteAxis() + daNote.offset.y * daNote.scale.y <= center) {
+				return true;
 			}
 		}
 
 		return false;
 	}
 
-	function caculateNoteY(targetY:Float, note:Note, downscroll:Bool):Float {
-		var noteCacurations:Float = (targetY - (Conductor.trackPosition - Compile.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * (0.45 *  (downscroll ? -1 : 1) * FlxMath.roundDecimal(note.howSpeed, 2)));
+	function caculateNoteY(note:Note, downscroll:Bool):Float {
+		var noteCacurations:Float = ((-0.45 * (downscroll ? -1 : 1)) * (Conductor.trackPosition - Compile.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * FlxMath.roundDecimal(note.howSpeed, 2));
 
 		if(downscroll && note.isSustainNote) {
-			if(note.height < 50 && note.distanceAxis != X) {
+			if(note.height < 50) {
 				noteCacurations += 10 * (Conductor.crochet / 400) * 3.1 * FlxMath.roundDecimal(note.howSpeed, 2);
 
 				if(isPixel)
@@ -1957,17 +1945,22 @@ class PlayState extends MusicBeatState
 
 					}	
 				}
+
+				var strumAngle:Float = 0;
 				var strumPos:Float = 0;
 
-				if(daNote.mustPress)
-					strumPos = playerStrums.members[daNote.noteData].getRegularAxis(daNote.distanceAxis);
-				else
-					strumPos = opponentStrums.members[daNote.noteData].getRegularAxis(daNote.distanceAxis);
+				if(daNote.mustPress) {
+					strumAngle = playerStrums.members[daNote.noteData].directionAngle;
+					strumPos = playerStrums.members[daNote.noteData].y;
+				}else {
+					strumAngle = opponentStrums.members[daNote.noteData].directionAngle;
+					strumPos = opponentStrums.members[daNote.noteData].y;
+				}
 
 				final centerNote:Float = strumPos + Note.swagWidth / 2;
 
-				daNote.caculatePos = caculateNoteY(strumPos, daNote, daNote.downscrollNote);
-				daNote.setNoteAxis(daNote.distanceAxis);
+				daNote.caculatePos = caculateNoteY(daNote, daNote.downscrollNote);
+				daNote.setNoteAxis(strumPos, strumAngle);
 
 				// fixed it kinda
 				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)
@@ -2026,8 +2019,15 @@ class PlayState extends MusicBeatState
 
 				if (daNote.mustPress) {
 					daNote.setVisibility(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
-					daNote.setXaxis(playerStrums.members, addToNoteX(addLuaToX(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote), daNote));
-					daNote.setNoteAngle(addLuaToAngle(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote));
+
+					daNote.setXaxis(
+						playerStrums.members,
+						playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
+						addToNoteX(addLuaToX(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote), daNote),
+						playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+					);
+					
+					daNote.setNoteAngle(addLuaToAngle(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					daNote.setNoteAlpha(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
 
 					//Nothing planned for now.
@@ -2036,15 +2036,22 @@ class PlayState extends MusicBeatState
 
 					if (daNote.isSustainNote) {
 						if(daNote.prevNote.isSustainNote)
-							daNote.setXaxisSustain(playerStrums.members, daNote.prevNote.getInverseAxis(daNote.prevNote.distanceAxis));
+							daNote.setXaxisSustain(playerStrums.members, playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 						else
-							daNote.setXaxisSustain(playerStrums.members, daNote.getInverseAxis(daNote.distanceAxis) + (daNote.prevNote.width / 3));
+							daNote.setXaxisSustain(playerStrums.members, playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					}
 				}
 				else {
 					daNote.setVisibility(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
-					daNote.setXaxis(opponentStrums.members, addToNoteX(addLuaToX(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].getInverseAxis(daNote.distanceAxis), daNote), daNote));
-					daNote.setNoteAngle(addLuaToAngle(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote));
+
+					daNote.setXaxis(
+						opponentStrums.members,
+						opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
+						addToNoteX(addLuaToX(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote), daNote),
+						opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+					);
+
+					daNote.setNoteAngle(addLuaToAngle(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					daNote.setNoteAlpha(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
 
 					//Nothing planned for now.
@@ -2053,9 +2060,9 @@ class PlayState extends MusicBeatState
 
 					if (daNote.isSustainNote) {
 						if(daNote.prevNote.isSustainNote)
-							daNote.setXaxisSustain(opponentStrums.members, daNote.prevNote.getInverseAxis(daNote.prevNote.distanceAxis));
+							daNote.setXaxisSustain(opponentStrums.members, opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 						else
-							daNote.setXaxisSustain(opponentStrums.members, daNote.getInverseAxis(daNote.distanceAxis) + (daNote.prevNote.width / 3));
+							daNote.setXaxisSustain(opponentStrums.members, opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					}
 				}
 
@@ -2913,6 +2920,8 @@ class PlayState extends MusicBeatState
 			setLua("defaultPlayerStrum4Y", PlayState.opponentStrums.members[4].y);
 		}
 
+		makeTweenNoteLua();
+
 		addCallback("setOpponentStrumPos", function(id:Int, x:Int, y:Int) {
 			PlayState.opponentStrums.members[id].x = x;
 			PlayState.opponentStrums.members[id].y = y;
@@ -2922,6 +2931,51 @@ class PlayState extends MusicBeatState
 			PlayState.playerStrums.members[id].x = x;
 			PlayState.playerStrums.members[id].y = y;
 		});
+	}
+
+	function makeTweenNoteLua():Void {
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			addCallback("noteTweenX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				if(strumOBJ != null) {
+					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {x: value}, duration, {ease: Register.getFlxEaseByString(ease),
+						onComplete: function(twn:FlxTween) {
+							getModLua().luaTweens.remove(name);
+							callLua('onTweenCompleted', [name]);
+						}
+					}));
+				}
+			});
+
+			addCallback("noteTweenY", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				if(strumOBJ != null) {
+					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {y: value}, duration, {ease: Register.getFlxEaseByString(ease),
+						onComplete: function(twn:FlxTween) {
+							getModLua().luaTweens.remove(name);
+							callLua('onTweenCompleted', [name]);
+						}
+					}));
+				}
+			});
+
+			addCallback("noteTweenAngle", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				if(strumOBJ != null) {
+					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+						onComplete: function(twn:FlxTween) {
+							getModLua().luaTweens.remove(name);
+							callLua('onTweenCompleted', [name]);
+						}
+					}));
+				}
+			});
+		}
+		#end
 	}
 
 	function updateLuaVars():Void {
