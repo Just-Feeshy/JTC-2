@@ -90,6 +90,14 @@ class CoolNote extends CustomNoteTemplate {
         return true;
     }
 
+    override function giveHealth(isSustain:Bool):Float {
+        return 0.046;
+    }
+
+    override function missNoteDamage():Float {
+        return 0.138;
+    }
+
     override function getWobblePower():UInt {
         return 30;
     }

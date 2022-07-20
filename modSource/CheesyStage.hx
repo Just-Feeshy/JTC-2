@@ -31,13 +31,48 @@ class CheesyStage extends StageBuilder {
 			case "funkroad":
 				setDefaultCameraZoom(0.50);
 
+				var funkroadSky:FlxSprite = new FlxSprite(-900, -500).loadGraphic(Paths.image('funkroadSky'));
+				funkroadSky.antialiasing = true;
+				funkroadSky.scrollFactor.set(0.7, 0.7);
+				funkroadSky.scale.set(1.2,1.2);
+				funkroadSky.active = false;
+				addToStage(funkroadSky);
 
+				var frostFrames = Paths.getSparrowAtlas('funkroad');
+
+				var frostbiteBG:FlxSprite = new FlxSprite(-1300, -400);
+				frostbiteBG.frames = frostFrames;
+				frostbiteBG.animation.addByPrefix('move', "funkroad", 24, true);
+				frostbiteBG.animation.play('move');
+				frostbiteBG.antialiasing = true;
+				frostbiteBG.scrollFactor.set(0.9, 0.9);
+				frostbiteBG.scale.set(1.2,1.2);
+				frostbiteBG.updateHitbox();
+				addToStage(frostbiteBG);
+
+				var frostCarFrames = Paths.getSparrowAtlas('daddycar');
+
+				var frostbiteCAR:FlxSprite = new FlxSprite(50, 100);
+				frostbiteCAR.frames = frostCarFrames;
+				frostbiteCAR.animation.addByPrefix('drive', "daddycar", 24, true);
+				frostbiteCAR.animation.play('drive');
+				frostbiteCAR.antialiasing = true;
+				frostbiteCAR.scrollFactor.set(1.0, 0.9);
+				frostbiteCAR.scale.set(0.7,0.7);
+				frostbiteCAR.updateHitbox();
+				addToStage(frostbiteCAR);
         }
     }
 
+	override public function whenCreatingScene():Void {
+		if(stage == "funkroad") {
+			removeFromStage(Register.getInGameCharacter(GIRLFRIEND));
+		}
+	}
+
 	override function setCamPos(camPos:FlxPoint):FlxPoint {
 		if(stage == "funkroad") {
-			return FlxPoint.get(Register.getInGameCharacter(GIRLFRIEND).x, Register.getInGameCharacter(GIRLFRIEND).y);
+			return FlxPoint.get(Register.getInGameCharacter(GIRLFRIEND).getMidpoint().x, Register.getInGameCharacter(GIRLFRIEND).getMidpoint().y);
 		}
 
 		return null;

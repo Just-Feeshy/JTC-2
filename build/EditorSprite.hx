@@ -13,6 +13,7 @@ import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.math.FlxMatrix;
+import feshixl.math.FeshMath3D;
 import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
 import openfl.display.BitmapData;
@@ -282,7 +283,7 @@ class EditorSprite extends FlxSprite {
 
 			if (angle != 0 || xAngle != 0 || yAngle != 0) {
                 animation.update(0);
-                _matrix.rotateWithTrig3D(xAngle, yAngle, zAngle);
+                angleMatrixTransform();
             }
 		}
 
@@ -296,6 +297,11 @@ class EditorSprite extends FlxSprite {
 
 		camera.drawPixels(_frame, framePixels, _matrix, colorTransform, blend, antialiasing, shader);
 	}
+
+    @:noCompletion
+    function angleMatrixTransform():Void {
+        FeshMath3D.rotateWithTrig3D(_matrix, xAngle, yAngle, zAngle);
+    }
 
     override function destroy() {
         FlxG.bitmap.remove(graphics);

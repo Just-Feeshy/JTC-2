@@ -1850,32 +1850,8 @@ class PlayState extends MusicBeatState
 			trace("RESET = True");
 		}
 
-		if (health <= 0 && (!modifierCheckList('safe balls') && Main.feeshmoraModifiers || !Main.feeshmoraModifiers))
-		{
-			boyfriend.stunned = true;
-
-			if(modifierCheckList('blind effect'))
-				FlxG.camera.alpha = 1;
-
-			persistentUpdate = false;
-			persistentDraw = false;
-			paused = true;
-
-			vocals.stop();
-			FlxG.sound.music.stop();
-
-			FlxG.camera.zoom = defaultCamZoom;
-
-			setLua("inGameOver", true);
-
-			openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
-
-			// FlxG.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
-			
-			#if windows
-			// Game Over doesn't get his own variable because it's only used here
-			DiscordClient.changePresence("Game Over - " + detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
-			#end
+		if (health <= 0 && (!modifierCheckList('safe balls') && Main.feeshmoraModifiers || !Main.feeshmoraModifiers)) {
+			gameOverScreen();
 		}else if(health <= 0 && (modifierCheckList('safe balls') && Main.feeshmoraModifiers)) {
 			health = 0;
 		}
@@ -2201,6 +2177,33 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
+	}
+
+	function gameOverScreen():Void {
+		boyfriend.stunned = true;
+
+		if(modifierCheckList('blind effect'))
+			FlxG.camera.alpha = 1;
+
+		persistentUpdate = false;
+		persistentDraw = false;
+		paused = true;
+
+		vocals.stop();
+		FlxG.sound.music.stop();
+
+		FlxG.camera.zoom = defaultCamZoom;
+
+		setLua("inGameOver", true);
+
+		openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+
+		// FlxG.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+		
+		#if windows
+		// Game Over doesn't get his own variable because it's only used here
+		DiscordClient.changePresence("Game Over - " + detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
+		#end
 	}
 
 	function endSong():Void
@@ -2631,6 +2634,8 @@ class PlayState extends MusicBeatState
 
 			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
 			boyfriend.playAnim(singAnims[direction] + "miss", true);
+
+			callLua("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
 		}
 	}
 
@@ -2796,6 +2801,8 @@ class PlayState extends MusicBeatState
 				hits++;
 			}
 
+			callLua("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
+
 			if (!note.isSustainNote) {
 				removeNote(note);
 			}
@@ -2921,6 +2928,10 @@ class PlayState extends MusicBeatState
 		}
 
 		makeTweenNoteLua();
+
+		addCallback("instaKillPlayer", function() {
+			gameOverScreen();
+		});
 
 		addCallback("setNoteStrumPos", function(id:Int, x:Int, y:Int) {
 			var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];

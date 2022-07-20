@@ -694,13 +694,6 @@ class Note extends EditorSprite
 				if(hasCustomAddon != null && ifPlayState)
 					hasCustomAddon.trailUpdate(trail);
 			}
-
-			if(noteAbstract == "cherry") {
-				var currentSway:Float = swayTime*(Conductor.bpm/120);
-				swayTime += 0.004;
-
-				angle = 15*Math.sin(currentSway * Math.PI);
-			}
 	
 			if (mustPress)
 			{

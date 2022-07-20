@@ -788,7 +788,7 @@ class ChartingState extends MusicBeatState
 
 		speedLabel = new FlxText(stepperSpeed.x + 65,stepperSpeed.y,'Scroll Speed');
 
-		var stepperBPM:FlxUINumericStepper = new FlxUINumericStepper(10, 65, 0.1, 1, 1.0, 5000.0, 1);
+		var stepperBPM:FlxUINumericStepper = new FlxUINumericStepper(10, 65, 1, 1, 1.0, 5000.0, 0);
 		stepperBPM.value = Conductor.bpm;
 		stepperBPM.name = 'song_bpm';
 
@@ -1094,17 +1094,17 @@ class ChartingState extends MusicBeatState
 
 	function loadSong(daSong:String):Void
 	{
-		if (FlxG.sound.music != null)
-		{
+		if (FlxG.sound.music != null) {
 			FlxG.sound.music.stop();
-			// vocals.stop();
 		}
 
 		FlxG.sound.playMusic(Paths.inst(daSong), 0.6);
 
 		// WONT WORK FOR TUTORIAL OR TEST SONG!!! REDO LATER
 		vocals = new FlxSound().loadEmbedded(Paths.voices(daSong));
+		vocals.looped = true;
 		FlxG.sound.list.add(vocals);
+		vocals.play();
 
 		FlxG.sound.music.pause();
 		vocals.pause();
@@ -1659,13 +1659,13 @@ class ChartingState extends MusicBeatState
 		// Basically old shit from changeSection???
 		FlxG.sound.music.time = sectionStartTime(curSection);
 
-		if (songBeginning)
-		{
+		if (songBeginning) {
 			FlxG.sound.music.time = 0;
 			curSection = 0;
 		}
 
 		vocals.time = FlxG.sound.music.time;
+
 		updateCurStep();
 
 		updateGrid();
