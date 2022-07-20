@@ -3,10 +3,12 @@ package feshixl.math;
 import flixel.math.FlxMatrix;
 
 class FeshMath3D {
+
     /**
     * @param Z regular 2d angle from `FlxSprite`.
     */
-    public inline static function rotateWithTrig3D(matrix:FlxMatrix, thetaX:Float, thetaY:Float, thetaZ:Float):Void {
+    public inline static function rotateWithTrig3D(matrix:FlxMatrix, thetaX:Float, thetaY:Float, thetaZ:Float, hasPerspective:Bool = true):Void {
+
         final xc:Float = Math.cos(thetaX);
         final xs:Float = Math.sin(thetaX);
         final yc:Float = Math.cos(thetaY);
@@ -14,16 +16,22 @@ class FeshMath3D {
         final zc:Float = Math.cos(thetaZ);
         final zs:Float = Math.sin(thetaZ);
 
-        var a1:Float = (matrix.a * zc - matrix.b * zs) * yc - 0 * ys;
-		matrix.b = (matrix.a * zs + matrix.b * zc) * xc - (0 * yc + a1 * ys) * xs;
-		matrix.a = a1;
+        var p1:Float = 1;
+        var p2:Float = 1;
+        var p3:Float = 1;
 
-		var c1:Float = (matrix.c * zc - matrix.d * zs) * yc - 0 * ys;
-		matrix.d = (matrix.c * zs + matrix.d * zc) * xc - (0 * yc + c1 * ys) * xs;
-		matrix.c = c1;
+        matrix.rotateWithTrig(zc, zs);
 
-		var tx1:Float = (matrix.tx * zc - matrix.ty * zs) * yc - 0 * ys;
-		matrix.ty = (matrix.tx * zs + matrix.ty * zc) * xc - (0 * yc + tx1 * ys) * xs;
-		matrix.tx = tx1;
+        var a1:Float = p1 * ((0 * ys) + (matrix.a * yc));
+        matrix.b = p1 * ((matrix.b * xc) - ((0 * yc - matrix.a * ys) * xs));
+        matrix.a = a1;
+
+        var c1:Float = p2 * ((0 * ys) + (matrix.c * yc));
+        matrix.d = p2 * ((matrix.d * xc) - ((0 * yc - matrix.c * ys) * xs));
+        matrix.c = c1;
+
+        var tx1:Float = p3 * ((0 * ys) + (matrix.tx * yc));
+        matrix.ty = p3 * ((matrix.ty * xc) - ((0 * yc - matrix.tx * ys) * xs));
+        matrix.tx = tx1;
     }
 }

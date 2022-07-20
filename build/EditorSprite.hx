@@ -32,6 +32,7 @@ import Std.is as isOfType;
 * This sprite class was made to make `FlxSprite` easier to configure
 * which would also allow the user to easily cutomize said sprite for there mod.
 *
+* WARNING: This class is experimental purposes only.
 * TODO: Get animations from json too.
 *
 * @author Feeshy
@@ -280,11 +281,7 @@ class EditorSprite extends FlxSprite {
 
 		if (bakedRotationAngle <= 0) {
 			updateTrig();
-
-			if (angle != 0 || xAngle != 0 || yAngle != 0) {
-                animation.update(0);
-                angleMatrixTransform();
-            }
+			angleMatrixTransform();
 		}
 
 		_point.add(origin.x, origin.y);
@@ -300,7 +297,10 @@ class EditorSprite extends FlxSprite {
 
     @:noCompletion
     function angleMatrixTransform():Void {
-        FeshMath3D.rotateWithTrig3D(_matrix, xAngle, yAngle, zAngle);
+        if (angle != 0 || xAngle != 0 || yAngle != 0) {
+            animation.update(0);
+            FeshMath3D.rotateWithTrig3D(_matrix, xAngle, yAngle, zAngle, true);
+        }
     }
 
     override function destroy() {

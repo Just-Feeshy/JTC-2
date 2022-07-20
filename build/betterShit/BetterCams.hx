@@ -1,10 +1,20 @@
 package betterShit;
 
+import flixel.FlxG;
 import flixel.FlxCamera;
+import flixel.system.FlxAssets.FlxShader;
+import flixel.graphics.frames.FlxFrame;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
-import flixel.FlxG;
+import flixel.math.FlxMatrix;
 import openfl.filters.BitmapFilter;
+import openfl.display.BlendMode;
+import openfl.display.BitmapData;
+import openfl.geom.ColorTransform;
+import openfl.geom.Rectangle;
+import openfl.geom.Point;
+
+using flixel.util.FlxColorTransformUtil;
 
 class BetterCams extends FlxCamera {
 
@@ -63,6 +73,84 @@ class BetterCams extends FlxCamera {
         updateFlashSpritePosition();
         return engineY;
 	}
+
+    override function drawPixels(?frame:FlxFrame, ?pixels:BitmapData, matrix:FlxMatrix, ?transform:ColorTransform, ?blend:BlendMode, ?smoothing:Bool = false,
+        ?shader:FlxShader):Void {
+        if (FlxG.renderBlit)
+        {
+            _helperMatrix.copyFrom(matrix);
+
+            if (_useBlitMatrix)
+            {
+                _helperMatrix.concat(_blitMatrix);
+                buffer.draw(pixels, _helperMatrix, null, null, null, (smoothing || antialiasing));
+            }
+            else
+            {
+                _helperMatrix.translate(-viewOffsetX, -viewOffsetY);
+                buffer.draw(pixels, _helperMatrix, null, blend, null, (smoothing || antialiasing));
+            }
+        }
+        else
+        {
+            var isColored = (transform != null && transform.hasRGBMultipliers());
+            var hasColorOffsets:Bool = (transform != null && transform.hasRGBAOffsets());
+
+            #if FLX_RENDER_TRIANGLE
+            var drawItem:FlxDrawTrianglesItem = startTrianglesBatch(frame.parent, smoothing, isColored, blend);
+            #else
+            var drawItem = startQuadBatch(frame.parent, isColored, hasColorOffsets, blend, smoothing, shader);
+            #end
+            drawItem.addQuad(frame, matrix, transform);
+        }
+
+        return;
+    }
+
+    override function copyPixels(?frame:FlxFrame, ?pixels:BitmapData, ?sourceRect:Rectangle, destPoint:Point, ?transform:ColorTransform, ?blend:BlendMode,
+        ?smoothing:Bool = false, ?shader:FlxShader):Void {
+        if (FlxG.renderBlit)
+        {
+            if (pixels != null)
+            {
+                if (_useBlitMatrix)
+                {
+                    _helperMatrix.identity();
+                    _helperMatrix.translate(destPoint.x, destPoint.y);
+                    _helperMatrix.concat(_blitMatrix);
+                    buffer.draw(pixels, _helperMatrix, null, null, null, (smoothing || antialiasing));
+                }
+                else
+                {
+                    _helperPoint.x = destPoint.x - Std.int(viewOffsetX);
+                    _helperPoint.y = destPoint.y - Std.int(viewOffsetY);
+                    buffer.copyPixels(pixels, sourceRect, _helperPoint, null, null, true);
+                }
+            }
+            else if (frame != null)
+            {
+                // TODO: fix this case for zoom less than initial zoom...
+                frame.paint(buffer, destPoint, true);
+            }
+        }
+        else
+        {
+            _helperMatrix.identity();
+            _helperMatrix.translate(destPoint.x + frame.offset.x, destPoint.y + frame.offset.y);
+
+            var isColored = (transform != null && transform.hasRGBMultipliers());
+            var hasColorOffsets:Bool = (transform != null && transform.hasRGBAOffsets());
+
+            #if !FLX_RENDER_TRIANGLE
+            var drawItem = startQuadBatch(frame.parent, isColored, hasColorOffsets, blend, smoothing, shader);
+            #else
+            var drawItem:FlxDrawTrianglesItem = startTrianglesBatch(frame.parent, smoothing, isColored, blend);
+            #end
+            drawItem.addQuad(frame, _helperMatrix, transform);
+        }
+
+        return;
+    }
 
     /**
 	*Reuse and recycle! - Feeshy
