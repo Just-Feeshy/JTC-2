@@ -25,6 +25,8 @@ using StringTools;
 */
 
 class ModLua {
+    private var executed:Bool = false;
+
     #if (USING_LUA && linc_luajit_basic)
     private var lua:State = null;
     #end
@@ -41,6 +43,12 @@ class ModLua {
     }
 
     public function execute() {
+        if(!executed) {
+            executed = true;
+        }else {
+            return;
+        }
+
         #if (USING_LUA && linc_luajit_basic)
         lua = LuaL.newstate();
 		LuaL.openlibs(lua);

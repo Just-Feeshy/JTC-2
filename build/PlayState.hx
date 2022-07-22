@@ -343,10 +343,8 @@ class PlayState extends MusicBeatState
 		events = new FeshEventGroup();
 
 		for(i in 0...Register.events.length) {
-			stageGroup.add(cast Type.createInstance(Register.events[i], []));
+			events.add(cast Type.createInstance(Register.events[i], []));
 		}
-
-		getLuaScript();
 
 		if(waterBlur[0] == null)
 			waterBlur.push(new BlurFilter(defaultBlur, defaultBlur, BitmapFilterQuality.HIGH));
@@ -371,10 +369,18 @@ class PlayState extends MusicBeatState
 				gfVersion = 'gf-car';
 		}else {
 			gfVersion = SONG.girlfriend;
-		}	
+		}
 
 		gf = new Character(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
+
+		for(i in 0...stageGroup.length) {
+			if(!stageGroup.members[i].hasGirlfriend()) {
+				gf.destroy();
+				gf = null;
+				break;
+			}
+		}
 
 		dad = new Character(100, 100, SONG.player2);
 
@@ -528,6 +534,14 @@ class PlayState extends MusicBeatState
 		playerIconColor = CoolUtil.calculateAverageColor(iconP1.updateFramePixels());
 		opponentIconColor = CoolUtil.calculateAverageColor(iconP2.updateFramePixels());
 		healthBar.createFilledBar(opponentIconColor, playerIconColor);
+
+		getLuaScript();
+		
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			generateStaticLua();
+		}
+		#end
 
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
@@ -844,12 +858,6 @@ class PlayState extends MusicBeatState
 			stageGroup.forEach(function(stage:StageBuilder) {
 				stage.whenCreatingScene();
 			});
-
-			#if (USING_LUA && linc_luajit_basic)
-			if(HelperStates.luaExist(Type.getClass(this))) {
-				generateStaticLua();
-			}
-			#end
 		} else {
 			return;
 		}
@@ -923,7 +931,10 @@ class PlayState extends MusicBeatState
 		Conductor.songPosition -= Conductor.crochet * 5;
 		Conductor.trackPosition = Conductor.songPosition;
 
+		makeNoteLua();
+
 		setLua("startedCountdown", true);
+		callLua("generatedStage", []);
 
 		var swagCounter:Int = 0;
 
@@ -931,7 +942,10 @@ class PlayState extends MusicBeatState
 		{
 			iconP1.setGraphicSize(Std.int(iconP1.width + 30));
 
-			gf.dance();
+			if(gf != null) {
+				gf.dance();
+			}
+
 			dad.dance();
 			boyfriend.dance();
 
@@ -2609,9 +2623,11 @@ class PlayState extends MusicBeatState
 		{
 			setHealth(health - 0.04);
 
-			if (combo > 5 && gf.animOffsets.exists('sad'))
-			{
-				gf.playAnim('sad');
+			if(gf != null) {
+				if (combo > 5 && gf.animOffsets.exists('sad'))
+				{
+					gf.playAnim('sad');
+				}
 			}
 
 			combo = 0;
@@ -2876,6 +2892,7 @@ class PlayState extends MusicBeatState
 		if(Assets.exists(Paths.getPath('scripts/${"stage/" + curStage.toLowerCase()}.lua', TEXT, null))) {
 			Register.detachLuaFromState(PlayState);
 			Register.attachLuaToState(PlayState, new ModLua(Paths.lua("stage/" + curStage.toLowerCase())));
+			getModLua().execute();
 		}
 		#end
 	}
@@ -2899,46 +2916,98 @@ class PlayState extends MusicBeatState
 		setLua("defaultBoyfriendY", boyfriend.y);
 		setLua("defaultOpponentX", dad.x);
 		setLua("defaultOpponentY", dad.y);
-		setLua("defaultGirlfriendX", gf.x);
-		setLua("defaultGirlfriendY", gf.y);
 
-		for(i in 0...PlayState.playerStrums.members.length) {
-			setLua('defaultPlayerStrumX' + i, 0);
-			setLua('defaultPlayerStrumY' + i, 0);
+		if(gf != null) {
+			setLua("defaultGirlfriendX", gf.x);
+			setLua("defaultGirlfriendY", gf.y);
+		}else {
+			setLua("defaultGirlfriendX", 0);
+			setLua("defaultGirlfriendY", 0);
 		}
-
-		for (i in 0...PlayState.opponentStrums.members.length) {
-			setLua('defaultOpponentStrumX' + i, 0);
-			setLua('defaultOpponentStrumY' + i, 0);
-		}
-
-		makeTweenNoteLua();
 
 		addCallback("instaKillPlayer", function() {
 			gameOverScreen();
 		});
 
-		addCallback("setNoteStrumPos", function(id:Int, x:Int, y:Int) {
-			var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+		addCallback("setHealthBarColors", function(opponentHex:String, playerHex:String) {
+			var opponentColor:FlxColor = 0;
+			var playerColor:FlxColor = 0;
 
-			strumOBJ.x = x;
-			strumOBJ.y = y;
+			if(!opponentHex.startsWith("0x")) {
+				opponentColor = Std.parseInt('0x' + opponentHex);
+			}else {
+				opponentColor = Std.parseInt(opponentHex);
+			}
+
+			if(!playerHex.startsWith("0x")) {
+				playerColor = Std.parseInt('0x' + playerHex);
+			}else {
+				playerColor = Std.parseInt(playerHex);
+			}
+
+			healthBar.createFilledBar(opponentColor, playerColor);
+			healthBar.updateBar();
 		});
 
-		addCallback("setNoteStrumAngle", function(id:Int, angle:Int) {
-			var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-			strumOBJ.angle = angle;
-		});
+		addCallback("tweenHealthBarColor", function(name:String, side:String, hex:String, duration:Float, ease:String) {
+			var barColor:FlxColor = 0;
 
-		addCallback("setPlayerStrumDirection", function(id:Int, angle:Int) {
-			var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-			strumOBJ.directionAngle = angle;
+			if(!hex.startsWith("0x")) {
+				barColor = Std.parseInt('0x' + hex);
+			}else {
+				barColor = Std.parseInt(hex);
+			}
+
+			if(side == "left" || side == "opponent") {
+				getModLua().luaTweens.set(name, FlxTween.color(healthBar, duration, healthBar.emptyColor, barColor, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+                        getModLua().luaTweens.remove(name);
+						callLua('onTweenCompleted', [name]);
+                    }
+				}));
+			}
+
+			if(side == "right" || side == "player") {
+				getModLua().luaTweens.set(name, FlxTween.color(healthBar, duration, healthBar.filledColor, barColor, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+                        getModLua().luaTweens.remove(name);
+						callLua('onTweenCompleted', [name]);
+                    }
+				}));
+			}
 		});
 	}
 
-	function makeTweenNoteLua():Void {
+	function makeNoteLua():Void {
 		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
+			for(i in 0...playerStrums.members.length) {
+				setLua('defaultPlayerStrumX' + i, playerStrums.members[i].x);
+				setLua('defaultPlayerStrumY' + i, playerStrums.members[i].y);
+			}
+	
+			for (i in 0...opponentStrums.members.length) {
+				setLua('defaultOpponentStrumX' + i, opponentStrums.members[i].x);
+				setLua('defaultOpponentStrumY' + i, opponentStrums.members[i].y);
+			}
+
+			addCallback("setNoteStrumPos", function(id:Int, x:Int, y:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+	
+				strumOBJ.x = x;
+				strumOBJ.y = y;
+			});
+	
+			addCallback("setNoteStrumAngle", function(id:Int, angle:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				strumOBJ.angle = angle;
+			});
+	
+			addCallback("setPlayerStrumDirection", function(id:Int, angle:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				strumOBJ.directionAngle = angle;
+			});
+
 			addCallback("noteTweenX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 
@@ -3004,13 +3073,27 @@ class PlayState extends MusicBeatState
 
 		setLua("boyfriendName", boyfriend.curCharacter);
 		setLua("dadName", dad.curCharacter);
-		setLua("gfName", gf.curCharacter);
+
+		if(gf != null) {
+			setLua("gfName", gf.curCharacter);
+		}else {
+			setLua("gfName", "");
+		}
 
 		setLua('downscroll', SaveData.getData(DOWNSCROLL));
 		setLua('framerate', Lib.current.stage.frameRate);
 		setLua('ghostTapping', GhostTapping.ghostTap);
 		setLua("songLength", FlxG.sound.music.length);
 		setLua("trackPos", Conductor.trackPosition);
+
+		/*
+		setLua("iconP1_ID_Regular", iconP1.iconAnimInfo);
+		setLua("iconP2_ID_Regular", iconP2.iconAnimInfo);
+		setLua("iconP1_ID_Dead", iconP1.iconAnimInfo);
+		setLua("iconP2_ID_Dead", iconP2.iconAnimInfo);
+		setLua("iconP1_ID_Winning", iconP1.iconAnimInfo);
+		setLua("iconP2_ID_Winning", iconP2.iconAnimInfo);
+		*/
 	}
 
 	function updatePerSectionLuaVars():Void {
@@ -3140,7 +3223,7 @@ class PlayState extends MusicBeatState
 		iconP1.updateHitbox();
 		iconP2.updateHitbox();
 
-		if (curBeat % gfSpeed == 0)
+		if (curBeat % gfSpeed == 0 && gf != null)
 		{
 			gf.dance();
 		}

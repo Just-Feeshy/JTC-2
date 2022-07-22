@@ -1,0 +1,69 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "flying dance IDLE GF",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "flying dance DOWN GF",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				4
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "flying dance RIGHT GF",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-19,
+				0
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "flying dance LEFT GF",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				11,
+				50
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "flying dance UP GF",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": true,
+	"pixel": false,
+	"position": {
+		"x": 0,
+		"camPosY": -130,
+		"y": -260,
+		"camPosX": 0
+	},
+	"playAnim": "",
+	"file": "flying notes GF SINGS.xml",
+	"icon": [
+		28,
+		29,
+		28
+	]
+}

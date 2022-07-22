@@ -242,6 +242,8 @@ class CharacterCreatorState extends MusicBeatState {
         camCursor.color = FlxColor.WHITE;
         add(camCursor);
 
+        updateCursorPos();
+
         iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - 26);
 		iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - 26);
 
@@ -787,10 +789,12 @@ class CharacterCreatorState extends MusicBeatState {
             }else if(wname == 'x_cam_pos') {
                 character._info.position.set('camPosX', Std.int(nums.value));
                 characterAutosave.set(character.curCharacter, character._info);
+                character.refresh(character.curCharacter, camPos);
                 camFollow.setPosition(camPos.x, camPos.y);
             }else if(wname == 'y_cam_pos') {
                 character._info.position.set('camPosY', Std.int(nums.value));
                 characterAutosave.set(character.curCharacter, character._info);
+                character.refresh(character.curCharacter, camPos);
                 camFollow.setPosition(camPos.x, camPos.y);
             }else if(wname == 'x_offset') {
                 character._info.animations.get(animationDrop.selectedLabel).offset[0] = Std.int(nums.value);

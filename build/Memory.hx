@@ -6,7 +6,8 @@ import openfl.text.TextFormat;
 import openfl.system.System;
 
 class Memory extends TextField {
-    var memPeak:Float = 0;
+    public var memPeak(default, null):Float = 0;
+    public var memory(default, null):Float = 0;
 
     public function new(x:Float = 10.0, y:Float = 10.0, color:Int = 0x000000) {
         super();
@@ -25,14 +26,14 @@ class Memory extends TextField {
     }
 
     function onEnter(_) {
-        var mem:Float = Math.round(System.totalMemory / 1024 / 1024 * 100)/100;
+        memory = Math.round(System.totalMemory / 1024 / 1024 * 100) / 100;
 
-		if (mem > memPeak) {
-            memPeak = mem;
+		if (memory > memPeak) {
+            memPeak = memory;
         }
 
         if (visible) {
-            text = "MEM: " + mem + " MB\nMEM peak: " + memPeak + " MB";
+            text = "MEM: " + memory + " MB\nMEM peak: " + memPeak + " MB";
         }
     }
 }

@@ -72,7 +72,7 @@ class CacheState extends MusicBeatState {
     function cacheStuff():Void {
         Cache.clear();
 
-        var cacheList:Array<String>;
+        var cacheList:Array<String> = [];
         var dialogueList:Array<DialogueData>;
         
         if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/dialogue.json', TEXT, ""))) {

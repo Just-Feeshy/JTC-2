@@ -74,6 +74,10 @@ abstract class StageBuilder extends FlxBasic {
         return null;
     }
 
+    public function hasGirlfriend():Bool {
+        return true;
+    }
+
     @:allow(PlayState)
     private function curBeat():Void {
         //Empty

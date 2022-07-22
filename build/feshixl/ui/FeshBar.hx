@@ -7,6 +7,9 @@ import flixel.util.FlxColor;
 * Whole point is to store the color of both sides of the bar.
 */
 class FeshBar extends FlxBar {
+    public var emptyColor(default, set):FlxColor = 0;
+    public var filledColor(default, set):FlxColor = 0;
+
     public var currentEmptyColor(default, null):FlxColor = 0;
     public var currentFilledColor(default, null):FlxColor = 0;
 
@@ -19,6 +22,18 @@ class FeshBar extends FlxBar {
         this.showBorder = showBorder;
 
         super(x, y, direction, width, height, parentRef, variable, min, max, showBorder);
+    }
+
+    function set_emptyColor(color:FlxColor):FlxColor {
+        createColoredEmptyBar(color, showBorder, border);
+        updateBar();
+        return emptyColor = color;
+    }
+
+    function set_filledColor(color:FlxColor):FlxColor {
+        createColoredFilledBar(color, showBorder, border);
+        updateBar();
+        return filledColor = color;
     }
 
     override function createFilledBar(empty:FlxColor, fill:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FlxBar {

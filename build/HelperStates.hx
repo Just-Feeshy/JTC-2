@@ -169,6 +169,15 @@ class HelperStates extends FlxUIState {
 		}
 	}
 
+	override function update(elapsed:Float):Void {
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this)))
+			HelperStates.getLua(Type.getClass(this)).call("onUpdate", [elapsed]);
+		#end
+
+		super.update(elapsed);
+	}
+
 	override function destroy() {
 		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {

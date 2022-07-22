@@ -1,12 +1,15 @@
 import flixel.FlxG;
 
 import template.DialogueBuilder;
+import example_code.DefaultStage;
 
 import ImportModStuff;
 import NotesJTC;
 
 class Mod {
     static function onInit() {
+        Register.remove(STAGE, DefaultStage); //Remove unwanted data from the game.
+
         Register.attachLuaToState(MainMenuState, new ModLua(Paths.lua("jtc_menu")));
         Register.attachLuaToState(OptionsMenuState, new ModLua(Paths.lua("modSettings")));
         Register.implementDialogueToSong("funk-off", DialogueBoxJTC);

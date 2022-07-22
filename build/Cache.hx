@@ -13,6 +13,8 @@ import lime.utils.Assets;
 
 //Basically a class like Path
 class Cache {
+    public static var permanentCache:Array<String> = new Array<String>();
+
     private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
     private static var theseSounds:Map<String, Sound> = new Map<String, Sound>();
 
@@ -89,7 +91,7 @@ class Cache {
 		for (key in FlxG.bitmap._cache.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
 
-            if (theseAssets.exists(key)) {
+            if (theseAssets.exists(key) && !permanentCache.contains(key)) {
                 trace("Remove cached file: " + key);
 
                 FlxG.bitmap.removeKey(key);

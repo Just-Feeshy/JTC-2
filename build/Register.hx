@@ -62,7 +62,7 @@ class Register {
     private static var events:Array<Class<IFeshEvent>> = [];
 
     @:allow(PlayState)
-    private static var stages:Array<Class<StageBuilder>> = [DefaultStage];
+    private static var stages:Array<Class<StageBuilder>> = [];
 
     @:allow(PlayState)
     private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
@@ -74,6 +74,7 @@ class Register {
         */
 
         add(EVENT, DefaultEvents);
+        add(STAGE, DefaultStage);
 
         addCustomTransition("fade", FadeTransition);
         addCustomTransition("tile", TileTransition);
@@ -134,10 +135,23 @@ class Register {
                 var daEvent:Class<IFeshEvent> = addonClass;
 
                 if(!events.contains(daEvent))
-                    events.push(daEvent);
+                    events.insert(0, daEvent);
             case STAGE:
                 if(!stages.contains(addonClass))
-                    stages.push(addonClass);
+                    stages.insert(0, addonClass);
+        }
+    }
+
+    public inline static function remove(addonType:ClassType, addonClass:Dynamic):Void {
+        switch(addonType) {
+            case EVENT:
+                var daEvent:Class<IFeshEvent> = addonClass;
+
+                if(events.contains(daEvent))
+                    events.remove(daEvent);
+            case STAGE:
+                if(stages.contains(addonClass))
+                    stages.remove(addonClass);
         }
     }
 

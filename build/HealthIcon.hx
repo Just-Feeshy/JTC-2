@@ -24,6 +24,8 @@ class HealthIcon extends FlxSprite
 
 	private var updatePref:Float = 1;
 
+	private var iconAnimInfo:Array<Int> = [];
+
 	public function new(char:String = 'bf', isPlayer:Bool = false, ?storyBPM:Int = 0, ?loadAnims:Bool = true)
 	{
 		super();
@@ -60,6 +62,7 @@ class HealthIcon extends FlxSprite
 		if(!iconCharacters.contains(character)) {
 			iconCharacters.push(character);
 			animation.add(character, iconAnimInfo, 0, false, isPlayer);
+			this.iconAnimInfo = iconAnimInfo;
 		}
 	}
 

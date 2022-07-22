@@ -5,10 +5,25 @@ import template.StageBuilder;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
+import flixel.util.FlxDestroyUtil;
+import lime.utils.Assets;
+import haxe.Json;
 
 class CheesyStage extends StageBuilder {
     public function new(stage:String) {
         super(stage);
+
+		var cacheList:Array<String> = [];
+
+		if(Assets.exists(Paths.getPath('data/frostbeat/cache.json', TEXT, ""))) {
+            cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/frostbeat/cache.json', TEXT, "")));
+
+			for(i in 0...cacheList.length) {
+				if(!Cache.permanentCache.contains(cacheList[i])) {
+					Cache.permanentCache.push(cacheList[i]);
+				}
+			}
+		}
 
         switch(stage) {
             case "funkstreet":
@@ -64,17 +79,19 @@ class CheesyStage extends StageBuilder {
         }
     }
 
-	override public function whenCreatingScene():Void {
-		if(stage == "funkroad") {
-			removeFromStage(Register.getInGameCharacter(GIRLFRIEND));
-		}
-	}
-
 	override function setCamPos(camPos:FlxPoint):FlxPoint {
 		if(stage == "funkroad") {
-			return FlxPoint.get(Register.getInGameCharacter(GIRLFRIEND).getMidpoint().x, Register.getInGameCharacter(GIRLFRIEND).getMidpoint().y);
+			return FlxPoint.get(751.5, 458.5);
 		}
 
 		return null;
+	}
+
+	override function hasGirlfriend():Bool {
+		if(stage == "funkroad") {
+			return false;
+		}
+
+		return true;
 	}
 }
