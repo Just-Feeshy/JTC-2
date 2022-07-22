@@ -34,7 +34,7 @@ class ModLua {
     public var luaSprites(default, null):Map<String, FlxSprite> = new Map<String, FlxSprite>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
-    public var luaTweens:Map<String, FlxTween> = new Map<String, FlxTween>();
+    public var luaTweens(default, null):Map<String, FlxTween> = new Map<String, FlxTween>();
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
@@ -344,15 +344,15 @@ class ModLua {
             var shader:FeshShader = luaShaders.get(name);
         });
 
-        Lua_helper.add_callback(lua, "attachShaderToSprite", function(name:String, spriteName:String) {
+        Lua_helper.add_callback(lua, "attachShaderToObject", function(name:String, spriteName:String) {
             var shader:FeshShader = luaShaders.get(name);
-            var sprite:FlxSprite = luaSprites.get(spriteName);
+            var obj:Dynamic = getObjectFromMap(spriteName);
 
             if(shader == null) {
                 return;
             }
 
-            if(sprite == null) {
+            if(obj == null) {
                 return;
             }
         });

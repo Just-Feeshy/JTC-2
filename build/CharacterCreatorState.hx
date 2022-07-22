@@ -468,7 +468,7 @@ class CharacterCreatorState extends MusicBeatState {
 
     var animationDrop:FlxUIDropDownMenu;
     var lockAnimCheck:FlxUICheckBox;
-    var prefixInput:FinderUIInputText;
+    var prefixInput:FlxUIInputText;
     var framerateChange:FlxUINumericStepper;
     var loopAnim:FlxUICheckBox;
 
@@ -599,22 +599,8 @@ class CharacterCreatorState extends MusicBeatState {
 
         var animationSettings:FlxText = new FlxUIText(10, 180, 0, "Animation Config", 11);
 
-        prefixInput = new FinderUIInputText(10, 210, 80, character._info.animations.get(animationDrop.selectedLabel).prefix, 8);
+        prefixInput = new FlxUIInputText(10, 210, 80, character._info.animations.get(animationDrop.selectedLabel).prefix, 8);
         var prefixInputTxt:FlxText = new FlxText(95, prefixInput.y, "prefix");
-
-        prefixInput.textUpdateCallback = function(text:String) {
-            var result:Bool = false;
-
-            @:privateAccess
-            for(k in character.animation._animations.keys()) {
-                if(k.startsWith(text)) {
-                    result = true;
-                    break;
-                }
-            }
-
-            return result;
-        }
 
         framerateChange = new FlxUINumericStepper(10, 230, 1, 0, -600, 600, 0);
         framerateChange.value = character._info.animations.get(animationDrop.selectedLabel).framerate;
@@ -793,15 +779,19 @@ class CharacterCreatorState extends MusicBeatState {
             if(wname == 'x_pos') {
                 character._info.position.set('x', Std.int(nums.value));
                 characterAutosave.set(character.curCharacter, character._info);
+                character.refresh(character.curCharacter, camPos);
             }else if(wname == 'y_pos') {
                 character._info.position.set('y', Std.int(nums.value));
                 characterAutosave.set(character.curCharacter, character._info);
+                character.refresh(character.curCharacter, camPos);
             }else if(wname == 'x_cam_pos') {
                 character._info.position.set('camPosX', Std.int(nums.value));
                 characterAutosave.set(character.curCharacter, character._info);
+                camFollow.setPosition(camPos.x, camPos.y);
             }else if(wname == 'y_cam_pos') {
                 character._info.position.set('camPosY', Std.int(nums.value));
                 characterAutosave.set(character.curCharacter, character._info);
+                camFollow.setPosition(camPos.x, camPos.y);
             }else if(wname == 'x_offset') {
                 character._info.animations.get(animationDrop.selectedLabel).offset[0] = Std.int(nums.value);
                 characterAutosave.set(character.curCharacter, character._info);
@@ -844,12 +834,7 @@ class CharacterCreatorState extends MusicBeatState {
                 setColorOptions(color);
             }
 
-            if(wname.endsWith('pos')) {
-                character.refresh(character.curCharacter, camPos);
-
-                if(wname.contains('cam'))
-                    camFollow.setPosition(camPos.x, camPos.y);
-            }else if(wname.endsWith('icon')) {
+            if(wname.endsWith('icon')) {
                 remove(iconP1);
                 iconP1.destroy();
                 iconP1 = null;

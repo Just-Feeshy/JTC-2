@@ -300,16 +300,13 @@ class Character extends EditorSprite
 	public function refresh(character:String, camPos:FlxPoint) {
 		this.setPosition(finalizedX, finalizedY);
 
-		switch (character) {
-			default:
-				this.x += _info.position.get('x');
-				this.y += _info.position.get('y');
+		this.x += _info.position.get('x');
+		this.y += _info.position.get('y');
 
-				camPos.set(this.getGraphicMidpoint().x, this.getGraphicMidpoint().y);
+		camPos.set(this.getGraphicMidpoint().x, this.getGraphicMidpoint().y);
 
-				camPos.x += _info.position.get('camPosX');
-				camPos.y += _info.position.get('camPosY');
-		}
+		camPos.x += _info.position.get('camPosX');
+		camPos.y += _info.position.get('camPosY');
 	}
 
 	private function setIndexis(character:String):Void {
