@@ -230,8 +230,11 @@ class Character extends EditorSprite
 		}
 	}
 
-	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void
-	{
+	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+		if(animations.length == 0) {
+			return;
+		}
+
 		if(!rendered) {
 			updateFrameSizeOffset(0, -1);
 			rendered = true;

@@ -184,7 +184,6 @@ class EditorSprite extends FlxSprite {
     }
 
     public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
-        
         /**
         * Just to be safe.
         * Basically, if it can't find the animation it's looking for to play, then it'll execute a random one.
@@ -224,6 +223,18 @@ class EditorSprite extends FlxSprite {
 
             frameIndex++;
         }
+    }
+
+    public function animationsExist():Bool {
+        var doesExist:Bool = false;
+
+        @:privateAccess
+        for(k in animation._animations.keys()) {
+            doesExist = true;
+            break;
+        }
+
+        return doesExist;
     }
 
     @:noCompletion

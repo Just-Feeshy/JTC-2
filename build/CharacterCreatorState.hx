@@ -166,7 +166,6 @@ class CharacterCreatorState extends MusicBeatState {
         instrucTxt.cameras = [camHUD];
 
         add(instrucTxt);
-
         super.create();
     }
 
@@ -304,6 +303,11 @@ class CharacterCreatorState extends MusicBeatState {
             return false;
         }
 
+        var updateFileButton:FlxUIButton = new FlxUIButton(10, 50 + fileName.height + 5, "Update", function() {
+            characterAutosave.get(character.curCharacter).file = fileName.text;
+            changeCharacter = true;
+        });
+
         var fileText:FlxText = new FlxText(fileName.width + 15, 50, 0, "XML File");
 
         var bfTextColor:FlxText = new FlxUIText(10, 30, 0, "Character Stuff");
@@ -345,7 +349,7 @@ class CharacterCreatorState extends MusicBeatState {
 
                 if(characterAutosave.get(characterName.text) == null) {
                     characterAutosave.set(characterName.text, {
-                        file: fileName.text.trim(),
+                        file: "",
                         animations: [],
                         position: [
                             "x" => 0,
@@ -362,6 +366,7 @@ class CharacterCreatorState extends MusicBeatState {
 
                 characterSelector.selectedLabel = characterName.text;
                 getEvent("click_button", this, Std.string(characterJSONs.indexOf(characterName.text)));
+                characterName.text = "";
             }    
         });
 
@@ -456,6 +461,7 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_display.add(characterSelector);
         tab_group_display.add(fileName);
         tab_group_display.add(fileText);
+        tab_group_display.add(updateFileButton);
 
         UI_thingy.addGroup(tab_group_display);
     }
@@ -500,8 +506,9 @@ class CharacterCreatorState extends MusicBeatState {
             updateStuff();
         });
 
-        if(character.animations.length > 0)
+        if(character.animations.length > 0) {
             animationDrop.selectedLabel = character.animation.curAnim.name;
+        }
         
         var animationDropTxt:FlxText = new FlxText(240, animationDrop.y - 15, "Custom Animation:");
 
@@ -600,7 +607,7 @@ class CharacterCreatorState extends MusicBeatState {
 
             @:privateAccess
             for(k in character.animation._animations.keys()) {
-                if(k.contains(text)) {
+                if(k.startsWith(text)) {
                     result = true;
                     break;
                 }
@@ -1165,16 +1172,8 @@ class CharacterCreatorState extends MusicBeatState {
     }
 
     function updateCursorPos():Void {
-        var x:Float = character.getMidpoint().x;
-        var y:Float = character.getMidpoint().x;
-
-        if(!character.isPlayer) {
-			x += 150 + characterAutosave.get(character.curCharacter).position.get('camPosX');
-		} else {
-			x -= 100 + characterAutosave.get(character.curCharacter).position.get('camPosX');
-		}
-
-        y -= 100 - characterAutosave.get(character.curCharacter).position.get('camPosY');
+        var x:Float = camFollow.x;
+        var y:Float = camFollow.y;
 
         x -= camCursor.width / 2;
 		y -= camCursor.height / 2;
