@@ -17,6 +17,7 @@ import flixel.util.FlxGradient;
 import flixel.ui.FlxBar;
 import flixel.addons.ui.FlxUI;
 import flixel.addons.ui.FlxUITabMenu;
+import flixel.system.debug.interaction.tools.Pointer.GraphicCursorCross;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.ui.FlxUINumericStepper;
 import flixel.addons.ui.FlxUICheckBox;
@@ -34,6 +35,7 @@ import flixel.math.FlxPoint;
 import flixel.FlxObject;
 import flixel.FlxCamera;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
 import openfl.events.IOErrorEvent;
 import openfl.events.IOErrorEvent;
@@ -63,7 +65,6 @@ enum FileType {
 typedef PreloadJSON = Map<String, Array<Array<Float>>>;
 
 class CharacterCreatorState extends MusicBeatState {
-
     private var isIn:Bool = true;
     private var UI_thingy:FlxUITabMenu;
     private var startTimer:FlxTimer;
@@ -79,6 +80,7 @@ class CharacterCreatorState extends MusicBeatState {
     private var instrucTxt:FlxText;
     private var iconP1:HealthIcon;
     private var iconP2:HealthIcon;
+    private var camCursor:FlxSprite;
     private var health:Float = 1;
 
     private final chooseSkin:Int = 0;
@@ -124,6 +126,10 @@ class CharacterCreatorState extends MusicBeatState {
             {name: "Export", label: 'Export'}
 		];
 
+        #if windows
+		DiscordClient.changePresence("Making Character", null);
+		#end
+
         createDisplay();
 
         UI_thingy = new FlxUITabMenu(null, tabs, true);
@@ -164,7 +170,7 @@ class CharacterCreatorState extends MusicBeatState {
         super.create();
     }
 
-    private function createDisplay() {
+    function createDisplay() {
 		var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));
 		bg.antialiasing = true;
 	    bg.active = false;
@@ -230,6 +236,13 @@ class CharacterCreatorState extends MusicBeatState {
         iconP2.updateHitbox();
 		add(iconP2);
 
+        var camCursorGraphic:FlxGraphic = FlxGraphic.fromClass(GraphicCursorCross);
+        camCursor = new FlxSprite().loadGraphic(camCursorGraphic);
+        camCursor.setGraphicSize(40, 40);
+        camCursor.updateHitbox();
+        camCursor.color = FlxColor.WHITE;
+        add(camCursor);
+
         iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - 26);
 		iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - 26);
 
@@ -237,6 +250,7 @@ class CharacterCreatorState extends MusicBeatState {
         stageFront.cameras = [camGame];
         stageCurtains.cameras = [camGame];
         character.cameras = [camGame];
+        camCursor.cameras = [camGame];
 
         healthBarBG.cameras = [camHUD];
         healthBar.cameras = [camHUD];
@@ -273,14 +287,24 @@ class CharacterCreatorState extends MusicBeatState {
 
     var characterSelector:FlxUIDropDownMenu;
 
-    private function addDisplayUI():Void {
+    var fileName:FinderUIInputText;
+
+    function addDisplayUI():Void {
         var tab_group_display = new FlxUI(null, UI_thingy);
 		tab_group_display.name = 'Display';
 
-        var getXML:FlxUIButton = new FlxUIButton(10, 50, "Get .xml", _characterSelectXML);
-        getXML.color = FlxColor.fromRGB(10, 10, 255);
-        getXML.label.color = FlxColor.WHITE;
-        getXML.resize(getXML.width, getXML.height * 1.5);
+        fileName = new FinderUIInputText(10, 50, 80, "", 8);
+        fileName.text = characterAutosave.get(character.curCharacter).file;
+
+        fileName.textUpdateCallback = function(text:String) {
+            if(FileSystem.exists(Paths.getPreloadPath("images/" + text))) {
+                return true;
+            }
+
+            return false;
+        }
+
+        var fileText:FlxText = new FlxText(fileName.width + 15, 50, 0, "XML File");
 
         var bfTextColor:FlxText = new FlxUIText(10, 30, 0, "Character Stuff");
         redMulti = new FlxUINumericStepper(10, 60, 0.1, 1, 0, 255, 1);
@@ -321,7 +345,7 @@ class CharacterCreatorState extends MusicBeatState {
 
                 if(characterAutosave.get(characterName.text) == null) {
                     characterAutosave.set(characterName.text, {
-                        file: "",
+                        file: fileName.text.trim(),
                         animations: [],
                         position: [
                             "x" => 0,
@@ -430,14 +454,15 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_display.add(hapeyIxonTxt);
         tab_group_display.add(flipSides);
         tab_group_display.add(characterSelector);
-        tab_group_display.add(getXML);
+        tab_group_display.add(fileName);
+        tab_group_display.add(fileText);
 
         UI_thingy.addGroup(tab_group_display);
     }
 
     var animationDrop:FlxUIDropDownMenu;
     var lockAnimCheck:FlxUICheckBox;
-    var prefixInput:FlxUIInputText;
+    var prefixInput:FinderUIInputText;
     var framerateChange:FlxUINumericStepper;
     var loopAnim:FlxUICheckBox;
 
@@ -447,11 +472,9 @@ class CharacterCreatorState extends MusicBeatState {
     var checkPlayable:FlxUICheckBox;
     var canBePixel:FlxUICheckBox;
 
-    var warningIndex:FlxText;
-
     var playCustomAnim:Bool = false;
     
-    private function addAnimationsUI():Void {
+    function addAnimationsUI():Void {
         var tab_group_animations = new FlxUI(null, UI_thingy);
         tab_group_animations.name = 'E Animations';
 
@@ -472,10 +495,6 @@ class CharacterCreatorState extends MusicBeatState {
             characterAutosave.set(character.curCharacter, character._info);
             getEvent("click_button", this, Std.string(characterJSONs.indexOf(characterSelector.selectedLabel)));
         });
-
-        warningIndex = new FlxUIText(UI_thingy.width / 5, 160, 0, "Index animations cannot be saved!", 11);
-        warningIndex.setFormat(warningIndex.font, warningIndex.size, FlxColor.RED);
-        warningIndex.kill();
 
         animationDrop = new FlxUIDropDownMenu(240, 20, FlxUIDropDownMenu.makeStrIdLabelArray(character.animations, true), function(choose:String) {
             updateStuff();
@@ -542,7 +561,6 @@ class CharacterCreatorState extends MusicBeatState {
                 loopAnim.checked = character._info.animations.get(animNameInput.text).looped;
                 offsetXInput.value = character._info.animations.get(animNameInput.text).offset[0];
                 offsetYInput.value = character._info.animations.get(animNameInput.text).offset[1];
-                warningIndex.kill();
             }    
         });
 
@@ -574,8 +592,22 @@ class CharacterCreatorState extends MusicBeatState {
 
         var animationSettings:FlxText = new FlxUIText(10, 180, 0, "Animation Config", 11);
 
-        prefixInput = new FlxUIInputText(10, 210, 80, character._info.animations.get(animationDrop.selectedLabel).prefix, 8);
+        prefixInput = new FinderUIInputText(10, 210, 80, character._info.animations.get(animationDrop.selectedLabel).prefix, 8);
         var prefixInputTxt:FlxText = new FlxText(95, prefixInput.y, "prefix");
+
+        prefixInput.textUpdateCallback = function(text:String) {
+            var result:Bool = false;
+
+            @:privateAccess
+            for(k in character.animation._animations.keys()) {
+                if(k.contains(text)) {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
 
         framerateChange = new FlxUINumericStepper(10, 230, 1, 0, -600, 600, 0);
         framerateChange.value = character._info.animations.get(animationDrop.selectedLabel).framerate;
@@ -611,7 +643,6 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_animations.add(animationSettings);
         tab_group_animations.add(prefixInput);
         tab_group_animations.add(prefixInputTxt);
-        tab_group_animations.add(warningIndex);
         tab_group_animations.add(animNameInput);
         tab_group_animations.add(newAnimButton);
         tab_group_animations.add(animNameTxt);
@@ -631,7 +662,7 @@ class CharacterCreatorState extends MusicBeatState {
         UI_thingy.addGroup(tab_group_animations);
     }
 
-    private function addExportUI():Void {
+    function addExportUI():Void {
         var tab_group_export = new FlxUI(null, UI_thingy);
 		tab_group_export.name = 'Export';
 
@@ -652,21 +683,19 @@ class CharacterCreatorState extends MusicBeatState {
         UI_thingy.addGroup(tab_group_export);
     }
 
-    private function updateStuff():Void {
+    function updateStuff():Void {
         if(character._info.animations.get(animationDrop.selectedLabel) != null) {
             prefixInput.text = character._info.animations.get(animationDrop.selectedLabel).prefix;
             framerateChange.value = character._info.animations.get(animationDrop.selectedLabel).framerate;
             loopAnim.checked = character._info.animations.get(animationDrop.selectedLabel).looped;
             offsetXInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[0];
             offsetYInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[1];
-            warningIndex.kill();
         }else {
             prefixInput.text = "";
             framerateChange.value = 24;
             loopAnim.checked = false;
             offsetXInput.value = 0;
             offsetYInput.value = 0;
-            warningIndex.revive();
         }
 
         xInput.value = characterAutosave.get(character.curCharacter).position.get('x');
@@ -734,6 +763,8 @@ class CharacterCreatorState extends MusicBeatState {
 
             if(character.animations.length > 0)
                 animationDrop.selectedLabel = character.animation.curAnim.name;
+
+            fileName.text = characterAutosave.get(character.curCharacter).file;
 
             updateStuff();
 
@@ -833,6 +864,8 @@ class CharacterCreatorState extends MusicBeatState {
 
     override function update(elapsed:Float) {
 		super.update(elapsed);
+
+        updateCursorPos();
 
         if(camGame.zoom <= 2 && camGame.zoom >= 0.1)
             camGame.zoom += FlxG.mouse.wheel * FlxG.elapsed * 1.2;
@@ -1131,6 +1164,23 @@ class CharacterCreatorState extends MusicBeatState {
         blueColor.value = color.blue;
     }
 
+    function updateCursorPos():Void {
+        var x:Float = character.getMidpoint().x;
+        var y:Float = character.getMidpoint().x;
+
+        if(!character.isPlayer) {
+			x += 150 + characterAutosave.get(character.curCharacter).position.get('camPosX');
+		} else {
+			x -= 100 + characterAutosave.get(character.curCharacter).position.get('camPosX');
+		}
+
+        y -= 100 - characterAutosave.get(character.curCharacter).position.get('camPosY');
+
+        x -= camCursor.width / 2;
+		y -= camCursor.height / 2;
+		camCursor.setPosition(x, y);
+    }
+
     function saveFile(fileType:FileType):Void {
         var data:String;
 
@@ -1156,15 +1206,6 @@ class CharacterCreatorState extends MusicBeatState {
                     _file.save(data.trim(),  "colors.json");
                 }
         }
-    }
-
-    function _characterSelectXML():Void {
-        _file = new FileReference();
-        _file.addEventListener(Event.SELECT, onSelect);
-        _file.addEventListener(Event.CANCEL, onCancel);
-        var filters:Array<FileFilter> = new Array<FileFilter>();
-		filters.push(new FileFilter("XML Files", "*.xml"));
-        _file.browse(filters);
     }
 
     function onSelect(event:Event):Void {
@@ -1209,5 +1250,21 @@ class CharacterCreatorState extends MusicBeatState {
     function onSaveError(_):Void {
         clearEvent();
         FlxG.log.error("Problem saving Character data");
+    }
+}
+
+private class FinderUIInputText extends FlxUIInputText {
+    public var textUpdateCallback:(text:String)->Bool;
+
+    override function onKeyDown(e:KeyboardEvent):Void {
+        super.onKeyDown(e);
+
+        if(textUpdateCallback != null) {
+            if(textUpdateCallback(text)) {
+                color = FlxColor.BLACK;
+            }else {
+                color = FlxColor.RED;
+            }
+        }
     }
 }

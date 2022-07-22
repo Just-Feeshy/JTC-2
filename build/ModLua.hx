@@ -14,7 +14,7 @@ import flixel.tweens.FlxEase;
 import flixel.util.FlxColor;
 import flixel.FlxSprite;
 
-import feshixl.shaders.ShaderHandler;
+import feshixl.shaders.FeshShader;
 
 import SaveData.SaveType;
 
@@ -32,7 +32,7 @@ class ModLua {
     public var luaScript(default, null):String;
 
     public var luaSprites(default, null):Map<String, FlxSprite> = new Map<String, FlxSprite>();
-    public var luaShaders(default, null):Map<String, ShaderHandler> = new Map<String, ShaderHandler>();
+    public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
     public var luaTweens:Map<String, FlxTween> = new Map<String, FlxTween>();
 
@@ -337,19 +337,15 @@ class ModLua {
 
             name = name.replace('.', '');
 
-            luaShaders.set(name, new ShaderHandler());
+            luaShaders.set(name, new FeshShader());
         });
 
         Lua_helper.add_callback(lua, "implementShaderFile", function(name:String, path:String) {
-            var shader:ShaderHandler = luaShaders.get(name);
-
-            if(shader != null) {
-                shader.implementFragmentShader(Paths.shader(path));
-            }
+            var shader:FeshShader = luaShaders.get(name);
         });
 
         Lua_helper.add_callback(lua, "attachShaderToSprite", function(name:String, spriteName:String) {
-            var shader:ShaderHandler = luaShaders.get(name);
+            var shader:FeshShader = luaShaders.get(name);
             var sprite:FlxSprite = luaSprites.get(spriteName);
 
             if(shader == null) {
@@ -359,8 +355,6 @@ class ModLua {
             if(sprite == null) {
                 return;
             }
-
-            shader.attachBitmapData(sprite.framePixels);
         });
         #end
     }

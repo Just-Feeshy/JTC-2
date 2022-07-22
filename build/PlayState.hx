@@ -1693,12 +1693,14 @@ class PlayState extends MusicBeatState
 		else
 		{
 			// Conductor.songPosition = FlxG.sound.music.time;
-			Conductor.songPosition += FlxG.elapsed * 1000;
+			if(!paused) {
+				Conductor.songPosition += FlxG.elapsed * 1000;
 
-			Conductor.trackPosition = FlxMath.lerp(Conductor.songPosition, prevTrackPos, Compile.timeFreeze);
+				Conductor.trackPosition = FlxMath.lerp(Conductor.songPosition, prevTrackPos, Compile.timeFreeze);
 
-			if(Compile.timeFreeze <= 0 && !paused)
-				prevTrackPos = Conductor.songPosition + (Conductor.stepCrochet * 6);
+				if(Compile.timeFreeze <= 0 && !paused)
+					prevTrackPos = Conductor.songPosition + (Conductor.stepCrochet * 6);
+			}
 
 			if (!paused)
 			{
@@ -2900,31 +2902,14 @@ class PlayState extends MusicBeatState
 		setLua("defaultGirlfriendX", gf.x);
 		setLua("defaultGirlfriendY", gf.y);
 
-		setLua("defaultOpponentStrum0X", PlayState.opponentStrums.members[0].x);
-		setLua("defaultOpponentStrum1X", PlayState.opponentStrums.members[1].x);
-		setLua("defaultOpponentStrum2X", PlayState.opponentStrums.members[2].x);
-		setLua("defaultOpponentStrum3X", PlayState.opponentStrums.members[3].x);
+		for(i in 0...PlayState.playerStrums.members.length) {
+			setLua('defaultPlayerStrumX' + i, 0);
+			setLua('defaultPlayerStrumY' + i, 0);
+		}
 
-		setLua("defaultOpponentStrum0Y", PlayState.opponentStrums.members[0].y);
-		setLua("defaultOpponentStrum1Y", PlayState.opponentStrums.members[1].y);
-		setLua("defaultOpponentStrum2Y", PlayState.opponentStrums.members[2].y);
-		setLua("defaultOpponentStrum3Y", PlayState.opponentStrums.members[3].y);
-
-		setLua("defaultPlayerStrum0X", PlayState.playerStrums.members[0].x);
-		setLua("defaultPlayerStrum1X", PlayState.playerStrums.members[1].x);
-		setLua("defaultPlayerStrum2X", PlayState.playerStrums.members[2].x);
-		setLua("defaultPlayerStrum3X", PlayState.playerStrums.members[3].x);
-
-		setLua("defaultPlayerStrum0Y", PlayState.playerStrums.members[0].y);
-		setLua("defaultPlayerStrum1Y", PlayState.playerStrums.members[1].y);
-		setLua("defaultPlayerStrum2Y", PlayState.playerStrums.members[2].y);
-		setLua("defaultPlayerStrum3Y", PlayState.playerStrums.members[3].y);
-
-		if(PlayState.opponentStrums.members.length > 4 && PlayState.playerStrums.members.length > 4) {
-			setLua("defaultOpponentStrum4X", PlayState.opponentStrums.members[4].x);
-			setLua("defaultOpponentStrum4Y", PlayState.opponentStrums.members[4].y);
-			setLua("defaultPlayerStrum4X", PlayState.opponentStrums.members[4].x);
-			setLua("defaultPlayerStrum4Y", PlayState.opponentStrums.members[4].y);
+		for (i in 0...PlayState.opponentStrums.members.length) {
+			setLua('defaultOpponentStrumX' + i, 0);
+			setLua('defaultOpponentStrumY' + i, 0);
 		}
 
 		makeTweenNoteLua();
