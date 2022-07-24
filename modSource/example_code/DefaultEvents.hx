@@ -2,6 +2,7 @@ package example_code;
 
 import flixel.FlxG;
 import flixel.math.FlxMath;
+import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import feshixl.group.FeshEventGroup.IFeshEvent;
@@ -67,21 +68,30 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
             else
                 playState.opponentAltAnim = eventValue;
         }else if(eventName == "jumpspeed") {
-            FlxTween.tween(Note, {AFFECTED_SCROLLSPEED : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/1000) * Std.parseFloat(eventValue2));
+            storeTween(eventName, FlxTween.tween(Note, {AFFECTED_SCROLLSPEED : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/1000) * Std.parseFloat(eventValue2), {
+                onComplete: function(tween:FlxTween) {
+                    cancelTween(eventName);
+                }
+            }));
         }else if(eventName == "sicko shake") {
-			Compile.shakeCamTimer = Std.parseInt(eventValue);
-			Compile.shakeCamTimerHUD = Std.parseInt(eventValue2);
+			DefaultHandler.shakeCamTimer = Std.parseInt(eventValue);
+			DefaultHandler.shakeCamTimerHUD = Std.parseInt(eventValue2);
 		}else if(eventName == "time freeze") {
             if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing)
 				playState.resyncVocals();
 
-			FlxTween.tween(Compile, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.crochet/500) * Std.parseFloat(eventValue2), {onComplete: function(tween:FlxTween) {
-				if(Std.parseInt(eventValue) == 1)
-					playState.pauseMusic();
-			}});
+			storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.crochet/500) * Std.parseFloat(eventValue2), {
+                onComplete: function(tween:FlxTween) {
+                    if(Std.parseInt(eventValue) == 1) {
+                        playState.pauseMusic();
+                    }
+
+                    cancelTween(eventName);
+                }
+            }));
         }else if(eventName == "strum bounce") {
             offsetBounce = Std.parseInt(eventValue2);
-			Compile.sizeTimer = Std.parseInt(eventValue);
+			DefaultHandler.sizeTimer = Std.parseInt(eventValue);
 
 			if(playState.flipWiggle >= 1)
 				playState.flipWiggle = -1;
@@ -91,7 +101,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 			FlxTween.tween(Note, {AFFECTED_STRUMTIME : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500) * Std.parseFloat(eventValue2));
         }else if(eventName == "character change") {
             if(eventValue2.contains("dad")) {
-                if(Compile.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
                     playState.remove(playState.dad);
                     playState.dad.destroy();
                     playState.dad = new Character(100, 100, eventValue);
@@ -99,7 +109,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     playState.add(playState.dad);
                 }
             }else if(eventValue2.contains("bf") || eventValue2.contains("boyfriend")) {
-                if(Compile.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
                     playState.remove(playState.dad);
                     playState.dad.destroy();
                     playState.dad = new Character(100, 100, eventValue);
@@ -123,9 +133,9 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 
     public function whenGameIsRunning(activeEvents:Array<String>, playState:PlayState):Void {
         if(activeEvents.contains("strum bounce")) {
-            Compile.strumOffsetEvent[0] = FlxMath.lerp(offsetBounce * playState.flipWiggle, 0, Compile.sizeTimer/10);
+            DefaultHandler.strumOffsetEvent[0] = FlxMath.lerp(offsetBounce * playState.flipWiggle, 0, DefaultHandler.sizeTimer/10);
 
-            if(Compile.sizeTimer <= 0) {
+            if(DefaultHandler.sizeTimer <= 0) {
                 for(i in 0...activeEvents.length) {
                     if(activeEvents[i] == "strum bounce")
                         activeEvents.remove("strum bounce");
@@ -133,6 +143,10 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
             }
         }else {
             offsetBounce = 0;
+        }
+
+        if(activeEvents.contains("sicko shake")) {
+
         }
     }
 
@@ -153,6 +167,22 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 
             eventTweens.clear();
             eventTweens = null;
+        }
+    }
+
+    function cancelTween(name:String):Void {
+        eventTweens.get(name).cancel();
+        eventTweens.get(name).destroy();
+        eventTweens.remove(name);
+    }
+
+    function storeTween(name:String, tween:FlxTween):Void {
+        if(eventTweens != null) {
+            if(eventTweens.exists(name)) {
+                cancelTween(name);
+            }
+
+            eventTweens.set(name, tween);
         }
     }
 }

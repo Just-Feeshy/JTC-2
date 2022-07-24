@@ -8,13 +8,12 @@ import openfl.events.Event;
 
 import Note;
 
-class Compile {
+class DefaultHandler {
     public static var strumOffset:Float = 0;
 
     public static var sizeTimer:Int = 0; 
     public static var shakeCamTimer:Float = 0;
     public static var shakeCamTimerHUD:Float = 0;
-    public static var timeFreeze:Float = 0;
     public static var strumOffsetEvent:Array<Float> = [0, 0];
     private static var strumOffsetArray:Array<Array<Float>> = [[0, 0], [0, 0]];
     private static var camAngle:Array<Float> = [0, 0, 0];
@@ -54,7 +53,6 @@ class Compile {
         sizeTimer = 0;
         shakeCamTimer = 0;
         shakeCamTimerHUD = 0;
-        timeFreeze = 0;
         strumOffsetEvent = [0, 0];
         strumOffsetArray = [[0, 0], [0, 0]];
         camPos = [0, 0, 0];
@@ -72,7 +70,6 @@ class Compile {
         sizeTimer = 0;
         shakeCamTimer = 0;
         shakeCamTimerHUD = 0;
-        timeFreeze = 0;
         strumOffsetEvent = null;
         strumOffsetArray = null;
         camPos = null;
@@ -104,13 +101,13 @@ class Compile {
 
         if(jitStrumSize || sizeTimer > 0) { //TODO: Make modchart for both c++ and lua
             PlayState.opponentStrums.forEachAlive(function(spr:Strum) {
-                spr.scale.x = strumSize[spr.ID][0];
-                spr.scale.y = strumSize[spr.ID][1] + (sizeTimer/100);
+                spr.engineWidth = strumSize[spr.ID][0];
+                spr.engineHeight = strumSize[spr.ID][1] + (sizeTimer/100);
             });
 
             PlayState.playerStrums.forEachAlive(function(spr:Strum) {
-                spr.scale.x = strumSize[spr.ID+4][0];
-                spr.scale.y = strumSize[spr.ID+4][1] + (sizeTimer/100);
+                spr.engineWidth = strumSize[spr.ID+4][0];
+                spr.engineHeight = strumSize[spr.ID+4][1] + (sizeTimer/100);
             });
         }
 

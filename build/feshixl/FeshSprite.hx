@@ -56,6 +56,9 @@ class FeshSprite extends FlxSprite {
     public var defaultCompiler:Void->Void;
     public var completeCallback:Void->Void;
 
+    public var engineWidth:Float = 0;
+    public var engineHeight:Float = 0;
+
     var graphics:FlxGraphic;
     var xmlData:Xml;
 
@@ -288,7 +291,7 @@ class FeshSprite extends FlxSprite {
     override function drawComplex(camera:FlxCamera):Void {
 		_frame.prepareMatrix(_matrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
 		_matrix.translate(-origin.x, -origin.y);
-		_matrix.scale(scale.x, scale.y);
+		_matrix.scale(scale.x + engineWidth, scale.y + engineHeight);
 
 		if (bakedRotationAngle <= 0) {
 			updateTrig();

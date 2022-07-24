@@ -531,7 +531,7 @@ class Note extends feshixl.FeshSprite {
 		}
 
 		public function getNoteY():Float {
-			return ((Conductor.trackPosition - Compile.getNoteTime(strumTime)) * Note.AFFECTED_SCROLLSPEED) * (0.45 * FlxMath.roundDecimal(howSpeed, 2));
+			return ((Conductor.trackPosition - DefaultHandler.getNoteTime(strumTime)) * Note.AFFECTED_SCROLLSPEED) * (0.45 * FlxMath.roundDecimal(howSpeed, 2));
 		}
 
 		public function getNoteStrumPosition(offset:Int = 0):Float {
@@ -698,20 +698,20 @@ class Note extends feshixl.FeshSprite {
 			{
 				var safeHit:Float = 0.5;
 
-				if (Compile.getNoteTime(strumTime) > Conductor.trackPosition - Conductor.safeZoneOffset
-					&& Compile.getNoteTime(strumTime) < Conductor.trackPosition + (Conductor.safeZoneOffset * safeHit))
+				if (DefaultHandler.getNoteTime(strumTime) > Conductor.trackPosition - Conductor.safeZoneOffset
+					&& DefaultHandler.getNoteTime(strumTime) < Conductor.trackPosition + (Conductor.safeZoneOffset * safeHit))
 					canBeHit = true;
 				else
 					canBeHit = false;
 
-				if (Compile.getNoteTime(strumTime) < Conductor.trackPosition - Conductor.safeZoneOffset && !wasGoodHit)
+				if (DefaultHandler.getNoteTime(strumTime) < Conductor.trackPosition - Conductor.safeZoneOffset && !wasGoodHit)
 					tooLate = true;
 			}
 			else
 			{
 				canBeHit = false;
 		
-				if (Compile.getNoteTime(strumTime) <= Conductor.trackPosition)
+				if (DefaultHandler.getNoteTime(strumTime) <= Conductor.trackPosition)
 					wasGoodHit = true;
 			}
 		
@@ -728,7 +728,7 @@ class Note extends feshixl.FeshSprite {
 		public function getNoteHittable(list:Array<Note>):Note {
 			for(i in 0...list.length) {
 				if(SaveData.getData(PRESET_INPUTS) == true) {
-					if(Math.abs(Compile.getNoteTime(list[i].strumTime) - Compile.getNoteTime(strumTime)) < 10) {
+					if(Math.abs(DefaultHandler.getNoteTime(list[i].strumTime) - DefaultHandler.getNoteTime(strumTime)) < 10) {
 						return this;
 					}
 				}else {

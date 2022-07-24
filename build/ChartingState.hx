@@ -47,7 +47,7 @@ import example_code.DefaultStage;
 import SaveData.SaveType;
 import BuiltInShaders;
 import Feeshmora;
-import Compile;
+import DefaultHandler;
 
 using StringTools;
 
@@ -806,16 +806,16 @@ class ChartingState extends MusicBeatState
 
 		var mapLabel = new FlxText(stepperMap.x + 65, stepperMap.y, "Feeshmora Skins");
 
-		var player1DropDown = new FlxUIDropDownMenu(140, 215, FlxUIDropDownMenu.makeStrIdLabelArray(Compile.getcharacterJSON(), true), function(character:String)
+		var player1DropDown = new FlxUIDropDownMenu(140, 215, FlxUIDropDownMenu.makeStrIdLabelArray(DefaultHandler.getcharacterJSON(), true), function(character:String)
 		{
-			_song.player1 = Compile.getcharacterJSON()[Std.parseInt(character)];
+			_song.player1 = DefaultHandler.getcharacterJSON()[Std.parseInt(character)];
 			updateHeads();
 		});
 		player1DropDown.selectedLabel = _song.player1;
 
-		var player2DropDown = new FlxUIDropDownMenu(10, 215, FlxUIDropDownMenu.makeStrIdLabelArray(Compile.getcharacterJSON(), true), function(character:String)
+		var player2DropDown = new FlxUIDropDownMenu(10, 215, FlxUIDropDownMenu.makeStrIdLabelArray(DefaultHandler.getcharacterJSON(), true), function(character:String)
 		{
-			_song.player2 = Compile.getcharacterJSON()[Std.parseInt(character)];
+			_song.player2 = DefaultHandler.getcharacterJSON()[Std.parseInt(character)];
 			updateHeads();
 		});
 		player2DropDown.selectedLabel = _song.player2;
@@ -1060,8 +1060,8 @@ class ChartingState extends MusicBeatState
 
 		var y2Label = new FlxText(plr2Y.x + 65, plr2Y.y, "Y");
 
-		var girlfriendDropDown = new FlxUIDropDownMenu(10, 110, FlxUIDropDownMenu.makeStrIdLabelArray(Compile.getcharacterJSON(), true), function(character:String) {
-			_song.girlfriend = Compile.getcharacterJSON()[Std.parseInt(character)];
+		var girlfriendDropDown = new FlxUIDropDownMenu(10, 110, FlxUIDropDownMenu.makeStrIdLabelArray(DefaultHandler.getcharacterJSON(), true), function(character:String) {
+			_song.girlfriend = DefaultHandler.getcharacterJSON()[Std.parseInt(character)];
 		});
 		girlfriendDropDown.selectedLabel = _song.girlfriend;
 
