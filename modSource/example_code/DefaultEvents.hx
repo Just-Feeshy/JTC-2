@@ -77,8 +77,9 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 			DefaultHandler.shakeCamTimer = Std.parseInt(eventValue);
 			DefaultHandler.shakeCamTimerHUD = Std.parseInt(eventValue2);
 		}else if(eventName == "time freeze") {
-            if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing)
+            if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing) {
 				playState.resyncVocals();
+            }
 
 			storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.crochet/500) * Std.parseFloat(eventValue2), {
                 onComplete: function(tween:FlxTween) {

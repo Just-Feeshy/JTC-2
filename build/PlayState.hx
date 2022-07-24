@@ -75,7 +75,6 @@ class PlayState extends MusicBeatState
 	private var debugText:FlxText;
 	private var curChar:String = '';
 	private var camMovementPos:FlxPoint;
-	private var prevTrackPos:Float = 0;
 	private var prevDadNoteData:Int = -1;
 
 	private var healthTween:FlxTween;
@@ -1706,12 +1705,10 @@ class PlayState extends MusicBeatState
 		{
 			// Conductor.songPosition = FlxG.sound.music.time;
 			if(!paused) {
+				var prevTrackPos:Float = Conductor.songPosition;
+
 				Conductor.songPosition += FlxG.elapsed * 1000;
-
-				Conductor.trackPosition = FlxMath.lerp(Conductor.songPosition, prevTrackPos, timeFreeze);
-
-				if(timeFreeze <= 0 && !paused)
-					prevTrackPos = Conductor.songPosition + (Conductor.stepCrochet * 6);
+				Conductor.trackPosition += (Conductor.songPosition - prevTrackPos) * (1 - timeFreeze);
 			}
 
 			if (!paused)
