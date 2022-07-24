@@ -6,14 +6,31 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import lime.utils.Assets;
 import haxe.Json;
 
 class CheesyStage extends StageBuilder {
+	final doubleIconColors:Array<Int> = [
+		0xff31b0d1, //Boyfriend
+		0xffa5004d //Girlfriend
+	];
+
+	final tripleIconColors:Array<Int> = [
+		0xff31b0d1, //Boyfriend
+		0xffa5004d, //Girlfriend
+		0xffe9ff48 //Joul The Cool
+	];
+
+	var allTweens:Array<FlxTween>;
+	var tweenIndex:Int = 0;
+
     public function new(stage:String) {
         super(stage);
 
 		var cacheList:Array<String> = [];
+		allTweens = new Array<FlxTween>();
 
 		if(Assets.exists(Paths.getPath('data/frostbeat/cache.json', TEXT, ""))) {
             cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/frostbeat/cache.json', TEXT, "")));
@@ -79,6 +96,51 @@ class CheesyStage extends StageBuilder {
         }
     }
 
+	function tweenHealthBar(info:Array<Int>, direction:String, playstate:PlayState):Void { // I didn't expect this to be a recursive method.
+		if(direction == "right" || direction == "player") {
+			tweenIndex = (tweenIndex + 1) % info.length;
+			var prevValue:Int = tweenIndex - 1;
+
+			if(prevValue < 0) {
+				prevValue = info.length - 1;
+			}
+
+			allTweens.push(FlxTween.color(playstate.healthBar.filledBar, Conductor.bpm/60, info[prevValue], info[tweenIndex], {ease: FlxEase.linear,
+				onComplete: function(twn:FlxTween) {
+					cleanTween();
+					tweenHealthBar(info, direction, playstate);
+				}
+			}));
+		}
+	}
+
+	function cleanTween() {
+        if (allTweens != null) {
+            var index:Int = 0;
+            var tween:FlxTween = null;
+
+            while (index < allTweens.length) {
+                tween = allTweens[index++];
+
+                if (tween != null) {
+                    tween.cancel();
+                    tween.destroy();
+                }
+
+                allTweens.remove(tween);
+            }
+        }
+    }
+
+	override function whenCreatingScene():Void {
+		var playstate:PlayState = cast(FlxG.state, PlayState);
+
+		if(playstate.iconP1.iconAnimInfo[0] == 28 && playstate.iconP1.iconAnimInfo[1] == 29) {
+			playstate.healthBar.filledColor = tripleIconColors[0];
+			tweenHealthBar(tripleIconColors, "player", playstate);
+		}
+	}
+
 	override function setCamPos(camPos:FlxPoint):FlxPoint {
 		if(stage == "funkroad") {
 			return FlxPoint.get(751.5, 458.5);
@@ -93,5 +155,11 @@ class CheesyStage extends StageBuilder {
 		}
 
 		return true;
+	}
+
+	override function destroy():Void {
+		super.destroy();
+
+		cleanTween();
 	}
 }

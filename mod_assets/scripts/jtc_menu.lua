@@ -49,7 +49,7 @@ function onCreate()
 end
 
 function callOptionChoice()
-    setCameraZoomTween('cameraMenu', 2, 1.5, "quartOut");
+    doTweenZoom('camMenuZoom', 'cameraMenu', 2, 1.5, "quartOut");
 end
 
 function pressedAnOption(item)

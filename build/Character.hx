@@ -16,8 +16,7 @@ import ModInitialize;
 
 using StringTools;
 
-class Character extends EditorSprite
-{
+class Character extends feshixl.FeshSprite {
 	private var finalizedX:Float;
 	private var finalizedY:Float;
 

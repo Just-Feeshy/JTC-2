@@ -1,4 +1,4 @@
-package;
+package feshixl;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -37,7 +37,7 @@ import Std.is as isOfType;
 *
 * @author Feeshy
 */
-class EditorSprite extends FlxSprite {
+class FeshSprite extends FlxSprite {
     /**
     * Rotate angle's pitch axis.
     */

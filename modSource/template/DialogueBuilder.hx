@@ -15,6 +15,7 @@ import flixel.FlxState;
 import betterShit.BetterCams;
 import feshixl.filters.GuassianBlur;
 import feshixl.interfaces.IDialogue;
+import feshixl.FeshSprite;
 import openfl.filters.ShaderFilter;
 import lime.utils.Assets;
 import haxe.Json;
@@ -31,9 +32,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     var _info:Array<DialogueData>;
 
-    var leftPortrait:EditorSprite;
-    var rightPortrait:EditorSprite;
-    var speechBubble:EditorSprite;
+    var leftPortrait:FeshSprite;
+    var rightPortrait:FeshSprite;
+    var speechBubble:FeshSprite;
 
     var displayText:DialogueText;
 
@@ -59,9 +60,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     function createAfterTransition():Void {
-        leftPortrait = new EditorSprite();
-        rightPortrait = new EditorSprite();
-        speechBubble = new EditorSprite();
+        leftPortrait = new FeshSprite();
+        rightPortrait = new FeshSprite();
+        speechBubble = new FeshSprite();
 
         add(leftPortrait);
         add(rightPortrait);
@@ -180,7 +181,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     function implementAnimPlay(sprString:String):Void {
         var dialogueInfo:DialogueSpriteData = null;
-        var spr:EditorSprite = null;
+        var spr:FeshSprite = null;
 
         switch(sprString) {
             case "left portrait": spr = leftPortrait;

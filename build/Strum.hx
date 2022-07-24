@@ -5,7 +5,7 @@ import flixel.FlxSprite;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
 
-class Strum extends EditorSprite {
+class Strum extends feshixl.FeshSprite {
 	public var noteData(get, never):Int;
 	public var direction(get, never):String;
 

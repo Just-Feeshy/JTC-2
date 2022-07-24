@@ -10,9 +10,6 @@ class FeshBar extends FlxBar {
     public var emptyColor(default, set):FlxColor = 0;
     public var filledColor(default, set):FlxColor = 0;
 
-    public var currentEmptyColor(default, null):FlxColor = 0;
-    public var currentFilledColor(default, null):FlxColor = 0;
-
     public var showBorder(default, null):Bool = false;
     public var border(default, null):FlxColor = FlxColor.WHITE;
 
@@ -37,12 +34,12 @@ class FeshBar extends FlxBar {
     }
 
     override function createFilledBar(empty:FlxColor, fill:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FlxBar {
-        currentEmptyColor = empty;
-        currentFilledColor = fill;
+        emptyColor = empty;
+        filledColor = fill;
 
         this.showBorder = showBorder;
         this.border = border;
 
-        return super.createFilledBar(empty, fill, showBorder, border);
+        return this;
     }
 }

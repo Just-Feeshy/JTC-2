@@ -27,7 +27,7 @@ import SaveData.SaveType;
 
 using StringTools;
 
-class Note extends EditorSprite {
+class Note extends feshixl.FeshSprite {
 	public static final swagWidth:Float = 160 * 0.7;
 	public static final PURP_NOTE:Int = 0;
 	public static final GREEN_NOTE:Int = 2;

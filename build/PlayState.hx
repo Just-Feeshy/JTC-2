@@ -48,7 +48,6 @@ import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.group.FeshEventGroup;
 import feshixl.interfaces.IDialogue;
-import feshixl.ui.FeshBar;
 import openfl.Lib;
 
 import example_code.DefaultStage;
@@ -172,14 +171,14 @@ class PlayState extends MusicBeatState
 	private var dadSpeed:Int = 1;
 	private var combo:Int = 0;
 
-	private var healthBarBG:FlxSprite;
-	private var healthBar:FeshBar;
+	public var healthBarBG:FlxSprite;
+	public var healthBar:HealthBar;
+
+	public var iconP1:HealthIcon;
+	public var iconP2:HealthIcon;
 
 	private var generatedMusic:Bool = false;
 	private var startingSong:Bool = false;
-
-	private var iconP1:HealthIcon;
-	private var iconP2:HealthIcon;
 
 	public var camGame:BetterCams;
 
@@ -424,9 +423,6 @@ class PlayState extends MusicBeatState
 		boyfriend.setPosition(boyfriend.x - SONG.player1X, boyfriend.y - SONG.player1Y);
 		dad.setPosition(dad.x - SONG.player2X, dad.y - SONG.player2Y);
 
-		createScene();
-		createFogs();
-
 		Conductor.trackPosition = -5000;
 
 		strumLine = new FlxSprite(0, 50).makeGraphic(FlxG.width, 10);
@@ -509,7 +505,6 @@ class PlayState extends MusicBeatState
 		counterTxt.scrollFactor.set();
 
 		iconP1 = new HealthIcon(SONG.player1, true, SONG.bpm);
-		
 
 		if(ChooseFeeshmora.chooseSkin.get("boyfriend").length >= 1) {
 
@@ -527,7 +522,7 @@ class PlayState extends MusicBeatState
 
 		iconP2 = new HealthIcon(SONG.player2, false);
 
-		healthBar = new FeshBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+		healthBar = new HealthBar(healthBarBG.x + 4, healthBarBG.y + 4, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
 			'health', 0, 2);
 		healthBar.scrollFactor.set();
 
@@ -535,11 +530,15 @@ class PlayState extends MusicBeatState
 		opponentIconColor = CoolUtil.calculateAverageColor(iconP2.updateFramePixels());
 		healthBar.createFilledBar(opponentIconColor, playerIconColor);
 
+		createScene();
+		createFogs();
+
 		getLuaScript();
-		
+
 		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			generateStaticLua();
+			updateLuaVars();
 		}
 		#end
 
@@ -1665,8 +1664,10 @@ class PlayState extends MusicBeatState
 
 		var iconOffset:Int = 26;
 
-		iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset);
-		iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - iconOffset);
+		iconP1.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset);
+		iconP2.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - iconOffset);
+
+		healthBar.updateValueFromParent();
 
 		if (health > 2)
 			health = 2;
@@ -2934,7 +2935,7 @@ class PlayState extends MusicBeatState
 			var playerColor:FlxColor = 0;
 
 			if(!opponentHex.startsWith("0x")) {
-				opponentColor = Std.parseInt('0x' + opponentHex);
+				opponentColor = Std.parseInt('0xff' + opponentHex);
 			}else {
 				opponentColor = Std.parseInt(opponentHex);
 			}
@@ -2946,20 +2947,19 @@ class PlayState extends MusicBeatState
 			}
 
 			healthBar.createFilledBar(opponentColor, playerColor);
-			healthBar.updateBar();
 		});
 
-		addCallback("tweenHealthBarColor", function(name:String, side:String, hex:String, duration:Float, ease:String) {
+		addCallback("doTweenHealthBarColor", function(name:String, side:String, hex:String, duration:Float, ease:String) {
 			var barColor:FlxColor = 0;
 
 			if(!hex.startsWith("0x")) {
-				barColor = Std.parseInt('0x' + hex);
+				barColor = Std.parseInt('0xff' + hex);
 			}else {
 				barColor = Std.parseInt(hex);
 			}
 
 			if(side == "left" || side == "opponent") {
-				getModLua().luaTweens.set(name, FlxTween.color(healthBar, duration, healthBar.emptyColor, barColor, {ease: Register.getFlxEaseByString(ease),
+				getModLua().luaTweens.set(name, FlxTween.color(healthBar.emptyBar, duration, healthBar.emptyColor, barColor, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         getModLua().luaTweens.remove(name);
 						callLua('onTweenCompleted', [name]);
@@ -2968,12 +2968,30 @@ class PlayState extends MusicBeatState
 			}
 
 			if(side == "right" || side == "player") {
-				getModLua().luaTweens.set(name, FlxTween.color(healthBar, duration, healthBar.filledColor, barColor, {ease: Register.getFlxEaseByString(ease),
+				getModLua().luaTweens.set(name, FlxTween.color(healthBar.filledBar, duration, healthBar.filledColor, barColor, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         getModLua().luaTweens.remove(name);
 						callLua('onTweenCompleted', [name]);
                     }
 				}));
+			}
+		});
+
+		addCallback("setHealthBarColor", function(hex:String, side:String) {
+			var hexColor:FlxColor = 0;
+
+			if(!hex.startsWith("0x")) {
+				hexColor = Std.parseInt('0xff' + hex);
+			}else {
+				hexColor = Std.parseInt(hex);
+			}
+
+			if(side == "left" || side == "opponent") {
+				healthBar.emptyColor = hexColor;
+			}
+
+			if(side == "right" || side == "player") {
+				healthBar.filledColor = hexColor;
 			}
 		});
 	}
@@ -3086,14 +3104,12 @@ class PlayState extends MusicBeatState
 		setLua("songLength", FlxG.sound.music.length);
 		setLua("trackPos", Conductor.trackPosition);
 
-		/*
-		setLua("iconP1_ID_Regular", iconP1.iconAnimInfo);
-		setLua("iconP2_ID_Regular", iconP2.iconAnimInfo);
-		setLua("iconP1_ID_Dead", iconP1.iconAnimInfo);
-		setLua("iconP2_ID_Dead", iconP2.iconAnimInfo);
-		setLua("iconP1_ID_Winning", iconP1.iconAnimInfo);
-		setLua("iconP2_ID_Winning", iconP2.iconAnimInfo);
-		*/
+		setLua("iconP1_ID_Regular", iconP1.iconAnimInfo[0]);
+		setLua("iconP2_ID_Regular", iconP2.iconAnimInfo[0]);
+		setLua("iconP1_ID_Dead", iconP1.iconAnimInfo[1]);
+		setLua("iconP2_ID_Dead", iconP2.iconAnimInfo[1]);
+		setLua("iconP1_ID_Winning", iconP1.iconAnimInfo[2]);
+		setLua("iconP2_ID_Winning", iconP2.iconAnimInfo[2]);
 	}
 
 	function updatePerSectionLuaVars():Void {

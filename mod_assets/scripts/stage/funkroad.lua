@@ -1,7 +1,0 @@
-local doubleIconColors = {
-
-}
-
-local tripleIconColors = {
-
-}

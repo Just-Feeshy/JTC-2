@@ -9,7 +9,7 @@ import openfl.geom.Point;
 
 class DevStateTest extends HelperStates {
     var animLength:Int = 0;
-    var spr:EditorSprite;
+    var spr:feshixl.FeshSprite;
     var index:Int = 0;
 
     public function new() {
@@ -17,7 +17,7 @@ class DevStateTest extends HelperStates {
     }
 
     override function create():Void {
-        spr = new EditorSprite();
+        spr = new feshixl.FeshSprite();
         spr.twoInOneFrames(Paths.getSparrowAtlas('NOTE_assets', null, true), Paths.getSparrowAtlas('notes/reverse/CONFIRM_assets', "shared"));
         add(spr);
 
