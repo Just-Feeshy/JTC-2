@@ -380,8 +380,6 @@ class DefaultStage extends StageBuilder {
     }
 
     function lightningStrikeShit():Void {
-        var playstate:PlayState = cast(FlxG.state, PlayState);
-
         FlxG.sound.play(Paths.soundRandom('thunder_', 1, 2));
         halloweenBG.animation.play('lightning');
 
@@ -450,8 +448,6 @@ class DefaultStage extends StageBuilder {
     }
 
     override function curBeat():Void {
-        var playstate:PlayState = cast(FlxG.state, PlayState);
-
         switch (stage) {
 			case 'school':
 				bgGirls.dance();

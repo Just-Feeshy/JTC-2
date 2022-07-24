@@ -15,6 +15,8 @@ abstract class StageBuilder extends FlxBasic {
     private var stage:String;
     private var directory(default, set):String;
 
+    private var playstate(get, never):PlayState;
+
     public function new(stage:String) {
         super();
 
@@ -50,19 +52,13 @@ abstract class StageBuilder extends FlxBasic {
 
     public function setDefaultCameraZoom(zoom:Float):Void {
         if(isOfType(FlxG.state, PlayState)) {
-            var state:PlayState = cast FlxG.state;
-
-            @:privateAccess
-            state.defaultCamZoom = zoom;
+            @:privateAccess playstate.defaultCamZoom = zoom;
         }
     }
 
     public function setPixel(isA:Bool):Void {
         if(isOfType(FlxG.state, PlayState)) {
-            var state:PlayState = cast FlxG.state;
-
-            @:privateAccess
-            state.isPixel = isA;
+            @:privateAccess playstate.isPixel = isA;
         }
     }
 
@@ -88,11 +84,15 @@ abstract class StageBuilder extends FlxBasic {
         //Empty
     }
 
-    inline function set_directory(value:String) {
+    inline function set_directory(value:String):String {
         Paths.setCurrentLevel(value);
 
         directory = value;
         return value;
+    }
+
+    inline function get_playstate():PlayState {
+        return cast(FlxG.state, PlayState);
     }
 
     override public function destroy():Void {

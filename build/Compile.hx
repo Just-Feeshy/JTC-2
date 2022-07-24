@@ -8,12 +8,7 @@ import openfl.events.Event;
 
 import Note;
 
-#if linc_luajit
-import llua.LuaL;
-import llua.State;
-#end
-
-class Compile { //WIP: For upcoming modchart
+class Compile {
     public static var strumOffset:Float = 0;
 
     public static var sizeTimer:Int = 0; 
