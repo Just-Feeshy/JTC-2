@@ -3275,11 +3275,14 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function destroy() {
+		super.destroy();
+
 		FlxG.sound.destroy();
+
+		stageGroup = FlxDestroyUtil.destroy(stageGroup);
+		events = FlxDestroyUtil.destroy(events);
 
 		Compile.kill();
 		Cache.clear();
-		
-		super.destroy();
 	}
 }

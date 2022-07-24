@@ -140,13 +140,19 @@ class FeshEventGroup implements IFeshEvent implements IFlxDestroyable {
     public function destroy():Void {
         if (members != null) {
             var i:Int = 0;
-            var basic:IFeshEvent = null;
+            var basic:Dynamic = null;
 
             while (i < members.length) {
                 basic = members[i];
 
-                if (basic != null)
+                if(basic is IFlxDestroyable) {
+                    basic.destroy();
+                }
+
+                if (basic != null) {
                     basic = null;
+                    members.remove(basic);
+                }
 
                 i++;
             }

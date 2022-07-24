@@ -3,6 +3,7 @@ package example_code;
 import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import feshixl.group.FeshEventGroup.IFeshEvent;
 
 using StringTools;
@@ -21,12 +22,18 @@ typedef Modifiers = {
 /**
 * Alittle example of how to make your own events in Feeshmora.
 * And also a reminder for me when I ever be dumb again.
-**/
-class DefaultEvents implements IFeshEvent {
+*
+* Implementing `IFlxDestroyable` is optional, only when you are storing variables
+* and want to remove them to prevent memory leaks.
+*
+* @author Feeshy
+*/
+class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
+    private var eventTweens:Map<String, FlxTween>;
     private var offsetBounce:Int = 0;
 
     public function new() {
-        //empty
+        eventTweens = new Map<String, FlxTween>();
     }
 
     public function whenTriggered(eventName:String, eventValue:String, eventValue2:String, playState:PlayState) {
@@ -131,5 +138,21 @@ class DefaultEvents implements IFeshEvent {
 
     public function whenNoteIsPressed(note:Note, playState:PlayState):Void {
         return;
+    }
+
+    public function destroy():Void {
+        if(eventTweens != null) {
+            for(k in eventTweens.keys()) {
+                var tween:FlxTween = eventTweens.get(k);
+
+                if(tween != null) {
+                    tween.cancel();
+                    tween.destroy();
+                }
+            }
+
+            eventTweens.clear();
+            eventTweens = null;
+        }
     }
 }
