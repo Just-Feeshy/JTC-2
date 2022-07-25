@@ -159,8 +159,8 @@ class ChartingState extends MusicBeatState
 			['sing drain', "Drains health when opponent sings.\n\nValue - How much health should be drained. (1 recommended)"],
 			['fadein notes', "Whether notes should have a fade-in effect.\n\nValue - Note position where note should fade in.\n(400 recommended)"],
 			['blind effect', "Follow your opponent's pattern. Well...\n\nValue -\n0 = Revert back to normal.\n1 = Should enable."],
-			['note woggle', ""],
-			['camera move', ""]
+			['note woggle', "Notes sway back and forth.\n\nValue - Wobble intensity. (30 recommended)"],
+			['camera move', "The camera follows the direction of each singing pose.\n\nValue - Camera movement intensity. (1 recommended)"]
 		],
 		"Regular" => [
 			['alt animation', "Value 1 - Sets a suffix after the idle and sing\nanimation name.\nValue 2 - Character side to set.\n(Boyfriend's Side or Dad's Side)"],
@@ -511,6 +511,16 @@ class ChartingState extends MusicBeatState
 				case "blind effect":
 					if(Std.parseInt(makeModifierValue.text) != null)
 						createEvent.modValue = Std.string(Math.min(1, Math.max(0, Std.parseFloat(makeModifierValue.text))));
+					else
+						createEvent.modValue = "1";
+				case "note woggle":
+					if(Std.parseInt(makeModifierValue.text) != null)
+						createEvent.modValue = Std.string(Math.abs(Std.parseInt(makeModifierValue.text)));
+					else
+						createEvent.modValue = "30";
+				case "camera move":
+					if(Std.parseInt(makeModifierValue.text) != null)
+						createEvent.modValue = Std.string(Math.abs(Std.parseFloat(makeModifierValue.text)));
 					else
 						createEvent.modValue = "1";
 			}

@@ -38,6 +38,7 @@ enum SaveType {
     ERASE_DATA;
     SHOW_FPS;
     SHOW_MEMORY;
+    NOTE_OFFSET;
 }
 
 class SaveData {
@@ -81,6 +82,7 @@ class SaveData {
         FlxG.save.data.showFPS = getData(SaveType.SHOW_FPS);
         FlxG.save.data.showMEM = getData(SaveType.SHOW_MEMORY);
         FlxG.save.data.gamepadBinds = getData(SaveType.CUSTOM_GAMEPAD_BINDS);
+        FlxG.save.data.noteOffset = getData(SaveType.NOTE_OFFSET);
 
         FlxG.save.flush();
 
@@ -292,6 +294,12 @@ class SaveData {
                 }
 
                 return FlxG.save.data.showMEM;
+            case NOTE_OFFSET:
+                if(FlxG.save.data.noteOffset == null) {
+                    FlxG.save.data.noteOffset = 0;
+                }
+
+                return FlxG.save.data.noteOffset;
             default:
                 return null;
         }

@@ -98,6 +98,8 @@ class PlayState extends MusicBeatState
 	//Modifier Values
 	public var singDrainValue:Float = 1;
 	public var fadeInValue:Int = 400;
+	public var wobbleModPower:Float = 30;
+	public var cameraMovementInsensity:Float = 1;
 
 	//Chart Shit
 	public static var muteInst:Bool;
@@ -940,7 +942,7 @@ class PlayState extends MusicBeatState
 		startedCountdown = true;
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;
-		Conductor.trackPosition = Conductor.songPosition;
+		Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
 
 		makeNoteLua();
 
@@ -1063,7 +1065,7 @@ class PlayState extends MusicBeatState
 		if (!muteInst)
 			FlxG.sound.playMusic(Paths.inst(PlayState.SONG.song), 1, false);
 
-		FlxG.sound.music.onComplete = endSong;
+		FlxG.sound.music.onComplete = whenSongFinished.bind();
 		vocals.play();
 
 		if(paused) {
@@ -1498,9 +1500,16 @@ class PlayState extends MusicBeatState
 			FlxG.sound.music.volume = 0;
 
 		FlxG.sound.music.play();
-		Conductor.songPosition = FlxG.sound.music.time;
+		setSongPosition(FlxG.sound.music.time);
 		vocals.time = FlxG.sound.music.time;
 		vocals.play();
+	}
+
+	function setSongPosition(time:Float):Void {
+		var prevTrackPos:Float = Conductor.songPosition;
+
+		Conductor.songPosition = time;
+		Conductor.trackPosition += (Conductor.songPosition - prevTrackPos) * (1 - timeFreeze);
 	}
 
 	function longConditionForNote(daNote:Note, center:Float):Bool {
@@ -1545,7 +1554,7 @@ class PlayState extends MusicBeatState
 			wobbleStrength = note.hasCustomAddon.getWobblePower();
 		
 		if(modifierCheckList('note woggle') && Main.feeshmoraModifiers && wobbleStrength == 0 && !note.isSustainNote) {
-			modWobble = flipWiggle * (30*Math.sin(noteCacurations * Math.PI * 0.005));
+			modWobble = flipWiggle * (wobbleModPower * Math.sin(noteCacurations * Math.PI * 0.005));
 		}
 
 		if(wobbleStrength > 0 && !note.isSustainNote)
@@ -1712,14 +1721,13 @@ class PlayState extends MusicBeatState
 			if (startedCountdown)
 			{
 				Conductor.songPosition += FlxG.elapsed * 1000;
-				Conductor.trackPosition = Conductor.songPosition;
+				Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
 				if (Conductor.trackPosition >= 0)
 					startSong();
 			}
 		}
 		else
 		{
-			// Conductor.songPosition = FlxG.sound.music.time;
 			if(!paused) {
 				var prevTrackPos:Float = Conductor.songPosition;
 
@@ -1919,36 +1927,6 @@ class PlayState extends MusicBeatState
 			//Nothing here!
 			notes.forEachAlive(function(daNote:Note)
 			{
-				if(!((daNote.y > FlxG.height) || (daNote.x > FlxG.width))) {
-					if(daNote.noteAbstract == "trippy" && trippyShader == null) {
-						trippyWiggle.effectType = WiggleEffectType.DREAMY;
-						trippyWiggle.waveSpeed = 1;
-						trippyWiggle.waveFrequency = Math.PI * 15;
-
-						trippyShader = new ShaderFilter(trippyWiggle.shader);
-					}
-
-					switch(daNote.noteAbstract) {
-						case "side note":
-							if(daNote.isSustainNote) {
-								if(camNOTE.camNoteWOBBLE == null) {
-									camNOTE.createNoteCam(daNote.noteAbstract);
-
-									FlxG.cameras.remove(camNOTE, false);
-									FlxG.cameras.add(camNOTE);
-									FlxG.cameras.remove(camHUD, false);
-									FlxG.cameras.add(camHUD);
-								}	
-
-								daNote.cameras = [camNOTE.camNoteWOBBLE];
-
-								if(!daNote.prevNote.isSustainNote)
-									daNote.prevNote.trail.cameras = [camNOTE.camNoteWOBBLE];
-							}
-
-					}	
-				}
-
 				var strumAngle:Float = 0;
 				var strumPos:Float = 0;
 
@@ -2094,8 +2072,10 @@ class PlayState extends MusicBeatState
 							FlxG.cameras.add(camHUD);
 						}
 			
-						if(!daNote.cameras.contains(camNOTE.camNoteWOBBLE))
+						if(!daNote.cameras.contains(camNOTE.camNoteWOBBLE)) {
+							camNOTE.wobblePower = wobbleModPower * flipWiggle;
 							daNote.cameras = [camNOTE.camNoteWOBBLE];
+						}
 					}
 				}else if(!noteShouldWobble) {
 					if(daNote.cameras.contains(camNOTE.camNoteWOBBLE) && daNote.noteAbstract != "side note")
@@ -2167,11 +2147,6 @@ class PlayState extends MusicBeatState
 			}
 			#end
 		}
-
-		#if debug
-		if (FlxG.keys.justPressed.ONE)
-			endSong();
-		#end
 	}
 
 	function keyReleased() {
@@ -2234,12 +2209,23 @@ class PlayState extends MusicBeatState
 		#end
 	}
 
-	function endSong():Void
-	{
+	function whenSongFinished():Void {
 		canPause = false;
 		FlxG.sound.music.volume = 0;
 		vocals.volume = 0;
+		vocals.pause();
 
+		if(SaveData.getData(NOTE_OFFSET) > 0) {
+			new FlxTimer().start(SaveData.getData(NOTE_OFFSET) / 1000, function(tmr:FlxTimer) {
+				endSong();
+			});
+		}else {
+			endSong();
+		}
+	}
+
+	function endSong():Void
+	{
 		DefaultHandler.kill();
 
 		if (SONG.validScore && !modifierCheckList('safe balls'))
@@ -2556,6 +2542,8 @@ class PlayState extends MusicBeatState
 			var noteList:Array<Array<Note>> = [];
 			var pressedNotes:Array<Note> = [];
 
+			setSongPosition(FlxG.sound.music.time);
+
 			notes.forEachAlive(function(daNote:Note) {
 				if(daNote.canBeHit && daNote.mustPress && !daNote.tooLate
 				&& !daNote.wasGoodHit && !daNote.isSustainNote) {
@@ -2842,22 +2830,22 @@ class PlayState extends MusicBeatState
 	private function cameraMovement(noteCData:Int, isSus:Bool) {
 		if(modifierCheckList('camera move') && Main.feeshmoraModifiers && !isSus) {
 			if(noteCData == 0) {
-				camMovementPos.x = (-SONG.bpm / 45) * 5;
+				camMovementPos.x = (-SONG.bpm / 45) * 5 * cameraMovementInsensity;
 				camMovementPos.y = 0;
 			}
 
 			if(noteCData == (strumLineNotes.members.length / 2) - 1) {
-				camMovementPos.x = (SONG.bpm / 45) * 5;
+				camMovementPos.x = (SONG.bpm / 45) * 5 * cameraMovementInsensity;
 				camMovementPos.y = 0;
 			}
 
 			if(noteCData == 1) {
-				camMovementPos.y = (SONG.bpm / 45) * 5;
+				camMovementPos.y = (SONG.bpm / 45) * 5 * cameraMovementInsensity;
 				camMovementPos.x = 0;
 			}
 
 			if(noteCData == (strumLineNotes.members.length / 2) - 2) {
-				camMovementPos.y = (-SONG.bpm / 45) * 5;
+				camMovementPos.y = (-SONG.bpm / 45) * 5 * cameraMovementInsensity;
 				camMovementPos.x = 0;
 			}
 		}
@@ -3292,6 +3280,11 @@ class PlayState extends MusicBeatState
 
 		stageGroup = FlxDestroyUtil.destroy(stageGroup);
 		events = FlxDestroyUtil.destroy(events);
+
+		if(getModLua() != null) {
+			getModLua().close();
+			Register.detachLuaFromState(PlayState);
+		}
 
 		DefaultHandler.kill();
 		Cache.clear();

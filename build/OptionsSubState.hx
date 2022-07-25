@@ -44,6 +44,8 @@ class OptionsSubState extends MusicBeatSubstate {
 				return new EraseSave();
 			case GAMMA:
 				return new GammaMenu();
+			case NOTE_OFFSET:
+				return new OffsetMenu();
 			default:
 				return new OptionsSubState();
 		}
@@ -451,6 +453,54 @@ class GammaMenu extends OptionsSubState {
 
 				var shaders:BuiltInShaders = getShaders();
 				shaders.position = SaveData.getData(SaveType.GAMMA);
+			}
+
+			if(controls.BACK || controls.ACCEPT) {
+				changingKeys = true;
+
+				SaveData.saveClient();
+
+				close();
+			}
+		}
+	}
+}
+
+class OffsetMenu extends OptionsSubState {
+	private var valueTxt:FlxText;
+	private var tutorial:FlxText;
+
+	private var changingKeys:Bool = false;
+
+	public function new() {
+		super();
+	}
+
+	override function finishTransition(twn:FlxTween) {
+		valueTxt = new FlxText(0, 0, FlxG.width, "< " + SaveData.getData(SaveType.NOTE_OFFSET) + " >", 64);
+		valueTxt.setFormat("VCR OSD Mono", 64, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		valueTxt.borderSize = 4;
+		valueTxt.screenCenter();
+		add(valueTxt);
+
+		tutorial = new FlxText(0, 0, FlxG.width, "Use left and right keys", 32);
+		tutorial.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tutorial.borderSize = 2;
+		tutorial.screenCenter(X);
+		tutorial.y = tutorial.getScreenCenter(Y) + (tutorial.height * 2);
+		add(tutorial);
+	}
+
+	override function update(elapsed:Float) {
+		if(!changingKeys) {
+			if(controls.LEFT_P) {
+				FlxG.save.data.noteOffset = FlxG.save.data.noteOffset - 0.1;
+				FlxG.save.data.noteOffset = Math.round(FlxG.save.data.noteOffset * 10) / 10;
+				valueTxt.text = "< " + SaveData.getData(SaveType.NOTE_OFFSET) + " >";
+			}else if(controls.RIGHT_P) {
+				FlxG.save.data.noteOffset = FlxG.save.data.noteOffset + 0.1;
+				FlxG.save.data.noteOffset = Math.round(FlxG.save.data.noteOffset * 10)  / 10;
+				valueTxt.text = "< " + SaveData.getData(SaveType.NOTE_OFFSET) + " >";
 			}
 
 			if(controls.BACK || controls.ACCEPT) {

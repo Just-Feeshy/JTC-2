@@ -87,6 +87,28 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 DefaultHandler.modifiers.blindEffect.enabled = true;
                 playState.camGame.engineAlpha = 0;
             }
+        }else if(eventName == "note woggle") {
+            if(Std.parseFloat(eventValue) > 0) {
+                DefaultHandler.modifiers.wobbleNotes.enabled = true;
+            }
+
+            storeTween(eventName, FlxTween.tween(playState, {wobbleModPower : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500), {
+                onComplete: function(tween:FlxTween) {
+                    if(playState.wobbleModPower == 0) {
+                        DefaultHandler.modifiers.wobbleNotes.enabled = false;
+                    }
+
+                    cancelTween(eventName);
+                }
+            }));
+        }else if(eventName == "camera move") {
+            playState.cameraMovementInsensity = Std.parseFloat(eventValue);
+
+            if(Std.parseFloat(eventValue) > 0) {
+                DefaultHandler.modifiers.wobbleNotes.enabled = true;
+            }else {
+                DefaultHandler.modifiers.wobbleNotes.enabled = false;
+            }
         }else if(eventName == "alt animation") {
             if(eventValue2.contains("bf") || eventValue2.contains("boyfriend"))
                 playState.playerAltAnim = eventValue;
@@ -176,10 +198,6 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
             }
         }else {
             offsetBounce = 0;
-        }
-
-        if(activeEvents.contains("sicko shake")) {
-
         }
     }
 

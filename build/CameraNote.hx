@@ -12,6 +12,8 @@ import betterShit.BetterCams;
 class CameraNote extends BetterCams {
     public var camNoteWOBBLE:FlxCamera;
 
+    public var wobblePower:Float = 30;
+
     //Personal Effects, use them as how u please :3
     private var noteWiggleFLAG:WiggleEffect = new WiggleEffect();
 
@@ -49,7 +51,7 @@ class CameraNote extends BetterCams {
 
         if(camNoteWOBBLE != null) {
             noteWiggleFLAG.waveAmplitude = 0;
-            noteWiggleFLAG.waveAmplitude = 0.03 / 2;
+            noteWiggleFLAG.waveAmplitude = (wobblePower * Math.pow(10, -3)) / 2;
 
             camNoteWOBBLE.x = x;
             camNoteWOBBLE.y = y;

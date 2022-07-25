@@ -221,9 +221,26 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							#if !mobile
-							new Options(0, 50, "FPS Counter", SaveType.SHOW_FPS, function(option:Options, pressed:Bool) {
+							new Options(0, 50, "Note Offset", SaveType.NOTE_OFFSET, function(option:Options, pressed:Bool) {
 								option.ID = 5;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed) {
+									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+									option.optionSubState = OptionsSubState.newSubState(SaveType.NOTE_OFFSET);
+									option.optionSubState.cameras = [camSubState];
+
+									openSubStateCustom(option.optionSubState);
+								}
+
+								option.description = "Set note offset.";
+								setting(option, "", option.ID);
+							}),
+							#if !mobile
+							new Options(0, 60, "FPS Counter", SaveType.SHOW_FPS, function(option:Options, pressed:Bool) {
+								option.ID = 6;
 
 								if(pressed)
 									FlxG.save.data.showFPS = !FlxG.save.data.showFPS;
@@ -245,8 +262,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 60, "Memory Counter", SaveType.SHOW_MEMORY, function(option:Options, pressed:Bool) {
-								option.ID = 6;
+							new Options(0, 70, "Memory Counter", SaveType.SHOW_MEMORY, function(option:Options, pressed:Bool) {
+								option.ID = 7;
 
 								if(pressed)
 									FlxG.save.data.showMEM = !FlxG.save.data.showMEM;
@@ -269,8 +286,8 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							#end
-							new Options(0, 50 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
-								option.ID = 5 + Math.ceil(extra / 10);
+							new Options(0, 60 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
+								option.ID = 6 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
@@ -288,8 +305,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 60 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-								option.ID = 6 + Math.ceil(extra / 10);
+							new Options(0, 70 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
+								option.ID = 7 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.helpme = !FlxG.save.data.helpme;
@@ -307,8 +324,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 70 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-								option.ID = 7 + Math.ceil(extra / 10);
+							new Options(0, 80 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
+								option.ID = 8 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
@@ -326,8 +343,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 80 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-								option.ID = 8 + Math.ceil(extra / 10);
+							new Options(0, 90 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
+								option.ID = 9 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
@@ -345,8 +362,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new GhostTapping(0, 90 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-								option.ID = 9 + Math.ceil(extra / 10);
+							new GhostTapping(0, 100 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
+								option.ID = 10 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
