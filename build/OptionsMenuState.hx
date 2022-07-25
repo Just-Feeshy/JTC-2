@@ -569,6 +569,25 @@ class OptionsMenuState extends MusicBeatState {
 
 								if(pressed)
 									isChangingOption = false;
+							}),
+							new Options(0, ((imNotSure + 8) * 10) + 120, "Camera Movement", SaveType.CAMERA_MOVEMENT_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 8;
+
+								if(pressed)
+									FlxG.save.data.camMove = !FlxG.save.data.camMove;
+
+								option.description = "The camera follows the direction of each singing pose.";
+
+								if(!SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
+
+								if(pressed)
+									isChangingOption = false;
 							})
 						]
 					}

@@ -499,16 +499,15 @@ class Note extends feshixl.FeshSprite {
 		}
 
 		//More complicated method
-		public function setNoteAlpha(value) {
+		public function setNoteAlpha(value:Float, fadeIn:Int):Void {
 			var fadeValue:Float = 1;
 
-			if(PlayState.modifierCheckList('fade battle'))
-				fadeValue = getNoteStrumPosition(400);
+			if(Main.feeshmoraModifiers && DefaultHandler.modifiers.fadeInNotes.enabled) {
+				fadeValue = getNoteStrumPosition(fadeIn);
+			}
 
-			if(noteAbstract != "ghost" && hasCustomAddon == null) {
+			if(hasCustomAddon == null) {
 				alpha = Math.min(value, fadeValue);
-			}else if(noteAbstract == "ghost") {
-				alpha = Math.min(getNoteStrumPosition(250), fadeValue);
 			}else if(hasCustomAddon != null) {
 				alpha = Math.min(hasCustomAddon.setNoteAlpha(this, value), fadeValue);
 			}
@@ -673,14 +672,6 @@ class Note extends feshixl.FeshSprite {
 					trail.members[i].angle = angle;
 				}
 			}
-
-			if(noteAbstract == "spiritual star") {
-
-				if(PlayState.curStage == "school" || PlayState.curStage == "schoolEvil")
-					angle += 4.5*(Conductor.bpm/120);
-				else
-					angle += 9*(Conductor.bpm/120);	
-			}	
 
 			if(trail != null) {
 				if(noteAbstract == "trippy") {

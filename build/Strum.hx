@@ -27,8 +27,9 @@ class Strum extends feshixl.FeshSprite {
 		onlyFans = 1;
 		directionAngle = 0;
 
-		if(PlayState.modifierCheckList('blind effect'))
+		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.blindEffect.enabled) {
 			visible = false;
+		}
 	}
 
 	override function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
@@ -106,11 +107,14 @@ class Strum extends feshixl.FeshSprite {
 			centerOrigin();
 		}
 
-		if((animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && PlayState.modifierCheckList('blind effect'))
-			visible = false;
-		
-		if(!(animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && PlayState.modifierCheckList('blind effect') && visible == false) {
-			visible = true;
+		if(Main.feeshmoraModifiers && DefaultHandler.modifiers != null) {
+			if((animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && DefaultHandler.modifiers.blindEffect.enabled) {
+				visible = false;
+			}
+			
+			if(!(animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && DefaultHandler.modifiers.blindEffect.enabled && visible == false) {
+				visible = true;
+			}
 		}
 	}
 }

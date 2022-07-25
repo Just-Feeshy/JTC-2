@@ -8,7 +8,28 @@ import openfl.events.Event;
 
 import Note;
 
+/**
+* New modifier algorithm WIP.
+*/
+private typedef Modifier = {
+    var enabled:Bool;
+}
+
+private typedef Modifiers = {
+    var customHell:Modifier;
+    var getGoodScrub:Modifier;
+    var mirrorChart:Modifier;
+    var singDrain:Modifier;
+    var fadeInNotes:Modifier;
+    var safeBalls:Modifier;
+    var blindEffect:Modifier;
+    var wobbleNotes:Modifier;
+    var cameraMovement:Modifier;
+}
+
 class DefaultHandler {
+    public static var modifiers:Modifiers;
+
     public static var strumOffset:Float = 0;
 
     public static var sizeTimer:Int = 0; 
@@ -62,6 +83,18 @@ class DefaultHandler {
         jitStrumSize = false;
         strumSize = new Array<Array<Float>>();
 
+        modifiers = {
+            customHell: {enabled: false},
+            getGoodScrub: {enabled: false},
+            mirrorChart: {enabled: false},
+            singDrain: {enabled: false},
+            fadeInNotes: {enabled: false},
+            safeBalls: {enabled: false},
+            blindEffect: {enabled: false},
+            wobbleNotes: {enabled: false},
+            cameraMovement: {enabled: false}
+        };
+
         FlxG.stage.addEventListener(Event.ENTER_FRAME, update);
     }
 
@@ -76,9 +109,9 @@ class DefaultHandler {
         camAngle = null;
         tempNoteAbstracts = null;
         preloadAddon = false;
-        
         jitStrumSize = false;
         strumSize = null;
+        modifiers = null;
 
         FlxG.stage.removeEventListener(Event.ENTER_FRAME, update);
     }

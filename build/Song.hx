@@ -4,11 +4,9 @@ import Section.SwagSection;
 import haxe.Json;
 import haxe.format.JsonParser;
 import lime.utils.Assets;
-
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-
-import example_code.DefaultEvents.Modifiers;
+import example_code.DefaultEvents.EventInfo;
 
 using StringTools;
 
@@ -16,7 +14,7 @@ typedef SwagSong =
 {
 	var song:String;
 	var notes:Array<SwagSection>;
-	var modifiers:Array<Modifiers>;
+	var modifiers:Array<EventInfo>;
 	var bpm:Int;
 	var needsVoices:Bool;
 	var speed:Float;
@@ -47,7 +45,7 @@ class Song
 {
 	public var song:String;
 	public var notes:Array<SwagSection>;
-	public var modifiers:Array<Modifiers>;	
+	public var modifiers:Array<EventInfo>;	
 	public var bpm:Int;
 	public var needsVoices:Bool = true;
 	public var speed:Float = 1;

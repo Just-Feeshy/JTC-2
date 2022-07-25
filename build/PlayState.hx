@@ -91,13 +91,17 @@ class PlayState extends MusicBeatState
 
 	private var isPixel:Bool = false;
 
-	//Modifier/Event Stuff
+	//Event Stuff
 	public var eventCounter:Int = 0;
 	public var prevEventStep:Int = 0;
 
+	//Modifier Values
+	public var singDrainValue:Float = 1;
+	public var fadeInValue:Int = 400;
+
 	//Chart Shit
 	public static var muteInst:Bool;
-	public static var modStorage:Array<String> = [];
+	public var eventStorage:Array<String> = [];
 
 	//Camera Shit
 	public static var camHUD:BetterCams;
@@ -237,7 +241,7 @@ class PlayState extends MusicBeatState
 
 		FlxG.mouse.visible = false;
 		//testSprite.visible = false;
-		modStorage = [];
+		eventStorage = [];
 
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -275,9 +279,6 @@ class PlayState extends MusicBeatState
 
 		if(SONG.modifiers == null)
 			SONG.modifiers = [];
-
-		if(modifierCheckList('blind effect'))
-			FlxG.camera.alpha = 0;
 
 		// Making difficulty text for Discord Rich Presence.
 		switch (storyDifficulty)
@@ -453,6 +454,11 @@ class PlayState extends MusicBeatState
 		add(grpSplash);
 
 		DefaultHandler.spawn();
+		setupModifiers();
+
+		if(modifierCheckList('blind effect')) {
+			camGame.engineAlpha = 0;
+		}
 
 		// startCountdown();
 		generateSong(SONG.song);
@@ -878,33 +884,43 @@ class PlayState extends MusicBeatState
 	var startTimer:FlxTimer;
 	var perfectMode:Bool = false;
 
-	static public function modifierCheckList(mod:String):Bool {
+	function setupModifiers():Void {
+		DefaultHandler.modifiers.customHell.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CUSTOM_HELL_MOD) #else false #end;
+		DefaultHandler.modifiers.getGoodScrub.enabled = #if TOGGLEABLE_MODIFIERS (SaveData.getData(SaveType.PERFECT_MODE_MOD) > 0 ? true : false) #else false #end;
+		DefaultHandler.modifiers.mirrorChart.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FLIP_CHART_MOD) #else false #end;
+		DefaultHandler.modifiers.singDrain.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FAIR_BATTLE_MOD) #else false #end;
+		DefaultHandler.modifiers.fadeInNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FADE_BATTLE_MOD) #else false #end;
+		DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
+		DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
+		DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
+		DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
+	}
+
+	function modifierCheckList(mod:String):Bool {
 		if(!Main.feeshmoraModifiers)
 			return false;
 
-		if(modStorage.length > 0 && modStorage.contains(mod))
-			return true;
-
-		if(mod == "flip chart" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.flip #end && SONG.modifiers[0] == null)
-			return true;
-		else if(mod == "custom hell" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.customhell #end)
-			return true;
-		else if(mod == "safe balls" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.safeballs #end)
-			return true;
-		else if(mod == "get good" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.perfectMode >= 1 #end)
-			return true;
-		else if(mod == "fair battle" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.fair #end && SONG.modifiers[0] == null)
-			return true;
-		else if(mod == "fade battle" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.fade #end && SONG.modifiers[0] == null)
-			return true;
-		else if(mod == "blind effect" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.blind #end && SONG.modifiers[0] == null)
-			return true;
-		else if(mod == "note woggle" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.xWobble #end && SONG.modifiers[0] == null)
-			return true;
-		else if(mod == "camera move" #if TOGGLEABLE_MODIFIERS && FlxG.save.data.camMove #end && SONG.modifiers[0] == null)
-			return true;
-		else
-			return false;
+		switch(mod) {
+			case "custom hell":
+				return DefaultHandler.modifiers.customHell.enabled;
+			case "get good":
+				return DefaultHandler.modifiers.getGoodScrub.enabled;
+			case "mirror chart":
+				return DefaultHandler.modifiers.mirrorChart.enabled;
+			case "sing drain":
+				return DefaultHandler.modifiers.singDrain.enabled;
+			case "fadein notes":
+				return DefaultHandler.modifiers.fadeInNotes.enabled;
+			case "safe balls":
+				return DefaultHandler.modifiers.safeBalls.enabled;
+			case "blind effect":
+				return DefaultHandler.modifiers.blindEffect.enabled;
+			case "note woggle":
+				return DefaultHandler.modifiers.wobbleNotes.enabled;
+			case "camera move":
+				return DefaultHandler.modifiers.cameraMovement.enabled;
+			default: return false;
+		}
 	}
 
 	function startCountdown():Void {
@@ -1136,7 +1152,7 @@ class PlayState extends MusicBeatState
 					gottaHitNote = !section.mustHitSection;
 				}
 
-				if(modifierCheckList('flip chart') && gottaHitNote && Main.feeshmoraModifiers)
+				if(modifierCheckList('mirror chart') && gottaHitNote && Main.feeshmoraModifiers)
 					daNoteData = Std.int(Math.abs(daNoteData-(keys-1)));
 
 				if(modifierCheckList('custom hell') && Main.feeshmoraModifiers)
@@ -1583,7 +1599,7 @@ class PlayState extends MusicBeatState
 		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength - FlxG.sound.music.time);
 		#end
 
-		events.whenGameIsRunning(modStorage, this);
+		events.whenGameIsRunning(eventStorage, this);
 
 		if (controls.PAUSE && startedCountdown && canPause)
 		{
@@ -1987,8 +2003,9 @@ class PlayState extends MusicBeatState
 					events.whenNoteIsPressed(daNote, this);
 					cameraMovement(daNote.noteData, daNote.isSustainNote);
 
-					if(modifierCheckList('fair battle') && health > 0.1)
-						setHealth(health - 0.02);
+					if(modifierCheckList('sing drain') && health > 0.2) {
+						setHealth(health - (0.02 * singDrainValue));
+					}
 
 					opponentStrums.forEach(function(spr:Strum) {
 						if (Math.abs(daNote.noteData) == spr.ID) {
@@ -2015,7 +2032,7 @@ class PlayState extends MusicBeatState
 					);
 					
 					daNote.setNoteAngle(addLuaToAngle(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
-					daNote.setNoteAlpha(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
+					daNote.setNoteAlpha(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.
 					daNote.xAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
@@ -2039,7 +2056,7 @@ class PlayState extends MusicBeatState
 					);
 
 					daNote.setNoteAngle(addLuaToAngle(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
-					daNote.setNoteAlpha(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans);
+					daNote.setNoteAlpha(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.
 					daNote.xAngle = opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
@@ -3140,8 +3157,8 @@ class PlayState extends MusicBeatState
 		var value2:String = Reflect.field(SONG.modifiers[eventCounter], "modValueTwo");
 		var skill:String = Reflect.field(SONG.modifiers[eventCounter], "modSkill");
 
-		if(!modStorage.contains(skill))
-			modStorage.push(skill);
+		if(!eventStorage.contains(skill))
+			eventStorage.push(skill);
 
 		value = value.toLowerCase();
 		value2 = value2.toLowerCase();

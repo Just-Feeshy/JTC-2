@@ -6,13 +6,14 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import feshixl.group.FeshEventGroup.IFeshEvent;
+import SaveData.SaveType;
 
 using StringTools;
 
 /**
 * Not important
-**/
-typedef Modifiers = {
+*/
+typedef EventInfo = {
     var modSkill:String;
     var modGridY:Int;
     var modValue:String;
@@ -33,12 +34,22 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
     private var eventTweens:Map<String, FlxTween>;
     private var offsetBounce:Int = 0;
 
+    private var flipped:Bool = false;
+
     public function new() {
         eventTweens = new Map<String, FlxTween>();
     }
 
     public function whenTriggered(eventName:String, eventValue:String, eventValue2:String, playState:PlayState) {
-        if(eventName == "flip chart") {
+        if(eventName == "mirror chart") {
+            if(!flipped && eventValue == "0") {
+                return;
+            }
+
+            if(flipped && eventValue == "1") {
+                return;
+            }
+
             playState.notes.forEachAlive(function(daNote:Note) {
                 if(PlayState.SONG.fifthKey)
                     daNote.noteData = Std.int(Math.abs(daNote.noteData-(5-1)));
@@ -60,8 +71,22 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 note.refresh(PlayState.SONG.fifthKey);
                 note.refresh(PlayState.SONG.fifthKey, true);
             }
+        }else if(eventName == "sing drain") {
+            playState.singDrainValue = Std.parseInt(eventValue);
+            DefaultHandler.modifiers.singDrain.enabled = true;
+        }else if(eventName == "fadein notes") {
+            playState.fadeInValue = Std.parseInt(eventValue);
+            DefaultHandler.modifiers.fadeInNotes.enabled = true;
         }else if(eventName == "blind effect") {
-            playState.camGame.alpha = 0;
+            if(eventValue == "0") {
+                DefaultHandler.modifiers.blindEffect.enabled = false;
+                playState.camGame.engineAlpha = 1;
+            }
+
+            if(eventValue == "1") {
+                DefaultHandler.modifiers.blindEffect.enabled = true;
+                playState.camGame.engineAlpha = 0;
+            }
         }else if(eventName == "alt animation") {
             if(eventValue2.contains("bf") || eventValue2.contains("boyfriend"))
                 playState.playerAltAnim = eventValue;
@@ -99,7 +124,11 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 			else
 				playState.flipWiggle = 1;
 		}else if(eventName == "note rewind") {
-			FlxTween.tween(Note, {AFFECTED_STRUMTIME : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500) * Std.parseFloat(eventValue2));
+            storeTween(eventName, FlxTween.tween(Note, {AFFECTED_STRUMTIME : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500) * Std.parseFloat(eventValue2), {
+                onComplete: function(tween:FlxTween) {
+                    cancelTween(eventName);
+                }
+            }));
         }else if(eventName == "character change") {
             if(eventValue2.contains("dad")) {
                 if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
@@ -119,16 +148,19 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 }
             }
         }else if(eventName == "clear events") {
-            if(PlayState.modStorage.contains(eventValue)) {
-                PlayState.modStorage.remove(eventValue);
+            if(playState.eventStorage.contains(eventValue)) {
+                playState.eventStorage.remove(eventValue);
+                setModifierToDefault(eventValue);
             }
 
-            if(PlayState.modStorage.contains(eventValue2)) {
-                PlayState.modStorage.remove(eventValue2);
+            if(playState.eventStorage.contains(eventValue2)) {
+                playState.eventStorage.remove(eventValue2);
+                setModifierToDefault(eventValue2);
             }
         }else if(eventName == "clear all") {
-            PlayState.modStorage.splice(0, PlayState.modStorage.length);
-            PlayState.modStorage = [];
+            reflushModifiers();
+            playState.eventStorage.splice(0, playState.eventStorage.length);
+            playState.eventStorage = [];
         }
     }
 
@@ -186,4 +218,40 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
             eventTweens.set(name, tween);
         }
     }
+
+    function setModifierToDefault(mod:String):Void {
+		switch(mod) {
+			case "custom hell":
+				DefaultHandler.modifiers.customHell.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CUSTOM_HELL_MOD) #else false #end;
+			case "get good":
+				DefaultHandler.modifiers.getGoodScrub.enabled = #if TOGGLEABLE_MODIFIERS (SaveData.getData(SaveType.PERFECT_MODE_MOD) > 0 ? true : false) #else false #end;
+			case "mirror chart":
+				DefaultHandler.modifiers.mirrorChart.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FLIP_CHART_MOD) #else false #end;
+			case "sing drain":
+				DefaultHandler.modifiers.singDrain.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FAIR_BATTLE_MOD) #else false #end;
+			case "fadein notes":
+				DefaultHandler.modifiers.fadeInNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FADE_BATTLE_MOD) #else false #end;
+			case "safe balls":
+				DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
+			case "blind effect":
+				DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
+			case "note woggle":
+				DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
+			case "camera move":
+				DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
+		}
+	}
+
+    function reflushModifiers():Void {
+		DefaultHandler.modifiers.customHell.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CUSTOM_HELL_MOD) #else false #end;
+		DefaultHandler.modifiers.getGoodScrub.enabled = #if TOGGLEABLE_MODIFIERS (SaveData.getData(SaveType.PERFECT_MODE_MOD) > 0 ? true : false) #else false #end;
+		DefaultHandler.modifiers.mirrorChart.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FLIP_CHART_MOD) #else false #end;
+		DefaultHandler.modifiers.singDrain.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FAIR_BATTLE_MOD) #else false #end;
+		DefaultHandler.modifiers.fadeInNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FADE_BATTLE_MOD) #else false #end;
+		DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
+		DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
+		DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
+		DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
+	}
+
 }

@@ -164,8 +164,6 @@ class HelperStates extends FlxUIState {
 				PlayState.camHUD = FlxDestroyUtil.destroy(PlayState.camHUD);
 				PlayState.camNOTE = FlxDestroyUtil.destroy(PlayState.camNOTE);
 			}
-
-			PlayState.modStorage = [];
 		}
 	}
 

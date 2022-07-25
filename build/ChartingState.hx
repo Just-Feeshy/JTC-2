@@ -30,7 +30,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import haxe.Json;
 import lime.utils.Assets;
-import example_code.DefaultEvents.Modifiers;
+import example_code.DefaultEvents.EventInfo;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
@@ -134,7 +134,7 @@ class ChartingState extends MusicBeatState
 	var eventDisplay:FlxTypedGroup<FlxText>;
 
 	var wtfIsNote:String = "regular";
-	var wtfIsEvent:String = "flip chart";
+	var wtfIsEvent:String = "mirror chart";
 
 	var songFPS:Null<Int> = 100;
 	var colorMap:Null<Int> = 0;
@@ -153,40 +153,48 @@ class ChartingState extends MusicBeatState
 	];
 
 	//Event Stuff
-	public static final daList:Array<String> = ['flip chart', 'fair battle', 'fade battle', 'blind effect', 'X Sway', 'note woggle', 'camera move', 'clear events', 'clear all'];
-	
-	private static final simpleList:Array<Array<String>> = [
-		['alt animation', "Value 1 - Sets a suffix after the idle and sing\nanimation name.\nValue 2 - Character side to set (Boyfriend's Side or Dad's Side)"],
-		['jumpspeed', "Value 1 - Multiply regular scroll speed by this value.\nValue 2 - Set tween value of scroll speed transition."],
-		['sicko shake', "Value 1 - Regular camera shake.\nValue 2 - HUD camera shake."],
-		['time freeze', "Value 1 - 0 = Unfreeze time of music. 1 = Freeze time\nof music.\nValue 2 - Set tween value."],
-		['strum bounce', "Value 1 - Set size value.\nValue 2 - Set X offset value for player strum."],
-		['note rewind', "Value 1 - Set rewind value.\nValue 2 - Set tween value to the rewind speed."],
-		['character change', "Value 1 - New character's name.\nValue 2 - Character to change \n(Boyfriend's Side, Dad's Side, Girlfriend's Side)"],
-		['clear events', "Value 1 - Event's name.\nValue 2 - Second event's name. (optional)"],
-		['clear all', "Value 1 - nothing.\nValue 2 - nothing."]
+	private static final simpleList:Map<String, Array<Array<String>>> = [
+		"Modifiers" => [
+			['mirror chart', "Mirror mode.\n\nValue -\n0 = Revert back to normal.\n1 = Should mirror regular chart."],
+			['sing drain', "Drains health when opponent sings.\n\nValue - How much health should be drained. (1 recommended)"],
+			['fadein notes', "Whether notes should have a fade-in effect.\n\nValue - Note position where note should fade in.\n(400 recommended)"],
+			['blind effect', "Follow your opponent's pattern. Well...\n\nValue -\n0 = Revert back to normal.\n1 = Should enable."],
+			['note woggle', ""],
+			['camera move', ""]
+		],
+		"Regular" => [
+			['alt animation', "Value 1 - Sets a suffix after the idle and sing\nanimation name.\nValue 2 - Character side to set.\n(Boyfriend's Side or Dad's Side)"],
+			['jumpspeed', "Value 1 - Multiply regular scroll speed by this value.\nValue 2 - Set tween value of scroll speed transition."],
+			['sicko shake', "Value 1 - Regular camera shake.\nValue 2 - HUD camera shake."],
+			['time freeze', "Value 1 - 0 = Unfreeze time of music. 1 = Freeze time\nof music.\nValue 2 - Set tween value."],
+			['strum bounce', "Value 1 - Set size value.\nValue 2 - Set X offset value for player strum."],
+			['note rewind', "Value 1 - Set rewind value.\nValue 2 - Set tween value to the rewind speed."],
+			['character change', "Value 1 - New character's name.\nValue 2 - Character to change \n(Boyfriend's Side, Dad's Side, Girlfriend's Side)"],
+			['clear events', "Value 1 - Event's name.\nValue 2 - Second event's name. (optional)"],
+			['clear all', "Value 1 - nothing.\nValue 2 - nothing."]
+		]
 	];
 
-	private var selectingShader:BuiltInShaders;
-
 	private var eventCatalog:Map<String, String> = [
-		'flip chart' => "Modifiers",
-		'fair battle' => "Modifiers",
+		'mirror chart' => "Modifiers",
+		'sing drain' => "Modifiers",
 		'blind effect' => "Modifiers",
-		'fade battle' => "Modifiers",
+		'fadein notes' => "Modifiers",
 		'X Sway' => "Modifiers",
 		'note woggle' => "Modifiers",
 		'camera move' => "Modifiers",
-		'alt animation' => "Other",
-		'jumpspeed' => "Other",
-		'sicko shake' => "Other",
-		'time freeze' => "Other",
-		'strum bounce' => "Other",
-		'note rewind' => "Other",
-		'character change' => "Other",
-		'clear events' => "Other",
-		'clear all' => "Other"
+		'alt animation' => "Regular",
+		'jumpspeed' => "Regular",
+		'sicko shake' => "Regular",
+		'time freeze' => "Regular",
+		'strum bounce' => "Regular",
+		'note rewind' => "Regular",
+		'character change' => "Regular",
+		'clear events' => "Regular",
+		'clear all' => "Regular"
 	];
+
+	private var selectingShader:BuiltInShaders;
 
 	var zoomText:FlxText;
 
@@ -329,14 +337,15 @@ class ChartingState extends MusicBeatState
 
 		if(Main.feeshmoraModifiers) {
 			mod_tabs = [
-				{name: "F Modifiers", label: 'Modifiers'},
-				//{name: "Game Modes", label: 'Game Modes'},
-				{name: "Other", label: "Other"},
+				{name: "Modifiers", label: 'Modifiers'},
+				{name: "F Regular", label: "Regular"},
+				{name: "OZ Yours", label: 'Yours'},
 				{name: "Settings", label: "Settings"}
 			];
 		}else {
 			mod_tabs = [
-				{name: "Other", label: "Other"},
+				{name: "F Regular", label: "Regular"},
+				{name: "OZ Yours", label: 'Yours'},
 				{name: "Settings", label: "Settings"}
 			];
 		}	
@@ -391,7 +400,7 @@ class ChartingState extends MusicBeatState
 
 		//Options
 		addModifierUI();
-		addOtherEventUI();
+		addRegularEventUI();
 		addSettingsEventUI();
 
 		add(curRenderedSustains);
@@ -465,6 +474,10 @@ class ChartingState extends MusicBeatState
 		var makeModName = new FlxUIInputText(160, 20, 80, "Modifier Pog", 8);
 
 		var modLabel = new FlxText(90, 20, 'Event Name:');
+		var howToTutorial:FlxText = new FlxText(5, 100, '');
+
+		var makeModifierValue:FlxUIInputText = new FlxUIInputText(150, 85, 80, "", 8);
+		var modifierValueLabel:FlxText = new FlxText(105, 85, 'Value:');
 
 		var createEventButton:FlxButton = new FlxButton(5, UI_Modifiers.height - 75, "Create Event", function() {
 			if(curStep < 0 || curStep < curSection*16 || makeModName.text == "")
@@ -477,11 +490,34 @@ class ChartingState extends MusicBeatState
 					return;
 			}
 
-			var createMod:Modifiers = {modSkill: wtfIsEvent, modGridY: GRID_SIZE*curStep, modValue: null, modValueTwo: null, modDisplayName: makeModName.text};
+			var createEvent:EventInfo = {modSkill: wtfIsEvent, modGridY: GRID_SIZE*curStep, modValue: null, modValueTwo: null, modDisplayName: makeModName.text};
 
-			_song.modifiers.push(createMod);
+			switch(createEvent.modSkill) {
+				case "mirror chart":
+					if(Std.parseInt(makeModifierValue.text) != null)
+						createEvent.modValue = Std.string(Math.min(1, Math.max(0, Std.parseFloat(makeModifierValue.text))));
+					else
+						createEvent.modValue = "1";
+				case "sing drain":
+					if(Std.parseInt(makeModifierValue.text) != null)
+						createEvent.modValue = Std.string(-Math.abs(Std.parseFloat(makeModifierValue.text)));
+					else
+						createEvent.modValue = "1";
+				case "fadein notes":
+					if(Std.parseInt(makeModifierValue.text) != null)
+						createEvent.modValue = Std.string(Math.abs(Std.parseInt(makeModifierValue.text)));
+					else
+						createEvent.modValue = "400";
+				case "blind effect":
+					if(Std.parseInt(makeModifierValue.text) != null)
+						createEvent.modValue = Std.string(Math.min(1, Math.max(0, Std.parseFloat(makeModifierValue.text))));
+					else
+						createEvent.modValue = "1";
+			}
 
-			createPhysicalEvent(_song.modifiers.length-1, curStep, null, null);
+			_song.modifiers.push(createEvent);
+
+			createPhysicalEvent(_song.modifiers.length-1, curStep, createEvent.modValue, null);
 		});
 
 		var removeEventButton:FlxButton = new FlxButton(5, UI_Modifiers.height - 50, "Remove Event", function() {
@@ -491,37 +527,55 @@ class ChartingState extends MusicBeatState
 			removePhysicalEvent(curStep);
 		});
 
-		var modList:FlxUIDropDownMenu = new FlxUIDropDownMenu(125, 50, FlxUIDropDownMenu.makeStrIdLabelArray(daList, true), function(choose:String) {
-			wtfIsEvent = daList[Std.parseInt(choose)];
+		var eventList:Array<String> = [];
+
+		for (i in 0...simpleList.get("Modifiers").length)
+			eventList.push(simpleList.get("Modifiers")[i][0]);
+
+		howToTutorial.text = simpleList.get("Modifiers")[0][1];
+
+		var modList:FlxUIDropDownMenu = new FlxUIDropDownMenu(150, 50, FlxUIDropDownMenu.makeStrIdLabelArray(eventList, true), function(choose:String) {
+			wtfIsEvent = eventList[Std.parseInt(choose)];
+			howToTutorial.text = simpleList.get("Modifiers")[Std.parseInt(choose)][1];
 		});
 
 		var tab_group_modifiers = new FlxUI(null, UI_Modifiers);
-		tab_group_modifiers.name = "F Modifiers";
+		tab_group_modifiers.name = "Modifiers";
 		tab_group_modifiers.add(makeModName);
 		tab_group_modifiers.add(modLabel);
 		tab_group_modifiers.add(createEventButton);
 		tab_group_modifiers.add(removeEventButton);
+		tab_group_modifiers.add(makeModifierValue);
+		tab_group_modifiers.add(modifierValueLabel);
+		tab_group_modifiers.add(howToTutorial);
 		tab_group_modifiers.add(modList);
 
 		UI_Modifiers.addGroup(tab_group_modifiers);
 		UI_Modifiers.scrollFactor.set();
 	}
 
-	function addOtherEventUI():Void {
-		var makeOtherName = new FlxUIInputText(185, 20, 80, "Other Pog", 8);
+	function addYourEventUI():Void {
+		var tab_group_yourEvent:FlxUI = new FlxUI(null, UI_Modifiers);
+		tab_group_yourEvent.name = "OZ Your";
+		UI_Modifiers.addGroup(tab_group_yourEvent);
+		UI_Modifiers.scrollFactor.set();
+	}
 
-		var otherLabel:FlxText = new FlxText(115, 20, 'Event Name:');
+	function addRegularEventUI():Void {
+		var makeRegularName = new FlxUIInputText(185, 20, 80, "Regular Pog", 8);
 
-		var makeOtherValue:FlxUIInputText = new FlxUIInputText(150, 85, 80, "", 8);
-		var makeOtherTwoValue:FlxUIInputText = new FlxUIInputText(150, 105, 80, "", 8);
+		var RegularLabel:FlxText = new FlxText(115, 20, 'Event Name:');
 
-		var otherValueLabel:FlxText = new FlxText(100, 85, 'Value 1:');
-		var otherTwoValueLabel:FlxText = new FlxText(100, 105, 'Value 2:');
+		var makeRegularValue:FlxUIInputText = new FlxUIInputText(150, 85, 80, "", 8);
+		var makeRegularTwoValue:FlxUIInputText = new FlxUIInputText(150, 105, 80, "", 8);
+
+		var RegularValueLabel:FlxText = new FlxText(100, 85, 'Value 1:');
+		var RegularTwoValueLabel:FlxText = new FlxText(100, 105, 'Value 2:');
 
 		var howToTutorial:FlxText = new FlxText(5, 125, '');
 
 		var createEventButton:FlxButton = new FlxButton(5, UI_Modifiers.height - 75, "Create Event", function() {
-			if(curStep < 0 || curStep < curSection*16 || makeOtherName.text == "")
+			if(curStep < 0 || curStep < curSection*16 || makeRegularName.text == "")
 				return;
 
 			for(i in 0..._song.modifiers.length) {
@@ -531,65 +585,65 @@ class ChartingState extends MusicBeatState
 					return;
 			}
 
-			var createEvent:Modifiers = {modSkill: wtfIsEvent, modGridY: GRID_SIZE*curStep, modValue: null, modValueTwo: null, modDisplayName: makeOtherName.text};
+			var createEvent:EventInfo = {modSkill: wtfIsEvent, modGridY: GRID_SIZE*curStep, modValue: null, modValueTwo: null, modDisplayName: makeRegularName.text};
 
 			switch(createEvent.modSkill) {
 				case "alt animation":
-					createEvent.modValue = makeOtherValue.text.toLowerCase();
-					createEvent.modValueTwo = otherTwoValueLabel.text.toLowerCase();
+					createEvent.modValue = makeRegularValue.text.toLowerCase();
+					createEvent.modValueTwo = RegularTwoValueLabel.text.toLowerCase();
 				case "jumpspeed":
-					if(Std.parseInt(makeOtherValue.text) != null)
-						createEvent.modValue = Std.string(Math.min(3, Math.max(0.5, Std.parseFloat(makeOtherValue.text))));
+					if(Std.parseInt(makeRegularValue.text) != null)
+						createEvent.modValue = Std.string(Math.min(3, Math.max(0.5, Std.parseFloat(makeRegularValue.text))));
 					else
 						createEvent.modValue = "1";
 
-					if(Std.parseInt(makeOtherTwoValue.text) != null)
-						createEvent.modValueTwo = Std.string(Math.min(6, Math.max(1, Std.parseFloat(makeOtherTwoValue.text))));
+					if(Std.parseInt(makeRegularTwoValue.text) != null)
+						createEvent.modValueTwo = Std.string(Math.min(6, Math.max(1, Std.parseFloat(makeRegularTwoValue.text))));
 					else
 						createEvent.modValueTwo = "1";
 				case "sicko shake":
-					if(Std.parseInt(makeOtherValue.text) != null)
-						createEvent.modValue = Std.string(Math.min(10, Math.max(1, Std.parseInt(makeOtherValue.text))));
+					if(Std.parseInt(makeRegularValue.text) != null)
+						createEvent.modValue = Std.string(Math.min(10, Math.max(1, Std.parseInt(makeRegularValue.text))));
 					else
 						createEvent.modValue = "1";
 
-					if(Std.parseInt(makeOtherTwoValue.text) != null)
-						createEvent.modValueTwo = Std.string(Math.min(10, Math.max(1, Std.parseInt(makeOtherTwoValue.text))));
+					if(Std.parseInt(makeRegularTwoValue.text) != null)
+						createEvent.modValueTwo = Std.string(Math.min(10, Math.max(1, Std.parseInt(makeRegularTwoValue.text))));
 					else
 						createEvent.modValueTwo = "0";
 				case "time freeze":
-					if(Std.parseInt(makeOtherValue.text) != null)
-						createEvent.modValue = Std.string(Math.min(1, Math.max(0, Std.parseInt(makeOtherValue.text))));
+					if(Std.parseInt(makeRegularValue.text) != null)
+						createEvent.modValue = Std.string(Math.min(1, Math.max(0, Std.parseInt(makeRegularValue.text))));
 					else
 						createEvent.modValue = "0";
 
-					if(Std.parseInt(makeOtherTwoValue.text) != null)
-						createEvent.modValueTwo = Std.string(Math.min(4, Math.max(0, Std.parseFloat(makeOtherTwoValue.text))));
+					if(Std.parseInt(makeRegularTwoValue.text) != null)
+						createEvent.modValueTwo = Std.string(Math.min(4, Math.max(0, Std.parseFloat(makeRegularTwoValue.text))));
 					else
 						createEvent.modValueTwo = "1";
 				case "strum bounce":
-					if(Std.parseInt(makeOtherValue.text) != null)
-						createEvent.modValue = Std.string(Math.min(200, Math.max(-200, Std.parseInt(makeOtherValue.text))));
+					if(Std.parseInt(makeRegularValue.text) != null)
+						createEvent.modValue = Std.string(Math.min(200, Math.max(-200, Std.parseInt(makeRegularValue.text))));
 					else
 						createEvent.modValue = "1";
 
-					if(Std.parseInt(makeOtherTwoValue.text) != null)
-						createEvent.modValueTwo = Std.string(Math.min(30, Math.max(0, Std.parseInt(makeOtherTwoValue.text))));
+					if(Std.parseInt(makeRegularTwoValue.text) != null)
+						createEvent.modValueTwo = Std.string(Math.min(30, Math.max(0, Std.parseInt(makeRegularTwoValue.text))));
 					else
 						createEvent.modValueTwo = "10";
 				case "note rewind":
-					if(Std.parseInt(makeOtherValue.text) != null)
-						createEvent.modValue = Std.string(Math.min(16, Math.max(0, Std.parseInt(makeOtherValue.text))));
+					if(Std.parseInt(makeRegularValue.text) != null)
+						createEvent.modValue = Std.string(Math.min(16, Math.max(0, Std.parseInt(makeRegularValue.text))));
 					else
 						createEvent.modValue = "1";
 
-					if(Std.parseInt(makeOtherTwoValue.text) != null)
-						createEvent.modValueTwo = Std.string(Math.min(9, Math.max(1, Std.parseFloat(makeOtherTwoValue.text))));
+					if(Std.parseInt(makeRegularTwoValue.text) != null)
+						createEvent.modValueTwo = Std.string(Math.min(9, Math.max(1, Std.parseFloat(makeRegularTwoValue.text))));
 					else
 						createEvent.modValueTwo = "1";
 				case "opponent change":
-					createEvent.modValue = makeOtherValue.text.toLowerCase();
-					createEvent.modValueTwo = otherTwoValueLabel.text.toLowerCase();
+					createEvent.modValue = makeRegularValue.text.toLowerCase();
+					createEvent.modValueTwo = RegularTwoValueLabel.text.toLowerCase();
 				case "clear all":
 					createEvent.modValue = null;
 					createEvent.modValueTwo = null;
@@ -610,30 +664,32 @@ class ChartingState extends MusicBeatState
 
 		var eventList:Array<String> = [];
 
-		for (i in 0...simpleList.length)
-			eventList.push(simpleList[i][0]);
+		for (i in 0...simpleList.get("Regular").length)
+			eventList.push(simpleList.get("Regular")[i][0]);
 
-		var otherList:FlxUIDropDownMenu = new FlxUIDropDownMenu(150, 50, FlxUIDropDownMenu.makeStrIdLabelArray(eventList, true), function(choose:String) {
-			wtfIsEvent = simpleList[Std.parseInt(choose)][0];
+		howToTutorial.text = simpleList.get("Regular")[0][1];
 
-			makeOtherValue.text = "";
-			howToTutorial.text = simpleList[Std.parseInt(choose)][1];
+		var RegularList:FlxUIDropDownMenu = new FlxUIDropDownMenu(150, 50, FlxUIDropDownMenu.makeStrIdLabelArray(eventList, true), function(choose:String) {
+			wtfIsEvent = eventList[Std.parseInt(choose)];
+
+			makeRegularValue.text = "";
+			howToTutorial.text = simpleList.get("Regular")[Std.parseInt(choose)][1];
 		});
 
-		var tab_group_otherEvent:FlxUI = new FlxUI(null, UI_Modifiers);
-		tab_group_otherEvent.name = "Other";
-		tab_group_otherEvent.add(makeOtherName);
-		tab_group_otherEvent.add(createEventButton);
-		tab_group_otherEvent.add(removeEventButton);
-		tab_group_otherEvent.add(makeOtherValue);
-		tab_group_otherEvent.add(makeOtherTwoValue);
-		tab_group_otherEvent.add(otherLabel);
-		tab_group_otherEvent.add(otherValueLabel);
-		tab_group_otherEvent.add(otherTwoValueLabel);
-		tab_group_otherEvent.add(howToTutorial);
-		tab_group_otherEvent.add(otherList);
+		var tab_group_RegularEvent:FlxUI = new FlxUI(null, UI_Modifiers);
+		tab_group_RegularEvent.name = "F Regular";
+		tab_group_RegularEvent.add(makeRegularName);
+		tab_group_RegularEvent.add(createEventButton);
+		tab_group_RegularEvent.add(removeEventButton);
+		tab_group_RegularEvent.add(makeRegularValue);
+		tab_group_RegularEvent.add(makeRegularTwoValue);
+		tab_group_RegularEvent.add(RegularLabel);
+		tab_group_RegularEvent.add(RegularValueLabel);
+		tab_group_RegularEvent.add(RegularTwoValueLabel);
+		tab_group_RegularEvent.add(howToTutorial);
+		tab_group_RegularEvent.add(RegularList);
 
-		UI_Modifiers.addGroup(tab_group_otherEvent);
+		UI_Modifiers.addGroup(tab_group_RegularEvent);
 		UI_Modifiers.scrollFactor.set();
 	}
 
@@ -1778,7 +1834,7 @@ class ChartingState extends MusicBeatState
 
 			if(gridY/GRID_SIZE >= (curSection + section) * 16 && gridY/GRID_SIZE < (curSection + 1 + section) * 16) {
 				if(!eventPos.contains(Std.int(gridY/GRID_SIZE) - (section * 16))) {
-					var copyE:Modifiers = {modSkill: skill, modGridY: (Std.int(gridY/GRID_SIZE) - (section * 16))*GRID_SIZE, modValue: value, modValueTwo: value2, modDisplayName: name};
+					var copyE:EventInfo = {modSkill: skill, modGridY: (Std.int(gridY/GRID_SIZE) - (section * 16))*GRID_SIZE, modValue: value, modValueTwo: value2, modDisplayName: name};
 
 					_song.modifiers.push(copyE);
 					createPhysicalEvent(i, Std.int(copyE.modGridY/GRID_SIZE), copyE.modValue, copyE.modValueTwo);

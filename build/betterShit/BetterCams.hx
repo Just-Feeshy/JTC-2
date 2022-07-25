@@ -7,6 +7,7 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
 import flixel.math.FlxMatrix;
+import flixel.math.FlxMath;
 import openfl.filters.BitmapFilter;
 import openfl.display.BlendMode;
 import openfl.display.BitmapData;
@@ -27,6 +28,7 @@ class BetterCams extends FlxCamera {
 	public var engineY(default, set):Float = 0;
 
     public var engineAngle(default, set):Float = 0;
+    public var engineAlpha(default, set):Float = 1;
 
     public function new() {
         _filters = [];
@@ -154,17 +156,36 @@ class BetterCams extends FlxCamera {
 
     /**
 	*Reuse and recycle! - Feeshy
-	**/
+	*/
+
 	function set_engineAngle(Angle:Float):Float {
 		this.engineAngle = Angle;
 		set_angle(this.angle);
 		return Angle;
 	}
 
+    function set_engineAlpha(Alpha:Float):Float {
+        this.engineAlpha = Alpha;
+        set_alpha(this.alpha);
+        return Alpha;
+    }
+
     override function set_angle(Angle:Float):Float {
         angle = Angle;
         flashSprite.rotation = engineAngle + Angle;
         return Angle;
+    }
+
+    override function set_alpha(Alpha:Float):Float {
+        alpha = FlxMath.bound(Alpha * engineAngle, 0, 1);
+
+        if (FlxG.renderBlit) {
+            _flashBitmap.alpha = alpha;
+        }else {
+            canvas.alpha = alpha;
+        }
+
+        return alpha;
     }
 
     override public function update(elapsed:Float):Void {
