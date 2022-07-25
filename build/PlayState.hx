@@ -98,8 +98,9 @@ class PlayState extends MusicBeatState
 	//Modifier Values
 	public var singDrainValue:Float = 1;
 	public var fadeInValue:Int = 400;
-	public var wobbleModPower(default, set):Float = 30;
 	public var cameraMovementInsensity:Float = 1;
+
+	@:isVar public var wobbleModPower(get, set):Float = 30;
 
 	//Chart Shit
 	public static var muteInst:Bool;
@@ -3169,6 +3170,14 @@ class PlayState extends MusicBeatState
 
 	function get_accTotal():Float {
 		return Math.floor(((totalNotesLoaded - misses - missesHold + totalRatingAcc)/totalNotesLoaded)*10000)/100;
+	}
+
+	function get_wobbleModPower():Float {
+		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.wobbleNotes.enabled) {
+			return wobbleModPower;
+		}
+
+		return 30;
 	}
 
 	override function stepHit()
