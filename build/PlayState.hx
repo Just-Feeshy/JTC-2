@@ -98,7 +98,7 @@ class PlayState extends MusicBeatState
 	//Modifier Values
 	public var singDrainValue:Float = 1;
 	public var fadeInValue:Int = 400;
-	public var wobbleModPower:Float = 30;
+	public var wobbleModPower(default, set):Float = 30;
 	public var cameraMovementInsensity:Float = 1;
 
 	//Chart Shit
@@ -2073,7 +2073,6 @@ class PlayState extends MusicBeatState
 						}
 			
 						if(!daNote.cameras.contains(camNOTE.camNoteWOBBLE)) {
-							camNOTE.wobblePower = wobbleModPower * flipWiggle;
 							daNote.cameras = [camNOTE.camNoteWOBBLE];
 						}
 					}
@@ -3152,6 +3151,12 @@ class PlayState extends MusicBeatState
 		value2 = value2.toLowerCase();
 
 		events.whenTriggered(skill, value, value2, this);
+	}
+
+	function set_wobbleModPower(value:Float):Float {
+		wobbleModPower = value;
+		camNOTE.wobblePower = wobbleModPower * flipWiggle;
+		return wobbleModPower;
 	}
 
 	//Getter Function

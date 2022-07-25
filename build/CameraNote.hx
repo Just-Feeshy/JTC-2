@@ -50,7 +50,6 @@ class CameraNote extends BetterCams {
         super.update(elapsed);
 
         if(camNoteWOBBLE != null) {
-            noteWiggleFLAG.waveAmplitude = 0;
             noteWiggleFLAG.waveAmplitude = (wobblePower * Math.pow(10, -3)) / 2;
 
             camNoteWOBBLE.x = x;
