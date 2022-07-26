@@ -44,10 +44,12 @@ class DialogueBoxJTC extends DialogueBuilder {
         speechBubble.flipX = !speechBubble.flipX;
 
         if(displayText.color == 16766208) {
-            implementShadowTextColor(FlxColor.fromInt(15117568));
+            implementShadowTextColor(FlxColor.fromInt(0xcc7800));
         }else if(displayText.color == 3200456) {
             implementShadowTextColor(FlxColor.fromInt(2338724));
         }
+
+        displayText.color = 15117568;
 
         if(bothScene.contains(dialogueScene - 1)) {
             leftPortrait.visible = true;

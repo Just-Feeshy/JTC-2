@@ -15,7 +15,6 @@ import template.CustomNote;
 import template.StageBuilder;
 import feshixl.group.FeshEventGroup;
 import feshixl.interfaces.IDialogue;
-import flixel.FlxState;
 import flixel.tweens.FlxEase;
 import flixel.FlxG;
 import haxe.Json;
@@ -86,14 +85,14 @@ class Register {
     }
 
     @:access(HelperStates)
-    public inline static function attachLuaToState(state:Class<Dynamic>, luaClass:ModLua) {
+    public inline static function attachLuaToState<T:HelperStates>(state:Class<T>, luaClass:ModLua):Void {
 		#if (USING_LUA && linc_luajit)
 		HelperStates.scriptsInStates.set(Type.getClassName(state), luaClass);
 		#end
 	}
 
     @:access(HelperStates)
-    public inline static function detachLuaFromState(state:Class<Dynamic>) {
+    public inline static function detachLuaFromState<T:HelperStates>(state:Class<T>):Void {
         #if (USING_LUA && linc_luajit)
         if(HelperStates.scriptsInStates.exists(Type.getClassName(state))) {
             HelperStates.scriptsInStates.get(Type.getClassName(state)).close();

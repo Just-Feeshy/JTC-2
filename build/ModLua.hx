@@ -200,6 +200,17 @@ class ModLua {
             spr.clipRect = rect;
         });
 
+        Lua_helper.add_callback(lua, "increaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.setGraphicSize(Std.int(spr.width * width), Std.int(spr.height * height));
+            spr.updateHitbox();
+        });
+
         Lua_helper.add_callback(lua, "decreaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
             var spr:FlxSprite = getSprite(name);
 
@@ -209,6 +220,21 @@ class ModLua {
 
             spr.setGraphicSize(Std.int(spr.width / width), Std.int(spr.height / height));
             spr.updateHitbox();
+        });
+
+        Lua_helper.add_callback(lua, "setSpriteToCamera", function(name:String, camera:String) {
+            var cam:FlxCamera = getCamera(camera);
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            if(cam == null) {
+                return;
+            }
+
+            spr.cameras = [cam];
         });
 
         Lua_helper.add_callback(lua, "addSpriteToState", function(name:String) {
@@ -374,7 +400,7 @@ class ModLua {
 		});
 
         Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Int) {
-            var cam:FlxCamera = luaCameras.get(name);
+            var cam:FlxCamera = getCamera(name);
 
             if(cam == null) {
                 return;
@@ -433,10 +459,10 @@ class ModLua {
         var obj:Dynamic = null;
 
         if(luaSprites.exists(name))
-            obj = luaSprites.get(name);
+            obj = getSprite(name);
 
         if(luaCameras.exists(name))
-            obj = luaCameras.get(name);
+            obj = getCamera(name);
 
         return obj;
     }
@@ -508,6 +534,19 @@ class ModLua {
         return spr;
     }
 
+    public function getCamera(name:String):FlxCamera {
+        var spr:FlxCamera = getCamera(name);
+
+        if(spr == null) {
+            var curState:HelperStates = cast(FlxG.state, HelperStates);
+
+            if(curState.modifiableCameras.exists(name))
+                spr = curState.modifiableCameras.get(name);
+        }
+
+        return spr;
+    }
+
     public function close():Void {
         #if (USING_LUA && linc_luajit_basic)
         if(lua == null) {
@@ -529,7 +568,7 @@ class ModLua {
 
         if(luaCameras != null) {
             for(k in luaCameras.keys()) {
-                var cam:FlxCamera = luaCameras.get(k);
+                var cam:FlxCamera = getCamera(k);
 
                 if(cam != null) {
                     cam.destroy();

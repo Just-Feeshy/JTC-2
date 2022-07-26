@@ -27,6 +27,7 @@ import Std.is as isOfType;
 */
 class HelperStates extends FlxUIState {
 	public var modifiableSprites:Map<String, FlxSprite>;
+	public var modifiableCameras:Map<String, FlxCamera>;
 
 	public static var transitionSkip:Bool = false;
 
@@ -45,6 +46,7 @@ class HelperStates extends FlxUIState {
 
 	public function new(?transInType:String, ?transOutType:String) {
 		modifiableSprites = new Map<String, FlxSprite>();
+		modifiableCameras = new Map<String, FlxCamera>();
 
 		if(transInType != null) {
 			this.transInType = transInType;
@@ -102,15 +104,6 @@ class HelperStates extends FlxUIState {
 		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).addCallback(name, method);
-		}
-		#end
-	}
-
-	public function attachCamera(name:String, cam:FlxCamera):Void {
-		#if (USING_LUA && linc_luajit_basic)
-		if(HelperStates.luaExist(Type.getClass(this))) {
-			if(!HelperStates.getLua(Type.getClass(this)).luaCameras.exists(name))
-				HelperStates.getLua(Type.getClass(this)).luaCameras.set(name, cam);
 		}
 		#end
 	}
@@ -186,6 +179,32 @@ class HelperStates extends FlxUIState {
 		#end
 
 		super.destroy();
+
+		if(modifiableSprites != null) {
+            for(k in modifiableSprites.keys()) {
+                var spr:FlxSprite = modifiableSprites.get(k);
+
+                if(spr != null) {
+                    spr.destroy();
+                }
+            }
+
+            modifiableSprites.clear();
+            modifiableSprites = null;
+        }
+
+        if(modifiableCameras != null) {
+            for(k in modifiableCameras.keys()) {
+                var cam:FlxCamera = modifiableCameras.get(k);
+
+                if(cam != null) {
+                    cam.destroy();
+                }
+            }
+
+            modifiableCameras.clear();
+            modifiableCameras = null;
+        }
 	}
 
 	static public function getLua(state:Class<Dynamic>):ModLua {

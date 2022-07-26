@@ -1711,9 +1711,6 @@ class PlayState extends MusicBeatState
 		else
 			iconP2.animation.curAnim.curFrame = 0;
 
-		/* if (FlxG.keys.justPressed.NINE)
-			FlxG.switchState(new Charting()); */
-
 		#if debug
 		if (FlxG.keys.justPressed.EIGHT)
 			FlxG.switchState(new AnimationDebug(SONG.player2));
@@ -2900,9 +2897,9 @@ class PlayState extends MusicBeatState
 	}
 
 	function generateStaticLua():Void {
-		attachCamera("camHUD", camHUD);
-		attachCamera("camGAME", FlxG.camera);
-		attachCamera("camNOTE", camNOTE);
+		modifiableCameras.set("camHUD", camHUD);
+		modifiableCameras.set("camGAME", FlxG.camera);
+		modifiableCameras.set("camNOTE", camNOTE);
 
 		setLua("songName", PlayState.SONG.song);
 		setLua("isStoryMode", PlayState.isStoryMode);
