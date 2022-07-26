@@ -45,6 +45,7 @@ import openfl.Lib;
 import example_code.DefaultStage;
 
 import SaveData.SaveType;
+import ModInitialize;
 import BuiltInShaders;
 import Feeshmora;
 import DefaultHandler;
@@ -153,7 +154,7 @@ class ChartingState extends MusicBeatState
 	];
 
 	//Event Stuff
-	private static final simpleList:Map<String, Array<Array<String>>> = [
+	private var simpleList:Map<String, Array<Array<String>>> = [
 		"Modifiers" => [
 			['mirror chart', "Mirror mode.\n\nValue -\n0 = Revert back to normal.\n1 = Should mirror regular chart."],
 			['sing drain', "Drains health when opponent sings.\n\nValue - How much health should be drained. (1 recommended)"],
@@ -180,7 +181,6 @@ class ChartingState extends MusicBeatState
 		'sing drain' => "Modifiers",
 		'blind effect' => "Modifiers",
 		'fadein notes' => "Modifiers",
-		'X Sway' => "Modifiers",
 		'note woggle' => "Modifiers",
 		'camera move' => "Modifiers",
 		'alt animation' => "Regular",
@@ -401,6 +401,7 @@ class ChartingState extends MusicBeatState
 		//Options
 		addModifierUI();
 		addRegularEventUI();
+		addYourEventUI();
 		addSettingsEventUI();
 
 		add(curRenderedSustains);
@@ -471,9 +472,9 @@ class ChartingState extends MusicBeatState
 	}
 
 	function addModifierUI():Void {
-		var makeModName = new FlxUIInputText(160, 20, 80, "Modifier Pog", 8);
+		var makeModName = new FlxUIInputText(185, 20, 80, "Modifier Pog", 8);
 
-		var modLabel = new FlxText(90, 20, 'Event Name:');
+		var modLabel = new FlxText(115, 20, 'Event Name:');
 		var howToTutorial:FlxText = new FlxText(5, 100, '');
 
 		var makeModifierValue:FlxUIInputText = new FlxUIInputText(150, 85, 80, "", 8);
@@ -546,6 +547,7 @@ class ChartingState extends MusicBeatState
 
 		var modList:FlxUIDropDownMenu = new FlxUIDropDownMenu(150, 50, FlxUIDropDownMenu.makeStrIdLabelArray(eventList, true), function(choose:String) {
 			wtfIsEvent = eventList[Std.parseInt(choose)];
+			makeModifierValue.text = "";
 			howToTutorial.text = simpleList.get("Modifiers")[Std.parseInt(choose)][1];
 		});
 
@@ -565,14 +567,103 @@ class ChartingState extends MusicBeatState
 	}
 
 	function addYourEventUI():Void {
+		var makeYoursName:FlxUIInputText = new FlxUIInputText(185, 20, 80, "Yours Pog", 8);
+
+		var yoursLabel:FlxText = new FlxText(115, 20, 'Event Name:');
+
+		var makeYourValue:FlxUIInputText = new FlxUIInputText(150, 85, 80, "", 8);
+		var makeYourTwoValue:FlxUIInputText = new FlxUIInputText(150, 105, 80, "", 8);
+
+		var yourValueLabel:FlxText = new FlxText(100, 85, 'Value 1:');
+		var yourTwoValueLabel:FlxText = new FlxText(100, 105, 'Value 2:');
+
+		var howToTutorial:FlxText = new FlxText(5, 125, '');
+
+		var createEventButton:FlxButton = new FlxButton(5, UI_Modifiers.height - 75, "Create Event", function() {
+			if(curStep < 0 || curStep < curSection*16 || makeYoursName.text == "")
+				return;
+
+			for(i in 0..._song.modifiers.length) {
+				var gridY:Int = Reflect.field(_song.modifiers[i], "modGridY");
+
+				if(gridY == GRID_SIZE*curStep)
+					return;
+			}
+
+			var createEvent:EventInfo = {modSkill: wtfIsEvent, modGridY: GRID_SIZE*curStep, modValue: null, modValueTwo: null, modDisplayName: makeYoursName.text};
+
+			var getModValue:String = callLua("getEventValueFromLua", [createEvent.modSkill, makeYourValue.text.toLowerCase()]);
+			var getModTwoValue:String = callLua("getEventSecondValueFromLua", [createEvent.modSkill, makeYourTwoValue.text.toLowerCase()]);
+
+			if(getModValue == null) {
+				getModValue = makeYourValue.text.toLowerCase();
+			}
+
+			if(getModTwoValue == null) {
+				getModTwoValue =  makeYourTwoValue.text.toLowerCase();
+			}
+
+			createEvent.modValue = getModValue;
+			createEvent.modValueTwo = getModTwoValue;
+
+			_song.modifiers.push(createEvent);
+			createPhysicalEvent(_song.modifiers.length-1, curStep, createEvent.modValue, createEvent.modValueTwo);
+		});
+
+		var removeEventButton:FlxButton = new FlxButton(5, UI_Modifiers.height - 50, "Remove Event", function() {
+			if(curStep < 0 || curStep < curSection*16)
+				return;
+
+			if(!removeDelay)
+				removePhysicalEvent(curStep);
+		});
+
+		//Setup Premise
+		simpleList.set("Yours", []);
+
+		for(i in 0...Paths.modJSON.mod.events.length) {
+			var events:ConfigEvent = Paths.modJSON.mod.events[i];
+
+			simpleList.get("Yours").push([events.name, events.description]);
+			eventCatalog.set(events.name, "Yours");
+		}
+
+		var eventList:Array<String> = [];
+
+		for(i in 0...simpleList.get("Yours").length) {
+			eventList.push(simpleList.get("Yours")[i][0]);
+		}
+
+		howToTutorial.text = simpleList.get("Yours")[0][1];
+
+		var yourList:FlxUIDropDownMenu = new FlxUIDropDownMenu(150, 50, FlxUIDropDownMenu.makeStrIdLabelArray(eventList, true), function(choose:String) {
+			if(eventList[Std.parseInt(choose)].trim() != "") {
+				wtfIsEvent = eventList[Std.parseInt(choose)];
+
+				makeYourValue.text = "";
+				makeYourTwoValue.text = "";
+				howToTutorial.text = simpleList.get("Yours")[Std.parseInt(choose)][1];
+			}
+		});
+
 		var tab_group_yourEvent:FlxUI = new FlxUI(null, UI_Modifiers);
-		tab_group_yourEvent.name = "OZ Your";
+		tab_group_yourEvent.name = "OZ Yours";
+		tab_group_yourEvent.add(makeYoursName);
+		tab_group_yourEvent.add(createEventButton);
+		tab_group_yourEvent.add(removeEventButton);
+		tab_group_yourEvent.add(yoursLabel);
+		tab_group_yourEvent.add(makeYourValue);
+		tab_group_yourEvent.add(makeYourTwoValue);
+		tab_group_yourEvent.add(yourValueLabel);
+		tab_group_yourEvent.add(yourTwoValueLabel);
+		tab_group_yourEvent.add(howToTutorial);
+		tab_group_yourEvent.add(yourList);
 		UI_Modifiers.addGroup(tab_group_yourEvent);
 		UI_Modifiers.scrollFactor.set();
 	}
 
 	function addRegularEventUI():Void {
-		var makeRegularName = new FlxUIInputText(185, 20, 80, "Regular Pog", 8);
+		var makeRegularName:FlxUIInputText = new FlxUIInputText(185, 20, 80, "Regular Pog", 8);
 
 		var RegularLabel:FlxText = new FlxText(115, 20, 'Event Name:');
 
@@ -683,6 +774,7 @@ class ChartingState extends MusicBeatState
 			wtfIsEvent = eventList[Std.parseInt(choose)];
 
 			makeRegularValue.text = "";
+			makeRegularTwoValue.text = "";
 			howToTutorial.text = simpleList.get("Regular")[Std.parseInt(choose)][1];
 		});
 
@@ -2354,29 +2446,6 @@ class ChartingState extends MusicBeatState
 		return GRID_SIZE * 16 * (zoomList[zoomMeter]/100) * (strumTime / (16 * Conductor.stepCrochet)) + gridBG.y;
 	}
 
-	/*
-		function calculateSectionLengths(?sec:SwagSection):Int
-		{
-			var daLength:Int = 0;
-
-			for (i in _song.notes)
-			{
-				var swagLength = i.lengthInSteps;
-
-				if (i.typeOfSection == Section.COPYCAT)
-					swagLength * 2;
-
-				daLength += swagLength;
-
-				if (sec != null && sec == i)
-				{
-					trace('swag loop??');
-					break;
-				}
-			}
-
-			return daLength;
-	}*/
 	private var daSpacing:Float = 0.3;
 
 	function loadLevel():Void

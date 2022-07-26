@@ -56,9 +56,9 @@ class HealthIcon extends FlxSprite
 	}
 
 	public function loadAllAnims(isPlayer:Bool):Void {
-		for(i in 0...FileSystem.readDirectory("config/characters").length) {
-			var funnyJson:ConfigCharacters = cast loadJSON("characters/" + FileSystem.readDirectory("config/characters")[i].split(".")[0]);
-			createAnim(FileSystem.readDirectory("config/characters")[i].split(".")[0], funnyJson.icon, isPlayer);
+		for(i in 0...FileSystem.readDirectory("mod_assets/characters").length) {
+			var funnyJson:ConfigCharacters = cast loadJSON("characters/" + FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
+			createAnim(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0], funnyJson.icon, isPlayer);
 		}
 	}
 
@@ -76,7 +76,7 @@ class HealthIcon extends FlxSprite
 	private function loadJSON(character:String):ConfigCharacters {
 		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
 
-		return parser.fromJson(File.getContent('config/$character.json'), '${character.split('/')[1]}.json');
+		return parser.fromJson(File.getContent('mod_assets/$character.json'), '${character.split('/')[1]}.json');
 	}
 
 	override function update(elapsed:Float):Void

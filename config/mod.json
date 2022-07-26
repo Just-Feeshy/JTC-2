@@ -11,6 +11,13 @@
             "funkroad"
         ],
 
+        "events": [
+            {
+                "name": "",
+                "description": ""
+            }
+        ],
+
         "discord_rpc": {
             "ClientID": "969002129182314526",
             "largeImageKey": "game",

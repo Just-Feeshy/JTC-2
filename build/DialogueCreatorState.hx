@@ -17,6 +17,7 @@ import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
 import feshixl.interfaces.IDialogue;
 import feshixl.sound.FeshSound;
+import feshixl.FeshSprite;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
 import sys.FileSystem;
@@ -54,9 +55,9 @@ class DialogueCreatorState extends MusicBeatState {
 
     var totalSprites:Array<DialogueFileData>;
 
-    var leftPortrait:EditorSprite;
-    var rightPortrait:EditorSprite;
-    var speechBubble:EditorSprite;
+    var leftPortrait:FeshSprite;
+    var rightPortrait:FeshSprite;
+    var speechBubble:FeshSprite;
 
     var curSprite:String;
 
@@ -151,9 +152,9 @@ class DialogueCreatorState extends MusicBeatState {
         rightPortrait = FlxDestroyUtil.destroy(rightPortrait);
         speechBubble = FlxDestroyUtil.destroy(speechBubble);
 
-        leftPortrait = new EditorSprite();
-        rightPortrait = new EditorSprite();
-        speechBubble = new EditorSprite();
+        leftPortrait = new FeshSprite();
+        rightPortrait = new FeshSprite();
+        speechBubble = new FeshSprite();
 
         leftPortrait.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].leftPortrait.assetID]));
         rightPortrait.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].rightPortrait.assetID]));
@@ -819,7 +820,7 @@ class DialogueCreatorState extends MusicBeatState {
         return animNames;
     }
 
-    function implementAnimToSprite(spr:EditorSprite, spriteName:String):Void {
+    function implementAnimToSprite(spr:FeshSprite, spriteName:String):Void {
         var index = 0;
 
         var animHandler:Array<AnimationInfo>;

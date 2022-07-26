@@ -147,10 +147,10 @@ class CharacterCreatorState extends MusicBeatState {
         if(File.getContent(Paths.mora("skins", "json")).length > 48)
             mapEditor = cast parser.fromJson(File.getContent(Paths.mora("skins", "json")), "skins.json");
 
-        for(i in 0...FileSystem.readDirectory("config/characters").length) {
-            characterJSONs.push(FileSystem.readDirectory("config/characters")[i].split(".")[0]);
-            characterAutosave.set(FileSystem.readDirectory("config/characters")[i].split(".")[0],
-            Character.loadInfo("characters/"+FileSystem.readDirectory("config/characters")[i].split(".")[0]));
+        for(i in 0...FileSystem.readDirectory("mod_assets/characters").length) {
+            characterJSONs.push(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
+            characterAutosave.set(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0],
+            Character.loadInfo("characters/"+FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]));
         }
 
         addDisplayUI();

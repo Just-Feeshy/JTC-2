@@ -54,8 +54,8 @@ class DefaultHandler {
     inline static public function getcharacterJSON():Array<String> {
         var arrayer:Array<String> = new Array<String>();
 
-        for(i in 0...FileSystem.readDirectory("config/characters").length)
-            arrayer.push(FileSystem.readDirectory("config/characters")[i].split(".")[0]);
+        for(i in 0...FileSystem.readDirectory("mod_assets/characters").length)
+            arrayer.push(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
 
         return arrayer;
     }
@@ -132,7 +132,7 @@ class DefaultHandler {
 
         eventHandler();
 
-        if(jitStrumSize || sizeTimer > 0) { //TODO: Make modchart for both c++ and lua
+        if(jitStrumSize || sizeTimer > 0) {
             PlayState.opponentStrums.forEachAlive(function(spr:Strum) {
                 spr.engineWidth = strumSize[spr.ID][0];
                 spr.engineHeight = strumSize[spr.ID][1] + (sizeTimer/100);
@@ -150,7 +150,7 @@ class DefaultHandler {
         PlayState.playerStrums.y = strumOffsetArray[1][1] + strumOffsetEvent[1];
     }
 
-    static private function eventHandler():Void { //Not for modchart
+    static private function eventHandler():Void {
         if(shakeCamTimer > 0)
             shakeCamTimer -= 0.2;
 

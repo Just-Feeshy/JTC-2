@@ -32,7 +32,13 @@ typedef Mod_Info = {
     var version:String;
 
     var stages:Array<String>;
+    var events:Array<ConfigEvent>;
     var discord_rpc:DiscordRPC;
+}
+
+typedef ConfigEvent = {
+    var name:String;
+    var description:String;
 }
 
 typedef Main_Menu = {
