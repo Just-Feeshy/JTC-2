@@ -241,7 +241,7 @@ class SaveData {
                 return FlxG.save.data.camMove;
             case GHOST_TAPPING:
                 if(FlxG.save.data.ghostTapping == null)
-                    FlxG.save.data.ghostTapping = true;
+                    FlxG.save.data.ghostTapping = false;
 
                 return FlxG.save.data.ghostTapping;
             case CUSTOM_MENU_BINDS:

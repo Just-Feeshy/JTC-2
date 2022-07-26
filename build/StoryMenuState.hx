@@ -163,13 +163,10 @@ class StoryMenuState extends MusicBeatState
 		txtTracklist.alignment = CENTER;
 		txtTracklist.color = FlxColor.WHITE;
 		add(txtTracklist);
-		// add(rankText);
 		add(scoreText);
 		add(txtWeekTitle);
 
 		updateText();
-
-		trace("Line 165");
 
 		super.create();
 	}

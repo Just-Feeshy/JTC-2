@@ -900,8 +900,9 @@ class PlayState extends MusicBeatState
 	}
 
 	function modifierCheckList(mod:String):Bool {
-		if(!Main.feeshmoraModifiers)
+		if(!Main.feeshmoraModifiers || DefaultHandler.modifiers == null) {
 			return false;
+		}
 
 		switch(mod) {
 			case "custom hell":
@@ -1697,7 +1698,6 @@ class PlayState extends MusicBeatState
 		if (healthBar.percent < 20) {
 			iconP1.animation.curAnim.curFrame = 1;
 		} else {
-
 			if((iconP1.animation.curAnim.name != 'bf-old' || iconP1.animation.curAnim.name != 'bf-pixel') && iconP1.animation.curAnim.name.split('-')[0] == 'bf' && combo >= 100)
 				iconP1.animation.curAnim.curFrame = 2;
 			else
@@ -1706,6 +1706,8 @@ class PlayState extends MusicBeatState
 
 		if (healthBar.percent > 80)
 			iconP2.animation.curAnim.curFrame = 1;
+		else if (healthBar.percent < 20)
+			iconP2.animation.curAnim.curFrame = 2;
 		else
 			iconP2.animation.curAnim.curFrame = 0;
 

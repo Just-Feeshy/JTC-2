@@ -23,7 +23,7 @@ class CrewState extends MusicBeatState {
     }
 
     override function create() {
-        super.create();
+        persistentUpdate = persistentDraw = true;
 
         allTweens = new Array<FlxTween>();
 
@@ -53,6 +53,8 @@ class CrewState extends MusicBeatState {
 
         camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
+
+        super.create();
     }
 
     override function update(elapsed:Float) {

@@ -7,12 +7,13 @@ import llua.State;
 import llua.Convert;
 #end
 
-import flixel.FlxCamera;
 import flixel.FlxG;
+import flixel.FlxSprite;
+import flixel.FlxCamera;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxColor;
-import flixel.FlxSprite;
+import flixel.math.FlxRect;
 
 import feshixl.shaders.FeshShader;
 
@@ -188,6 +189,17 @@ class ModLua {
             spr.updateHitbox();
         });
 
+        Lua_helper.add_callback(lua, "setSpriteClipRect", function(name:String, x:Float, y:Float, width:Float, height:Float) {
+            var rect:FlxRect = new FlxRect(x, y, width, height);
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.clipRect = rect;
+        });
+
         Lua_helper.add_callback(lua, "decreaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
             var spr:FlxSprite = getSprite(name);
 
@@ -207,6 +219,16 @@ class ModLua {
             }
 
             FlxG.state.add(spr);
+        });
+
+        Lua_helper.add_callback(lua, "insertSpriteToState", function(position:Int, name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            FlxG.state.insert(position, spr);
         });
 
         Lua_helper.add_callback(lua, "doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
@@ -295,6 +317,58 @@ class ModLua {
             }
         });
 
+        Lua_helper.add_callback(lua, "doTweenSpriteClipRectX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+            var obj:Dynamic = getObjectFromMap(vars);
+
+            if(obj != null) {
+                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.x": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                    onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+                        call('onTweenCompleted', [name]);
+                    }
+                }));
+            }
+        });
+
+        Lua_helper.add_callback(lua, "doTweenSpriteClipRectY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+            var obj:Dynamic = getObjectFromMap(vars);
+
+            if(obj != null) {
+                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.y": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                    onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+                        call('onTweenCompleted', [name]);
+                    }
+                }));
+            }
+        });
+
+        Lua_helper.add_callback(lua, "doTweenSpriteClipRectWidth", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+            var obj:Dynamic = getObjectFromMap(vars);
+
+            if(obj != null) {
+                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.width": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                    onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+                        call('onTweenCompleted', [name]);
+                    }
+                }));
+            }
+        });
+
+        Lua_helper.add_callback(lua, "doTweenSpriteClipRectHeight", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+            var obj:Dynamic = getObjectFromMap(vars);
+
+            if(obj != null) {
+                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.height": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                    onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+                        call('onTweenCompleted', [name]);
+                    }
+                }));
+            }
+        });
+
         Lua_helper.add_callback(lua, "cancelTween", function(name:String) {
 			cancelTween(name);
 		});
@@ -314,13 +388,15 @@ class ModLua {
         });
 
         /**
-        * State must extend from `HelperState`!
         * @param subState name of the substate class.
         */
         Lua_helper.add_callback(lua, "openSubState", function(subState:String) {
             var state = cast FlxG.state;
 
-            state.openSubStateCustom(Register.forNameClass(subState, []));
+            if(state is HelperStates)
+                state.openSubStateCustom(Register.forNameClass(subState, []));
+            else
+                state.openSubState(Register.forNameClass(subState, []));
         });
 
         //shaders

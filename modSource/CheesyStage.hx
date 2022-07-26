@@ -145,6 +145,10 @@ class CheesyStage extends StageBuilder {
 			playstate.healthBar.filledColor = tripleIconColors[0];
 			tweenHealthBar(tripleIconColors, "player", playstate);
 		}
+
+		if(PlayState.SONG.song.toLowerCase() != "funk-off" && PlayState.SONG.song.toLowerCase() != "ping-pong" ) {
+			playstate.iconP2.createAnim("joul", [24, 30, 24]);
+		}
 	}
 
 	override function setCamPos(camPos:FlxPoint):FlxPoint {

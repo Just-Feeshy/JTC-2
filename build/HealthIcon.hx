@@ -46,7 +46,6 @@ class HealthIcon extends FlxSprite
 		if(loadAnims)
 			loadAllAnims(isPlayer);
 
-		animation.play(char);
 		scrollFactor.set();
 
 		if(storyBPM <= 0)
@@ -65,11 +64,15 @@ class HealthIcon extends FlxSprite
 	public function createAnim(character:String, iconAnimInfo:Array<Int>, isPlayer:Bool = false):Void {
 		if(!iconCharacters.contains(character)) {
 			iconCharacters.push(character);
-			animation.add(character, iconAnimInfo, 0, false, isPlayer);
+		}else {
+			animation.remove(character);
+		}
 
-			if(this.character == character) {
-				this.iconAnimInfo = iconAnimInfo;
-			}
+		animation.add(character, iconAnimInfo, 0, false, isPlayer);
+
+		if(this.character == character) {
+			this.iconAnimInfo = iconAnimInfo;
+			animation.play(this.character);
 		}
 	}
 

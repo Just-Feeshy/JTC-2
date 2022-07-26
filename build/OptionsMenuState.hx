@@ -119,6 +119,8 @@ class OptionsMenuState extends MusicBeatState {
 		extra += 20;
 		#end
 
+		persistentUpdate = persistentDraw = true;
+
 		switch(this.catalog) {
 			case "game": {
 				optionList = [
