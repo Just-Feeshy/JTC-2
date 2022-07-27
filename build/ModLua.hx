@@ -22,7 +22,7 @@ import SaveData.SaveType;
 using StringTools;
 
 /**
-* Honestly, modcharts are my least concern, since this is mostly an object-orientated fnf engine.
+* Honestly, modcharts are my least concern, since this is mostly object-orientated based.
 */
 
 class ModLua {
@@ -88,8 +88,6 @@ class ModLua {
                 return;
             }
 
-            name = name.replace('.', '');
-
             var sprite:FlxSprite = new FlxSprite();
             sprite.antialiasing = SaveData.getData(SaveType.GRAPHICS);
             sprite.active = true;
@@ -103,6 +101,21 @@ class ModLua {
 
             return true;
         });
+
+        Lua_helper.add_callback(lua, "loadGraphic", function(name:String, image:String, gridX:Int = 0, gridY:Int = 0) {
+			var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+			var animated = gridX !=0 || gridY !=0;
+
+			if(image != null && image.trim().length > 0) {
+                image = image.split('.')[0];
+				spr.loadGraphic(Paths.image(image), animated, gridX, gridY);
+			}
+		});
 
         Lua_helper.add_callback(lua, "compileSpriteSheet", function(name:String, spritesheet:String, type:String) {
             var spr:FlxSprite = getSprite(name);
@@ -189,15 +202,18 @@ class ModLua {
             spr.updateHitbox();
         });
 
-        Lua_helper.add_callback(lua, "setSpriteClipRect", function(name:String, x:Float, y:Float, width:Float, height:Float) {
-            var rect:FlxRect = new FlxRect(x, y, width, height);
+        Lua_helper.add_callback(lua, "setSpriteClipRect", function(name:String, x:Float = 0, y:Float = 0, ?width:Float, ?height:Float) {
             var spr:FlxSprite = getSprite(name);
+
+            var sprWidth:Float = width == null ? spr.width : width;
+            var sprHeight:Float = height == null ? spr.height : height;
 
             if(spr == null) {
                 return;
             }
 
-            spr.clipRect = rect;
+            var frameHandler:LuaFrameCollection = new LuaFrameCollection(spr);
+            frameHandler.newRect = new FlxRect(x, 360, sprWidth, sprHeight);
         });
 
         Lua_helper.add_callback(lua, "increaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
@@ -255,6 +271,36 @@ class ModLua {
             }
 
             FlxG.state.insert(position, spr);
+        });
+
+        Lua_helper.add_callback(lua, "destroySprite", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+            var curState = cast FlxG.state;
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.kill();
+            spr.destroy();
+
+            if(curState is HelperStates && curState.modifiableSprites.exists(name)) {
+                curState.modifiableSprites.remove(name);
+            }
+
+            if(luaSprites.exists(name)) {
+                luaSprites.remove(name);
+            }
+        });
+
+        Lua_helper.add_callback(lua, "removeSpriteFromState", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            FlxG.state.remove(spr);
         });
 
         Lua_helper.add_callback(lua, "doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
@@ -345,9 +391,10 @@ class ModLua {
 
         Lua_helper.add_callback(lua, "doTweenSpriteClipRectX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
+            var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
-                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.x": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                luaTweens.set(name, FlxTween.tween(frameHandler, {x: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
                         call('onTweenCompleted', [name]);
@@ -358,9 +405,10 @@ class ModLua {
 
         Lua_helper.add_callback(lua, "doTweenSpriteClipRectY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
+            var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
-                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.y": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                luaTweens.set(name, FlxTween.tween(frameHandler, {y: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
                         call('onTweenCompleted', [name]);
@@ -371,9 +419,10 @@ class ModLua {
 
         Lua_helper.add_callback(lua, "doTweenSpriteClipRectWidth", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
+            var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
-                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.width": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                luaTweens.set(name, FlxTween.tween(frameHandler, {width: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
                         call('onTweenCompleted', [name]);
@@ -384,9 +433,10 @@ class ModLua {
 
         Lua_helper.add_callback(lua, "doTweenSpriteClipRectHeight", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
+            var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
-                luaTweens.set(name, FlxTween.tween(obj, {"clipRect.height": value}, duration, {ease: Register.getFlxEaseByString(ease),
+                luaTweens.set(name, FlxTween.tween(frameHandler, {height: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
                         call('onTweenCompleted', [name]);
@@ -456,15 +506,13 @@ class ModLua {
     }
 
     public function getObjectFromMap(name:String):Dynamic {
-        var obj:Dynamic = null;
+        var spr:FlxSprite = getSprite(name);
+        var cam:FlxCamera = getCamera(name);
 
-        if(luaSprites.exists(name))
-            obj = getSprite(name);
+        if(spr != null)return spr;
+        if(cam != null)return cam;
 
-        if(luaCameras.exists(name))
-            obj = getCamera(name);
-
-        return obj;
+        return null;
     }
 
     public function cancelTween(name:String):Void {
@@ -523,10 +571,9 @@ class ModLua {
 
     public function getSprite(name:String):FlxSprite {
         var spr:FlxSprite = luaSprites.get(name);
+        var curState = cast FlxG.state;
 
-        if(spr == null) {
-            var curState:HelperStates = cast(FlxG.state, HelperStates);
-
+        if(spr == null && curState is HelperStates) {
             if(curState.modifiableSprites.exists(name))
                 spr = curState.modifiableSprites.get(name);
         }
@@ -535,11 +582,10 @@ class ModLua {
     }
 
     public function getCamera(name:String):FlxCamera {
-        var spr:FlxCamera = getCamera(name);
+        var spr:FlxCamera = luaCameras.get(name);
+        var curState = cast FlxG.state;
 
-        if(spr == null) {
-            var curState:HelperStates = cast(FlxG.state, HelperStates);
-
+        if(spr == null && curState is HelperStates) {
             if(curState.modifiableCameras.exists(name))
                 spr = curState.modifiableCameras.get(name);
         }
@@ -608,4 +654,79 @@ class ModLua {
         return 1;
     }
     #end
+}
+
+private class LuaFrameCollection {
+    public var x(default, set):Float = 0;
+    public var y(default, set):Float = 0;
+    public var width(default, set):Float = 0;
+    public var height(default, set):Float = 0;
+
+    public var newRect(default, set):FlxRect;
+
+    var sprite:FlxSprite;
+
+    public function new(sprite:FlxSprite) {
+        this.sprite = sprite;
+    }
+
+    function set_newRect(value:FlxRect):FlxRect {
+        if(sprite != null) {
+            var index:Int = 0;
+
+            while(index < sprite.numFrames) {
+                sprite.frames.frames[index++].frame = value;
+            }
+        }
+
+        return newRect = value;
+    }
+
+    function set_x(value:Float):Float {
+        if(sprite != null) {
+            var index:Int = 0;
+
+            while(index < sprite.numFrames) {
+                sprite.frames.frames[index++].frame.x = value;
+            }
+        }
+
+        return x = value;
+    }
+
+    function set_y(value:Float):Float {
+        if(sprite != null) {
+            var index:Int = 0;
+
+            while(index < sprite.numFrames) {
+                sprite.frames.frames[index++].frame.y = value;
+            }
+        }
+
+        return y = value;
+    }
+
+    function set_width(value:Float):Float {
+        if(sprite != null) {
+            var index:Int = 0;
+
+            while(index < sprite.numFrames) {
+                sprite.frames.frames[index++].frame.width = value;
+            }
+        }
+
+        return width = value;
+    }
+
+    function set_height(value:Float):Float {
+        if(sprite != null) {
+            var index:Int = 0;
+
+            while(index < sprite.numFrames) {
+                sprite.frames.frames[index++].frame.height = value;
+            }
+        }
+
+        return height = value;
+    }
 }

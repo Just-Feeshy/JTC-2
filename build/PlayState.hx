@@ -1402,17 +1402,8 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	function tweenCamIn():Void
-	{
+	function tweenCamIn():Void {
 		FlxTween.tween(FlxG.camera, {zoom: 1.3}, (Conductor.stepCrochet * 4 / 1000), {ease: FlxEase.elasticInOut});
-	}
-
-	override function openSubState(SubState:FlxSubState) {
-		if (paused) {
-			pauseMusic();
-		}
-
-		super.openSubState(SubState);
 	}
 
 	override function closeSubState()
@@ -1428,7 +1419,10 @@ class PlayState extends MusicBeatState
 				if (!startTimer.finished)
 					startTimer.active = true;
 			}
+
 			paused = false;
+
+			callLua('onResume', []);
 
 			#if windows
 			if (startTimer.finished)
@@ -1612,23 +1606,8 @@ class PlayState extends MusicBeatState
 
 		events.whenGameIsRunning(eventStorage, this);
 
-		if (controls.PAUSE && startedCountdown && canPause)
-		{
-			persistentUpdate = false;
-			persistentDraw = true;
-			paused = true;
-
-			// 1 / 1000 chance for Gitaroo Man easter egg
-			if (FlxG.random.bool(0.1)) {
-				// gitaroo man easter egg
-				FlxG.switchState(new GitarooPause());
-			} else {
-				openSubState(new PauseSubState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
-			}	
-		
-			#if windows
-			DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
-			#end
+		if (controls.PAUSE && startedCountdown && canPause){
+			pauseMenu();
 		}
 
 		if(hasWarning && !startedCountdown) { //All this just for a simple warning screen...
@@ -2148,7 +2127,31 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	function keyReleased() {
+	function pauseMenu():Void {
+		persistentUpdate = false;
+		persistentDraw = true;
+		paused = true;
+
+		pauseMusic();
+
+		var pauseLua:Dynamic = callLua('onPause', []);
+
+		if(pauseLua != 1 && pauseLua != true) {
+			// 1 / 1000 chance for Gitaroo Man easter egg
+			if (FlxG.random.bool(0.1)) {
+				// gitaroo man easter egg
+				FlxG.switchState(new GitarooPause());
+			} else {
+				openSubState(new PauseSubState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+			}
+		}	
+	
+		#if windows
+		DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
+		#end
+	}
+
+	function keyReleased():Void {
 		if(paused || inCutscene)
 			return;
 

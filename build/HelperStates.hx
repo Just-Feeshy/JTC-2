@@ -247,6 +247,12 @@ class HelperStates extends FlxUIState {
 				return;
 			}
 
+			#if (USING_LUA && linc_luajit_basic)
+			_transition.finishCallback = function() {
+				callLua("finishedTransitionIn", []);
+			}
+			#end
+
 			openSubState(_transition);
 		}
 	}
@@ -263,6 +269,14 @@ class HelperStates extends FlxUIState {
 
 			_transition.finishCallback = function() {
 				finishedTransition();
+				closeSubState();
+
+				#if (USING_LUA && linc_luajit_basic)
+				_transition.finishCallback = function() {
+					callLua("finishedTransitionOut", []);
+				}
+				#end
+
 				FlxG.switchState(state);
 			};
 

@@ -8,7 +8,7 @@ import flixel.graphics.FlxGraphic;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
-import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
+import flixel.graphics.frames.FlxFrame;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
@@ -32,7 +32,7 @@ import Std.is as isOfType;
 * This sprite class was made to make `FlxSprite` easier to configure
 * which would also allow the user to easily cutomize said sprite for there mod.
 *
-* WARNING: This class is experimental purposes only.
+* WARNING: This class is for experimental purposes only.
 * TODO: Get animations from json too.
 *
 * @author Feeshy
@@ -59,13 +59,21 @@ class FeshSprite extends FlxSprite {
     public var engineWidth:Float = 0;
     public var engineHeight:Float = 0;
 
+    /**
+    * Should use either advance clipping or regular.
+    */
+    public var useAdvanceClipping:Bool = true;
+
     var graphics:FlxGraphic;
     var xmlData:Xml;
+
+    @:noCompletion var clippingPointAtlas:Map<String, FlxPoint>;
 
     public function new(?X:Float = 0, ?Y:Float = 0, ?SimpleGraphic:FlxGraphicAsset) {
         super(X, Y, SimpleGraphic);
 
         antialiasing = SaveData.getData(SaveType.GRAPHICS);
+        clippingPointAtlas = new Map<String, FlxPoint>();
     }
 
     public function implementBitmap(image:ByteArray):Void {
@@ -147,25 +155,33 @@ class FeshSprite extends FlxSprite {
     }
 
     public function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):Void {
-        var bitmapCum:BitmapData = new BitmapData(firstF.parent.width, firstF.parent.height + secondF.parent.height, FlxColor.TRANSPARENT);
+        try {
+            var bitmapCum:BitmapData = new BitmapData(firstF.parent.width, firstF.parent.height + secondF.parent.height, FlxColor.TRANSPARENT);
 
-        bitmapCum.copyPixels(firstF.parent.bitmap, firstF.parent.bitmap.rect, new Point(0, 0));
-        bitmapCum.copyPixels(secondF.parent.bitmap, secondF.parent.bitmap.rect, new Point(0, firstF.parent.height));
+            bitmapCum.copyPixels(firstF.parent.bitmap, firstF.parent.bitmap.rect, new Point(0, 0));
+            bitmapCum.copyPixels(secondF.parent.bitmap, secondF.parent.bitmap.rect, new Point(0, firstF.parent.height));
 
-        var tempFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxG.bitmap.add(bitmapCum));
-        var frameIndex:Int = 0;
+            var tempFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxG.bitmap.add(bitmapCum));
+            var frameIndex:Int = 0;
 
-        while(frameIndex < firstF.frames.length + secondF.frames.length) {
-            if(frameIndex >= firstF.frames.length) {
-                tempFrames.pushFrame(secondF.frames[frameIndex - firstF.frames.length]);
-            }else {
-                tempFrames.pushFrame(firstF.frames[frameIndex]);
+            while(frameIndex < firstF.frames.length + secondF.frames.length) {
+                if(frameIndex >= firstF.frames.length) {
+                    tempFrames.pushFrame(secondF.frames[frameIndex - firstF.frames.length]);
+                }else {
+                    tempFrames.pushFrame(firstF.frames[frameIndex]);
+                }
+
+                frameIndex++;
             }
 
-            frameIndex++;
+            frames = tempFrames;
+        }catch(e:haxe.Exception) { //Just in case.
+            trace("Warning - Can no longer implement a second frame.");
         }
-
-        frames = tempFrames;
+    }
+    
+    public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
+        clippingPointAtlas.set(name, new FlxPoint(width, height));
     }
 
     public function getSourceAnimationName():Array<String> {
@@ -212,19 +228,6 @@ class FeshSprite extends FlxSprite {
             AnimName = tempAnimName;
         }else {
             animation.play(AnimName, Force, Reversed, Frame);
-        }
-    }
-
-    public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
-        var frameIndex:Int = 0;
-
-        while(frameIndex < frames.frames.length) {
-            if(name == frames.frames[frameIndex].name || name == null) {
-                frames.frames[frameIndex].frame.width += width;
-                frames.frames[frameIndex].frame.height += height;
-            }
-
-            frameIndex++;
         }
     }
 
@@ -288,6 +291,41 @@ class FeshSprite extends FlxSprite {
     }
 
     @:noCompletion
+	override function set_frame(Value:FlxFrame):FlxFrame { //A lot better algorithm for clipping
+		frame = Value;
+
+		if (frame != null) {
+			resetFrameSize();
+			dirty = true;
+		}else if (frames != null && frames.frames != null && numFrames > 0) {
+			frame = frames.frames[0];
+			dirty = true;
+		}else {
+			return null;
+		}
+
+		if (FlxG.renderTile) {
+			_frameGraphic = FlxDestroyUtil.destroy(_frameGraphic);
+		}
+
+        var betterClipRect:FlxRect = null;
+
+        if(animation.curAnim != null && useAdvanceClipping) {
+            betterClipRect = getAClipRect(animation.curAnim.name);
+        }else {
+            betterClipRect = clipRect;
+        }
+
+		if (betterClipRect != null) {
+			_frame = frame.clipTo(betterClipRect, _frame);
+		}else {
+			_frame = frame.copyTo(_frame);
+		}
+
+		return frame;
+	}
+
+    @:noCompletion
     override function drawComplex(camera:FlxCamera):Void {
 		_frame.prepareMatrix(_matrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
 		_matrix.translate(-origin.x, -origin.y);
@@ -317,6 +355,40 @@ class FeshSprite extends FlxSprite {
         }
     }
 
+    @:noCompletion
+    function getAClipRect(frameName:String):FlxRect {
+        var completeRect:FlxRect = null;
+
+        var foundMapping:Bool = clippingPointAtlas.exists(frameName); //Cache to speed things up.
+
+        if(foundMapping || clipRect != null) {
+            var tempAtlasClipRect:FlxRect = null;
+            var tempClipRect:FlxRect = null;
+
+            if(foundMapping) {
+                var tempAtlasPoint:FlxPoint = clippingPointAtlas.get(frameName);
+                tempAtlasClipRect = new FlxRect(0, 0, frameWidth + tempAtlasPoint.x, frameHeight + tempAtlasPoint.y);
+            }else {
+                tempAtlasClipRect = new FlxRect(0, 0, 0, 0);
+            }
+
+            if(clipRect != null) {
+                tempClipRect = clipRect;
+            }else {
+                tempClipRect = new FlxRect(0, 0, 0, 0);
+            }
+
+            completeRect = new FlxRect(
+                tempAtlasClipRect.x + tempClipRect.x,
+                tempAtlasClipRect.y + tempClipRect.y,
+                tempAtlasClipRect.width + tempClipRect.width,
+                tempAtlasClipRect.height + tempClipRect.height
+            );
+        }
+
+        return completeRect;
+    }
+
     override function destroy() {
         FlxG.bitmap.remove(graphics);
         graphics = FlxDestroyUtil.destroy(graphics);
@@ -325,5 +397,21 @@ class FeshSprite extends FlxSprite {
         completeCallback = null;
 
         super.destroy();
+
+        if(clippingPointAtlas != null) {
+            for(k in clippingPointAtlas.keys()) {
+                var rect:FlxPoint = clippingPointAtlas.get(k);
+
+                if(rect != null) {
+                    rect.destroy();
+                    rect = null;
+                    clippingPointAtlas.remove(k);
+                }
+            }
+
+            clippingPointAtlas.clear();
+        }
+
+        clippingPointAtlas = null;
     }
 }

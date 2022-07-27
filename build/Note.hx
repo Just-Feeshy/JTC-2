@@ -87,6 +87,8 @@ class Note extends feshixl.FeshSprite {
 		{
 			super();
 
+			useAdvanceClipping = false;
+
 			noteOffset = FlxPoint.get();
 
 			noteAbstract = noteType;

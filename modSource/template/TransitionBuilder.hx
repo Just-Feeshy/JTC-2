@@ -42,7 +42,22 @@ class TransitionBuilder extends FlxSubState {
 
     }
 
-    override function destroy() {
+    function callback():Void {
+        if(finishCallback != null) {
+            finishCallback();
+            finishCallback = null;
+        }
+    }
+
+    override function close():Void {
+        super.close();
+
+        if(finishCallback != null) {
+            finishCallback();
+        }
+    }
+
+    override function destroy():Void {
         finishCallback = null;
 
         this.cameras = [];

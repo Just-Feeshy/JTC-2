@@ -215,8 +215,8 @@ class MainMenuState extends MusicBeatState
 
 		#if (USING_LUA && linc_luajit_basic)
 		if(HelperStates.luaExist(Type.getClass(this))) {
-			getModLua().luaCameras.set("cameraBackground", camMenu);
-			getModLua().luaCameras.set("cameraMenu", camNoBump);
+			modifiableCameras.set("cameraBackground", camMenu);
+			modifiableCameras.set("cameraMenu", camNoBump);
 
 			getLuaOptions();
 

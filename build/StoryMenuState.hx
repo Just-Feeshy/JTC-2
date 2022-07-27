@@ -168,6 +168,18 @@ class StoryMenuState extends MusicBeatState
 
 		updateText();
 
+		#if (USING_LUA && linc_luajit_basic)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			modifiableSprites.set("menuBG", menuBG);
+			modifiableSprites.set("backdrop", extraStuff);
+			modifiableSprites.set("blackBarTop", blackBarThingie);
+			modifiableSprites.set("blackBarBottom", bottomBarThingie);
+			modifiableSprites.set("rightArrow", rightArrow);
+			modifiableSprites.set("leftArrow", leftArrow);
+			modifiableSprites.set("sprDifficulty", sprDifficulty);
+		}
+		#end
+
 		super.create();
 	}
 
@@ -194,39 +206,44 @@ class StoryMenuState extends MusicBeatState
 			lock.y = grpWeekText.members[lock.ID].y;
 		});
 
-		extraStuff.x -= 0.45 / (Paths.modJSON.main_menu.bpm / 60);
-		extraStuff.y += 0.45 / (Paths.modJSON.main_menu.bpm / 60);
+		if(extraStuff.exists) {
+			extraStuff.x -= 0.45 / (Paths.modJSON.main_menu.bpm / 60);
+			extraStuff.y += 0.45 / (Paths.modJSON.main_menu.bpm / 60);
+		}
 
 		if (!movedBack)
 		{
 			if (!selectedWeek && !stopspamming)
 			{
 				if (controls.RIGHT_P) {
-					rightArrow.animation.play('press');
+					if(rightArrow.exists)rightArrow.animation.play('press');
 
 					if(chooseDifficulty)
 						changeDifficulty(1);
 					else
 						changeWeek(1);
 				}else if(controls.RIGHT_R) {
-					rightArrow.animation.play('idle');
+					if(rightArrow.exists)rightArrow.animation.play('idle');
 				}
 
 				if (controls.LEFT_P) {
-					leftArrow.animation.play('press');
+					if(leftArrow.exists)leftArrow.animation.play('press');
 					
 					if(chooseDifficulty)
 						changeDifficulty(-1);
 					else
 						changeWeek(-1);
-				} else if(controls.LEFT_R)
-					leftArrow.animation.play('idle');
+				} else if(controls.LEFT_R) {
+					if(leftArrow.exists)leftArrow.animation.play('idle');
+				}
 			}
 
-			if (controls.ACCEPT)
-			{
-				leftArrow.animation.play('idle');
-				rightArrow.animation.play('idle');
+			if (controls.ACCEPT) {
+				if(rightArrow.exists && leftArrow.exists) {
+					leftArrow.animation.play('idle');
+					rightArrow.animation.play('idle');
+				}
+
 				selectWeek();
 			}
 		}
@@ -234,7 +251,11 @@ class StoryMenuState extends MusicBeatState
 		if (controls.BACK && !movedBack && !selectedWeek) {
 			if(chooseDifficulty) {
 				chooseDifficulty = false;
-				sprDifficulty.visible = false;
+
+				if(sprDifficulty.exists) {
+					sprDifficulty.visible = false;
+				}
+
 				add(grpWeekText);
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				changeWeek(0);
@@ -245,8 +266,10 @@ class StoryMenuState extends MusicBeatState
 			}
 		}
 
-		menuBG.sway += 0.001;
-        menuBG.y -= Math.sin(menuBG.sway * Paths.modJSON.main_menu.bpm * 0.1)/4;
+		if(menuBG.exists) {
+			menuBG.sway += 0.001;
+			menuBG.y -= Math.sin(menuBG.sway * Paths.modJSON.main_menu.bpm * 0.1)/4;
+		}
 
 		super.update(elapsed);
 	}
@@ -255,7 +278,11 @@ class StoryMenuState extends MusicBeatState
 	{
 		if(!chooseDifficulty) {
 			remove(grpWeekText);
-			sprDifficulty.visible = true;
+
+			if(sprDifficulty.exists) {
+				sprDifficulty.visible = true;
+			}
+
 			chooseDifficulty = true;
 			return;
 		}
@@ -297,13 +324,21 @@ class StoryMenuState extends MusicBeatState
 
 			//FlxG.switchState(new InGameOptions("StoryMenuState", PlayState.SONG));
 
-			FlxFlicker.flicker(sprDifficulty, 1, 0.06, false, false, function(flick:FlxFlicker) {
+			if(sprDifficulty.exists) {
+				FlxFlicker.flicker(sprDifficulty, 1, 0.06, false, false, function(flick:FlxFlicker) {
+					#if cpp
+					CacheState.loadAndSwitchState(new PlayState());
+					#else
+					LoadingState.loadAndSwitchState(new PlayState());
+					#end
+				});
+			}else {
 				#if cpp
 				CacheState.loadAndSwitchState(new PlayState());
 				#else
 				LoadingState.loadAndSwitchState(new PlayState());
 				#end
-			});
+			}
 		}
 	}
 
@@ -316,35 +351,38 @@ class StoryMenuState extends MusicBeatState
 		if (curDifficulty > 2)
 			curDifficulty = 0;
 
-		sprDifficulty.offset.x = 0;
-
 		if(change != 0)
 			FlxG.sound.play(Paths.sound('scrollMenu'));
 
-		switch (curDifficulty)
-		{
-			case 0:
-				sprDifficulty.animation.play('easy');
-				sprDifficulty.offset.x = 20;
-			case 1:
-				sprDifficulty.animation.play('normal');
-				sprDifficulty.offset.x = 70;
-			case 2:
-				sprDifficulty.animation.play('hard');
-				sprDifficulty.offset.x = 20;
+		if(sprDifficulty.exists) {
+			sprDifficulty.offset.x = 0;
+
+			switch (curDifficulty)
+			{
+				case 0:
+					sprDifficulty.animation.play('easy');
+					sprDifficulty.offset.x = 20;
+				case 1:
+					sprDifficulty.animation.play('normal');
+					sprDifficulty.offset.x = 70;
+				case 2:
+					sprDifficulty.animation.play('hard');
+					sprDifficulty.offset.x = 20;
+			}
+
+			sprDifficulty.alpha = 0;
+
+			// USING THESE WEIRD VALUES SO THAT IT DOESNT FLOAT UP
+			sprDifficulty.y = leftArrow.y - 15;
+
+			FlxTween.tween(sprDifficulty, {y: leftArrow.y + 15, alpha: 1}, 0.07);
 		}
 
-		sprDifficulty.alpha = 0;
-
-		// USING THESE WEIRD VALUES SO THAT IT DOESNT FLOAT UP
-		sprDifficulty.y = leftArrow.y - 15;
 		intendedScore = Highscore.getWeekScore(curWeek, curDifficulty);
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(curWeek, curDifficulty);
 		#end
-
-		FlxTween.tween(sprDifficulty, {y: leftArrow.y + 15, alpha: 1}, 0.07);
 	}
 
 	var lerpScore:Int = 0;
@@ -367,7 +405,9 @@ class StoryMenuState extends MusicBeatState
 			grpWeekText.members[i].alpha = 0;
 		}
 
-		menuBG.changeBackground(curWeek, change);
+		if(menuBG.exists) {
+			menuBG.changeBackground(curWeek, change);
+		}
 
 		if(Paths.modJSON.weeks.get("week_" + curWeek).week_unlocked)
 			weekAlpha = 1;
@@ -376,8 +416,11 @@ class StoryMenuState extends MusicBeatState
 
 		if(!chooseDifficulty) {
 			FlxTween.tween(grpWeekText.members[curWeek], {alpha: weekAlpha}, 0.3, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-				rightArrow.animation.play('idle');
-				leftArrow.animation.play('idle');
+				if(rightArrow.exists && leftArrow.exists) {
+					rightArrow.animation.play('idle');
+					leftArrow.animation.play('idle');
+				}
+
 				stopspamming = false;
 			}});
 		}	

@@ -133,14 +133,6 @@ class CheesyStage extends StageBuilder {
     }
 
 	override function whenCreatingScene():Void {
-		playstate.strumLineNotes.forEachAlive(function(strum:Strum) {
-			strum.updateFrameSizeOffset(0, -2, 'confirm');
-
-			if(strum.noteData == 1 || strum.noteData == 2) {
-				strum.updateFrameSizeOffset(0, -1, 'confirm');
-			}
-		});
-
 		if(playstate.iconP1.iconAnimInfo[0] == 28 && playstate.iconP1.iconAnimInfo[1] == 29) {
 			playstate.healthBar.filledColor = tripleIconColors[0];
 			tweenHealthBar(tripleIconColors, "player", playstate);

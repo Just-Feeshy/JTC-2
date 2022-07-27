@@ -96,9 +96,7 @@ class VoidTransition extends TransitionBuilder {
         }else {
             transBlack.alpha = 0;
             tweenManager.push(FlxTween.tween(transBlack, {alpha: 1}, duration, {onComplete: function(twn:FlxTween) {
-                if(finishCallback != null) {
-                    finishCallback();
-                }
+                callback();
             }, ease: FlxEase.quadIn}));
         }
     }
@@ -210,9 +208,7 @@ class TileTransition extends TransitionBuilder {
             if(fade == IN) {
                 close();
             }else {
-                if(finishCallback != null) {
-                    finishCallback();
-                }
+                callback();
             }
         }
 

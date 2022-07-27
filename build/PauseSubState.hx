@@ -3,10 +3,7 @@ package;
 import Controls.KeyboardScheme;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.FlxSubState;
-import flixel.addons.transition.FlxTransitionableState;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.input.keyboard.FlxKey;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
@@ -56,9 +53,7 @@ class PauseSubState extends MusicBeatSubstate
 		levelDifficulty.updateHitbox();
 		add(levelDifficulty);
 
-
 		otherStuff = new FlxText(20, 15 + 96, 0, "", 32);
-
 		otherStuff.scrollFactor.set();
 		otherStuff.setFormat(Paths.font('vcr.ttf'), 32);
 		otherStuff.updateHitbox();
@@ -72,9 +67,9 @@ class PauseSubState extends MusicBeatSubstate
 		levelDifficulty.x = FlxG.width - (levelDifficulty.width + 20);
 		otherStuff.x = FlxG.width - (otherStuff.width + 20);
 
-		FlxTween.tween(bg, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});
-		FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.3});
-		FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.5});
+		FlxTween.tween(bg, {alpha: 0.6}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut});
+		FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, startDelay: 0.3});
+		FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, startDelay: 0.5});
 
 		grpMenuShit = new FlxTypedGroup<Alphabet>();
 		add(grpMenuShit);

@@ -20,8 +20,6 @@ class Character extends feshixl.FeshSprite {
 	private var finalizedX:Float;
 	private var finalizedY:Float;
 
-	private var rendered:Bool;
-
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
 	public var debugMode:Bool = false;
@@ -232,11 +230,6 @@ class Character extends feshixl.FeshSprite {
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		if(animations.length == 0) {
 			return;
-		}
-
-		if(!rendered) {
-			updateFrameSizeOffset(0, -1);
-			rendered = true;
 		}
 
 		if(AnimName.startsWith('sing'))

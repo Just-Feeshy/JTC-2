@@ -38,12 +38,11 @@ enum ClassType {
 
 /**
 * Basically the FlxG for Feeshmora.
-* Yes, this is a helper class for Feeshmora mods.
 */
 class Register {
     private static var regJSON(get, never):String;
 
-    public static macro function compile() {
+    public inline static macro function compile() {
         if(regJSON.length > 0)
 		    return Context.parse("{@:privateAccess " + regJSON + ".onInit();}", Context.currentPos());
         else
@@ -57,14 +56,9 @@ class Register {
     }
 
     #if !macro
-    @:allow(PlayState)
-    private static var events:Array<Class<IFeshEvent>> = [];
-
-    @:allow(PlayState)
-    private static var stages:Array<Class<StageBuilder>> = [];
-
-    @:allow(PlayState)
-    private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
+    @:allow(PlayState) private static var events:Array<Class<IFeshEvent>> = [];
+    @:allow(PlayState) private static var stages:Array<Class<StageBuilder>> = [];
+    @:allow(PlayState) private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
 
     @:allow(Preloader)
     private inline static function setup() {
@@ -85,7 +79,7 @@ class Register {
     }
 
     @:access(HelperStates)
-    public inline static function attachLuaToState<T:HelperStates>(state:Class<T>, luaClass:ModLua):Void {
+    public inline static function attachLuaToState<T:HelperStates>(state:Class<T>, luaClass:ModLua):Void { //Won't work with PlayState.
 		#if (USING_LUA && linc_luajit)
 		HelperStates.scriptsInStates.set(Type.getClassName(state), luaClass);
 		#end
@@ -102,12 +96,12 @@ class Register {
     }
 
     @:access(HelperStates.transitionBuilds)
-    public inline static function addCustomTransition(transition:String, transOBJ:Class<TransitionBuilder>) {
+    public inline static function addCustomTransition(transition:String, transOBJ:Class<TransitionBuilder>):Void {
         HelperStates.transitionBuilds.set(transition, transOBJ);
     }
 
     @:access(HelperStates.transitionBuilds)
-    public inline static function removeCustomTransition(transition:String) {
+    public inline static function removeCustomTransition(transition:String):Void {
         HelperStates.transitionBuilds.remove(transition);
     }
 
