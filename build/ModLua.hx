@@ -1,6 +1,6 @@
 package;
 
-#if (USING_LUA && linc_luajit_basic)
+#if USING_LUA
 import llua.Lua;
 import llua.LuaL;
 import llua.State;
@@ -28,7 +28,7 @@ using StringTools;
 class ModLua {
     private var executed:Bool = false;
 
-    #if (USING_LUA && linc_luajit_basic)
+    #if USING_LUA
     private var lua:State = null;
     #end
 
@@ -50,7 +50,7 @@ class ModLua {
             return;
         }
 
-        #if (USING_LUA && linc_luajit_basic)
+        #if USING_LUA
         lua = LuaL.newstate();
 		LuaL.openlibs(lua);
 		Lua.init_callbacks(lua);
@@ -117,6 +117,47 @@ class ModLua {
 			}
 		});
 
+        Lua_helper.add_callback(lua, "makeGraphic", function(name:String, width:Int, height:Int, colorStr:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                var color:Int = Std.parseInt(colorStr);
+
+                if(!colorStr.startsWith('0x')) {
+                    color = Std.parseInt('0xff' + colorStr);
+                }
+
+                spr.makeGraphic(width, height, color);
+            }
+		});
+
+        Lua_helper.add_callback(lua, "screenCenter", function(name:String, ?axis:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            switch(axis.toLowerCase()) {
+                case "x": spr.screenCenter(X);
+                case "y": spr.screenCenter(Y);
+                default: spr.screenCenter();
+            }
+		});
+
+        Lua_helper.add_callback(lua, "getScreenCenter", function(name:String, ?axis:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                switch(axis.toLowerCase()) {
+                    case "x": return spr.getScreenCenter(X);
+                    case "y": return spr.getScreenCenter(Y);
+                }
+            }
+
+            return 0;
+		});
+
         Lua_helper.add_callback(lua, "compileSpriteSheet", function(name:String, spritesheet:String, type:String) {
             var spr:FlxSprite = getSprite(name);
 
@@ -151,6 +192,34 @@ class ModLua {
             spr.animation.play(animation);
         });
 
+        Lua_helper.add_callback(lua, "playAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            /**
+            * While making this, I was using an older version of `HaxeFlixel`.
+            */
+            @:privateAccess
+            if(spr.animation._animations.exists(animation)) {
+                spr.animation.remove(animation);
+            }
+
+            var stringIndices:Array<String> = indices.trim().split(',');
+			var indices:Array<Int> = [];
+
+            var index:Int = 0;
+
+			while(index < stringIndices.length) {
+				indices.push(Std.parseInt(stringIndices[index++]));
+			}
+
+            spr.animation.addByIndices(animation, prefix, indices, "", framerate, false);
+            spr.animation.play(animation);
+        });
+
         Lua_helper.add_callback(lua, "setCustomPropertyToSprite", function(name:String, prop:String, value:Dynamic) {
             var spr:FlxSprite = getSprite(name);
 
@@ -181,6 +250,16 @@ class ModLua {
             spr.angle = angle;
         });
 
+        Lua_helper.add_callback(lua, "setSpriteAlpha", function(name:String, alpha:Float) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.alpha = alpha;
+        });
+
         Lua_helper.add_callback(lua, "setScrollFactorToSprite", function(name:String, x:Int, y:Int) {
             var spr:FlxSprite = getSprite(name);
 
@@ -202,6 +281,26 @@ class ModLua {
             spr.updateHitbox();
         });
 
+        Lua_helper.add_callback(lua, "getSpriteWidth", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                return spr.width;
+            }
+
+            return 0;
+        });
+
+        Lua_helper.add_callback(lua, "getSpriteHeight", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                return spr.height;
+            }
+
+            return 0;
+        });
+
         Lua_helper.add_callback(lua, "setSpriteClipRect", function(name:String, x:Float = 0, y:Float = 0, ?width:Float, ?height:Float) {
             var spr:FlxSprite = getSprite(name);
 
@@ -212,8 +311,7 @@ class ModLua {
                 return;
             }
 
-            var frameHandler:LuaFrameCollection = new LuaFrameCollection(spr);
-            frameHandler.newRect = new FlxRect(x, 360, sprWidth, sprHeight);
+            spr.clipRect = new FlxRect(x, y, sprWidth, sprHeight);
         });
 
         Lua_helper.add_callback(lua, "increaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
@@ -522,13 +620,13 @@ class ModLua {
     }
 
     public function addCallback(name:String, method:Dynamic):Void {
-        #if (USING_LUA && linc_luajit_basic)
+        #if USING_LUA
         Lua_helper.add_callback(lua, name, method);
         #end
     }
 
     public function set(variable:String, data:Dynamic):Void {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(lua == null) {
 			return;
 		}
@@ -539,7 +637,7 @@ class ModLua {
 	}
 
     public function call(event:String, args:Array<Dynamic>, index:Int = 0):Dynamic {
-        #if (USING_LUA && linc_luajit_basic)
+        #if USING_LUA
         if(lua == null) {
             trace("Error: Something went wrong with lua.");
             return 0;
@@ -594,7 +692,7 @@ class ModLua {
     }
 
     public function close():Void {
-        #if (USING_LUA && linc_luajit_basic)
+        #if USING_LUA
         if(lua == null) {
             return;
         }
@@ -644,7 +742,7 @@ class ModLua {
         #end
     }
 
-    #if (USING_LUA && linc_luajit_basic)
+    #if USING_LUA
     public function convertToLua(args:Array<Dynamic>, index:Int = 0):Int {
         if(index < args.length) {
             Convert.toLua(lua, args[index]);
@@ -656,13 +754,12 @@ class ModLua {
     #end
 }
 
+@:access(flixel.FlxSprite)
 private class LuaFrameCollection {
     public var x(default, set):Float = 0;
     public var y(default, set):Float = 0;
     public var width(default, set):Float = 0;
     public var height(default, set):Float = 0;
-
-    public var newRect(default, set):FlxRect;
 
     var sprite:FlxSprite;
 
@@ -670,25 +767,15 @@ private class LuaFrameCollection {
         this.sprite = sprite;
     }
 
-    function set_newRect(value:FlxRect):FlxRect {
-        if(sprite != null) {
-            var index:Int = 0;
-
-            while(index < sprite.numFrames) {
-                sprite.frames.frames[index++].frame = value;
-            }
-        }
-
-        return newRect = value;
-    }
-
     function set_x(value:Float):Float {
         if(sprite != null) {
-            var index:Int = 0;
+            sprite.clipRect.x = value;
 
-            while(index < sprite.numFrames) {
-                sprite.frames.frames[index++].frame.x = value;
+            if (sprite.frames != null) {
+                sprite.frame = sprite.frames.frames[sprite.animation.frameIndex];
             }
+
+            sprite._frame = sprite.frame.clipTo(sprite.clipRect, sprite._frame);
         }
 
         return x = value;
@@ -696,11 +783,13 @@ private class LuaFrameCollection {
 
     function set_y(value:Float):Float {
         if(sprite != null) {
-            var index:Int = 0;
+            sprite.clipRect.y = value;
 
-            while(index < sprite.numFrames) {
-                sprite.frames.frames[index++].frame.y = value;
+            if (sprite.frames != null) {
+                sprite.frame = sprite.frames.frames[sprite.animation.frameIndex];
             }
+
+            sprite._frame = sprite.frame.clipTo(sprite.clipRect, sprite._frame);
         }
 
         return y = value;
@@ -708,11 +797,13 @@ private class LuaFrameCollection {
 
     function set_width(value:Float):Float {
         if(sprite != null) {
-            var index:Int = 0;
+            sprite.clipRect.width = value;
 
-            while(index < sprite.numFrames) {
-                sprite.frames.frames[index++].frame.width = value;
+            if (sprite.frames != null) {
+                sprite.frame = sprite.frames.frames[sprite.animation.frameIndex];
             }
+
+            sprite._frame = sprite.frame.clipTo(sprite.clipRect, sprite._frame);
         }
 
         return width = value;
@@ -720,11 +811,13 @@ private class LuaFrameCollection {
 
     function set_height(value:Float):Float {
         if(sprite != null) {
-            var index:Int = 0;
+            sprite.clipRect.height = value;
 
-            while(index < sprite.numFrames) {
-                sprite.frames.frames[index++].frame.height = value;
+            if (sprite.frames != null) {
+                sprite.frame = sprite.frames.frames[sprite.animation.frameIndex];
             }
+
+            sprite._frame = sprite.frame.clipTo(sprite.clipRect, sprite._frame);
         }
 
         return height = value;

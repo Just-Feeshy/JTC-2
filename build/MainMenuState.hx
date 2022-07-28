@@ -213,7 +213,7 @@ class MainMenuState extends MusicBeatState
 
 		super.create();
 
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableCameras.set("cameraBackground", camMenu);
 			modifiableCameras.set("cameraMenu", camNoBump);
@@ -385,7 +385,7 @@ class MainMenuState extends MusicBeatState
 							{
 								spr.updateHitbox();
 
-								#if (USING_LUA && linc_luajit_basic)
+								#if USING_LUA
 								if(HelperStates.luaExist(Type.getClass(this))) {
 									HelperStates.getLua(Type.getClass(this)).call("callOptionChoice", []);
 								}
@@ -393,7 +393,7 @@ class MainMenuState extends MusicBeatState
 
 								FlxFlicker.flicker(spr, 1, 0.06, false, false, function(flick:FlxFlicker)
 								{
-									#if (USING_LUA && linc_luajit_basic)
+									#if USING_LUA
 									if(HelperStates.luaExist(Type.getClass(this))) {
 										HelperStates.getLua(Type.getClass(this)).call("pressedAnOption", [optionShit[curSelected]]);
 									}
@@ -429,7 +429,7 @@ class MainMenuState extends MusicBeatState
 	}
 
 	function getLuaOptions() {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			var luaOptionShit:Array<String> = HelperStates.getLua(Type.getClass(this)).call("setupCustomOptions", [curSelected]);
 

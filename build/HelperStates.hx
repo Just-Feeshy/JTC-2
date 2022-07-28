@@ -14,6 +14,7 @@ import flixel.math.FlxRect;
 
 import example_code.TransitionSamples;
 import template.TransitionBuilder;
+import Controls;
 
 #if (haxe_ver >= 4.2)
 import Std.isOfType;
@@ -67,9 +68,52 @@ class HelperStates extends FlxUIState {
 		/**
 		* Interesting, I know.
 		*/
-		#if (USING_LUA && linc_luajit_basic)
-		if(HelperStates.luaExist(Type.getClass(this)))
+		#if USING_LUA
+		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).execute();
+
+			addCallback("getControl", function(control:String) {
+				switch(control.toLowerCase()) {
+                    case Action.UP: return controls.UP;
+                    case Action.LEFT: return controls.LEFT;
+                    case Action.RIGHT: return controls.RIGHT;
+                    case Action.SPACE: return controls.SPACE;
+                    case Action.DOWN: return controls.DOWN;
+                    case Action.UP_P: return controls.UP_P;
+                    case Action.LEFT_P: return controls.LEFT_P;
+                    case Action.RIGHT_P: return controls.RIGHT_P;
+                    case Action.SPACE_P: return controls.SPACE_P;
+                    case Action.DOWN_P: return controls.DOWN_P;
+                    case Action.UP_R: return controls.UP_R;
+                    case Action.LEFT_R: return controls.LEFT_R;
+                    case Action.RIGHT_R: return controls.RIGHT_R;
+                    case Action.SPACE_R: return controls.SPACE_R;
+                    case Action.DOWN_R: return controls.DOWN_R;
+                    case Action.GAME_UP: return controls.GAME_UP;
+                    case Action.GAME_LEFT: return controls.GAME_LEFT;
+                    case Action.GAME_RIGHT: return controls.GAME_RIGHT;
+                    case Action.GAME_SPACE: return controls.GAME_SPACE;
+                    case Action.GAME_DOWN: return controls.GAME_DOWN;
+                    case Action.GAME_UP_P: return controls.GAME_UP_P;
+                    case Action.GAME_LEFT_P: return controls.GAME_LEFT_P;
+                    case Action.GAME_RIGHT_P: return controls.GAME_RIGHT_P;
+                    case Action.GAME_SPACE_P: return controls.GAME_SPACE_P;
+                    case Action.GAME_DOWN_P: return controls.GAME_DOWN_P;
+                    case Action.GAME_UP_R: return controls.GAME_UP_R;
+                    case Action.GAME_LEFT_R: return controls.GAME_LEFT_R;
+                    case Action.GAME_RIGHT_R: return controls.GAME_RIGHT_R;
+                    case Action.GAME_SPACE_R: return controls.GAME_SPACE_R;
+                    case Action.GAME_DOWN_R: return controls.GAME_DOWN_R;
+                    case Action.ACCEPT: return controls.ACCEPT;
+                    case Action.BACK: return controls.BACK;
+                    case Action.PAUSE: return controls.PAUSE;
+                    case Action.RESET: return controls.RESET;
+                    case Action.CHEAT: return controls.CHEAT;
+                }
+
+				return false;
+			});
+		}
 		#end
 
 		onCreate();
@@ -82,7 +126,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function onCreate():Dynamic {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this)))
 			return HelperStates.getLua(Type.getClass(this)).call("onCreate", []);
 		#end
@@ -91,7 +135,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function getModLua():ModLua {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			return HelperStates.getLua(Type.getClass(this));
 		}
@@ -101,7 +145,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function addCallback(name:String, method:Dynamic):Void {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).addCallback(name, method);
 		}
@@ -109,7 +153,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function attachSprite(name:String, spr:FlxSprite):Void {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			if(!HelperStates.getLua(Type.getClass(this)).luaSprites.exists(name))
 				HelperStates.getLua(Type.getClass(this)).luaSprites.set(name, spr);
@@ -118,7 +162,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function callLua(name:String, args:Array<Dynamic>):Dynamic {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this)))
 			return HelperStates.getLua(Type.getClass(this)).call(name, args);
 		#end
@@ -127,7 +171,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function setLua(variable:String, data:Dynamic):Void {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).set(variable, data);
 		}
@@ -135,7 +179,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function resetScript() {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			var file:String = HelperStates.getLua(Type.getClass(this)).luaScript;
 
@@ -161,16 +205,17 @@ class HelperStates extends FlxUIState {
 	}
 
 	override function update(elapsed:Float):Void {
-		#if (USING_LUA && linc_luajit_basic)
-		if(HelperStates.luaExist(Type.getClass(this)))
+		#if USING_LUA
+		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).call("onUpdate", [elapsed]);
+		}
 		#end
 
 		super.update(elapsed);
 	}
 
 	override function destroy() {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).close();
 		}
@@ -247,7 +292,7 @@ class HelperStates extends FlxUIState {
 				return;
 			}
 
-			#if (USING_LUA && linc_luajit_basic)
+			#if USING_LUA
 			_transition.finishCallback = function() {
 				callLua("finishedTransitionIn", []);
 			}
@@ -271,7 +316,7 @@ class HelperStates extends FlxUIState {
 				finishedTransition();
 				closeSubState();
 
-				#if (USING_LUA && linc_luajit_basic)
+				#if USING_LUA
 				_transition.finishCallback = function() {
 					callLua("finishedTransitionOut", []);
 				}

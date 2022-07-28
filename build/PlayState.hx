@@ -540,7 +540,7 @@ class PlayState extends MusicBeatState
 
 		getLuaScript();
 
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			generateStaticLua();
 			updateLuaVars();
@@ -2119,7 +2119,7 @@ class PlayState extends MusicBeatState
 					}
 			});
 
-			#if (USING_LUA && linc_luajit_basic)
+			#if USING_LUA
 			if(HelperStates.luaExist(Type.getClass(this))) {
 				updateLuaVars();
 			}
@@ -2890,7 +2890,7 @@ class PlayState extends MusicBeatState
 	*/
 	
 	function getLuaScript():Void {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(Assets.exists(Paths.getPath('scripts/${"stage/" + curStage.toLowerCase()}.lua', TEXT, null))) {
 			Register.detachLuaFromState(PlayState);
 			Register.attachLuaToState(PlayState, new ModLua(Paths.lua("stage/" + curStage.toLowerCase())));
@@ -2998,7 +2998,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function makeNoteLua():Void {
-		#if (USING_LUA && linc_luajit_basic)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			for(i in 0...playerStrums.members.length) {
 				setLua('defaultPlayerStrumX' + i, playerStrums.members[i].x);
@@ -3242,7 +3242,7 @@ class PlayState extends MusicBeatState
 				camNOTE.zoom += 6 * FlxG.elapsed;
 			}
 	
-			#if (USING_LUA && linc_luajit_basic)
+			#if USING_LUA
 			if(HelperStates.luaExist(Type.getClass(this))) {
 				updatePerSectionLuaVars();
 			}

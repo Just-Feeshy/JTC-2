@@ -45,11 +45,10 @@ class DialogueBoxJTC extends DialogueBuilder {
 
         if(displayText.color == 16766208) {
             implementShadowTextColor(FlxColor.fromInt(0xcc7800));
+            displayText.color = 15117568;
         }else if(displayText.color == 3200456) {
             implementShadowTextColor(FlxColor.fromInt(2338724));
         }
-
-        displayText.color = 15117568;
 
         if(bothScene.contains(dialogueScene - 1)) {
             leftPortrait.visible = true;
