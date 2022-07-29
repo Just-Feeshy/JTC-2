@@ -7,11 +7,6 @@ import llua.Lua;
 
 @:include('linc_lua.h')
 extern class LuaL {
-
-
-    // @:native('luaL_register')
-    // static function register(l:State, libname:String, lr:luaL_Reg) : Void;
-
     @:native('luaL_getmetafield')
     static function getmetafield(l:State, obj:Int, e:String) : Int;
 
@@ -67,9 +62,6 @@ extern class LuaL {
     @:native('luaL_where')
     static function where(l:State, lvl:Int) : Void;
 
-    // @:native('luaL_error')
-    // static function error(l:State, fmt:String, ...) : Int;
-
     @:native('luaL_checkoption')
     static function checkoption(l:State, narg:Int, def:String, const:Array<String>) : Int;
 
@@ -96,7 +88,6 @@ extern class LuaL {
 
     @:native('linc::lual::findtable')
     static function findtable(l:State, idx:Int, fname:String, szhint:Int) : String;
-
 
     /* From Lua 5.2. */
 
@@ -188,7 +179,6 @@ extern class LuaL {
 
     @:native('luaL_pushresult')
     static function pushresult(b:BufferRef) : Void;
-
 
 
     /* }====================================================== */

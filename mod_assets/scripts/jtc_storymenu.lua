@@ -28,6 +28,12 @@ function finishedTransitionIn()
     doTweenY("fadeTween", "fadeBlackSprite", -windowHeight, 0.3, "quadOut")
 end
 
+function onUpdate(elapsed)
+    if getControl("back") then
+        print("hi")
+    end
+end
+
 function onTweenCompleted(name)
     if name == "fadeTween" then
         if tweenCounter == 0 then

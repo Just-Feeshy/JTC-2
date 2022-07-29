@@ -9,9 +9,7 @@ namespace linc {
     namespace lua {
 
         ::String version(){
-
         	return ::String(LUA_VERSION);
-
         }
 
         ::String versionJIT(){
@@ -19,15 +17,11 @@ namespace linc {
         }
 
         ::String tostring(lua_State *l, int v){
-
             return ::String(lua_tostring(l, v));
-
         }
 
         ::String tolstring(lua_State *l, int v, size_t *len){
-
             return ::String(lua_tolstring(l, v, len));
-
         }
 
         ::cpp::Function<int(lua_State*)> tocfunction(lua_State* l, int i) {
@@ -43,13 +37,10 @@ namespace linc {
         }
 
         ::String _typename(lua_State *l, int v){
-
             return ::String(lua_typename(l, v));
-
         }
 
         int getstack(lua_State *L, int level, Dynamic ar){
-
             lua_Debug dbg;
 
             int ret = lua_getstack(L, level, &dbg);
@@ -57,7 +48,6 @@ namespace linc {
             ar->__FieldRef(HX_CSTRING("i_ci")) = (int)dbg.i_ci;
 
             return ret;
-
         }
 
         int getinfo(lua_State *L, const char *what, Dynamic ar){
@@ -115,23 +105,17 @@ namespace linc {
             }
 
             return ret;
-
         }
 
     } //lua
 
     namespace lual {
-
         ::String checklstring(lua_State *l, int numArg, size_t *len){
-
             return ::String(luaL_checklstring(l, numArg, len));
-
         }
 
         ::String optlstring(lua_State *l, int numArg, const char *def, size_t *len){
-
             return ::String(luaL_optlstring(l, numArg, def, len));
-
         }
 
         ::String prepbuffer(luaL_Buffer *B){
@@ -141,27 +125,19 @@ namespace linc {
         }
 
         ::String gsub(lua_State *l, const char *s, const char *p, const char *r){
-
             return ::String(luaL_gsub(l, s, p, r));
-
         }
 
         ::String findtable(lua_State *L, int idx, const char *fname, int szhint){
-
             return ::String(luaL_findtable(L, idx, fname, szhint));
-
         }
 
         ::String checkstring(lua_State *L, int n){
-
             return ::String(luaL_checkstring(L, n));
-
         }
 
         ::String optstring(lua_State *L, int n, const char *d){
-
             return ::String(luaL_optstring(L, n, d));
-
         }
 
         void error(lua_State *L, const char* fmt) {
@@ -169,9 +145,7 @@ namespace linc {
         }
 
         ::String ltypename(lua_State *L, int idx){
-
             return ::String(luaL_typename(L, idx));
-
         }
 
     } //lual
@@ -190,14 +164,11 @@ namespace linc {
             }
 
             return 1;
-
         }
 
         int setErrorHandler(lua_State *L){
-
             lua_pushcfunction(L, onError);
             return 1;
-
         }
 
 
@@ -213,7 +184,7 @@ namespace linc {
 
             for ( int i = 1;  i <= n;  ++i ){
                 const char* s = NULL;
-                size_t      l = 0;
+                size_t l = 0;
 
                 lua_pushvalue(L,-1);    /* function to be called */
                 lua_pushvalue(L,i); /* value to print */
@@ -241,24 +212,19 @@ namespace linc {
         }
 
         static const struct luaL_Reg printlib [] = {
-
             {"print", hx_trace},
             {NULL, NULL} /* end of array */
 
         };
 
         void register_hxtrace_func(HxTraceFN fn){
-
             print_fn = fn;
-
         }
 
         void register_hxtrace_lib(lua_State* L){
-
             lua_getglobal(L, "_G");
             luaL_register(L, NULL, printlib);
             lua_pop(L, 1);
-
         }
 
     } //helpers
@@ -267,33 +233,23 @@ namespace linc {
 
         static luaCallbackFN event_fn = 0;
         static int luaCallback(lua_State *L){
-
             return event_fn(L, ::String(lua_tostring(L, lua_upvalueindex(1))));
-
         }
 
         void set_callbacks_function(luaCallbackFN fn){
-
             event_fn = fn;
-
         }
 
         void add_callback_function(lua_State *L, const char *name) {
-
             lua_pushstring(L, name);
             lua_pushcclosure(L, luaCallback, 1);
             lua_setglobal(L, name);
-
         }
 
         void remove_callback_function(lua_State *L, const char *name){
-
             lua_pushnil(L);
             lua_setglobal(L, name);
-
         }
 
     } //callbacks
-
-
 } //linc
