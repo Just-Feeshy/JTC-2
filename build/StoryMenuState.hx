@@ -156,7 +156,6 @@ class StoryMenuState extends MusicBeatState
 		sprDifficulty.animation.addByPrefix('normal', 'NORMAL');
 		sprDifficulty.animation.addByPrefix('hard', 'HARD');
 		sprDifficulty.animation.play('easy');
-		changeDifficulty();
 
 		sprDifficulty.screenCenter(X);
 		sprDifficulty.visible = false;
@@ -198,7 +197,12 @@ class StoryMenuState extends MusicBeatState
 			basedWeekChange();
 		});
 
+		addCallback("changeDifficulty", function(value:Int) {
+			changeDifficulty(value);
+		});
+
 		setLua("curDifficulty", curDifficulty);
+		changeDifficulty();
 		return super.onCreate();
 	}
 
@@ -392,7 +396,6 @@ class StoryMenuState extends MusicBeatState
 			curDifficulty = 0;
 
 		setLua("curDifficulty", curDifficulty);
-		callLua("changeDifficulty", []);
 
 		if(change != 0)
 			FlxG.sound.play(Paths.sound('scrollMenu'));

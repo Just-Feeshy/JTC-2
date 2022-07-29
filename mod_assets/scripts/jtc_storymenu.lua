@@ -45,6 +45,14 @@ function onUpdate(elapsed)
         switchState("MainMenuState")
         stopSpam = true
     end
+
+    if getControl("up-press") then
+        changeDifficulty(1)
+    end
+
+    if getControl("down-press") then
+        changeDifficulty(-1)
+    end
 end
 
 function onTweenCompleted(name)
@@ -58,7 +66,7 @@ function onTweenCompleted(name)
 
             createSprite("betterDifficulty")
             setDifficultySprite()
-            setSpritePosition("betterDifficulty", -50, 50)
+            setSpritePosition("betterDifficulty", -45, 50)
             addSpriteToState("betterDifficulty")
         end
 
@@ -101,6 +109,10 @@ function onTweenCompleted(name)
     if name == "lightningShake2" then
         doTweenAngle("lightningNormal", "lightningIcon", 0, 0.1, "quadOut")
     end
+end
+
+function changedDifficulty()
+    setDifficultySprite()
 end
 
 function setDifficultySprite()
