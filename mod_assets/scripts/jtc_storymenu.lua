@@ -1,4 +1,3 @@
-local tickSway = 0
 local tweenCounter = 0
 local yCons = 50
 
@@ -32,15 +31,6 @@ function finishedTransitionIn()
 end
 
 function onUpdate(elapsed)
-    if spriteExist("betterDifficulty") then
-        if curDifficulty == 2 then
-            setSpriteAngle("betterDifficulty", math.sin(tickSway) * 9)
-            tickSway = tickSway + elapsed;
-        else
-            tickSway = 0
-        end
-    end
-
     if getControl("back") and not stopSpam then
         switchState("MainMenuState")
         stopSpam = true
@@ -117,12 +107,10 @@ end
 
 function setDifficultySprite()
     if curDifficulty == 0 then
-        setSpriteAngle("betterDifficulty", 0)
         loadGraphic("betterDifficulty", "menu/easy")
     end
 
     if curDifficulty == 1 then
-        setSpriteAngle("betterDifficulty", 0)
         loadGraphic("betterDifficulty", "menu/normal")
     end
 

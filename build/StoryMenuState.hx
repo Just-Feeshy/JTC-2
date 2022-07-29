@@ -396,6 +396,7 @@ class StoryMenuState extends MusicBeatState
 			curDifficulty = 0;
 
 		setLua("curDifficulty", curDifficulty);
+		callLua("changedDifficulty", []);
 
 		if(change != 0)
 			FlxG.sound.play(Paths.sound('scrollMenu'));
