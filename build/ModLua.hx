@@ -14,7 +14,7 @@ import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxColor;
 import flixel.math.FlxRect;
-
+import lime.ui.Window;
 import feshixl.shaders.FeshShader;
 
 import SaveData.SaveType;
@@ -59,7 +59,9 @@ class ModLua {
 		var luaResults:String = Lua.tostring(lua, resultFile);
 
         if(luaResults != null && resultFile != 0) {
-            throw 'Error loading lua script: "$luaScript"\n' + luaResults;
+            var prevWindow:Window = openfl.Lib.current.stage.window;
+            new CrashLogDisplay(prevWindow).attachReport([luaResults, 'Script: $luaScript']);
+            return;
         }
 
         trace("Successfully loaded script: " + this.luaScript);

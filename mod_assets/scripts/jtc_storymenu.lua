@@ -1,6 +1,8 @@
 local tweenCounter = 0
 local yCons = 50
 
+local stopSpam = false
+
 function onCreate()
     destroyStuff()
 
@@ -29,8 +31,9 @@ function finishedTransitionIn()
 end
 
 function onUpdate(elapsed)
-    if getControl("back") then
-        print("hi")
+    if getControl("back") and not stopSpam then
+        switchState("MainMenuState")
+        stopSpam = true
     end
 end
 

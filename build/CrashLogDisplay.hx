@@ -22,6 +22,8 @@ import SaveData.SaveType;
 using StringTools;
 
 class CrashLogDisplay extends Sprite {
+    var newStage:Stage;
+
     var backgroundData:BitmapData;
     var _panel:Rectangle;
     
@@ -43,11 +45,6 @@ class CrashLogDisplay extends Sprite {
 
         prevWindow.stage.removeChildren(0, prevWindow.stage.numChildren);
         prevWindow.onClose.add(__closeApplication.bind(prevWindow));
-
-        @:privateAccess {
-            Lib.current.stage = window.stage;
-        }
-
         window.stage.addChild(this);
 
         //Background Image
@@ -71,8 +68,8 @@ class CrashLogDisplay extends Sprite {
         var _background:Bitmap = new Bitmap(backgroundData);
         _background.smoothing = SaveData.getData(SaveType.GRAPHICS);
 
-        _background.scaleX = Lib.current.stage.stageWidth / _background.width;
-        _background.scaleY = Lib.current.stage.stageHeight / _background.height;
+        _background.scaleX = window.stage.stageWidth / _background.width;
+        _background.scaleY = window.stage.stageHeight / _background.height;
 
         addChild(_background);
     }
