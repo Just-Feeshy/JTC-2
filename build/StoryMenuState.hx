@@ -194,6 +194,11 @@ class StoryMenuState extends MusicBeatState
 			disableControls = value;
 		});
 
+		addCallback("selectWeek", function() {
+			basedWeekChange();
+		});
+
+		setLua("curDifficulty", curDifficulty);
 		return super.onCreate();
 	}
 
@@ -327,49 +332,53 @@ class StoryMenuState extends MusicBeatState
 				stopspamming = true;
 			}
 
-			var daSongs:Array<String> = [];
+			basedWeekChange();
+		}
+	}
 
-			for(i in 0...Paths.modJSON.weeks.get("week_" + curWeek).week_data.length)
-				daSongs.push(Paths.modJSON.weeks.get("week_" + curWeek).week_data[i]);
+	function basedWeekChange():Void {
+		var daSongs:Array<String> = [];
 
+		for(i in 0...Paths.modJSON.weeks.get("week_" + curWeek).week_data.length) {
+			daSongs.push(Paths.modJSON.weeks.get("week_" + curWeek).week_data[i]);
+		}
 
-			PlayState.storyPlaylist = daSongs;
-			PlayState.isStoryMode = true;
-			selectedWeek = true;
+		var diffic = "";
 
-			var diffic = "";
+		switch (curDifficulty)
+		{
+			case 0:
+				diffic = '-easy';
+			case 2:
+				diffic = '-hard';
+		}
 
-			switch (curDifficulty)
-			{
-				case 0:
-					diffic = '-easy';
-				case 2:
-					diffic = '-hard';
-			}
+		PlayState.storyPlaylist = daSongs;
+		PlayState.isStoryMode = true;
+		selectedWeek = true;
 
-			PlayState.storyDifficulty = curDifficulty;
+		PlayState.storyDifficulty = curDifficulty;
 
-			PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + diffic, PlayState.storyPlaylist[0].toLowerCase());
-			PlayState.storyWeek = curWeek;
-			PlayState.campaignScore = 0;
+		PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + diffic, PlayState.storyPlaylist[0].toLowerCase());
+		PlayState.storyWeek = curWeek;
+		PlayState.campaignScore = 0;
 
-			//FlxG.switchState(new InGameOptions("StoryMenuState", PlayState.SONG));
+		//FlxG.switchState(new InGameOptions("StoryMenuState", PlayState.SONG));
 
-			if(sprDifficulty.exists) {
-				FlxFlicker.flicker(sprDifficulty, 1, 0.06, false, false, function(flick:FlxFlicker) {
-					#if cpp
-					CacheState.loadAndSwitchState(new PlayState());
-					#else
-					LoadingState.loadAndSwitchState(new PlayState());
-					#end
-				});
-			}else {
+		if(sprDifficulty.exists) {
+			FlxFlicker.flicker(sprDifficulty, 1, 0.06, false, false, function(flick:FlxFlicker) {
 				#if cpp
 				CacheState.loadAndSwitchState(new PlayState());
 				#else
 				LoadingState.loadAndSwitchState(new PlayState());
 				#end
-			}
+			});
+		}else {
+			#if cpp
+			CacheState.loadAndSwitchState(new PlayState());
+			#else
+			LoadingState.loadAndSwitchState(new PlayState());
+			#end
 		}
 	}
 
@@ -378,9 +387,12 @@ class StoryMenuState extends MusicBeatState
 		curDifficulty += change;
 
 		if (curDifficulty < 0)
-			curDifficulty = 2;
-		if (curDifficulty > 2)
+			curDifficulty = CoolUtil.difficultyArray.length;
+		if (curDifficulty > CoolUtil.difficultyArray.length)
 			curDifficulty = 0;
+
+		setLua("curDifficulty", curDifficulty);
+		callLua("changeDifficulty", []);
 
 		if(change != 0)
 			FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -392,15 +404,13 @@ class StoryMenuState extends MusicBeatState
 			{
 				case 0:
 					sprDifficulty.animation.play('easy');
-					sprDifficulty.offset.x = 20;
 				case 1:
 					sprDifficulty.animation.play('normal');
-					sprDifficulty.offset.x = 70;
 				case 2:
 					sprDifficulty.animation.play('hard');
-					sprDifficulty.offset.x = 20;
 			}
 
+			sprDifficulty.centerOffsets();
 			sprDifficulty.alpha = 0;
 
 			// USING THESE WEIRD VALUES SO THAT IT DOESNT FLOAT UP

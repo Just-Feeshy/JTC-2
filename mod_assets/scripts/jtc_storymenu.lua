@@ -1,3 +1,4 @@
+local tickSway = 0
 local tweenCounter = 0
 local yCons = 50
 
@@ -31,6 +32,15 @@ function finishedTransitionIn()
 end
 
 function onUpdate(elapsed)
+    if spriteExist("betterDifficulty") then
+        if curDifficulty == 2 then
+            setSpriteAngle("betterDifficulty", math.sin(tickSway) * 9)
+            tickSway = tickSway + elapsed;
+        else
+            tickSway = 0
+        end
+    end
+
     if getControl("back") and not stopSpam then
         switchState("MainMenuState")
         stopSpam = true
@@ -45,6 +55,11 @@ function onTweenCompleted(name)
             insertSpriteToState(0, "fadeBlackSprite")
             insertSpriteToState(0, "purple-bg")
             doTweenY("fadeTween", "fadeBlackSprite", -windowHeight, 0.3, "quadOut")
+
+            createSprite("betterDifficulty")
+            setDifficultySprite()
+            setSpritePosition("betterDifficulty", -50, 50)
+            addSpriteToState("betterDifficulty")
         end
 
         if tweenCounter == 1 then
@@ -88,6 +103,22 @@ function onTweenCompleted(name)
     end
 end
 
+function setDifficultySprite()
+    if curDifficulty == 0 then
+        setSpriteAngle("betterDifficulty", 0)
+        loadGraphic("betterDifficulty", "menu/easy")
+    end
+
+    if curDifficulty == 1 then
+        setSpriteAngle("betterDifficulty", 0)
+        loadGraphic("betterDifficulty", "menu/normal")
+    end
+
+    if curDifficulty == 2 then
+        loadGraphic("betterDifficulty", "menu/cool")
+    end
+end
+
 function destroyStuff() --Destroy in-game preloaded sprites.
     destroySprite("menuBG")
     destroySprite("backdrop")
@@ -97,8 +128,5 @@ function destroyStuff() --Destroy in-game preloaded sprites.
     destroySprite("txtWeekTitle")
     destroySprite("rightArrow")
     destroySprite("leftArrow")
-end
-
-function getControl(name)
-    print("lmao")
+    destroySprite("sprDifficulty")
 end

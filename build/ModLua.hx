@@ -316,6 +316,16 @@ class ModLua {
             spr.clipRect = new FlxRect(x, y, sprWidth, sprHeight);
         });
 
+        Lua_helper.add_callback(lua, "spriteExist", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return false;
+            }
+
+            return true;
+        });
+
         Lua_helper.add_callback(lua, "increaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
             var spr:FlxSprite = getSprite(name);
 
