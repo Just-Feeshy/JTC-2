@@ -193,8 +193,8 @@ class StoryMenuState extends MusicBeatState
 			disableControls = value;
 		});
 
-		addCallback("selectWeek", function() {
-			basedWeekChange();
+		addCallback("selectWeekFromLua", function(shouldFlicker:Bool) {
+			basedWeekChange(shouldFlicker);
 		});
 
 		addCallback("changeDifficulty", function(value:Int) {
@@ -340,7 +340,7 @@ class StoryMenuState extends MusicBeatState
 		}
 	}
 
-	function basedWeekChange():Void {
+	function basedWeekChange(flicker:Bool = true):Void {
 		var daSongs:Array<String> = [];
 
 		for(i in 0...Paths.modJSON.weeks.get("week_" + curWeek).week_data.length) {
@@ -367,9 +367,7 @@ class StoryMenuState extends MusicBeatState
 		PlayState.storyWeek = curWeek;
 		PlayState.campaignScore = 0;
 
-		//FlxG.switchState(new InGameOptions("StoryMenuState", PlayState.SONG));
-
-		if(sprDifficulty.exists) {
+		if(sprDifficulty.exists && flicker) {
 			FlxFlicker.flicker(sprDifficulty, 1, 0.06, false, false, function(flick:FlxFlicker) {
 				#if cpp
 				CacheState.loadAndSwitchState(new PlayState());

@@ -113,6 +113,14 @@ class HelperStates extends FlxUIState {
 
 				return false;
 			});
+
+			addCallback("setTransitionIn", function(name:String) {
+				this.transInType = name;
+			});
+
+			addCallback("setTransitionOut", function(name:String) {
+				this.transOutType = name;
+			});
 		}
 		#end
 
@@ -314,7 +322,6 @@ class HelperStates extends FlxUIState {
 
 			_transition.finishCallback = function() {
 				finishedTransition();
-				closeSubState();
 
 				#if USING_LUA
 				_transition.finishCallback = function() {

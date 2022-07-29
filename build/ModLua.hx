@@ -242,6 +242,26 @@ class ModLua {
             spr.setPosition(x, y);
         });
 
+        Lua_helper.add_callback(lua, "setSpriteX", function(name:String, x:Float) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.x = x;
+        });
+
+        Lua_helper.add_callback(lua, "setSpriteY", function(name:String, y:Float) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.y = y;
+        });
+
         Lua_helper.add_callback(lua, "setSpriteAngle", function(name:String, angle:Float) {
             var spr:FlxSprite = getSprite(name);
 

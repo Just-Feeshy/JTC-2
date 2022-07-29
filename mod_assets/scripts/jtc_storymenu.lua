@@ -2,12 +2,13 @@ local tweenCounter = 0
 local yCons = 50
 
 local stopSpam = false
+local selectedWeek = false
 
 function onCreate()
     destroyStuff()
 
     disableRegularInput(true) --Disable regular input so I can make my own
-    setSpritePosition("grpWeekText", 0, windowHeight)
+    setSpritePosition("grpWeekText", 0, windowHeight / 2)
 
     createSprite("fadeBlackSprite")
     makeGraphic("fadeBlackSprite", windowWidth, windowHeight, "0xFF000000")
@@ -31,17 +32,28 @@ function finishedTransitionIn()
 end
 
 function onUpdate(elapsed)
-    if getControl("back") and not stopSpam then
-        switchState("MainMenuState")
-        stopSpam = true
-    end
+    if not selectedWeek then
+        if getControl("back") and not stopSpam then
+            switchState("MainMenuState")
+            stopSpam = true
+        end
 
-    if getControl("up-press") then
-        changeDifficulty(1)
-    end
+        if getControl("accept") and not stopSpam then
+            stopSpam = true
+            selectedWeek = true
 
-    if getControl("down-press") then
-        changeDifficulty(-1)
+            setTransitionOut("void")
+            doTweenX("finishX", "betterDifficulty", windowWidth / 2, 0.3, "backIn")
+            doTweenY("finishY", "grpWeekText", windowHeight / 2, 0.3, "backIn")
+        end
+
+        if getControl("right-press") then
+            changeDifficulty(1)
+        end
+
+        if getControl("left-press") then
+            changeDifficulty(-1)
+        end
     end
 end
 
@@ -56,12 +68,13 @@ function onTweenCompleted(name)
 
             createSprite("betterDifficulty")
             setDifficultySprite()
-            setSpritePosition("betterDifficulty", -45, 50)
+            setSpritePosition("betterDifficulty", windowWidth / 2, 50)
             addSpriteToState("betterDifficulty")
         end
 
         if tweenCounter == 1 then
-            doTweenY("staticGrpTween", "grpWeekText", -100, 0.3, "quadOut")
+            doTweenX("difX", "betterDifficulty", -45, 0.3, "quadOut")
+            doTweenY("staticGrpTween", "grpWeekText", -45, 0.3, "quadOut")
             doTweenAlpha("staticTextTween", "staticText", 1, 0.3, "quadOut")
 
             createSprite("lightningIcon")
@@ -99,10 +112,16 @@ function onTweenCompleted(name)
     if name == "lightningShake2" then
         doTweenAngle("lightningNormal", "lightningIcon", 0, 0.1, "quadOut")
     end
+
+    if name == "finishY" then
+        selectWeekFromLua(false)
+    end
 end
 
 function changedDifficulty()
     setDifficultySprite()
+    setSpriteY("betterDifficulty", 60)
+    doTweenY("difficultyTween", "betterDifficulty", 50, 0.11, "quadOut")
 end
 
 function setDifficultySprite()
