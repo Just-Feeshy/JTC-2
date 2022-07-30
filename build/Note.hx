@@ -504,8 +504,10 @@ class Note extends feshixl.FeshSprite {
 		public function setNoteAlpha(value:Float, fadeIn:Int):Void {
 			var fadeValue:Float = 1;
 
-			if(Main.feeshmoraModifiers && DefaultHandler.modifiers.fadeInNotes.enabled) {
-				fadeValue = getNoteStrumPosition(fadeIn);
+			if(DefaultHandler.modifiers != null) {
+				if(Main.feeshmoraModifiers && DefaultHandler.modifiers.fadeInNotes.enabled) {
+					fadeValue = getNoteStrumPosition(fadeIn);
+				}
 			}
 
 			if(hasCustomAddon == null) {

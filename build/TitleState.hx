@@ -43,8 +43,6 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
-		FlxG.save.bind('funkin', 'ninjamuffin99');
-
 		credits.sort(sortByShit);
 
 		/**
@@ -61,8 +59,6 @@ class TitleState extends MusicBeatState
 		var ng:NGio = new NGio(APIStuff.API, APIStuff.EncKey);
 		trace('NEWGROUNDS LOL');
 		#end
-
-		Highscore.load();
 		
 		#if FREEPLAY
 		FlxG.switchState(new FreeplayState());

@@ -19,6 +19,7 @@ import betterShit.BetterCams;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
+import feshixl.math.FeshMath;
 import lime.utils.Assets;
 import haxe.Json;
 
@@ -64,6 +65,7 @@ class FreeplayState extends MusicBeatState
 	var curPlaying:Bool = false;
 
 	var giveTick:Float = 0;
+	var tickScore:Float = 0;
 	private var iconArray:Array<HealthIcon> = [];
 
 	private var menuBG:MenuBackground;
@@ -191,18 +193,19 @@ class FreeplayState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		if (FlxG.sound.music.volume < 0.7)
-		{
+		if (FlxG.sound.music.volume < 0.7) {
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
 		}
 
-		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, 0.4));
+		if(FeshMath.clamp(tickScore, 0, 1) < 1) {
+			tickScore += elapsed * 10;
+		}else {
+			tickScore = 1;
+		}
 
-		if (Math.abs(lerpScore - intendedScore) <= 10)
-			lerpScore = intendedScore;
-
+		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, tickScore));
 		scoreText.text = "PERSONAL BEST:" + lerpScore;
-
+		
 		var upP = controls.UP_P;
 		var downP = controls.DOWN_P;
 		var accepted = controls.ACCEPT;
@@ -263,8 +266,8 @@ class FreeplayState extends MusicBeatState
 		curDifficulty += change;
 
 		if (curDifficulty < 0)
-			curDifficulty = 2;
-		if (curDifficulty > 2)
+			curDifficulty = CoolUtil.difficultyArray.length - 1;
+		if (curDifficulty > CoolUtil.difficultyArray.length - 1)
 			curDifficulty = 0;
 
 		#if !switch

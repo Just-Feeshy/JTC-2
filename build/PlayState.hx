@@ -915,7 +915,7 @@ class PlayState extends MusicBeatState
 				return DefaultHandler.modifiers.singDrain.enabled;
 			case "fadein notes":
 				return DefaultHandler.modifiers.fadeInNotes.enabled;
-			case "safe balls":
+			case "blue balls":
 				return DefaultHandler.modifiers.safeBalls.enabled;
 			case "blind effect":
 				return DefaultHandler.modifiers.blindEffect.enabled;
@@ -1644,8 +1644,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (FlxG.keys.justPressed.SEVEN)
-		{
+		if(FlxG.keys.justPressed.SEVEN) {
 			DefaultHandler.kill();
 
 			FlxG.switchState(new ChartingState());
@@ -1654,6 +1653,13 @@ class PlayState extends MusicBeatState
 			DiscordClient.changePresence("Chart Editor", null, null, true);
 			#end
 		}
+
+		#if (debug || USING_MOD_DEBUG)
+		if(FlxG.keys.justPressed.SIX) {
+			songScore += 1000;
+			whenSongFinished();
+		}
+		#end
 
 		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
 		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
@@ -1690,7 +1696,7 @@ class PlayState extends MusicBeatState
 		else
 			iconP2.animation.curAnim.curFrame = 0;
 
-		#if debug
+		#if !(debug || USING_MOD_DEBUG)
 		if (FlxG.keys.justPressed.EIGHT)
 			FlxG.switchState(new AnimationDebug(SONG.player2));
 		#end
@@ -1864,9 +1870,9 @@ class PlayState extends MusicBeatState
 			trace("RESET = True");
 		}
 
-		if (health <= 0 && (!modifierCheckList('safe balls') && Main.feeshmoraModifiers || !Main.feeshmoraModifiers)) {
+		if (health <= 0 && (!modifierCheckList('blue balls') && Main.feeshmoraModifiers || !Main.feeshmoraModifiers)) {
 			gameOverScreen();
-		}else if(health <= 0 && (modifierCheckList('safe balls') && Main.feeshmoraModifiers)) {
+		}else if(health <= 0 && (modifierCheckList('blue balls') && Main.feeshmoraModifiers)) {
 			health = 0;
 		}
 
@@ -2230,41 +2236,20 @@ class PlayState extends MusicBeatState
 	{
 		DefaultHandler.kill();
 
-		if (SONG.validScore && !modifierCheckList('safe balls'))
-		{
+		if (SONG.validScore && !modifierCheckList('blue balls')) {
 			#if !switch
 			Highscore.saveScore(SONG.song, songScore, storyDifficulty);
 			#end
 		}
 
-		if (isStoryMode)
-		{
+		if (isStoryMode) {
 			campaignScore += songScore;
-
 			storyPlaylist.remove(storyPlaylist[0]);
 
-			if (storyPlaylist.length <= 0)
-			{
+			if (storyPlaylist.length <= 0) {
 				FlxG.sound.playMusic(Paths.music('Main Menu'));
 
 				FlxG.switchState(new StoryMenuState());
-
-				// if ()
-
-				//Make your own!
-
-				/**
-				StoryMenuState.weekUnlocked[Std.int(Math.min(storyWeek + 1, StoryMenuState.weekUnlocked.length - 1))] = true;
-
-				if (SONG.validScore)
-				{
-					NGio.unlockMedal(60961);
-					Highscore.saveWeekScore(storyWeek, campaignScore, storyDifficulty);
-				}
-
-				FlxG.save.data.weekUnlocked = StoryMenuState.weekUnlocked;
-				FlxG.save.flush();
-				**/
 			}
 			else
 			{
@@ -2274,8 +2259,7 @@ class PlayState extends MusicBeatState
 				trace('LOADING NEXT SONG');
 				trace(PlayState.storyPlaylist[0].toLowerCase() + difficulty);
 
-				if (SONG.song.toLowerCase() == 'eggnog')
-				{
+				if (SONG.song.toLowerCase() == 'eggnog') {
 					var blackShit:FlxSprite = new FlxSprite(-FlxG.width * FlxG.camera.zoom,
 						-FlxG.height * FlxG.camera.zoom).makeGraphic(FlxG.width * 3, FlxG.height * 3, FlxColor.BLACK);
 					blackShit.scrollFactor.set();
@@ -2286,8 +2270,6 @@ class PlayState extends MusicBeatState
 					FlxG.sound.play(Paths.sound('Lights_Shut_off'));
 				}
 
-				FlxTransitionableState.skipNextTransIn = true;
-				FlxTransitionableState.skipNextTransOut = true;
 				prevCamFollow = camFollow;
 
 				PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + "-hard", PlayState.storyPlaylist[0]);

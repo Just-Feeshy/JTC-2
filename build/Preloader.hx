@@ -47,6 +47,7 @@ class Preloader extends FlxState {
             fpsMulti = 1;
 
         SaveData.saveClient();
+        Highscore.load();
 
         Main.trueFramerate = FlxG.save.data.lowFps;
         Lib.current.stage.frameRate = Main.trueFramerate * fpsMulti;

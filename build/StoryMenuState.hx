@@ -18,6 +18,7 @@ import flixel.tweens.FlxEase;
 import flixel.util.FlxColor;
 import flixel.effects.FlxFlicker;
 import lime.net.curl.CURLCode;
+import feshixl.math.FeshMath;
 
 import Feeshmora;
 
@@ -25,6 +26,8 @@ using StringTools;
 
 class StoryMenuState extends MusicBeatState
 {
+	var tickScore:Float = 0;
+
 	var scoreText:FlxText;
 
 	var curDifficulty:Int = 1;
@@ -224,7 +227,13 @@ class StoryMenuState extends MusicBeatState
 		var accept:Bool = (disableControls ? false : controls.ACCEPT);
 		var back:Bool = (disableControls ? false : controls.BACK);
 
-		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, 0.5));
+		if(FeshMath.clamp(tickScore, 0, 1) < 1) {
+			tickScore += elapsed * 10;
+		}else {
+			tickScore = 1;
+		}
+
+		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, tickScore));
 		scoreText.text = "WEEK SCORE:" + lerpScore;
 
 		if(txtWeekTitle.exists) {

@@ -2,8 +2,7 @@ package;
 
 import flixel.FlxG;
 
-class Highscore
-{
+class Highscore {
 	#if (haxe >= "4.0.0")
 	public static var songScores:Map<String, Int> = new Map();
 	#else
@@ -11,23 +10,21 @@ class Highscore
 	#end
 
 
-	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0):Void
-	{
+	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0):Void {
 		var daSong:String = formatSong(song, diff);
-
 
 		#if !switch
 		NGio.postScore(score, song);
 		#end
 
-
-		if (songScores.exists(daSong))
-		{
-			if (songScores.get(daSong) < score)
+		if (songScores.exists(daSong)) {
+			if (songScores.get(daSong) < score) {
 				setScore(daSong, score);
+			}
 		}
-		else
+		else {
 			setScore(daSong, score);
+		}
 	}
 
 	public static function saveWeekScore(week:Int = 1, score:Int = 0, ?diff:Int = 0):Void
@@ -60,26 +57,25 @@ class Highscore
 		FlxG.save.flush();
 	}
 
-	public static function formatSong(song:String, diff:Int):String
-	{
-		var daSong:String = song;
+	public static function formatSong(song:String, diff:Int):String {
+		var daDif:String = "-" + CoolUtil.difficultyArray[diff].toLowerCase();
 
-		if (diff == 0)
-			daSong += '-easy';
-		else if (diff == 2)
-			daSong += '-hard';
+		if(CoolUtil.difficultyArray[diff].toLowerCase() == "normal") {
+			daDif = "";
+		}
 
-		
-
-		return daSong;
+		return song.toLowerCase() + daDif;
 	}
 
-	public static function getScore(song:String, diff:Int):Int
-	{
-		if (!songScores.exists(formatSong(song, diff)))
-			setScore(formatSong(song, diff), 0);
+	public static function getScore(song:String, diff:Int):Int {
+		var getSong:String = formatSong(song, diff);
 
-		return songScores.get(formatSong(song, diff));
+		trace(songScores.get(getSong) + " " + getSong);
+
+		if (!songScores.exists(getSong))
+			setScore(getSong, 0);
+
+		return songScores.get(getSong);
 	}
 
 	public static function getWeekScore(week:Int, diff:Int):Int
