@@ -32,6 +32,14 @@
         }
     },
 
+    "song_util": {
+        "difficulties": [
+            "EASY",
+            "NORMAL",
+            "HARD"
+        ]
+    },
+
     "background_images": [
         "space"
     ],

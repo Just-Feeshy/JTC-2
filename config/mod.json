@@ -27,6 +27,14 @@
         }
     },
 
+    "song_util": {
+        "difficulties": [
+            "EASY",
+            "NORMAL",
+            "HARD"
+        ]
+    },
+
     "background_images": [
         "loading1",
         "loading2",

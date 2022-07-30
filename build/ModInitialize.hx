@@ -9,11 +9,11 @@ typedef ConfigDef = {
 
 	var mod:Mod_Info;
     var background_images:Array<String>;
+    var song_util:SongUtils;
 	var main_menu:Main_Menu;
     var title_menu:Title_Menu;
 
     var custom_notes:Array<String>;
-    
     var weeks:Map<String, WeekInfo>;
 };
 
@@ -34,6 +34,10 @@ typedef Mod_Info = {
     var stages:Array<String>;
     var events:Array<ConfigEvent>;
     var discord_rpc:DiscordRPC;
+}
+
+typedef SongUtils = {
+    var difficulties:Array<String>;
 }
 
 typedef ConfigEvent = {

@@ -2620,10 +2620,12 @@ class PlayState extends MusicBeatState
 				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
 				songScore -= 10;
 			}else {
-				if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract))
+				if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 					songScore -= 30;
-				else
+				}else {
+					callLua("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
 					songScore -= 10;
+				}
 			}
 
 			boyfriend.stunned = true;
@@ -2636,8 +2638,6 @@ class PlayState extends MusicBeatState
 
 			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
 			boyfriend.playAnim(singAnims[direction] + "miss", true);
-
-			callLua("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
 		}
 	}
 

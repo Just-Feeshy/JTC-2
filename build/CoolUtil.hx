@@ -9,7 +9,7 @@ using StringTools;
 
 class CoolUtil
 {
-	public static var difficultyArray:Array<String> = ['EASY', "NORMAL", "HARD"];
+	public static var difficultyArray:Array<String> = Paths.modJSON.song_util.difficulties;
 
 	public static function difficultyString():String
 	{
