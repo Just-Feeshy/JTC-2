@@ -5,6 +5,7 @@ import flixel.FlxCamera;
 import flixel.FlxState;
 import flixel.FlxSubState;
 import flixel.FlxSprite;
+import flixel.text.FlxText;
 import flixel.graphics.FlxGraphic;
 import flixel.addons.ui.FlxUIState;
 import flixel.util.FlxDestroyUtil;
@@ -27,6 +28,7 @@ import Std.is as isOfType;
 * Also extend on the main game/mod.
 */
 class HelperStates extends FlxUIState {
+	public var modifiableTexts:Map<String, FlxText>;
 	public var modifiableSprites:Map<String, FlxSprite>;
 	public var modifiableCameras:Map<String, FlxCamera>;
 
@@ -46,6 +48,7 @@ class HelperStates extends FlxUIState {
 		return PlayerSettings.player1.controls;
 
 	public function new(?transInType:String, ?transOutType:String) {
+		modifiableTexts = new Map<String, FlxText>();
 		modifiableSprites = new Map<String, FlxSprite>();
 		modifiableCameras = new Map<String, FlxCamera>();
 
@@ -257,6 +260,19 @@ class HelperStates extends FlxUIState {
 
             modifiableCameras.clear();
             modifiableCameras = null;
+        }
+
+		if(modifiableTexts != null) {
+            for(k in modifiableTexts.keys()) {
+                var spr:FlxText = modifiableTexts.get(k);
+
+                if(spr != null) {
+                    spr.destroy();
+                }
+            }
+
+            modifiableTexts.clear();
+            modifiableTexts = null;
         }
 	}
 

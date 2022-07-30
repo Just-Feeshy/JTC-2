@@ -14,6 +14,7 @@ import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxColor;
 import flixel.math.FlxRect;
+import flixel.text.FlxText;
 import lime.ui.Window;
 import feshixl.shaders.FeshShader;
 
@@ -34,6 +35,7 @@ class ModLua {
 
     public var luaScript(default, null):String;
 
+    public var luaTexts(default, null):Map<String, FlxText> = new Map<String, FlxText>();
     public var luaSprites(default, null):Map<String, FlxSprite> = new Map<String, FlxSprite>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
@@ -272,6 +274,20 @@ class ModLua {
             spr.angle = angle;
         });
 
+        Lua_helper.add_callback(lua, "setSpriteColor", function(name:String, colorStr:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                var color:Int = Std.parseInt(colorStr);
+
+                if(!colorStr.startsWith('0x')) {
+                    color = Std.parseInt('0xff' + colorStr);
+                }
+
+                spr.color = color;
+            }
+        });
+
         Lua_helper.add_callback(lua, "setSpriteAlpha", function(name:String, alpha:Float) {
             var spr:FlxSprite = getSprite(name);
 
@@ -318,6 +334,26 @@ class ModLua {
 
             if(spr != null) {
                 return spr.height;
+            }
+
+            return 0;
+        });
+
+        Lua_helper.add_callback(lua, "getMidpointX", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                return spr.getMidpoint().x;
+            }
+
+            return 0;
+        });
+
+        Lua_helper.add_callback(lua, "getMidpointY", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                return spr.getMidpoint().y;
             }
 
             return 0;
@@ -421,6 +457,36 @@ class ModLua {
             if(luaSprites.exists(name)) {
                 luaSprites.remove(name);
             }
+        });
+
+        Lua_helper.add_callback(lua, "setText", function(name:String, text:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            txt.text = text;
+        });
+
+        Lua_helper.add_callback(lua, "setTextFont", function(name:String, font:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            txt.font = Paths.font(font);
+        });
+
+        Lua_helper.add_callback(lua, "setTextSize", function(name:String, size:Int) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            txt.size = size;
         });
 
         Lua_helper.add_callback(lua, "removeSpriteFromState", function(name:String) {
@@ -708,19 +774,42 @@ class ModLua {
                 spr = curState.modifiableSprites.get(name);
         }
 
+        if(spr != null) {
+            return spr;
+        }
+
+        spr = luaTexts.get(name);
+
+        if(spr == null && curState is HelperStates) {
+            if(curState.modifiableTexts.exists(name))
+                spr = curState.modifiableTexts.get(name);
+        }
+
         return spr;
     }
 
     public function getCamera(name:String):FlxCamera {
-        var spr:FlxCamera = luaCameras.get(name);
+        var cam:FlxCamera = luaCameras.get(name);
         var curState = cast FlxG.state;
 
-        if(spr == null && curState is HelperStates) {
+        if(cam == null && curState is HelperStates) {
             if(curState.modifiableCameras.exists(name))
-                spr = curState.modifiableCameras.get(name);
+                cam = curState.modifiableCameras.get(name);
         }
 
-        return spr;
+        return cam;
+    }
+
+    public function getText(name:String):FlxText {
+        var text:FlxText = luaTexts.get(name);
+        var curState = cast FlxG.state;
+
+        if(text == null && curState is HelperStates) {
+            if(curState.modifiableTexts.exists(name))
+                text = curState.modifiableTexts.get(name);
+        }
+
+        return text;
     }
 
     public function close():Void {
@@ -767,6 +856,19 @@ class ModLua {
 
             luaTweens.clear();
             luaTweens = null;
+        }
+
+        if(luaTexts != null) {
+            for(k in luaTexts.keys()) {
+                var text:FlxText = luaTexts.get(k);
+
+                if(text != null) {
+                    text.destroy();
+                }
+            }
+
+            luaTexts.clear();
+            luaTexts = null;
         }
 
         Lua.close(lua);

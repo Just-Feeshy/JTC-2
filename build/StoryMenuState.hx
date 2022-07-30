@@ -27,25 +27,19 @@ using StringTools;
 class StoryMenuState extends MusicBeatState
 {
 	var tickScore:Float = 0;
-
 	var scoreText:FlxText;
-
 	var curDifficulty:Int = 1;
-
 	var chooseDifficulty:Bool;
-
 	var txtWeekTitle:FlxText;
-
 	var curWeek:Int = 0;
-
 	var txtTracklist:FlxText;
-
 	var grpWeekText:FlxSpriteGroup;
-
 	var grpLocks:FlxTypedGroup<FlxSprite>;
 
 	var menuBG:MenuBackground;
 	var extraStuff:FlxBackdrop;
+
+	var scoreName:String;
 
 	var difficultySelectors:FlxGroup;
 	var sprDifficulty:FlxSprite;
@@ -77,7 +71,9 @@ class StoryMenuState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		scoreText = new FlxText(10, 10, 0, "SCORE: 49324858", 36);
+		scoreName = "WEEK SCORE:";
+
+		scoreText = new FlxText(10, 10, 0, "", 36);
 		scoreText.setFormat("VCR OSD Mono", 32);
 
 		txtWeekTitle = new FlxText(FlxG.width * 0.7, 10, 0, "", 32);
@@ -182,9 +178,11 @@ class StoryMenuState extends MusicBeatState
 			modifiableSprites.set("rightArrow", rightArrow);
 			modifiableSprites.set("leftArrow", leftArrow);
 			modifiableSprites.set("sprDifficulty", sprDifficulty);
-			modifiableSprites.set("txtTracklist", txtTracklist);
-			modifiableSprites.set("txtWeekTitle", txtWeekTitle);
 			modifiableSprites.set("grpWeekText", grpWeekText);
+
+			modifiableTexts.set("scoreText", scoreText);
+			modifiableTexts.set("txtTracklist", txtTracklist);
+			modifiableTexts.set("txtWeekTitle", txtWeekTitle);
 		}
 		#end
 
@@ -202,6 +200,10 @@ class StoryMenuState extends MusicBeatState
 
 		addCallback("changeDifficulty", function(value:Int) {
 			changeDifficulty(value);
+		});
+
+		addCallback("setDisplayScoreText", function(name:String) {
+			scoreName = name;
 		});
 
 		setLua("curDifficulty", curDifficulty);
@@ -234,7 +236,7 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, tickScore));
-		scoreText.text = "WEEK SCORE:" + lerpScore;
+		scoreText.text = scoreName + lerpScore;
 
 		if(txtWeekTitle.exists) {
 			txtWeekTitle.text = Paths.modJSON.weeks.get("week_" + curWeek).week_name.toUpperCase();

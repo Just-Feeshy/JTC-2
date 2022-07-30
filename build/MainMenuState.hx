@@ -27,7 +27,6 @@ import flixel.math.FlxPoint;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
-import io.newgrounds.NG;
 import lime.app.Application;
 import betterShit.BetterCams;
 

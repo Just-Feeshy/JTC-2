@@ -9,19 +9,29 @@ function onCreate()
 
     disableRegularInput(true) --Disable regular input so I can make my own
     setSpritePosition("grpWeekText", 0, windowHeight / 2)
+    
+    setDisplayScoreText("")
+    setTextFont("scoreText", "PhantomMuff.ttf")
+    setSpriteColor("scoreText", "0x302650")
+    setTextSize("scoreText", 48)
+    removeSpriteFromState("scoreText")
 
     createSprite("fadeBlackSprite")
     makeGraphic("fadeBlackSprite", windowWidth, windowHeight, "0xFF000000")
     insertSpriteToState(0, "fadeBlackSprite")
+
+    createSprite("trackList")
+    loadGraphic("trackList", "menu/story-week-track-list")
+    insertSpriteToState(0, "trackList")
 
     createSprite("cheese")
     loadGraphic("cheese", "menu/story-mode-cheese")
     insertSpriteToState(0, "cheese")
 
     createSprite("staticText")
-    loadGraphic("staticText", "menu/story-week-static-text");
-    setSpriteAlpha("staticText", 0);
-    addSpriteToState("staticText");
+    loadGraphic("staticText", "menu/story-week-static-text")
+    setSpriteAlpha("staticText", 0)
+    addSpriteToState("staticText")
 
     createSprite("purple-bg")
     loadGraphic("purple-bg", "menu/purple-bg")
@@ -54,6 +64,8 @@ function onUpdate(elapsed)
         if getControl("left-press") then
             changeDifficulty(-1)
         end
+
+        setSpritePosition("scoreText", getMidpointX("bubble") - 50, getMidpointY("bubble") - 25)
     end
 end
 
@@ -94,6 +106,13 @@ function onTweenCompleted(name)
             addSpriteToState("bfIcon")
             setSpritePosition("bfIcon", windowWidth + getSpriteWidth("bfIcon"), getScreenCenter("bfIcon", "y") - 75 + yCons)
             doTweenX("bfTween", "bfIcon", getScreenCenter("bfIcon", "x") + getSpriteWidth("bfIcon") - 60, 0.45, "elasticout")
+
+            createSprite("bubble")
+            loadGraphic("bubble", "menu/bubble-story")
+            setSpritePosition("bubble", -getSpriteWidth("bubble"), getScreenCenter("bubble", "y") - (getSpriteHeight("bubble") / 1.5) + yCons)
+            addSpriteToState("bubble")
+            doTweenX("bubbleTween", "bubble", 10, 0.45, "elasticout")
+            addSpriteToState("scoreText")
 
             tweenCounter = 0
         end

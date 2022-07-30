@@ -410,7 +410,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 10, "Gamma", SaveType.GAMMA, function(option:Options, pressed:Bool) {
+							new Options(0, 10, "Gamma Correction", SaveType.GAMMA, function(option:Options, pressed:Bool) {
 								option.ID = 1;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
