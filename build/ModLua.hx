@@ -15,6 +15,7 @@ import flixel.tweens.FlxEase;
 import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.text.FlxText;
+import flixel.system.FlxSound;
 import lime.ui.Window;
 import feshixl.shaders.FeshShader;
 
@@ -40,6 +41,7 @@ class ModLua {
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
     public var luaTweens(default, null):Map<String, FlxTween> = new Map<String, FlxTween>();
+    public var luaSounds(default, null):Map<String, FlxSound> = new Map<String, FlxSound>();
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
@@ -503,6 +505,7 @@ class ModLua {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
+                cancelTween(name);
 				luaTweens.set(name, FlxTween.tween(obj, {x: value}, duration, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -516,6 +519,7 @@ class ModLua {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
+                cancelTween(name);
 				luaTweens.set(name, FlxTween.tween(obj, {y: value}, duration, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -529,6 +533,7 @@ class ModLua {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
+                cancelTween(name);
 				luaTweens.set(name, FlxTween.tween(obj, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -542,6 +547,7 @@ class ModLua {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
+                cancelTween(name);
 				luaTweens.set(name, FlxTween.tween(obj, {alpha: value}, duration, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -555,6 +561,7 @@ class ModLua {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
+                cancelTween(name);
 				luaTweens.set(name, FlxTween.tween(obj, {zoom: value}, duration, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -576,6 +583,7 @@ class ModLua {
                     color = Std.parseInt('0xff' + colorStr);
                 }
                 
+                cancelTween(name);
                 luaTweens.set(name, FlxTween.color(obj, duration, curColor, color, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -590,6 +598,7 @@ class ModLua {
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
+                cancelTween(name);
                 luaTweens.set(name, FlxTween.tween(frameHandler, {x: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -604,6 +613,7 @@ class ModLua {
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
+                cancelTween(name);
                 luaTweens.set(name, FlxTween.tween(frameHandler, {y: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -618,6 +628,7 @@ class ModLua {
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
+                cancelTween(name);
                 luaTweens.set(name, FlxTween.tween(frameHandler, {width: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -632,6 +643,7 @@ class ModLua {
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
             if(obj != null) {
+                cancelTween(name);
                 luaTweens.set(name, FlxTween.tween(frameHandler, {height: value}, duration, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
@@ -644,6 +656,22 @@ class ModLua {
         Lua_helper.add_callback(lua, "cancelTween", function(name:String) {
 			cancelTween(name);
 		});
+
+        /**
+        * Sound WIP.
+        */
+        Lua_helper.add_callback(lua, "playSound", function(sound:String, volume:Float = 1, ?tag:String = "") {
+            if(tag != null && tag.trim() != "") {
+                tag = tag.replace('.', '');
+                cancelSound(tag);
+
+                luaSounds.set(tag, FlxG.sound.play(Paths.sound(sound), volume, false, function() {
+                    cancelSound(tag);
+                }));
+            }else {
+                FlxG.sound.play(Paths.sound(sound), volume);
+            }
+        });
 
         Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Int) {
             var cam:FlxCamera = getCamera(name);
@@ -712,9 +740,19 @@ class ModLua {
     }
 
     public function cancelTween(name:String):Void {
-        luaTweens.get(name).cancel();
-        luaTweens.get(name).destroy();
-        luaTweens.remove(name);
+        if(luaTweens.exists(name)) {
+            luaTweens.get(name).cancel();
+            luaTweens.get(name).destroy();
+            luaTweens.remove(name);
+        }
+    }
+
+    public function cancelSound(name:String):Void {
+        if(luaSounds.exists(name)) {
+            luaSounds.get(name).stop();
+            luaSounds.get(name).destroy();
+            luaSounds.remove(name);
+        }
     }
 
     public function addCallback(name:String, method:Dynamic):Void {

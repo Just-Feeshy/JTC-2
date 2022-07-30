@@ -1,5 +1,6 @@
 local tweenCounter = 0
 local yCons = 50
+local tickCounter = 0
 
 local stopSpam = false
 local selectedWeek = false
@@ -44,6 +45,7 @@ end
 function onUpdate(elapsed)
     if not selectedWeek then
         if getControl("back") and not stopSpam then
+            playSound("cancelMenu", 1, "cancel")
             switchState("MainMenuState")
             stopSpam = true
         end
@@ -55,6 +57,7 @@ function onUpdate(elapsed)
             setTransitionOut("void")
             doTweenX("finishX", "betterDifficulty", windowWidth / 2, 0.3, "backIn")
             doTweenY("finishY", "grpWeekText", windowHeight / 2, 0.3, "backIn")
+            playSound("confirmMenu", 1, "confirm")
         end
 
         if getControl("right-press") then
@@ -67,6 +70,9 @@ function onUpdate(elapsed)
 
         setSpritePosition("scoreText", getMidpointX("bubble") - 50, getMidpointY("bubble") - 25)
     end
+
+    setSpriteAngle("grpWeekText", math.sin(tickCounter * (math.pi / 2)) * 6)
+    tickCounter = tickCounter + elapsed
 end
 
 function onTweenCompleted(name)
@@ -86,7 +92,7 @@ function onTweenCompleted(name)
 
         if tweenCounter == 1 then
             doTweenX("difX", "betterDifficulty", -45, 0.3, "quadOut")
-            doTweenY("staticGrpTween", "grpWeekText", -45, 0.3, "quadOut")
+            doTweenY("staticGrpTween", "grpWeekText", -120, 0.3, "quadOut")
             doTweenAlpha("staticTextTween", "staticText", 1, 0.3, "quadOut")
 
             createSprite("lightningIcon")
