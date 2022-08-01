@@ -1,7 +1,7 @@
 #include <hxcpp.h>
 
-#ifndef INCLUDED_JsonParser_32
-#include <JsonParser_32.h>
+#ifndef INCLUDED_JsonParser_41
+#include <JsonParser_41.h>
 #endif
 #ifndef INCLUDED_JsonParser_47
 #include <JsonParser_47.h>
@@ -72,7 +72,7 @@ HXDLIN( 162)		this->value = null();
 
 void JsonParser_47_obj::loadJsonArray(::Array< ::Dynamic> a, ::Dynamic pos,::String variable){
             	HX_GC_STACKFRAME(&_hx_pos_907fde55457cbf85_158_loadJsonArray)
-HXDLIN( 158)		this->value = this->loadJsonArrayValue(a, ::JsonParser_32_obj::__alloc( HX_CTX ,this->errors,this->putils,2)->loadJson_dyn(),variable);
+HXDLIN( 158)		this->value = this->loadJsonArrayValue(a, ::JsonParser_41_obj::__alloc( HX_CTX ,this->errors,this->putils,2)->loadJson_dyn(),variable);
             	}
 
 

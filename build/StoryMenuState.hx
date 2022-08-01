@@ -26,7 +26,6 @@ using StringTools;
 
 class StoryMenuState extends MusicBeatState
 {
-	var tickScore:Float = 0;
 	var scoreText:FlxText;
 	var curDifficulty:Int = 1;
 	var chooseDifficulty:Bool;
@@ -229,13 +228,7 @@ class StoryMenuState extends MusicBeatState
 		var accept:Bool = (disableControls ? false : controls.ACCEPT);
 		var back:Bool = (disableControls ? false : controls.BACK);
 
-		if(FeshMath.clamp(tickScore, 0, 1) < 1) {
-			tickScore += elapsed * 3;
-		}else {
-			tickScore = 1;
-		}
-
-		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, tickScore));
+		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, FeshMath.clamp(elapsed * 25, 0, 1)));
 		scoreText.text = scoreName + lerpScore;
 
 		if(txtWeekTitle.exists) {

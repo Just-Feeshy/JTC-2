@@ -58,8 +58,6 @@ class Highscore {
 	public static function getScore(song:String, diff:Int):Int {
 		var getSong:String = formatSong(song, diff);
 
-		trace(songScores.get(getSong) + " " + getSong);
-
 		if (!songScores.exists(getSong))
 			setScore(getSong, 0);
 

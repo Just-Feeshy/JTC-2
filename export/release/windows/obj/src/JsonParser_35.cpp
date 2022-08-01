@@ -9,11 +9,11 @@
 #ifndef INCLUDED_JsonParser_3
 #include <JsonParser_3.h>
 #endif
+#ifndef INCLUDED_JsonParser_31
+#include <JsonParser_31.h>
+#endif
 #ifndef INCLUDED_JsonParser_35
 #include <JsonParser_35.h>
-#endif
-#ifndef INCLUDED_JsonParser_36
-#include <JsonParser_36.h>
 #endif
 #ifndef INCLUDED_haxe_IMap
 #include <haxe/IMap.h>
@@ -124,7 +124,7 @@ HXLINE( 370)						this->value->__SetField(HX_("name",4b,72,ff,48),null(),::hx::p
 HXLINE( 365)					goto _hx_goto_4;
             				}
             				if (  (_hx_switch_0==HX_("offset",93,97,3f,60)) ){
-HXLINE( 366)					 ::Dynamic v = this->loadObjectField( ::JsonParser_36_obj::__alloc( HX_CTX ,this->errors,this->putils,1)->loadJson_dyn(),field,HX_("offset",93,97,3f,60),assigned, ::Dynamic(this->value->__Field(HX_("offset",93,97,3f,60),::hx::paccDynamic)),pos);
+HXLINE( 366)					 ::Dynamic v = this->loadObjectField( ::JsonParser_31_obj::__alloc( HX_CTX ,this->errors,this->putils,1)->loadJson_dyn(),field,HX_("offset",93,97,3f,60),assigned, ::Dynamic(this->value->__Field(HX_("offset",93,97,3f,60),::hx::paccDynamic)),pos);
 HXLINE( 367)					if (::hx::IsNotNull( v )) {
 HXLINE( 368)						this->value->__SetField(HX_("offset",93,97,3f,60),( (::Array< int >)(v) ),::hx::paccDynamic);
             					}
@@ -163,7 +163,7 @@ HXDLIN( 421)		 ::JsonParser_16 _hx_tmp2 =  ::JsonParser_16_obj::__alloc( HX_CTX 
 HXDLIN( 421)		bool _hx_tmp3 = ( (bool)(_hx_tmp2->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,::hxjsonast::JsonValue_obj::JNull_dyn(), ::hxjsonast::Position_obj::__alloc( HX_CTX ,HX_("",00,00,00,00),0,1)),null())) );
 HXDLIN( 421)		 ::JsonParser_3 _hx_tmp4 =  ::JsonParser_3_obj::__alloc( HX_CTX ,::Array_obj< ::Dynamic>::__new(0),this->putils,0);
 HXDLIN( 421)		::String _hx_tmp5 = ( (::String)(_hx_tmp4->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,::hxjsonast::JsonValue_obj::JNull_dyn(), ::hxjsonast::Position_obj::__alloc( HX_CTX ,HX_("",00,00,00,00),0,1)),null())) );
-HXDLIN( 421)		 ::JsonParser_36 _hx_tmp6 =  ::JsonParser_36_obj::__alloc( HX_CTX ,::Array_obj< ::Dynamic>::__new(0),this->putils,0);
+HXDLIN( 421)		 ::JsonParser_31 _hx_tmp6 =  ::JsonParser_31_obj::__alloc( HX_CTX ,::Array_obj< ::Dynamic>::__new(0),this->putils,0);
 HXDLIN( 421)		::Array< int > _hx_tmp7 = ( (::Array< int >)(_hx_tmp6->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,::hxjsonast::JsonValue_obj::JNull_dyn(), ::hxjsonast::Position_obj::__alloc( HX_CTX ,HX_("",00,00,00,00),0,1)),null())) );
 HXDLIN( 421)		 ::JsonParser_3 _hx_tmp8 =  ::JsonParser_3_obj::__alloc( HX_CTX ,::Array_obj< ::Dynamic>::__new(0),this->putils,0);
 HXLINE( 442)		return  ::Dynamic(::hx::Anon_obj::Create(5)

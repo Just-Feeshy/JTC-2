@@ -13,6 +13,7 @@ class Mod {
         Register.attachLuaToState(MainMenuState, new ModLua(Paths.lua("jtc_menu")));
         Register.attachLuaToState(OptionsMenuState, new ModLua(Paths.lua("modSettings")));
         Register.attachLuaToState(StoryMenuState, new ModLua(Paths.lua("jtc_storymenu")));
+        Register.attachLuaToState(FreeplayState, new ModLua(Paths.lua("jtc_freeplay")));
         Register.implementDialogueToSong("funk-off", DialogueBoxJTC);
         Register.implementDialogueToSong("ping-pong", DialogueBoxJTC);
         Register.implementDialogueToSong("i-am-blue", DialogueBoxJTC);

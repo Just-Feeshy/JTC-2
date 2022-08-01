@@ -104,5 +104,6 @@ class MenuBackground extends FlxSpriteGroup {
     override function destroy():Void {
         super.destroy();
         cleanTween();
+        allTweens = null;
     }
 }

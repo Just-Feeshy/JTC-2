@@ -76,43 +76,41 @@ class HelperStates extends FlxUIState {
 			HelperStates.getLua(Type.getClass(this)).execute();
 
 			addCallback("getControl", function(control:String) {
-				switch(control.toLowerCase()) {
-                    case Action.UP: return controls.UP;
-                    case Action.LEFT: return controls.LEFT;
-                    case Action.RIGHT: return controls.RIGHT;
-                    case Action.SPACE: return controls.SPACE;
-                    case Action.DOWN: return controls.DOWN;
-                    case Action.UP_P: return controls.UP_P;
-                    case Action.LEFT_P: return controls.LEFT_P;
-                    case Action.RIGHT_P: return controls.RIGHT_P;
-                    case Action.SPACE_P: return controls.SPACE_P;
-                    case Action.DOWN_P: return controls.DOWN_P;
-                    case Action.UP_R: return controls.UP_R;
-                    case Action.LEFT_R: return controls.LEFT_R;
-                    case Action.RIGHT_R: return controls.RIGHT_R;
-                    case Action.SPACE_R: return controls.SPACE_R;
-                    case Action.DOWN_R: return controls.DOWN_R;
-                    case Action.GAME_UP: return controls.GAME_UP;
-                    case Action.GAME_LEFT: return controls.GAME_LEFT;
-                    case Action.GAME_RIGHT: return controls.GAME_RIGHT;
-                    case Action.GAME_SPACE: return controls.GAME_SPACE;
-                    case Action.GAME_DOWN: return controls.GAME_DOWN;
-                    case Action.GAME_UP_P: return controls.GAME_UP_P;
-                    case Action.GAME_LEFT_P: return controls.GAME_LEFT_P;
-                    case Action.GAME_RIGHT_P: return controls.GAME_RIGHT_P;
-                    case Action.GAME_SPACE_P: return controls.GAME_SPACE_P;
-                    case Action.GAME_DOWN_P: return controls.GAME_DOWN_P;
-                    case Action.GAME_UP_R: return controls.GAME_UP_R;
-                    case Action.GAME_LEFT_R: return controls.GAME_LEFT_R;
-                    case Action.GAME_RIGHT_R: return controls.GAME_RIGHT_R;
-                    case Action.GAME_SPACE_R: return controls.GAME_SPACE_R;
-                    case Action.GAME_DOWN_R: return controls.GAME_DOWN_R;
-                    case Action.ACCEPT: return controls.ACCEPT;
-                    case Action.BACK: return controls.BACK;
-                    case Action.PAUSE: return controls.PAUSE;
-                    case Action.RESET: return controls.RESET;
-                    case Action.CHEAT: return controls.CHEAT;
-                }
+				if(control == Action.UP) {return controls.UP;}
+				if(control == Action.LEFT) {return controls.LEFT;}
+				if(control == Action.RIGHT) {return controls.RIGHT;}
+				if(control == Action.SPACE) {return controls.SPACE;}
+				if(control == Action.DOWN) {return controls.DOWN;}
+				if(control == Action.UP_P) {return controls.UP_P;}
+				if(control == Action.LEFT_P) {return controls.LEFT_P;}
+				if(control == Action.RIGHT_P) {return controls.RIGHT_P;}
+				if(control == Action.SPACE_P) {return controls.SPACE_P;}
+				if(control == Action.DOWN_P) {return controls.DOWN_P;}
+				if(control == Action.UP_R) {return controls.UP_R;}
+				if(control == Action.LEFT_R) {return controls.LEFT_R;}
+				if(control == Action.RIGHT_R) {return controls.RIGHT_R;}
+				if(control == Action.SPACE_R) {return controls.SPACE_R;}
+				if(control == Action.DOWN_R) {return controls.DOWN_R;}
+				if(control == Action.GAME_UP) {return controls.GAME_UP;}
+				if(control == Action.GAME_LEFT) {return controls.GAME_LEFT;}
+				if(control == Action.GAME_RIGHT) {return controls.GAME_RIGHT;}
+				if(control == Action.GAME_SPACE) {return controls.GAME_SPACE;}
+				if(control == Action.GAME_DOWN) {return controls.GAME_DOWN;}
+				if(control == Action.GAME_UP_P) {return controls.GAME_UP_P;}
+				if(control == Action.GAME_LEFT_P) {return controls.GAME_LEFT_P;}
+				if(control == Action.GAME_RIGHT_P) {return controls.GAME_RIGHT_P;}
+				if(control == Action.GAME_SPACE_P) {return controls.GAME_SPACE_P;}
+				if(control == Action.GAME_DOWN_P) {return controls.GAME_DOWN_P;}
+				if(control == Action.GAME_UP_R) {return controls.GAME_UP_R;}
+				if(control == Action.GAME_LEFT_R) {return controls.GAME_LEFT_R;}
+				if(control == Action.GAME_RIGHT_R) {return controls.GAME_RIGHT_R;}
+				if(control == Action.GAME_SPACE_R) {return controls.GAME_SPACE_R;}
+				if(control == Action.GAME_DOWN_R) {return controls.GAME_DOWN_R;}
+				if(control == Action.ACCEPT) {return controls.ACCEPT;}
+				if(control == Action.BACK) {return controls.BACK;}
+				if(control == Action.PAUSE) {return controls.PAUSE;}
+				if(control == Action.RESET) {return controls.RESET;}
+				if(control == Action.CHEAT) {return controls.CHEAT;}
 
 				return false;
 			});

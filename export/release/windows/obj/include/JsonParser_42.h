@@ -9,9 +9,7 @@
 #include <json2object/reader/BaseParser.h>
 #endif
 HX_DECLARE_CLASS0(JsonParser_42)
-HX_DECLARE_CLASS1(haxe,IMap)
-HX_DECLARE_CLASS2(haxe,ds,StringMap)
-HX_DECLARE_CLASS1(hxjsonast,JObjectField)
+HX_DECLARE_CLASS1(hxjsonast,Json)
 HX_DECLARE_CLASS1(json2object,Error)
 HX_DECLARE_CLASS1(json2object,PositionUtils)
 HX_DECLARE_CLASS2(json2object,reader,BaseParser)
@@ -50,9 +48,9 @@ class HXCPP_CLASS_ATTRIBUTES JsonParser_42_obj : public  ::json2object::reader::
 
 		void loadJsonNull( ::Dynamic pos,::String variable);
 
-		void loadJsonObject(::Array< ::Dynamic> o, ::Dynamic pos,::String variable);
+		void loadJsonArray(::Array< ::Dynamic> a, ::Dynamic pos,::String variable);
 
-		 ::haxe::ds::StringMap getAuto();
+		::Array< ::Dynamic> getAuto();
 		::Dynamic getAuto_dyn();
 
 };

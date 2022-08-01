@@ -65,7 +65,6 @@ class FreeplayState extends MusicBeatState
 	var curPlaying:Bool = false;
 
 	var giveTick:Float = 0;
-	var tickScore:Float = 0;
 	private var iconArray:Array<HealthIcon> = [];
 
 	private var menuBG:MenuBackground;
@@ -181,6 +180,12 @@ class FreeplayState extends MusicBeatState
 
 		var swag:Alphabet = new Alphabet(1, 0, "swag");
 
+		#if USING_LUA
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			modifiableSprites.set("menuBG", menuBG);
+		}
+		#end
+
 		super.create();
 	}
 
@@ -197,13 +202,7 @@ class FreeplayState extends MusicBeatState
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
 		}
 
-		if(FeshMath.clamp(tickScore, 0, 1) < 1) {
-			tickScore += elapsed * 3;
-		}else {
-			tickScore = 1;
-		}
-
-		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, tickScore));
+		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, FeshMath.clamp(elapsed * 25, 0, 1)));
 		scoreText.text = "PERSONAL BEST:" + lerpScore;
 		
 		var upP = controls.UP_P;
@@ -300,7 +299,9 @@ class FreeplayState extends MusicBeatState
 		if (curSelected >= songs.length)
 			curSelected = 0;
 
-		menuBG.changeBackground(songs[curSelected].week, change);
+		if(menuBG.exists) {
+			menuBG.changeBackground(songs[curSelected].week, change);
+		}
 
 		// selector.y = (70 * curSelected) + 30;
 
