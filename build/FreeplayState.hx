@@ -198,7 +198,7 @@ class FreeplayState extends MusicBeatState
 		}
 
 		if(FeshMath.clamp(tickScore, 0, 1) < 1) {
-			tickScore += elapsed * 10;
+			tickScore += elapsed * 3;
 		}else {
 			tickScore = 1;
 		}

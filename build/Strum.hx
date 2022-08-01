@@ -2,7 +2,6 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
 
 class Strum extends feshixl.FeshSprite {

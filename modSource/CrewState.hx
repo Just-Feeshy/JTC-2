@@ -76,7 +76,7 @@ class CrewState extends MusicBeatState {
         }
     }
 
-    function changeDev(change:Int = 0) {
+    function changeDev(change:Int = 0):Void {
         curSelected += change;
 
         if (curSelected < 0)
@@ -95,7 +95,7 @@ class CrewState extends MusicBeatState {
         });
     }
 
-    function cleanTween() {
+    function cleanTween():Void {
         if (allTweens != null) {
             var index:Int = 0;
             var tween:FlxTween = null;
@@ -113,7 +113,7 @@ class CrewState extends MusicBeatState {
         }
     }
 
-    function makeCoolPeople() {
+    function makeCoolPeople():Void {
         var suki:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("ThiccSuki"));
         suki.scrollFactor.set(0, 1);
         suki.ID = 0;
@@ -144,5 +144,10 @@ class CrewState extends MusicBeatState {
         officalDevTeam.add(frogtreat);
         officalDevTeam.add(difi);
         officalDevTeam.add(suki);
+    }
+
+    override function destroy() {
+        super.destroy();
+        cleanTween();
     }
 }
