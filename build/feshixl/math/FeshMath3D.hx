@@ -7,7 +7,7 @@ class FeshMath3D {
     /**
     * @param Z regular 2d angle from `FlxSprite`.
     */
-    public inline static function rotateWithTrig3D(matrix:FlxMatrix, thetaX:Float, thetaY:Float, thetaZ:Float, hasPerspective:Bool = true):Void {
+    public inline static function rotateWithTrig3D(matrix:FlxMatrix, thetaX:Float, thetaY:Float, thetaZ:Float, z:Float = 0, hasPerspective:Bool = true):Void {
 
         final xc:Float = Math.cos(thetaX);
         final xs:Float = Math.sin(thetaX);
@@ -23,15 +23,20 @@ class FeshMath3D {
         matrix.rotateWithTrig(zc, zs);
 
         var a1:Float = p1 * ((0 * ys) + (matrix.a * yc));
-        matrix.b = p1 * ((matrix.b * xc) - ((0 * yc - matrix.a * ys) * xs));
+        matrix.b = p1 * ((matrix.b * xc) - ((z * yc - matrix.a * ys) * xs));
         matrix.a = a1;
 
         var c1:Float = p2 * ((0 * ys) + (matrix.c * yc));
-        matrix.d = p2 * ((matrix.d * xc) - ((0 * yc - matrix.c * ys) * xs));
+        matrix.d = p2 * ((matrix.d * xc) - ((z * yc - matrix.c * ys) * xs));
         matrix.c = c1;
 
         var tx1:Float = p3 * ((0 * ys) + (matrix.tx * yc));
-        matrix.ty = p3 * ((matrix.ty * xc) - ((0 * yc - matrix.tx * ys) * xs));
+        matrix.ty = p3 * ((matrix.ty * xc) - ((z * yc - matrix.tx * ys) * xs));
         matrix.tx = tx1;
+    }
+
+    public inline static function multiplyMatrices(a:FeshMatrix4x4, b:FeshMatrix4x4):FeshMatrix4x4 {
+        a.multiplyBy(b);
+        return a;
     }
 }

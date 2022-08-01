@@ -14,6 +14,7 @@ import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.math.FlxMatrix;
 import feshixl.math.FeshMath3D;
+import feshixl.math.FeshMatrix4x4;
 import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
 import openfl.display.BitmapData;
@@ -38,6 +39,12 @@ import Std.is as isOfType;
 * @author Feeshy
 */
 class FeshSprite extends FlxSprite {
+    /**
+    * This is something that is going to be HEAVILY in WIP.
+    * I'm mostly likely going to get mod/modss out way before I find a complete algorithm.
+    */
+    public var z:Float = 0;
+
     /**
     * Rotate angle's pitch axis.
     */
@@ -291,6 +298,13 @@ class FeshSprite extends FlxSprite {
     }
 
     @:noCompletion
+    override function initVars():Void {
+        super.initVars();
+
+        _matrix = new FeshMatrix4x4();
+    }
+
+    @:noCompletion
 	override function set_frame(Value:FlxFrame):FlxFrame { //A lot better algorithm for clipping
 		frame = Value;
 
@@ -327,31 +341,33 @@ class FeshSprite extends FlxSprite {
 
     @:noCompletion
     override function drawComplex(camera:FlxCamera):Void {
-		_frame.prepareMatrix(_matrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
-		_matrix.translate(-origin.x, -origin.y);
-		_matrix.scale(scale.x + engineWidth, scale.y + engineHeight);
+        var _betterMatrix:FeshMatrix4x4 = cast(_matrix, FeshMatrix4x4);
+
+		_frame.prepareMatrix(_betterMatrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
+		_betterMatrix.translate4x3(-origin.x, -origin.y);
+		_betterMatrix.scale4x3(scale.x + engineWidth, scale.y + engineHeight);
 
 		if (bakedRotationAngle <= 0) {
 			updateTrig();
-			angleMatrixTransform();
+			angleMatrixTransform(_betterMatrix);
 		}
 
 		_point.add(origin.x, origin.y);
-		_matrix.translate(_point.x, _point.y);
+		_betterMatrix.translate4x3(_point.x, _point.y);
 
 		if (isPixelPerfectRender(camera)) {
-			_matrix.tx = Math.floor(_matrix.tx);
-			_matrix.ty = Math.floor(_matrix.ty);
+			_betterMatrix.tx = Math.floor(_betterMatrix.tx);
+			_betterMatrix.ty = Math.floor(_betterMatrix.ty);
 		}
 
-		camera.drawPixels(_frame, framePixels, _matrix, colorTransform, blend, antialiasing, shader);
+		camera.drawPixels(_frame, framePixels, _betterMatrix, colorTransform, blend, antialiasing, shader);
 	}
 
     @:noCompletion
-    function angleMatrixTransform():Void {
+    function angleMatrixTransform(matrix:FeshMatrix4x4):Void {
         if (angle != 0 || xAngle != 0 || yAngle != 0) {
             animation.update(0);
-            FeshMath3D.rotateWithTrig3D(_matrix, xAngle, yAngle, zAngle, true);
+            FeshMath3D.rotateWithTrig3D(matrix, xAngle, yAngle, zAngle);
         }
     }
 
