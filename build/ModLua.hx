@@ -673,7 +673,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Int) {
+        Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Float) {
             var cam:FlxCamera = getCamera(name);
 
             if(cam == null) {

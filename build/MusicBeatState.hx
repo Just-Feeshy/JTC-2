@@ -93,8 +93,6 @@ class MusicBeatState extends HelperStates
 	public function beatHit():Void {
 		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
-			trace("ok no work");
-
 			HelperStates.getLua(Type.getClass(this)).call("onBeatHit", []);
 			HelperStates.getLua(Type.getClass(this)).set("curBeat", curBeat);
 		}
