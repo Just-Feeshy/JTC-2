@@ -4,12 +4,14 @@ import openfl.utils.ByteArray;
 import feshixl.sound.FeshSound;
 import flixel.system.FlxSound;
 
+#if cpp
 import cpp.UInt8;
+#end
 
 //oops
 class UselessShit {
     inline static public function beep():FlxSound {
-        var b:Array<UInt8> = [
+        var b:Array<#if cpp UInt8 #else Int #end> = [
             79,
             103,
             103,

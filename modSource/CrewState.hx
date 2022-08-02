@@ -114,29 +114,29 @@ class CrewState extends MusicBeatState {
     }
 
     function makeCoolPeople():Void {
-        var suki:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("ThiccSuki"));
+        var suki:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/ThiccSuki"));
         suki.scrollFactor.set(0, 1);
         suki.ID = 0;
 
-        var frogtreat:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("TreatOfDaFrog"));
+        var frogtreat:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/TreatOfDaFrog"));
         frogtreat.scrollFactor.set(0, 1);
         frogtreat.ID = 1;
 
-        var difi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("SussyDifi"));
+        var difi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/SussyDifi"));
         difi.scrollFactor.set(0, 1);
         difi.ID = 2;
 
-        var feeshy:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("FeshyFeeshy")); //Dat's Me! :D
+        var feeshy:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/FeshyFeeshy")); //Dat's Me! :D
         feeshy.scrollFactor.set(0, 1);
         feeshy.ID = 3;
         officalDevTeam.add(feeshy);
 
-        var varsavi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("VarVar"));
+        var varsavi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/VarVar"));
         varsavi.scrollFactor.set(0, 1);
         varsavi.ID = 4;
         officalDevTeam.add(varsavi);
 
-        var jdst:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("MusicManJDST"));
+        var jdst:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/MusicManJDST"));
         jdst.scrollFactor.set(0, 1);
         jdst.ID = 5;
         officalDevTeam.add(jdst);
