@@ -1502,7 +1502,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function setSongPosition(time:Float):Void {
-		var prevTrackPos:Float = Conductor.songPosition;
+		var prevTrackPos:Float = Conductor.trackPosition;
 
 		Conductor.songPosition = time;
 		Conductor.trackPosition += (Conductor.songPosition - prevTrackPos) * (1 - timeFreeze);
@@ -1714,7 +1714,7 @@ class PlayState extends MusicBeatState
 		else
 		{
 			if(!paused) {
-				var prevTrackPos:Float = Conductor.songPosition;
+				var prevTrackPos:Float = Conductor.trackPosition;
 
 				Conductor.songPosition += FlxG.elapsed * 1000;
 				Conductor.trackPosition += (Conductor.songPosition - prevTrackPos) * (1 - timeFreeze);
