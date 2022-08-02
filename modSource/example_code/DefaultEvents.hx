@@ -79,7 +79,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
             DefaultHandler.modifiers.fadeInNotes.enabled = true;
         }else if(eventName == "blind effect") {
             if(eventValue == "0") {
-                DefaultHandler.modifiers.blindEffect.enabled = false;
+                setModifierToDefault("blind effect");
                 playState.camGame.engineAlpha = 1;
             }
 
@@ -95,7 +95,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
             storeTween(eventName, FlxTween.tween(playState, {wobbleModPower : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500), {
                 onComplete: function(tween:FlxTween) {
                     if(playState.wobbleModPower == 0) {
-                        DefaultHandler.modifiers.wobbleNotes.enabled = false;
+                        setModifierToDefault("note woggle");
                     }
 
                     cancelTween(eventName);
@@ -107,7 +107,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
             if(Std.parseFloat(eventValue) > 0) {
                 DefaultHandler.modifiers.wobbleNotes.enabled = true;
             }else {
-                DefaultHandler.modifiers.wobbleNotes.enabled = false;
+                setModifierToDefault("camera move");
             }
         }else if(eventName == "alt animation") {
             if(eventValue2.contains("bf") || eventValue2.contains("boyfriend"))

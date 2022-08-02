@@ -2909,6 +2909,10 @@ class PlayState extends MusicBeatState
 			setLua("defaultGirlfriendY", 0);
 		}
 
+		addCallback("callEvent", function(skill:String, value:String, value2:String) {
+			events.whenTriggered(skill, value, value2, this);
+		});
+
 		addCallback("instaKillPlayer", function() {
 			gameOverScreen();
 		});
@@ -3136,6 +3140,8 @@ class PlayState extends MusicBeatState
 		value2 = value2.toLowerCase();
 
 		events.whenTriggered(skill, value, value2, this);
+
+		callLua("whenEventTriggered", [skill, value, value2]);
 	}
 
 	function set_wobbleModPower(value:Float):Float {
