@@ -286,7 +286,7 @@ class Character extends feshixl.FeshSprite {
 	public static function loadInfo(character:String):ConfigCharacters {
 		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
 
-		return parser.fromJson(File.getContent('mod_assets/$character.json'), '${character.split('/')[1]}.json');
+		return parser.fromJson(File.getContent(Paths.getPreloadPath('$character.json')), '${character.split('/')[1]}.json');
 	}
 
 	public function refresh(character:String, camPos:FlxPoint) {

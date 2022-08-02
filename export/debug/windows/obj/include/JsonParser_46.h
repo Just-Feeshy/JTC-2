@@ -1,5 +1,5 @@
-#ifndef INCLUDED_JsonParser_36
-#define INCLUDED_JsonParser_36
+#ifndef INCLUDED_JsonParser_46
+#define INCLUDED_JsonParser_46
 
 #ifndef HXCPP_H
 #include <hxcpp.h>
@@ -8,7 +8,7 @@
 #ifndef INCLUDED_json2object_reader_BaseParser
 #include <json2object/reader/BaseParser.h>
 #endif
-HX_DECLARE_CLASS0(JsonParser_36)
+HX_DECLARE_CLASS0(JsonParser_46)
 HX_DECLARE_CLASS1(hxjsonast,Json)
 HX_DECLARE_CLASS1(json2object,Error)
 HX_DECLARE_CLASS1(json2object,PositionUtils)
@@ -16,33 +16,33 @@ HX_DECLARE_CLASS2(json2object,reader,BaseParser)
 
 
 
-class HXCPP_CLASS_ATTRIBUTES JsonParser_36_obj : public  ::json2object::reader::BaseParser_obj
+class HXCPP_CLASS_ATTRIBUTES JsonParser_46_obj : public  ::json2object::reader::BaseParser_obj
 {
 	public:
 		typedef  ::json2object::reader::BaseParser_obj super;
-		typedef JsonParser_36_obj OBJ_;
-		JsonParser_36_obj();
+		typedef JsonParser_46_obj OBJ_;
+		JsonParser_46_obj();
 
 	public:
-		enum { _hx_ClassId = 0x686c4937 };
+		enum { _hx_ClassId = 0x686c4a16 };
 
 		void __construct(::Array< ::Dynamic> errors, ::json2object::PositionUtils putils, ::Dynamic __o_errorType);
-		inline void *operator new(size_t inSize, bool inContainer=true,const char *inName="JsonParser_36")
+		inline void *operator new(size_t inSize, bool inContainer=true,const char *inName="JsonParser_46")
 			{ return ::hx::Object::operator new(inSize,inContainer,inName); }
 		inline void *operator new(size_t inSize, int extra)
-			{ return ::hx::Object::operator new(inSize+extra,true,"JsonParser_36"); }
-		static ::hx::ObjectPtr< JsonParser_36_obj > __new(::Array< ::Dynamic> errors, ::json2object::PositionUtils putils, ::Dynamic __o_errorType);
-		static ::hx::ObjectPtr< JsonParser_36_obj > __alloc(::hx::Ctx *_hx_ctx,::Array< ::Dynamic> errors, ::json2object::PositionUtils putils, ::Dynamic __o_errorType);
+			{ return ::hx::Object::operator new(inSize+extra,true,"JsonParser_46"); }
+		static ::hx::ObjectPtr< JsonParser_46_obj > __new(::Array< ::Dynamic> errors, ::json2object::PositionUtils putils, ::Dynamic __o_errorType);
+		static ::hx::ObjectPtr< JsonParser_46_obj > __alloc(::hx::Ctx *_hx_ctx,::Array< ::Dynamic> errors, ::json2object::PositionUtils putils, ::Dynamic __o_errorType);
 		static void * _hx_vtable;
 		static Dynamic __CreateEmpty();
 		static Dynamic __Create(::hx::DynamicArray inArgs);
-		//~JsonParser_36_obj();
+		//~JsonParser_46_obj();
 
 		HX_DO_RTTI_ALL;
 		::hx::Val __Field(const ::String &inString, ::hx::PropertyAccess inCallProp);
 		static void __register();
 		bool _hx_isInstanceOf(int inClassId);
-		::String __ToString() const { return HX_("JsonParser_36",db,23,55,bd); }
+		::String __ToString() const { return HX_("JsonParser_46",ba,24,55,bd); }
 
 		void onIncorrectType( ::Dynamic pos,::String variable);
 
@@ -56,4 +56,4 @@ class HXCPP_CLASS_ATTRIBUTES JsonParser_36_obj : public  ::json2object::reader::
 };
 
 
-#endif /* INCLUDED_JsonParser_36 */ 
+#endif /* INCLUDED_JsonParser_46 */ 

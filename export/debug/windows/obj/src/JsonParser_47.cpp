@@ -1,28 +1,10 @@
 #include <hxcpp.h>
 
-#ifndef INCLUDED_JsonParser_26
-#include <JsonParser_26.h>
-#endif
-#ifndef INCLUDED_JsonParser_3
-#include <JsonParser_3.h>
+#ifndef INCLUDED_JsonParser_41
+#include <JsonParser_41.h>
 #endif
 #ifndef INCLUDED_JsonParser_47
 #include <JsonParser_47.h>
-#endif
-#ifndef INCLUDED_Std
-#include <Std.h>
-#endif
-#ifndef INCLUDED_haxe_Exception
-#include <haxe/Exception.h>
-#endif
-#ifndef INCLUDED_haxe_IMap
-#include <haxe/IMap.h>
-#endif
-#ifndef INCLUDED_haxe_ds_StringMap
-#include <haxe/ds/StringMap.h>
-#endif
-#ifndef INCLUDED_hxjsonast_JObjectField
-#include <hxjsonast/JObjectField.h>
 #endif
 #ifndef INCLUDED_hxjsonast_Json
 #include <hxjsonast/Json.h>
@@ -36,9 +18,6 @@
 #ifndef INCLUDED_json2object_Error
 #include <json2object/Error.h>
 #endif
-#ifndef INCLUDED_json2object_InternalError
-#include <json2object/InternalError.h>
-#endif
 #ifndef INCLUDED_json2object_PositionUtils
 #include <json2object/PositionUtils.h>
 #endif
@@ -48,8 +27,8 @@
 
 HX_DEFINE_STACK_FRAME(_hx_pos_907fde55457cbf85_962_new,"JsonParser_47","new",0xc3613f2d,"JsonParser_47.new","json2object/reader/DataBuilder.hx",962,0x0533cd73)
 HX_LOCAL_STACK_FRAME(_hx_pos_907fde55457cbf85_966_onIncorrectType,"JsonParser_47","onIncorrectType",0x3546ee2d,"JsonParser_47.onIncorrectType","json2object/reader/DataBuilder.hx",966,0x0533cd73)
-HX_LOCAL_STACK_FRAME(_hx_pos_907fde55457cbf85_547_loadJsonNull,"JsonParser_47","loadJsonNull",0xf07ffca8,"JsonParser_47.loadJsonNull","json2object/reader/DataBuilder.hx",547,0x0533cd73)
-HX_LOCAL_STACK_FRAME(_hx_pos_907fde55457cbf85_539_loadJsonObject,"JsonParser_47","loadJsonObject",0x825d6720,"JsonParser_47.loadJsonObject","json2object/reader/DataBuilder.hx",539,0x0533cd73)
+HX_LOCAL_STACK_FRAME(_hx_pos_907fde55457cbf85_162_loadJsonNull,"JsonParser_47","loadJsonNull",0xf07ffca8,"JsonParser_47.loadJsonNull","json2object/reader/DataBuilder.hx",162,0x0533cd73)
+HX_LOCAL_STACK_FRAME(_hx_pos_907fde55457cbf85_158_loadJsonArray,"JsonParser_47","loadJsonArray",0x01506c58,"JsonParser_47.loadJsonArray","json2object/reader/DataBuilder.hx",158,0x0533cd73)
 HX_LOCAL_STACK_FRAME(_hx_pos_907fde55457cbf85_995_getAuto,"JsonParser_47","getAuto",0xfd7ae872,"JsonParser_47.getAuto","json2object/reader/DataBuilder.hx",995,0x0533cd73)
 
 void JsonParser_47_obj::__construct(::Array< ::Dynamic> errors, ::json2object::PositionUtils putils, ::Dynamic __o_errorType){
@@ -80,95 +59,27 @@ bool JsonParser_47_obj::_hx_isInstanceOf(int inClassId) {
 
 void JsonParser_47_obj::onIncorrectType( ::Dynamic pos,::String variable){
             	HX_STACKFRAME(&_hx_pos_907fde55457cbf85_966_onIncorrectType)
-HXLINE( 967)		this->errors->push(::json2object::Error_obj::IncorrectType(variable,HX_("haxe.ds.Map<String, Int>",6b,06,e8,94),pos));
+HXLINE( 967)		this->errors->push(::json2object::Error_obj::IncorrectType(variable,HX_("Array<Float>",25,20,13,e1),pos));
 HXLINE( 968)		this->super::onIncorrectType(pos,variable);
             	}
 
 
 void JsonParser_47_obj::loadJsonNull( ::Dynamic pos,::String variable){
-            	HX_STACKFRAME(&_hx_pos_907fde55457cbf85_547_loadJsonNull)
-HXDLIN( 547)		this->value = null();
+            	HX_STACKFRAME(&_hx_pos_907fde55457cbf85_162_loadJsonNull)
+HXDLIN( 162)		this->value = null();
             	}
 
 
-void JsonParser_47_obj::loadJsonObject(::Array< ::Dynamic> o, ::Dynamic pos,::String variable){
-            	HX_GC_STACKFRAME(&_hx_pos_907fde55457cbf85_539_loadJsonObject)
-HXLINE( 540)		this->value =  ::haxe::ds::StringMap_obj::__alloc( HX_CTX );
-HXLINE( 541)		{
-HXLINE( 541)			int _g = 0;
-HXDLIN( 541)			while((_g < o->length)){
-HXLINE( 541)				 ::hxjsonast::JObjectField field = o->__get(_g).StaticCast<  ::hxjsonast::JObjectField >();
-HXDLIN( 541)				_g = (_g + 1);
-HXLINE( 542)				{
-HXLINE( 542)					::Dynamic this1 = this->value;
-HXDLIN( 542)					::String key;
-HXLINE( 492)					try {
-            						HX_STACK_CATCHABLE( ::Dynamic, 0);
-HXLINE( 493)						 ::JsonParser_3 key1 =  ::JsonParser_3_obj::__alloc( HX_CTX ,this->errors,this->putils,2);
-HXDLIN( 493)						 ::hxjsonast::JsonValue _g = ::hxjsonast::JsonValue_obj::JString(field->name);
-HXDLIN( 493)						 ::json2object::PositionUtils _this = this->putils;
-HXLINE( 542)						key = ( (::String)(key1->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,_g, ::hxjsonast::Position_obj::__alloc( HX_CTX ,( (::String)(pos->__Field(HX_("file",7c,ce,bb,43),::hx::paccDynamic)) ),(( (int)(pos->__Field(HX_("min",92,11,53,00),::hx::paccDynamic)) ) - 1),(( (int)(pos->__Field(HX_("max",a4,0a,53,00),::hx::paccDynamic)) ) - 1))),variable)) );
-            					} catch( ::Dynamic _hx_e) {
-            						if (_hx_e.IsClass<  ::Dynamic >() ){
-            							HX_STACK_BEGIN_CATCH
-            							 ::Dynamic _g = _hx_e;
-HXLINE(   1)							{
-HXLINE(   1)								null();
-            							}
-HXDLIN(   1)							 ::Dynamic _g1 = ::haxe::Exception_obj::caught(_g)->unwrap();
-HXLINE( 492)							if (::Std_obj::isOfType(_g1,::hx::ClassOf< ::json2object::InternalError >())) {
-HXLINE(   1)								 ::json2object::InternalError e = _g1;
-HXLINE( 495)								if (::hx::IsPointerNotEq( e,::json2object::InternalError_obj::ParsingThrow_dyn() )) {
-HXLINE( 496)									HX_STACK_DO_THROW(::haxe::Exception_obj::thrown(e));
-            								}
-HXLINE( 499)								continue;
-            							}
-            							else {
-HXLINE( 492)								HX_STACK_DO_THROW(_g);
-            							}
-            						}
-            						else {
-            							HX_STACK_DO_THROW(_hx_e);
-            						}
-            					}
-HXLINE( 542)					int value;
-HXLINE( 525)					try {
-            						HX_STACK_CATCHABLE( ::Dynamic, 0);
-HXLINE( 542)						value = ( (int)( ::JsonParser_26_obj::__alloc( HX_CTX ,this->errors,this->putils,2)->loadJson(field->value,field->name)) );
-            					} catch( ::Dynamic _hx_e) {
-            						if (_hx_e.IsClass<  ::Dynamic >() ){
-            							HX_STACK_BEGIN_CATCH
-            							 ::Dynamic _g = _hx_e;
-HXLINE(   1)							{
-HXLINE(   1)								null();
-            							}
-HXDLIN(   1)							 ::Dynamic _g1 = ::haxe::Exception_obj::caught(_g)->unwrap();
-HXLINE( 525)							if (::Std_obj::isOfType(_g1,::hx::ClassOf< ::json2object::InternalError >())) {
-HXLINE(   1)								 ::json2object::InternalError e = _g1;
-HXLINE( 529)								if (::hx::IsPointerNotEq( e,::json2object::InternalError_obj::ParsingThrow_dyn() )) {
-HXLINE( 530)									HX_STACK_DO_THROW(::haxe::Exception_obj::thrown(e));
-            								}
-HXLINE( 533)								continue;
-            							}
-            							else {
-HXLINE( 525)								HX_STACK_DO_THROW(_g);
-            							}
-            						}
-            						else {
-            							HX_STACK_DO_THROW(_hx_e);
-            						}
-            					}
-HXLINE( 542)					( ( ::haxe::ds::StringMap)(this1) )->set(key,value);
-            				}
-            			}
-            		}
+void JsonParser_47_obj::loadJsonArray(::Array< ::Dynamic> a, ::Dynamic pos,::String variable){
+            	HX_GC_STACKFRAME(&_hx_pos_907fde55457cbf85_158_loadJsonArray)
+HXDLIN( 158)		this->value = this->loadJsonArrayValue(a, ::JsonParser_41_obj::__alloc( HX_CTX ,this->errors,this->putils,2)->loadJson_dyn(),variable);
             	}
 
 
- ::haxe::ds::StringMap JsonParser_47_obj::getAuto(){
+::Array< Float > JsonParser_47_obj::getAuto(){
             	HX_GC_STACKFRAME(&_hx_pos_907fde55457cbf85_995_getAuto)
 HXDLIN( 995)		 ::JsonParser_47 _hx_tmp =  ::JsonParser_47_obj::__alloc( HX_CTX ,::Array_obj< ::Dynamic>::__new(0),this->putils,0);
-HXDLIN( 995)		return _hx_tmp->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,::hxjsonast::JsonValue_obj::JNull_dyn(), ::hxjsonast::Position_obj::__alloc( HX_CTX ,HX_("",00,00,00,00),0,1)),null()).StaticCast<  ::haxe::ds::StringMap >();
+HXDLIN( 995)		return ( (::Array< Float >)(_hx_tmp->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,::hxjsonast::JsonValue_obj::JNull_dyn(), ::hxjsonast::Position_obj::__alloc( HX_CTX ,HX_("",00,00,00,00),0,1)),null())) );
             	}
 
 
@@ -201,8 +112,8 @@ JsonParser_47_obj::JsonParser_47_obj()
 	case 12:
 		if (HX_FIELD_EQ(inName,"loadJsonNull") ) { return ::hx::Val( loadJsonNull_dyn() ); }
 		break;
-	case 14:
-		if (HX_FIELD_EQ(inName,"loadJsonObject") ) { return ::hx::Val( loadJsonObject_dyn() ); }
+	case 13:
+		if (HX_FIELD_EQ(inName,"loadJsonArray") ) { return ::hx::Val( loadJsonArray_dyn() ); }
 		break;
 	case 15:
 		if (HX_FIELD_EQ(inName,"onIncorrectType") ) { return ::hx::Val( onIncorrectType_dyn() ); }
@@ -218,7 +129,7 @@ static ::hx::StaticInfo *JsonParser_47_obj_sStaticStorageInfo = 0;
 static ::String JsonParser_47_obj_sMemberFields[] = {
 	HX_("onIncorrectType",e0,ff,a7,01),
 	HX_("loadJsonNull",15,2d,09,02),
-	HX_("loadJsonObject",cd,4c,e5,ec),
+	HX_("loadJsonArray",4b,9b,d1,47),
 	HX_("getAuto",25,8f,f9,12),
 	::String(null()) };
 

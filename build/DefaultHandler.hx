@@ -54,6 +54,9 @@ class DefaultHandler {
     inline static public function getcharacterJSON():Array<String> {
         var arrayer:Array<String> = new Array<String>();
 
+        for(i in 0...FileSystem.readDirectory("assets/characters").length)
+            arrayer.push(FileSystem.readDirectory("assets/characters")[i].split(".")[0]);
+
         for(i in 0...FileSystem.readDirectory("mod_assets/characters").length)
             arrayer.push(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
 

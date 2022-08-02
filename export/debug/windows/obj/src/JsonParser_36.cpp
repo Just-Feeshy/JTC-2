@@ -1,10 +1,10 @@
 #include <hxcpp.h>
 
-#ifndef INCLUDED_JsonParser_26
-#include <JsonParser_26.h>
-#endif
 #ifndef INCLUDED_JsonParser_36
 #include <JsonParser_36.h>
+#endif
+#ifndef INCLUDED_JsonParser_38
+#include <JsonParser_38.h>
 #endif
 #ifndef INCLUDED_hxjsonast_Json
 #include <hxjsonast/Json.h>
@@ -59,7 +59,7 @@ bool JsonParser_36_obj::_hx_isInstanceOf(int inClassId) {
 
 void JsonParser_36_obj::onIncorrectType( ::Dynamic pos,::String variable){
             	HX_STACKFRAME(&_hx_pos_dafc42ca90b6bf16_966_onIncorrectType)
-HXLINE( 967)		this->errors->push(::json2object::Error_obj::IncorrectType(variable,HX_("Array<Int>",b2,ea,4f,1a),pos));
+HXLINE( 967)		this->errors->push(::json2object::Error_obj::IncorrectType(variable,HX_("Array<feshixl.interfaces.DialogueData>",d0,88,cd,3d),pos));
 HXLINE( 968)		this->super::onIncorrectType(pos,variable);
             	}
 
@@ -72,14 +72,14 @@ HXDLIN( 162)		this->value = null();
 
 void JsonParser_36_obj::loadJsonArray(::Array< ::Dynamic> a, ::Dynamic pos,::String variable){
             	HX_GC_STACKFRAME(&_hx_pos_dafc42ca90b6bf16_158_loadJsonArray)
-HXDLIN( 158)		this->value = this->loadJsonArrayValue(a, ::JsonParser_26_obj::__alloc( HX_CTX ,this->errors,this->putils,2)->loadJson_dyn(),variable);
+HXDLIN( 158)		this->value = this->loadJsonArrayValue(a, ::JsonParser_38_obj::__alloc( HX_CTX ,this->errors,this->putils,2)->loadJson_dyn(),variable);
             	}
 
 
-::Array< int > JsonParser_36_obj::getAuto(){
+::Array< ::Dynamic> JsonParser_36_obj::getAuto(){
             	HX_GC_STACKFRAME(&_hx_pos_dafc42ca90b6bf16_995_getAuto)
 HXDLIN( 995)		 ::JsonParser_36 _hx_tmp =  ::JsonParser_36_obj::__alloc( HX_CTX ,::Array_obj< ::Dynamic>::__new(0),this->putils,0);
-HXDLIN( 995)		return ( (::Array< int >)(_hx_tmp->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,::hxjsonast::JsonValue_obj::JNull_dyn(), ::hxjsonast::Position_obj::__alloc( HX_CTX ,HX_("",00,00,00,00),0,1)),null())) );
+HXDLIN( 995)		return ( (::Array< ::Dynamic>)(_hx_tmp->loadJson( ::hxjsonast::Json_obj::__alloc( HX_CTX ,::hxjsonast::JsonValue_obj::JNull_dyn(), ::hxjsonast::Position_obj::__alloc( HX_CTX ,HX_("",00,00,00,00),0,1)),null())) );
             	}
 
 
