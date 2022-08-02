@@ -149,5 +149,6 @@ class CrewState extends MusicBeatState {
     override function destroy() {
         super.destroy();
         cleanTween();
+        allTweens = null;
     }
 }

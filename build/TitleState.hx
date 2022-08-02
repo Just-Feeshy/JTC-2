@@ -42,6 +42,8 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
+		Conductor.songPosition = 0;
+		Conductor.songPosition -= Conductor.crochet * 5;
 		credits.sort(sortByShit);
 
 		/**
@@ -69,6 +71,12 @@ class TitleState extends MusicBeatState
 		Application.current.onExit.add (function (exitCode) {
 			DiscordClient.shutdown();
 		 });
+		#end
+
+		#if USING_LUA
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			modifiableCameras.set("mainCam", FlxG.camera);
+		}
 		#end
 
 		super.create();
@@ -191,11 +199,10 @@ class TitleState extends MusicBeatState
 
 	var transitioning:Bool = false;
 
-	override function update(elapsed:Float)
-	{
-		if (FlxG.sound.music != null)
-			Conductor.songPosition = FlxG.sound.music.time;
-		// FlxG.watch.addQuick('amp', FlxG.sound.music.amplitude);
+	override function update(elapsed:Float) {
+		if (FlxG.sound.music != null) {
+			Conductor.songPosition += FlxG.elapsed * 1000;
+		}
 
 		if (FlxG.keys.justPressed.F)
 		{
@@ -249,6 +256,14 @@ class TitleState extends MusicBeatState
 		}
 
 		super.update(elapsed);
+	}
+
+	override function stepHit() {
+		super.stepHit();
+
+		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20)) {
+			Conductor.songPosition = FlxG.sound.music.time;
+		}
 	}
 
 	function createCoolText(textArray:Array<String>):Void {

@@ -96,7 +96,9 @@ class MainMenuState extends MusicBeatState
 
 	override function create() {
 		FlxG.mouse.visible = false;
+
 		Conductor.songPosition = 0;
+		Conductor.songPosition -= Conductor.crochet * 5;
 
 		camX = new BetterCams();
 		camMenu = new BetterCams();
@@ -425,6 +427,14 @@ class MainMenuState extends MusicBeatState
 		FlxG.camera.zoom = 1.1 + 0.02 * (Math.sin(0.0005 * Conductor.songPosition * Math.PI * (Paths.modJSON.main_menu.bpm/120)));
 
 		super.update(elapsed);
+	}
+
+	override function stepHit() {
+		super.stepHit();
+
+		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20)) {
+			Conductor.songPosition = FlxG.sound.music.time;
+		}
 	}
 
 	function getLuaOptions() {

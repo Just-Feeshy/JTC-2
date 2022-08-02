@@ -683,6 +683,16 @@ class ModLua {
             cam.zoom = zoom;
         });
 
+        Lua_helper.add_callback(lua, "getCameraZoom", function(name:String) {
+            var cam:FlxCamera = getCamera(name);
+
+            if(cam != null) {
+                return cam.zoom;
+            }
+
+            return 0;
+        });
+
         Lua_helper.add_callback(lua, "switchState", function(state:String) {
             FlxG.switchState(Register.forNameClass(state, []));
         });

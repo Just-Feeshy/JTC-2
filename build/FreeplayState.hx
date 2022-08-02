@@ -101,6 +101,9 @@ class FreeplayState extends MusicBeatState
 			index++;
 		}
 
+		Conductor.songPosition = 0;
+		Conductor.songPosition -= Conductor.crochet * 5;
+
 		camFreeplay = new BetterCams();
 		camBackground = new BetterCams();
 		camFreeplay.bgColor.alpha = 0;
@@ -194,9 +197,11 @@ class FreeplayState extends MusicBeatState
 		songs.push(new SongMetadata(songName, weekNum, songCharacter));
 	}
 
-	override function update(elapsed:Float)
-	{
+	override function update(elapsed:Float) {
 		super.update(elapsed);
+
+		if (FlxG.sound.music != null)
+			Conductor.songPosition = FlxG.sound.music.length;
 
 		if (FlxG.sound.music.volume < 0.7) {
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
@@ -257,6 +262,14 @@ class FreeplayState extends MusicBeatState
 			#else
 			LoadingState.loadAndSwitchState(new PlayState());
 			#end
+		}
+	}
+
+	override function stepHit() {
+		super.stepHit();
+
+		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20)) {
+			Conductor.songPosition = FlxG.sound.music.time;
 		}
 	}
 
@@ -336,8 +349,7 @@ class FreeplayState extends MusicBeatState
 	}
 }
 
-class SongMetadata
-{
+class SongMetadata {
 	public var songName:String = "";
 	public var week:Int = 0;
 	public var songCharacter:String = "";

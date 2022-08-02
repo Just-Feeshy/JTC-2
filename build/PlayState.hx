@@ -3168,7 +3168,7 @@ class PlayState extends MusicBeatState
 	{
 		super.stepHit();
 
-		if ((FlxG.sound.music.time > Conductor.trackPosition + 20 || FlxG.sound.music.time < Conductor.trackPosition - 20) && !paused)
+		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20) && !paused)
 		{
 			resyncVocals();
 		}
