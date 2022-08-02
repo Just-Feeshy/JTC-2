@@ -353,12 +353,11 @@ class StoryMenuState extends MusicBeatState
 
 		var diffic = "";
 
-		switch (curDifficulty)
-		{
-			case 0:
-				diffic = '-easy';
-			case 2:
-				diffic = '-hard';
+		switch (curDifficulty) {
+			case 1:
+				diffic = '';
+			default:
+				diffic = '-' + CoolUtil.difficultyArray[curDifficulty].toLowerCase();
 		}
 
 		PlayState.storyPlaylist = daSongs;
