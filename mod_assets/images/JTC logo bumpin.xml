@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="JTC logo bumpin.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="JTC logobumpin0000" x="20" y="20" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0001" x="902" y="20" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0002" x="902" y="20" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0003" x="1784" y="20" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0004" x="1784" y="20" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0005" x="2666" y="20" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0006" x="2666" y="20" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0007" x="20" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0008" x="20" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0009" x="902" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0010" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0011" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0012" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0013" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0014" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0015" x="2666" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0016" x="20" y="1422" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0017" x="20" y="1422" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0018" x="902" y="1422" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0019" x="902" y="1422" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0020" x="1784" y="1422" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0021" x="1784" y="1422" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0022" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0023" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0024" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0025" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0026" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0027" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0028" x="1784" y="721" width="862" height="681"/>
+	<SubTexture name="JTC logobumpin0029" x="1784" y="721" width="862" height="681"/>
+</TextureAtlas>

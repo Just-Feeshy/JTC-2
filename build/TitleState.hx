@@ -28,9 +28,13 @@ import openfl.Assets;
 
 using StringTools;
 
-class TitleState extends MusicBeatState
-{
+class TitleState extends MusicBeatState {
 	static var initialized:Bool = false;
+
+	var logoBl:FlxSprite;
+	var gfDance:FlxSprite;
+	var danceLeft:Bool = false;
+	var titleText:FlxSprite;
 
 	var blackScreen:FlxSprite;
 	var credGroup:FlxGroup;
@@ -73,19 +77,8 @@ class TitleState extends MusicBeatState
 		 });
 		#end
 
-		#if USING_LUA
-		if(HelperStates.luaExist(Type.getClass(this))) {
-			modifiableCameras.set("mainCam", FlxG.camera);
-		}
-		#end
-
 		super.create();
 	}
-
-	var logoBl:FlxSprite;
-	var gfDance:FlxSprite;
-	var danceLeft:Bool = false;
-	var titleText:FlxSprite;
 
 	function startIntro()
 	{
@@ -174,6 +167,17 @@ class TitleState extends MusicBeatState
 
 		FlxG.mouse.visible = false;
 
+		#if USING_LUA
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			modifiableSprites.set("logoBl", logoBl);
+			modifiableSprites.set("gfDance", gfDance);
+			modifiableSprites.set("titleText", titleText);
+			modifiableCameras.set("mainCam", FlxG.camera);
+		}
+		#end
+
+		callLua("onStartIntro", [initialized]);
+
 		if (initialized)
 			skipIntro();
 		else
@@ -235,7 +239,9 @@ class TitleState extends MusicBeatState
 
 		if (pressedEnter && !transitioning && skippedIntro)
 		{
-			titleText.animation.play('press');
+			if(titleText.exists) {
+				titleText.animation.play('press');
+			}
 
 			FlxG.camera.flash(FlxColor.WHITE, 1);
 			FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
@@ -305,33 +311,40 @@ class TitleState extends MusicBeatState
 	{
 		super.beatHit();
 
-		logoBl.animation.play('bump');
+		if(logoBl.exists) {
+			logoBl.animation.play('bump');
+		}
+
 		danceLeft = !danceLeft;
 
-		if (danceLeft)
-			gfDance.animation.play('danceRight');
-		else
-			gfDance.animation.play('danceLeft');
+		if(gfDance.exists) {
+			if (danceLeft)
+				gfDance.animation.play('danceRight');
+			else
+				gfDance.animation.play('danceLeft');
+		}
 
 		FlxG.log.add(curBeat);
 
-		if(curBeat < Paths.modJSON.title_menu.waky.length) {
-			if(Paths.modJSON.title_menu.waky[curBeat].addon) {
-				addMultipleText(Paths.modJSON.title_menu.waky[curBeat].texts);
-			}else {
-				if(Paths.modJSON.title_menu.waky[curBeat].texts.length > 0) {
-					deleteCoolText();
+		if(credGroup.exists || textGroup.exists) {
+			if(curBeat < Paths.modJSON.title_menu.waky.length) {
+				if(Paths.modJSON.title_menu.waky[curBeat].addon) {
+					addMultipleText(Paths.modJSON.title_menu.waky[curBeat].texts);
+				}else {
+					if(Paths.modJSON.title_menu.waky[curBeat].texts.length > 0) {
+						deleteCoolText();
+					}
+
+					createCoolText(Paths.modJSON.title_menu.waky[curBeat].texts);
 				}
+			}else if(curBeat - (Paths.modJSON.title_menu.waky.length - 1) < Paths.modJSON.title_menu.random_waky.length) {
+				var thisBeat:Int = curBeat - (Paths.modJSON.title_menu.waky.length - 1);
 
-				createCoolText(Paths.modJSON.title_menu.waky[curBeat].texts);
+				deleteCoolText();
+				createCoolText(Paths.modJSON.title_menu.random_waky[FlxG.random.int(0, Paths.modJSON.title_menu.random_waky.length-1)]);
+			}else {
+				skipIntro();
 			}
-		}else if(curBeat - (Paths.modJSON.title_menu.waky.length - 1) < Paths.modJSON.title_menu.random_waky.length) {
-			var thisBeat:Int = curBeat - (Paths.modJSON.title_menu.waky.length - 1);
-
-			deleteCoolText();
-			createCoolText(Paths.modJSON.title_menu.random_waky[FlxG.random.int(0, Paths.modJSON.title_menu.random_waky.length-1)]);
-		}else {
-			skipIntro();
 		}
 	}
 

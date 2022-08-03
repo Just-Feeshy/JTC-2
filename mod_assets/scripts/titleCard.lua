@@ -8,6 +8,16 @@ function onBeatHit()
     end
 end
 
+function onStartIntro()
+    decreaseSpriteSizeBy("gfDance", 1.25, 1.25)
+    setSpriteX("gfDance", windowWidth * 0.3)
+
+    compileSpriteSheet("logoBl", "JTC logo bumpin")
+    playAnimationByPrefix("logoBl", "bump", "JTC logobumpin")
+    decreaseSpriteSizeBy("logoBl", 1.25, 1.25)
+    setSpritePosition("logoBl", 0, -50)
+end
+
 function lerp(value1, value2, ratio)
     return value1 + ratio * (value2 - value1)
 end
