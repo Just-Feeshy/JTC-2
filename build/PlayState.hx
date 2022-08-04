@@ -151,6 +151,8 @@ class PlayState extends MusicBeatState
 
 	private var vocals:FlxSound;
 
+	public var newCharacters:Map<String, Character>;
+
 	public var dad:Character;
 	public var gf:Character;
 	public var boyfriend:Boyfriend;
@@ -369,6 +371,8 @@ class PlayState extends MusicBeatState
 		}else {
 			gfVersion = SONG.girlfriend;
 		}
+
+		newCharacters = new Map<String, Character>();
 
 		gf = new Character(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
@@ -3279,6 +3283,19 @@ class PlayState extends MusicBeatState
 
 	override public function destroy() {
 		super.destroy();
+
+		if(newCharacters != null) {
+            for(k in newCharacters.keys()) {
+                var spr:Character = newCharacters.get(k);
+
+                if(spr != null) {
+                    spr.destroy();
+                }
+            }
+
+            newCharacters.clear();
+            newCharacters = null;
+        }
 
 		FlxG.sound.destroy();
 
