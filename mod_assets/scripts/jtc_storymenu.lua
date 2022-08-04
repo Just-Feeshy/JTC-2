@@ -45,7 +45,6 @@ end
 function onUpdate(elapsed)
     if not selectedWeek then
         if getControl("back") and not stopSpam then
-            playSound("cancelMenu", 1, "cancel")
             switchState("MainMenuState")
             stopSpam = true
         end

@@ -79,14 +79,14 @@ class Register {
     }
 
     @:access(HelperStates)
-    public inline static function attachLuaToState<T:HelperStates>(state:Class<T>, luaClass:ModLua):Void { //Won't work with PlayState.
+    public inline static function attachLuaToState<T:HelperStates>(state:Class<T>, path:String):Void { //Won't work with PlayState.
 		#if USING_LUA
         if(HelperStates.scriptsInStates.exists(Type.getClassName(state))) {
             HelperStates.scriptsInStates.get(Type.getClassName(state)).close();
             HelperStates.scriptsInStates.remove(Type.getClassName(state));
         }
 
-		HelperStates.scriptsInStates.set(Type.getClassName(state), luaClass);
+		HelperStates.scriptsInStates.set(Type.getClassName(state), new ModLua(path));
 		#end
 	}
 

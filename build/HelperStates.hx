@@ -192,7 +192,7 @@ class HelperStates extends FlxUIState {
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			var file:String = HelperStates.getLua(Type.getClass(this)).luaScript;
 
-			Register.attachLuaToState(Type.getClass(this), new ModLua(file));
+			Register.attachLuaToState(Type.getClass(this), file);
 		}
 		#end
 	}

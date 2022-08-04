@@ -56,12 +56,12 @@ class HealthIcon extends FlxSprite
 
 	public function loadAllAnims(isPlayer:Bool):Void {
 		for(i in 0...FileSystem.readDirectory("assets/characters").length) {
-			var funnyJson:ConfigCharacters = cast loadJSON("characters/" + FileSystem.readDirectory("assets/characters")[i].split(".")[0]);
+			var funnyJson:ConfigCharacters = cast loadJSON("assets", "characters/" + FileSystem.readDirectory("assets/characters")[i].split(".")[0]);
 			createAnim(FileSystem.readDirectory("assets/characters")[i].split(".")[0], funnyJson.icon, isPlayer);
 		}
 
 		for(i in 0...FileSystem.readDirectory("mod_assets/characters").length) {
-			var funnyJson:ConfigCharacters = cast loadJSON("characters/" + FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
+			var funnyJson:ConfigCharacters = cast loadJSON("mod_assets", "characters/" + FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
 			createAnim(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0], funnyJson.icon, isPlayer);
 		}
 	}
@@ -81,10 +81,10 @@ class HealthIcon extends FlxSprite
 		}
 	}
 
-	private function loadJSON(character:String):ConfigCharacters {
+	private function loadJSON(file:String, character:String):ConfigCharacters {
 		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
 
-		return parser.fromJson(File.getContent('mod_assets/$character.json'), '${character.split('/')[1]}.json');
+		return parser.fromJson(File.getContent(file + '/$character.json'), '${character.split('/')[1]}.json');
 	}
 
 	override function update(elapsed:Float):Void

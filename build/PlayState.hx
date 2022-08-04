@@ -2879,7 +2879,7 @@ class PlayState extends MusicBeatState
 		#if USING_LUA
 		if(Assets.exists(Paths.getPath('scripts/${"stage/" + curStage.toLowerCase()}.lua', TEXT, null))) {
 			Register.detachLuaFromState(PlayState);
-			Register.attachLuaToState(PlayState, new ModLua(Paths.lua("stage/" + curStage.toLowerCase())));
+			Register.attachLuaToState(PlayState, Paths.lua("stage/" + curStage.toLowerCase()));
 			getModLua().execute();
 		}
 		#end
