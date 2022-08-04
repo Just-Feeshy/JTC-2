@@ -9,12 +9,12 @@ function onBeatHit()
 end
 
 function onStartIntro()
-    decreaseSpriteSizeBy("gfDance", 1.25, 1.25)
-    setSpriteX("gfDance", windowWidth * 0.3)
+    decreaseSpriteSizeBy("gfDance", 1.5, 1.5)
+    setSpritePosition("gfDance", windowWidth * 0.4, windowHeight * 0.21)
 
     compileSpriteSheet("logoBl", "JTC logo bumpin")
     playAnimationByPrefix("logoBl", "bump", "JTC logobumpin")
-    decreaseSpriteSizeBy("logoBl", 1.25, 1.25)
+    decreaseSpriteSizeBy("logoBl", 1.2, 1.2)
     setSpritePosition("logoBl", 0, -50)
 end
 

@@ -21,6 +21,12 @@ import feshixl.shaders.FeshShader;
 
 import SaveData.SaveType;
 
+#if (haxe_ver >= 4.2)
+import Std.isOfType;
+#else
+import Std.is as isOfType;
+#end
+
 using StringTools;
 
 /**
@@ -224,6 +230,26 @@ class ModLua {
 
             spr.animation.addByIndices(animation, prefix, indices, "", framerate, false);
             spr.animation.play(animation);
+        });
+
+        Lua_helper.add_callback(lua, "playAnim", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return false;
+            }
+
+            if(spr.animation.getByName(name) != null) {
+                if(Std.isOfType(spr, feshixl.FeshSprite)) {
+                    var obj:Dynamic = spr;
+					var spr:feshixl.FeshSprite = obj;
+                    spr.playAnim(name, forced, reverse, startFrame);
+                }else {
+                    spr.animation.play(name, forced, reverse, startFrame);
+                }
+            }
+
+            return true;
         });
 
         Lua_helper.add_callback(lua, "setCustomPropertyToSprite", function(name:String, prop:String, value:Dynamic) {
