@@ -253,7 +253,7 @@ class ModLua {
             return true;
         });
 
-        Lua_helper.add_callback(lua, "setCustomPropertyToSprite", function(name:String, prop:String, value:Dynamic) {
+        Lua_helper.add_callback(lua, "setCustomFieldToSprite", function(name:String, prop:String, value:Dynamic) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -736,7 +736,9 @@ class ModLua {
                 state.openSubState(Register.forNameClass(subState, []));
         });
 
-        //shaders
+        /**
+        * shaders (Don't work yet)
+        */
         Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, path:String) {
             if(luaShaders.exists(name)) {
                 return;

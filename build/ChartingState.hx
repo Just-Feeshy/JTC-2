@@ -1093,6 +1093,7 @@ class ChartingState extends MusicBeatState
 	var noteSpeedLabel:FlxText;
 	var noteTagInput:FlxUIInputText;
 	var noteTagText:FlxText;
+	var playAnimCheck:FlxUICheckBox;
 	
 	function addNoteUI():Void
 	{
@@ -1127,6 +1128,7 @@ class ChartingState extends MusicBeatState
 			noteTagInput.visible = check_extra_stuff.checked;
 			noteTagText.visible = check_extra_stuff.checked;
 			noteSpeedLabel.visible = check_extra_stuff.checked;
+			playAnimCheck.visible = check_extra_stuff.checked;
 		};
 
 		var checkBoxLabel:FlxText = new FlxText(check_extra_stuff.x+20, check_extra_stuff.y-5, "Use Extra Note Features \n (This may Disable Regular Chart Features)");
@@ -1163,6 +1165,10 @@ class ChartingState extends MusicBeatState
 		noteTagText = new FlxText(noteTagInput.x, noteTagInput.y - noteTagInput.height - 2, 'Custom Tag');
 		noteTagText.visible = false;
 
+		playAnimCheck = new FlxUICheckBox(noteTypeEffect.x, noteTagInput.y + noteTagInput.height + 5, null, null, "Play Any Animations", 70);
+		playAnimCheck.checked = true;
+		playAnimCheck.visible = false;
+
 		tab_group_note.add(writingNotesText);
 		tab_group_note.add(stepperSusLength);
 		tab_group_note.add(susLabel);
@@ -1175,6 +1181,7 @@ class ChartingState extends MusicBeatState
 		tab_group_note.add(noteTypeEffect);
 		tab_group_note.add(noteTagInput);
 		tab_group_note.add(noteTagText);
+		tab_group_note.add(playAnimCheck);
 
 		if(noteAddons[0] != null)
 			tab_group_note.add(noteAddonEffect);
@@ -1290,13 +1297,6 @@ class ChartingState extends MusicBeatState
 		// general shit
 		var title:FlxText = new FlxText(UI_box.x + 20, UI_box.y + 20, 0);
 		bullshitUI.add(title);
-		/* 
-			var loopCheck = new FlxUICheckBox(UI_box.x + 10, UI_box.y + 50, null, null, "Loops", 100, ['loop check']);
-			loopCheck.checked = curNoteSelected.doesLoop;
-			tooltips.add(loopCheck, {title: 'Section looping', body: "Whether or not it's a simon says style section", style: tooltipType});
-			bullshitUI.add(loopCheck);
-
-		 */
 	}
 
 	override function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>)
@@ -1335,7 +1335,12 @@ class ChartingState extends MusicBeatState
 			{
 				if (nums.value <= 0)
 					nums.value = 0;
+
 				_song.speed = nums.value;
+
+				if(!check_extra_stuff.checked) {
+					singleNoteSpeed.value = _song.speed;
+				}
 			}
 			else if (wname == 'song_bpm')
 			{
@@ -1441,6 +1446,7 @@ class ChartingState extends MusicBeatState
 			noteSpeedLabel.visible = false;
 			noteTagInput.visible = false;
 			noteTagText.visible = false;
+			playAnimCheck.visible = false;
 			stepperSpeed.visible = true;
 			speedLabel.visible = true;
 		}else if(check_extra_stuff.checked && stepperSpeed.visible) {
@@ -2120,6 +2126,12 @@ class ChartingState extends MusicBeatState
 			stepperSusLength.value = curSelectedNote[2];
 			singleNoteSpeed.value = curSelectedNote[4];
 			noteTagInput.text = curSelectedNote[5];
+
+			if(curSelectedNote[6] != null) {
+				playAnimCheck.checked = curSelectedNote[6];
+			}else {
+				playAnimCheck.checked = true;
+			}
 		}
 	}
 
@@ -2260,6 +2272,7 @@ class ChartingState extends MusicBeatState
 			var daNoteType = i[3];
 			var daSpeed = i[4];
 			var daTag = i[5];
+			var daAnimPlay = i[6];
 
 			var note:Note = new Note(daStrumTime, daNoteInfo % Math.floor(mainGrid/2), null, false, daNoteType);
 			note.sustainLength = daSus;
@@ -2278,8 +2291,12 @@ class ChartingState extends MusicBeatState
 				note.placeModifierSymbol("T");
 			}
 
-			if(daSpeed > 0) {
+			if(daSpeed > _song.speed) {
 				note.placeModifierSymbol("S");
+			}
+
+			if(!daAnimPlay && i[6] != null) {
+				note.placeModifierSymbol("A");
 			}
 
 			add(note.modifiedSymbol);
@@ -2404,24 +2421,29 @@ class ChartingState extends MusicBeatState
 		var noteData = Math.floor(FlxG.mouse.x / GRID_SIZE);
 		var noteSpeed:Null<Float> = 0;
 		var noteTag:String = null;
+		var playAnyAnim:Bool = true;
 		var noteSus = 0;
 			
 		if(check_extra_stuff.checked) {
-			if(singleNoteSpeed.value != stepperSpeed.value)
+			if(singleNoteSpeed.value != stepperSpeed.value) {
 				noteSpeed = singleNoteSpeed.value;
+			}else {
+				noteSpeed = _song.speed;
+			}
 			
 			noteTag = noteTagInput.text;
+			playAnyAnim = playAnimCheck.checked;
 		}
 
 		if (n != null) {
 			n.noteAbstract = wtfIsNote;
-			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? mainGrid/2 : 0), n.sustainLength, n.noteAbstract, n.howSpeed, n.tag]);
+			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? mainGrid/2 : 0), n.sustainLength, n.noteAbstract, n.howSpeed, n.tag, n.playAnyAnimation]);
 		}
 		else {
 			if(!check_extra_stuff.checked)
 				noteSpeed = 0;
 
-			_song.notes[curSection + extraSection].sectionNotes.push([noteStrum, noteData, noteSus, wtfIsNote, noteSpeed, noteTag]);
+			_song.notes[curSection + extraSection].sectionNotes.push([noteStrum, noteData, noteSus, wtfIsNote, noteSpeed, noteTag, playAnyAnim]);
 		}
 
 		curSelectedNote = _song.notes[curSection + extraSection].sectionNotes[_song.notes[curSection + extraSection].sectionNotes.length - 1];

@@ -42,6 +42,8 @@ class Note extends feshixl.FeshSprite {
 	public var howSpeed:Float = 0;
 	public var setupPosition:Float = 0;
 
+	public var playAnyAnimation:Bool = true;
+
 	public var sound:FlxSound;
 
 	public var strumTime:Float = 0;

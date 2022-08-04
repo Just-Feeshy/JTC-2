@@ -1199,6 +1199,9 @@ class PlayState extends MusicBeatState
 				if(songNotes[5] != null)
 					swagNote.tag = songNotes[5];
 
+				if(songNotes[6] != null)
+					swagNote.playAnyAnimation = songNotes[6];
+
 				swagNote.setupPosition = DefaultHandler.compilePosition(daStrumTime);
 
 				var susLength:Float = swagNote.sustainLength;
@@ -1965,7 +1968,10 @@ class PlayState extends MusicBeatState
 							altAnim = '-alt';
 					}
 
-					dad.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
+					if(daNote.playAnyAnimation) {
+						dad.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
+						dad.holdTimer = 0;
+					}
 
 					events.whenNoteIsPressed(daNote, this);
 					cameraMovement(daNote.noteData, daNote.isSustainNote);
@@ -1979,8 +1985,6 @@ class PlayState extends MusicBeatState
 							daNote.hit(spr);
 						}
 					});
-
-					dad.holdTimer = 0;
 
 					if (SONG.needsVoices)
 						vocals.volume = 1;
@@ -2101,8 +2105,10 @@ class PlayState extends MusicBeatState
 											else
 												misses += 1;
 
-											FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-											boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+											if(daNote.playAnyAnimation) {
+												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+											}
 										}
 									}
 								}else{
@@ -2115,8 +2121,10 @@ class PlayState extends MusicBeatState
 											else
 												misses += 1;
 
-											FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-											boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+											if(daNote.playAnyAnimation) {
+												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+											}
 										}
 									}
 								}
@@ -2640,8 +2648,15 @@ class PlayState extends MusicBeatState
 				boyfriend.stunned = false;
 			});
 
-			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-			boyfriend.playAnim(singAnims[direction] + "miss", true);
+			if(note == null) {
+				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+				boyfriend.playAnim(singAnims[direction] + "miss", true);
+			}else {
+				if(note.playAnyAnimation) {
+					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+					boyfriend.playAnim(singAnims[direction] + "miss", true);
+				}
+			}
 		}
 	}
 
@@ -2770,8 +2785,10 @@ class PlayState extends MusicBeatState
 
 				boyfriend.customAnimation = false;
 
-				boyfriend.playAnim(animPlay, true);
-				boyfriend.holdTimer = 0;
+				if(note.playAnyAnimation) {
+					boyfriend.playAnim(animPlay, true);
+					boyfriend.holdTimer = 0;
+				}
 			}
 
 			playerStrums.forEach(function(spr:Strum)

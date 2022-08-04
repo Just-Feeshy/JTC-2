@@ -118,15 +118,14 @@ class PauseSubState extends MusicBeatSubstate {
 		var downP = controls.DOWN_P;
 		var accepted = controls.ACCEPT;
 
-        if(completeTweens == menuItems.length) {
-            if (upP || FlxG.mouse.wheel > 0.1)
-            {
-                changeSelection(-1);
-            }
-            if (downP || FlxG.mouse.wheel < -0.1)
-            {
-                changeSelection(1);
-            }
+        if (upP || FlxG.mouse.wheel > 0.1)
+        {
+            changeSelection(-1);
+        }
+        
+        if (downP || FlxG.mouse.wheel < -0.1)
+        {
+            changeSelection(1);
         }
 
         if (accepted || FlxG.mouse.justPressed) {
@@ -209,19 +208,21 @@ class PauseSubState extends MusicBeatSubstate {
             }
         }
 
-        cleanTween();
+        if(completeTweens == menuItems.length) {
+            cleanTween();
 
-        for(i in 0...grpMenuShit.length) {
-            if(curSelected == i) {
-                var prevX:Float = grpMenuShit.members[i].x;
+            for(i in 0...grpMenuShit.length) {
+                if(curSelected == i) {
+                    var prevX:Float = grpMenuShit.members[i].x;
 
-                allTweens.push(FlxTween.tween(grpMenuShit.members[i], {x: prevX - 30}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, 
-                    onComplete: function(twn:FlxTween) {
-                        cleanTween();
-                    }     
-                }));
-            }else {
-                grpMenuShit.members[i].x = (menuItems.length - i) * 30;
+                    allTweens.push(FlxTween.tween(grpMenuShit.members[i], {x: prevX - 30}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, 
+                        onComplete: function(twn:FlxTween) {
+                            cleanTween();
+                        }     
+                    }));
+                }else {
+                    grpMenuShit.members[i].x = (menuItems.length - i) * 30;
+                }
             }
         }
 
