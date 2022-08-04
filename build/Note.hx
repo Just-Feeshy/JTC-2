@@ -78,9 +78,6 @@ class Note extends feshixl.FeshSprite {
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
 
-	@:allow(ChartingState.addNote)
-	@:allow(ChartingState.setupNotes)
-	@:allow(PlayState.generateSong)
 	public var tag(default, null):String = "";
 
 	public var modifiedSymbol:FlxText;
