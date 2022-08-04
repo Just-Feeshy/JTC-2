@@ -239,13 +239,14 @@ class ModLua {
                 return false;
             }
 
-            if(spr.animation.getByName(name) != null) {
+            @:privateAccess
+            if(spr.animation._animations.exists(animation)) {
                 if(Std.isOfType(spr, feshixl.FeshSprite)) {
                     var obj:Dynamic = spr;
 					var spr:feshixl.FeshSprite = obj;
-                    spr.playAnim(name, forced, reverse, startFrame);
+                    spr.playAnim(animation, forced, reverse, startFrame);
                 }else {
-                    spr.animation.play(name, forced, reverse, startFrame);
+                    spr.animation.play(animation, forced, reverse, startFrame);
                 }
             }
 
