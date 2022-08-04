@@ -78,7 +78,7 @@ class Note extends feshixl.FeshSprite {
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
 
-	public var tag(default, null):String = "";
+	public var tag:String = "";
 
 	public var modifiedSymbol:FlxText;
 
