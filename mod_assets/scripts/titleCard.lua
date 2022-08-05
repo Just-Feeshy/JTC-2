@@ -18,7 +18,7 @@ function onStartIntro()
     setSpritePosition("logoBl", 0, -50)
 end
 
-function onSkipIntro() --This shit look like Mag Engine lol.
+function onSkipIntro() --This shit look like Mag Engine 👌.
     createGradientSprite("tooMuchSpace", windowWidth, windowHeight, "[0xFF000000, 0xFF000000, 0xFF2b08b4]")
     setSpriteY("tooMuchSpace", windowHeight)
     insertSpriteToState(2, "tooMuchSpace")
