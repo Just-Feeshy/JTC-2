@@ -18,6 +18,13 @@ function onStartIntro()
     setSpritePosition("logoBl", 0, -50)
 end
 
+function onSkipIntro() --This shit look like Mag Engine lol.
+    createGradientSprite("tooMuchSpace", windowWidth, windowHeight, "[0xFF000000, 0xFF000000, 0xFF2b08b4]")
+    setSpriteY("tooMuchSpace", windowHeight)
+    insertSpriteToState(2, "tooMuchSpace")
+    doTweenY("tweenGrad", "tooMuchSpace", 0, 2, "quadOut")
+end
+
 function lerp(value1, value2, ratio)
     return value1 + ratio * (value2 - value1)
 end

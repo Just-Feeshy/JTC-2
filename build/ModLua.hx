@@ -12,6 +12,7 @@ import flixel.FlxSprite;
 import flixel.FlxCamera;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import flixel.util.FlxGradient;
 import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.text.FlxText;
@@ -101,6 +102,38 @@ class ModLua {
             }
 
             var sprite:FlxSprite = new FlxSprite();
+            sprite.antialiasing = SaveData.getData(SaveType.GRAPHICS);
+            sprite.active = true;
+
+            luaSprites.set(name, sprite);
+        });
+
+        Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
+            if(luaSprites.exists(name)) {
+                return;
+            }
+
+            colors = colors.trim();
+
+            if(colors.substring(0, 1) == "[") {
+                colors = colors.substring(1, colors.length);
+            }
+
+            if(colors.substring(colors.length - 1, colors.length) == "]") {
+                colors = colors.substring(0, colors.length - 1);
+            }
+
+            var colorStrArray:Array<String> = colors.split(',');
+            var colorArray:Array<Int> = [];
+
+            var index:Int = 0;
+
+			while(index < colorStrArray.length) {
+				colorArray.push(Std.parseInt(colorStrArray[index].trim()));
+                index++;
+			}
+
+            var sprite:FlxSprite = FlxGradient.createGradientFlxSprite(width, height, colorArray, 1);
             sprite.antialiasing = SaveData.getData(SaveType.GRAPHICS);
             sprite.active = true;
 
@@ -219,7 +252,17 @@ class ModLua {
                 spr.animation.remove(animation);
             }
 
-            var stringIndices:Array<String> = indices.trim().split(',');
+            indices = indices.trim();
+
+            if(indices.substring(0, 1) == "[") {
+                indices = indices.substring(1, indices.length);
+            }
+
+            if(indices.substring(indices.length - 1, indices.length) == "]") {
+                indices = indices.substring(0, indices.length - 1);
+            }
+
+            var stringIndices:Array<String> = indices.split(',');
 			var indices:Array<Int> = [];
 
             var index:Int = 0;
@@ -550,6 +593,36 @@ class ModLua {
 				luaTweens.set(name, FlxTween.tween(obj, {y: value}, duration, {ease: Register.getFlxEaseByString(ease),
 					onComplete: function(twn:FlxTween) {
                         luaTweens.remove(name);
+						call('onTweenCompleted', [name]);
+					}
+				}));
+			}
+		});
+
+        Lua_helper.add_callback(lua, "doTweenScaleX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+			var obj:Dynamic = getObjectFromMap(vars);
+
+			if(obj != null) {
+                cancelTween(name);
+				luaTweens.set(name, FlxTween.tween(obj, {"scale.x": value}, duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+                        //obj.updateHitbox();
+						call('onTweenCompleted', [name]);
+					}
+				}));
+			}
+		});
+
+        Lua_helper.add_callback(lua, "doTweenScaleY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+			var obj:Dynamic = getObjectFromMap(vars);
+
+			if(obj != null) {
+                cancelTween(name);
+				luaTweens.set(name, FlxTween.tween(obj, {"scale.y": value}, duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+                        luaTweens.remove(name);
+                        //obj.updateHitbox();
 						call('onTweenCompleted', [name]);
 					}
 				}));

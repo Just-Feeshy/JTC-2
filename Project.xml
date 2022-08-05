@@ -39,7 +39,7 @@
 	<set name="BUILD_DIR" value="export/32bit" if="32bit" />
 
 	<classpath name="build" />
-	<classpath path="modSource" />
+	<classpath path="mod_source" />
 
 	<!-- Engine Customization -->
 	<define name="USING_LUA" />

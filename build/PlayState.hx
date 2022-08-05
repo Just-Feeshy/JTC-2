@@ -587,76 +587,6 @@ class PlayState extends MusicBeatState
 		}else {
 			singAnims = ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
 		}
-
-		/*
-		switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
-			case 0:
-				if(SONG.fifthKey) {
-					keysMatrix[0] = [FlxKey.A, FlxKey.LEFT];
-					keysMatrix[1] = [FlxKey.S, FlxKey.DOWN];
-					keysMatrix[2] = [FlxKey.SPACE];
-					keysMatrix[3] = [FlxKey.W, FlxKey.UP];
-					keysMatrix[4] = [FlxKey.D, FlxKey.RIGHT];
-				}else {
-					keysMatrix[0] = [FlxKey.A, FlxKey.LEFT];
-					keysMatrix[1] = [FlxKey.S, FlxKey.DOWN];
-					keysMatrix[2] = [FlxKey.W, FlxKey.UP];
-					keysMatrix[3] = [FlxKey.D, FlxKey.RIGHT];
-				}
-			case 1:
-				if(SONG.fifthKey) {
-					keysMatrix[0] = [FlxKey.D, FlxKey.LEFT];
-					keysMatrix[1] = [FlxKey.F, FlxKey.DOWN];
-					keysMatrix[2] = [FlxKey.SPACE];
-					keysMatrix[3] = [FlxKey.J, FlxKey.UP];
-					keysMatrix[4] = [FlxKey.K, FlxKey.RIGHT];
-				}else {
-					keysMatrix[0] = [FlxKey.D, FlxKey.LEFT];
-					keysMatrix[1] = [FlxKey.F, FlxKey.DOWN];
-					keysMatrix[2] = [FlxKey.J, FlxKey.UP];
-					keysMatrix[3] = [FlxKey.K, FlxKey.RIGHT];
-				}
-			case 2:
-				if(SONG.fifthKey) {
-					keysMatrix[0] = [FlxKey.Z, FlxKey.LEFT];
-					keysMatrix[1] = [FlxKey.X, FlxKey.DOWN];
-					keysMatrix[2] = [FlxKey.SPACE];
-					keysMatrix[3] = [ONE, NUMPADONE, FlxKey.UP];
-					keysMatrix[4] = [TWO, NUMPADTWO, FlxKey.RIGHT];
-				}else {
-					keysMatrix[0] = [FlxKey.Z, FlxKey.LEFT];
-					keysMatrix[1] = [FlxKey.X, FlxKey.DOWN];
-					keysMatrix[2] = [ONE, NUMPADONE, FlxKey.UP];
-					keysMatrix[3] = [TWO, NUMPADTWO, FlxKey.RIGHT];
-				}
-			case 3:
-				if(SONG.fifthKey) {
-					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
-					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-					keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[4];
-					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[2];
-					keysMatrix[4] = SaveData.getData(CUSTOM_KEYBINDS)[3];
-				}else {
-					keysMatrix[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
-					keysMatrix[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-					keysMatrix[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
-					keysMatrix[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
-				}
-		}
-
-		if(SONG.fifthKey) {
-			keysMatrix[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
-			keysMatrix[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
-			keysMatrix[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[4]);
-			keysMatrix[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
-			keysMatrix[4].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
-		}else {
-			keysMatrix[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
-			keysMatrix[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
-			keysMatrix[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
-			keysMatrix[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
-		}
-		*/
 	}
 
 	function inDeBenigin() {
@@ -2635,7 +2565,7 @@ class PlayState extends MusicBeatState
 				if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 					songScore -= 30;
 				}else {
-					callLua("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
+					callLua("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 					songScore -= 10;
 				}
 			}
@@ -2824,7 +2754,7 @@ class PlayState extends MusicBeatState
 				hits++;
 			}
 
-			callLua("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
+			callLua("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
 			if (!note.isSustainNote) {
 				removeNote(note);
@@ -2869,7 +2799,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function addLuaToX(daX:Float, note:Note):Float {
-		var xLua:Null<Float> = callLua("addToNoteX", [daX, note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
+		var xLua:Null<Float> = callLua("addToNoteX", [daX, note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 		var finalLuaVar:Float = daX;
 
 		if(xLua != null)
@@ -2879,7 +2809,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function addLuaToAngle(daAngle:Float, note:Note):Float {
-		var xLua:Null<Float> = callLua("addToNoteAngle", [daAngle, note.caculatePos, note.strumTime, note.noteData, note.noteAbstract, note.isSustainNote]);
+		var xLua:Null<Float> = callLua("addToNoteAngle", [daAngle, note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 		var finalLuaVar:Float = daAngle;
 
 		if(xLua != null)
