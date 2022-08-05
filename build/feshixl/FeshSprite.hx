@@ -41,7 +41,7 @@ import Std.is as isOfType;
 class FeshSprite extends FlxSprite {
     /**
     * This is something that is going to be HEAVILY in WIP.
-    * I'm mostly likely going to get mod/modss out way before I find a complete algorithm.
+    * I'm mostly likely going to get mod(s) out way before I find a complete algorithm.
     */
     public var z:Float = 0;
 

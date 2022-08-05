@@ -14,7 +14,6 @@ import template.TransitionBuilder;
 import template.CustomNote;
 import template.StageBuilder;
 import feshixl.group.FeshEventGroup;
-import feshixl.interfaces.IDialogue;
 import flixel.tweens.FlxEase;
 import flixel.FlxG;
 import haxe.Json;

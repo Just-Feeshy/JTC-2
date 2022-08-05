@@ -11,16 +11,15 @@ import flixel.system.FlxSound;
 import flixel.util.FlxTimer;
 import flixel.FlxCamera;
 import flixel.FlxState;
-
 import betterShit.BetterCams;
 import feshixl.filters.GuassianBlur;
-import feshixl.interfaces.IDialogue;
 import feshixl.FeshSprite;
 import openfl.filters.ShaderFilter;
 import lime.utils.Assets;
 import haxe.Json;
 
 import SaveData.SaveType;
+import IDialogue;
 import ModInitialize;
 
 using StringTools;
@@ -322,8 +321,6 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     override function destroy():Void {
-        trace("did?");
-
         girlfriend = null;
 
         for(i in 0...soundBinds.length) {

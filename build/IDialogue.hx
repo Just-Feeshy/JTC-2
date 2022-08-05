@@ -1,4 +1,4 @@
-package feshixl.interfaces;
+package;
 
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flixel.FlxCamera;

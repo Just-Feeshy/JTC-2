@@ -47,7 +47,6 @@ import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.group.FeshEventGroup;
-import feshixl.interfaces.IDialogue;
 import openfl.Lib;
 
 import example_code.DefaultStage;

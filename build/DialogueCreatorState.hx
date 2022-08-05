@@ -15,7 +15,6 @@ import flixel.text.FlxText;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
-import feshixl.interfaces.IDialogue;
 import feshixl.sound.FeshSound;
 import feshixl.FeshSprite;
 import openfl.net.FileReference;
@@ -29,6 +28,7 @@ import json2object.JsonParser;
 
 import SaveData.SaveType;
 import ModInitialize.AnimationInfo;
+import IDialogue;
 
 using StringTools;
 

@@ -5,15 +5,13 @@ import flixel.FlxG;
 import flixel.FlxState;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
-
 import sys.thread.Thread;
 import sys.FileSystem;
 import sys.io.File;
-
-import feshixl.interfaces.IDialogue;
 import lime.utils.Assets;
 import haxe.Json;
 
+import IDialogue.DialogueData;
 import ModInitialize;
 
 #if json2object
