@@ -102,6 +102,7 @@ class Cache {
         }
 
         theseAssets.clear();
+        openfl.Assets.cache.clear();
         System.gc();
     }
 
@@ -121,7 +122,5 @@ class Cache {
                 daBitmap = null;
             }
         }
-
-        openfl.Assets.cache.clear("songs");
     }
 }
