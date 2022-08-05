@@ -32,6 +32,9 @@ class CheesyStage extends StageBuilder {
 		var cacheList:Array<String> = [];
 		allTweens = new Array<FlxTween>();
 
+		/**
+		* WIP
+		*
 		if(Assets.exists(Paths.getPath('data/frostbeat/cache.json', TEXT, ""))) {
             cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/frostbeat/cache.json', TEXT, "")));
 
@@ -41,6 +44,7 @@ class CheesyStage extends StageBuilder {
 				}
 			}
 		}
+		*/
 
         switch(stage) {
             case "funkstreet":

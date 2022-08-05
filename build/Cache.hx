@@ -122,5 +122,9 @@ class Cache {
                 daBitmap = null;
             }
         }
+
+        theseAssets.clear();
+        openfl.Assets.cache.clear();
+        System.gc();
     }
 }
