@@ -88,10 +88,10 @@ class CrashLogDisplay extends Sprite {
     }
 
     function createText(_text:String, font:String, size:Int):FlxText {
-        var _backendText = new FlxText(100, 0, 0, _text, size);
-        _backendText.setFormat(font, size, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, 0);
+        var _frontendText = new FlxText(100, 0, 0, _text, size);
+        _frontendText.setFormat(font, size, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, 0);
 
-        return _backendText;
+        return _frontendText;
     }
 
     function createRectPanel(bitmapData:BitmapData):Rectangle {
