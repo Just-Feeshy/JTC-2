@@ -67,7 +67,7 @@ function onUpdate(elapsed)
             changeDifficulty(-1)
         end
 
-        setSpritePosition("scoreText", getMidpointX("bubble") - 50, getMidpointY("bubble") - 25)
+        setSpritePosition("scoreText", getMidpointX("bubble") - (getSpriteWidth("scoreText") / 2) - 25, getMidpointY("bubble") - (getSpriteHeight("scoreText") / 2) + 15)
     end
 
     setSpriteAngle("grpWeekText", math.sin(tickCounter * (math.pi / 2)) * 6)

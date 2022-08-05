@@ -2192,6 +2192,12 @@ class PlayState extends MusicBeatState
 				FlxG.sound.playMusic(Paths.music('Main Menu'));
 
 				FlxG.switchState(new StoryMenuState());
+
+				if (SONG.validScore && !modifierCheckList('blue balls')) { //Make sure to not override.
+					#if !switch
+					Highscore.saveWeekScore(Paths.modJSON.weeks.get("week_" + PlayState.storyWeek).week_name, campaignScore, storyDifficulty);
+					#end
+				}
 			}
 			else
 			{
