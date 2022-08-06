@@ -18,8 +18,8 @@ import openfl.events.IOErrorEvent;
 import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
 import openfl.net.FileReference;
-import openfl.utils.ByteArray;
 import sys.FileSystem;
+import haxe.io.Bytes;
 import haxe.Json;
 
 #if json2object
@@ -43,7 +43,6 @@ abstract FileStatus(String) {
 /**
 * BONUS CHALLENGE: Don't override the `update` method.
 */
-@:access(openfl.utils.ByteArray)
 class DialogueCreatorState extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
 
@@ -936,7 +935,7 @@ class DialogueCreatorState extends MusicBeatState {
         }
     }
 
-    function safelyGetAssetInfo(value:String, file:DialogueFileData):ByteArray {
+    function safelyGetAssetInfo(value:String, file:DialogueFileData):Bytes {
         if(file != null) {
             if(value == "sprite") {
                 return file.spriteData;

@@ -19,6 +19,7 @@ import openfl.utils.ByteArray;
 import openfl.display.BitmapData;
 import openfl.geom.Point;
 import haxe.xml.Access;
+import haxe.io.Bytes;
 
 import SaveData.SaveType;
 
@@ -82,16 +83,16 @@ class FeshSprite extends FlxSprite {
         clippingPointAtlas = new Map<String, FlxPoint>();
     }
 
-    public function implementBitmap(image:ByteArray):Void {
+    public function implementBitmap(image:Bytes):Void {
         if(image == null)
             return;
 
-        graphics = FlxG.bitmap.add(BitmapData.fromBytes(image));
+        graphics = FlxG.bitmap.add(BitmapData.fromBytes(ByteArray.fromBytes(image)));
         graphics.persist = true;
         graphics.destroyOnNoUse = false;
     }
 
-    public function implementXML(xml:ByteArray):Void {
+    public function implementXML(xml:Bytes):Void {
         if(xml == null)
             return;
 

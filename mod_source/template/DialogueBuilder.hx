@@ -16,6 +16,7 @@ import feshixl.filters.GuassianBlur;
 import feshixl.FeshSprite;
 import openfl.filters.ShaderFilter;
 import lime.utils.Assets;
+import haxe.io.Bytes;
 import haxe.Json;
 
 import SaveData.SaveType;
@@ -75,28 +76,43 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     function refreshDisplay():Void {
-        try {
-            if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info.info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
+        if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info.info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
+            if(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID] != null) {
+                leftPortrait.implementXML(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID].xmlData);
+                leftPortrait.implementBitmap(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID].spriteData);
+                leftPortrait.compileSprite();
+            }else {
                 leftPortrait.animation.destroyAnimations();
                 leftPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].leftPortrait.assetID]);
-                implementAnimPlay("left portrait");
             }
 
-            if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info.info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
+            implementAnimPlay("left portrait");
+        }
+
+        if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info.info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
+            if(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID] != null) {
+                rightPortrait.implementXML(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID].xmlData);
+                rightPortrait.implementBitmap(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID].spriteData);
+                rightPortrait.compileSprite();
+            }else {
                 rightPortrait.animation.destroyAnimations();
                 rightPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].rightPortrait.assetID]);
-                implementAnimPlay("right portrait");
             }
 
-            if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info.info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
+            implementAnimPlay("right portrait");
+        }
+
+        if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info.info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
+            if(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID] != null) {
+                speechBubble.implementXML(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID].xmlData);
+                speechBubble.implementBitmap(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID].spriteData);
+                speechBubble.compileSprite();
+            }else {
                 speechBubble.animation.destroyAnimations();
                 speechBubble.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].speechBubble.assetID]);
-                implementAnimPlay("speech bubble");
             }
-        }catch(e) {
-            trace(assetBinds[_info.info[dialogueScene].leftPortrait.assetID] == null ? "No asset located for 'Left Portrait'" : "");
-            trace(assetBinds[_info.info[dialogueScene].rightPortrait.assetID] == null ? "No asset located for 'Right Portrait'" : "");
-            trace(assetBinds[_info.info[dialogueScene].speechBubble.assetID] == null ? "No asset located for 'Speech Bubble'" : "");
+
+            implementAnimPlay("speech bubble");
         }
 
         refreshDisplayPosition();
@@ -226,6 +242,10 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     public function bindAssetsFromBytes():Void {
+        if(_info.totalSprites == null) {
+            return;
+        }
+
         var index:Int = 0;
     }
 
