@@ -29,7 +29,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     var blurEffect:GuassianBlur;
 
-    var _info:Array<DialogueData>;
+    var _info:DialogueInfo;
 
     var leftPortrait:FeshSprite;
     var rightPortrait:FeshSprite;
@@ -76,32 +76,32 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     function refreshDisplay():Void {
         try {
-            if(_info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
+            if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info.info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
                 leftPortrait.animation.destroyAnimations();
-                leftPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].leftPortrait.assetID]);
+                leftPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].leftPortrait.assetID]);
                 implementAnimPlay("left portrait");
             }
 
-            if(_info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
+            if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info.info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
                 rightPortrait.animation.destroyAnimations();
-                rightPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].rightPortrait.assetID]);
+                rightPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].rightPortrait.assetID]);
                 implementAnimPlay("right portrait");
             }
 
-            if(_info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
+            if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info.info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
                 speechBubble.animation.destroyAnimations();
-                speechBubble.frames = Paths.getSparrowAtlas(assetBinds[_info[dialogueScene].speechBubble.assetID]);
+                speechBubble.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].speechBubble.assetID]);
                 implementAnimPlay("speech bubble");
             }
         }catch(e) {
-            trace(assetBinds[_info[dialogueScene].leftPortrait.assetID] == null ? "No asset located for 'Left Portrait'" : "");
-            trace(assetBinds[_info[dialogueScene].rightPortrait.assetID] == null ? "No asset located for 'Right Portrait'" : "");
-            trace(assetBinds[_info[dialogueScene].speechBubble.assetID] == null ? "No asset located for 'Speech Bubble'" : "");
+            trace(assetBinds[_info.info[dialogueScene].leftPortrait.assetID] == null ? "No asset located for 'Left Portrait'" : "");
+            trace(assetBinds[_info.info[dialogueScene].rightPortrait.assetID] == null ? "No asset located for 'Right Portrait'" : "");
+            trace(assetBinds[_info.info[dialogueScene].speechBubble.assetID] == null ? "No asset located for 'Speech Bubble'" : "");
         }
 
         refreshDisplayPosition();
 
-        if(_info[dialogueScene].text[0] == "left portrait") {
+        if(_info.info[dialogueScene].text[0] == "left portrait") {
             rightPortrait.visible = false;
             leftPortrait.visible = true;
             speechBubble.flipX = true;
@@ -116,11 +116,11 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
 
         if(displayText == null) {
-            displayText = new DialogueText(0, 0, Std.int(FlxG.width * 0.8), "", _info[dialogueScene].textSize);
+            displayText = new DialogueText(0, 0, Std.int(FlxG.width * 0.8), "", _info.info[dialogueScene].textSize);
             add(displayText);
         }
         
-        refreshDisplayText(_info[dialogueScene].text[1]);
+        refreshDisplayText(_info.info[dialogueScene].text[1]);
 
         if(shadowText != null) {
             refreshShadowText();
@@ -131,51 +131,51 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     function refreshDisplayPosition():Void {
-        leftPortrait.scale.set(_info[dialogueScene].leftPortrait.size, _info[dialogueScene].leftPortrait.size);
-        rightPortrait.scale.set(_info[dialogueScene].rightPortrait.size, _info[dialogueScene].rightPortrait.size);
-        speechBubble.scale.set(_info[dialogueScene].speechBubble.size, _info[dialogueScene].speechBubble.size);
+        leftPortrait.scale.set(_info.info[dialogueScene].leftPortrait.size, _info.info[dialogueScene].leftPortrait.size);
+        rightPortrait.scale.set(_info.info[dialogueScene].rightPortrait.size, _info.info[dialogueScene].rightPortrait.size);
+        speechBubble.scale.set(_info.info[dialogueScene].speechBubble.size, _info.info[dialogueScene].speechBubble.size);
 
         leftPortrait.updateHitbox();
         rightPortrait.updateHitbox();
         speechBubble.updateHitbox();
         
-        leftPortrait.x = _info[dialogueScene].leftPortrait.x;
-        leftPortrait.y = _info[dialogueScene].leftPortrait.y;
-        rightPortrait.x = _info[dialogueScene].rightPortrait.x;
-        rightPortrait.y = _info[dialogueScene].rightPortrait.y;
-        speechBubble.x = _info[dialogueScene].speechBubble.x;
-        speechBubble.y = _info[dialogueScene].speechBubble.y;
+        leftPortrait.x = _info.info[dialogueScene].leftPortrait.x;
+        leftPortrait.y = _info.info[dialogueScene].leftPortrait.y;
+        rightPortrait.x = _info.info[dialogueScene].rightPortrait.x;
+        rightPortrait.y = _info.info[dialogueScene].rightPortrait.y;
+        speechBubble.x = _info.info[dialogueScene].speechBubble.x;
+        speechBubble.y = _info.info[dialogueScene].speechBubble.y;
     }
 
     function refreshDisplayText(text:String = "") {
-        if(_info[dialogueScene].talkingAnimation != null) {
-            if(_info[dialogueScene].text[0] == "left portrait") {
+        if(_info.info[dialogueScene].talkingAnimation != null) {
+            if(_info.info[dialogueScene].text[0] == "left portrait") {
                 displayText.attachSprite(leftPortrait);
             }else {
                 displayText.attachSprite(rightPortrait);
             }
 
-            displayText.shouldPlayAnim(_info[dialogueScene].talkingAnimation);
+            displayText.shouldPlayAnim(_info.info[dialogueScene].talkingAnimation);
         }
 
-        displayText.sounds = [soundBinds[_info[dialogueScene].soundIndex]];
+        displayText.sounds = [soundBinds[_info.info[dialogueScene].soundIndex]];
         displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
-        displayText.size = _info[dialogueScene].textSize;
+        displayText.size = _info.info[dialogueScene].textSize;
 
         if(text.trim() != "") {
             displayText.resetText(text);
-            displayText.start(0.04 / _info[dialogueScene].speed, true);
+            displayText.start(0.04 / _info.info[dialogueScene].speed, true);
         }
 
-        displayText.font = _info[dialogueScene].font;
-        displayText.color = _info[dialogueScene].textColor;
+        displayText.font = _info.info[dialogueScene].font;
+        displayText.color = _info.info[dialogueScene].textColor;
     }
 
     function refreshShadowText() {
         shadowText.setPosition(displayText.x + 2, displayText.y + 2);
-        shadowText.size = _info[dialogueScene].textSize;
+        shadowText.size = _info.info[dialogueScene].textSize;
 
-        shadowText.font = _info[dialogueScene].font;
+        shadowText.font = _info.info[dialogueScene].font;
     }
 
     function implementAnimPlay(sprString:String):Void {
@@ -190,9 +190,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
 
         switch(sprString) {
-            case "left portrait": dialogueInfo = _info[dialogueScene].leftPortrait;
-            case "right portrait": dialogueInfo = _info[dialogueScene].rightPortrait;
-            case "speech bubble": dialogueInfo = _info[dialogueScene].speechBubble;
+            case "left portrait": dialogueInfo = _info.info[dialogueScene].leftPortrait;
+            case "right portrait": dialogueInfo = _info.info[dialogueScene].rightPortrait;
+            case "speech bubble": dialogueInfo = _info.info[dialogueScene].speechBubble;
             default: return;
         }
 
@@ -204,7 +204,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     public function implementShadowText():Void {
-        shadowText = new FlxText(0, 0, Std.int(FlxG.width * 0.8), "", _info[dialogueScene].textSize);
+        shadowText = new FlxText(0, 0, Std.int(FlxG.width * 0.8), "", _info.info[dialogueScene].textSize);
     }
 
     public function implementShadowTextColor(color:FlxColor):Void {
@@ -223,6 +223,10 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         FlxG.sound.playMusic(path);
 
         playSong = true;
+    }
+
+    public function bindAssetsFromBytes():Void {
+        var index:Int = 0;
     }
 
     public function bindAssetToID(ID:Int, path:String):Void {
@@ -262,8 +266,8 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         });
     }
 
-    public function parseJSON():Array<DialogueData> {
-        var dialogueData:Array<DialogueData> = cast Json.parse(Assets.getText(Paths.json(PlayState.SONG.song.toLowerCase() + "/dialogue")).trim()).info;
+    public function parseJSON():DialogueInfo {
+        var dialogueData:DialogueInfo = cast Json.parse(Assets.getText(Paths.json(PlayState.SONG.song.toLowerCase() + "/dialogue")).trim());
         return dialogueData;
     }
 
@@ -280,11 +284,11 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 			Conductor.songPosition += FlxG.elapsed * 1000;
         }
 
-        if(controls.ACCEPT && !changingScene && dialogueScene < _info.length) {
+        if(controls.ACCEPT && !changingScene && dialogueScene < _info.info.length) {
             changingScene = true;
 
             refreshDisplay();
-        }else if(controls.ACCEPT && !changingScene && !(dialogueScene < _info.length)) { //Too lazy
+        }else if(controls.ACCEPT && !changingScene && !(dialogueScene < _info.info.length)) { //Too lazy
             changingScene = true;
 
             leftPortrait = FlxDestroyUtil.destroy(leftPortrait);
@@ -304,11 +308,11 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
             shadowText.text = displayText.text;
         }
 
-        if(dialogueScene < _info.length) {
+        if(dialogueScene < _info.info.length) {
             if(FlxG.sound.volume > 0)
-                soundBinds[_info[dialogueScene].soundIndex].volume = FlxG.sound.volume + 0.3;
+                soundBinds[_info.info[dialogueScene].soundIndex].volume = FlxG.sound.volume + 0.3;
             else
-                soundBinds[_info[dialogueScene].soundIndex].volume = 0;
+                soundBinds[_info.info[dialogueScene].soundIndex].volume = 0;
         }
 
         super.update(elapsed);
