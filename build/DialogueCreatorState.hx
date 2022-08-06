@@ -15,7 +15,7 @@ import flixel.text.FlxText;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
-import feshixl.sound.FeshSound;
+import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
@@ -43,6 +43,7 @@ abstract FileStatus(String) {
 /**
 * BONUS CHALLENGE: Don't override the `update` method.
 */
+@:access(openfl.utils.ByteArray)
 class DialogueCreatorState extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
 
@@ -281,7 +282,7 @@ class DialogueCreatorState extends MusicBeatState {
         }
 
         if(displayText != null) {
-            displayText.sounds = [FeshSound.loadSoundFromByteArray(_info.totalSounds[_info.info[dialogueScene].soundIndex])];
+            displayText.sounds = [FeshBytesHandler.loadSoundFromByteArray(_info.totalSounds[_info.info[dialogueScene].soundIndex])];
             displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
             displayText.size = _info.info[dialogueScene].textSize;
 
@@ -1012,14 +1013,14 @@ class DialogueCreatorState extends MusicBeatState {
                 if(fileType.contains(".xml")) {
                     for(i in 0...totalSprites.length) {
                         if(spriteSelector.selectedLabel == totalSprites[i].name) {
-                            totalSprites[i].xmlData = _file.data;
+                            totalSprites[i].xmlData = FeshBytesHandler.bytesFromArray(_file.data);
                             break;
                         }
                     }
                 }else if(fileType.contains(".png")) {
                     for(i in 0...totalSprites.length) {
                         if(spriteSelector.selectedLabel == totalSprites[i].name) {
-                            totalSprites[i].spriteData = _file.data;
+                            totalSprites[i].spriteData = FeshBytesHandler.bytesFromArray(_file.data);
                             break;
                         }
                     }
@@ -1039,7 +1040,7 @@ class DialogueCreatorState extends MusicBeatState {
 
                 fileType = [];
             case SOUND:
-                _info.totalSounds.push(_file.data);
+                _info.totalSounds.push(FeshBytesHandler.bytesFromArray(_file.data));
 
                 if(!foundFile) {
                     unableLabelOther.text = "Unable to compile file:\n" + _file.name;

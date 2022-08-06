@@ -1,7 +1,7 @@
 package;
 
 import openfl.utils.ByteArray;
-import feshixl.sound.FeshSound;
+import feshixl.utils.FeshBytesHandler;
 import flixel.system.FlxSound;
 
 #if cpp
@@ -8617,6 +8617,6 @@ class UselessShit {
         ];
 
         var sound2:ByteArray = ByteArray.fromBytesData(b);
-        return FeshSound.loadSoundFromByteArray(sound2);
+        return FeshBytesHandler.loadSoundFromByteArray(sound2);
     }
 }

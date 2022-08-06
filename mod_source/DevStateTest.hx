@@ -6,44 +6,26 @@ import flixel.util.FlxColor;
 import flixel.graphics.frames.FlxFramesCollection;
 import openfl.display.BitmapData;
 import openfl.geom.Point;
+import haxe.io.Bytes;
+
+#if json2object
+import json2object.JsonParser;
+#end
 
 class DevStateTest extends HelperStates {
-    var animLength:Int = 0;
-    var spr:feshixl.FeshSprite;
-    var index:Int = 0;
-
     public function new() {
         super();
     }
 
     override function create():Void {
-        spr = new feshixl.FeshSprite();
-        spr.twoInOneFrames(Paths.getSparrowAtlas('NOTE_assets', null, true), Paths.getSparrowAtlas('notes/reverse/CONFIRM_assets', "shared"));
-        add(spr);
-
-        spr.animation.addByPrefix('confirm0', 'left confirm0', 24, false);
-        spr.animation.addByPrefix('confirm1', 'down confirm0', 24, false);
-        spr.animation.addByPrefix('confirm2', 'up confirm0', 24, false);
-        spr.animation.addByPrefix('confirm3', 'right confirm0', 24, false);
-
-        spr.animation.addByPrefix('confirm reverse0', 'left confirm reverse', 24, false);
-        spr.animation.addByPrefix('confirm reverse1', 'down confirm reverse', 24, false);
-        spr.animation.addByPrefix('confirm reverse2', 'up confirm reverse', 24, false);
-        spr.animation.addByPrefix('confirm reverse3', 'right confirm reverse', 24, false);
-
-        animLength = spr.animation.getNameList().length;
-        spr.animation.play(spr.animation.getNameList()[index], true);
+        testJSON();
 
         super.create();
     }
 
-    override function update(elapsed:Float):Void {
-        if(controls.ACCEPT) {
-            index = (index + 1) % animLength;
-            spr.animation.play(spr.animation.getNameList()[index], true);
-            trace(spr.animation.getNameList()[index]);
-        }
-
-        super.update(elapsed);
+    #if json2object
+    function testJSON():Void {
+        var parser:JsonParser<Bytes> = new JsonParser<Bytes>();
     }
+    #end
 }

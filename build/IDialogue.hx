@@ -1,10 +1,9 @@
 package;
 
-import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import flixel.FlxCamera;
 import flixel.FlxState;
-
-import openfl.utils.ByteArray;
+import flixel.FlxCamera;
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
+import haxe.io.Bytes;
 
 import ModInitialize;
 
@@ -18,8 +17,8 @@ interface IDialogue extends IFlxDestroyable {
 
 typedef DialogueFileData = {
     var name:String;
-    var spriteData:ByteArray;
-    var xmlData:ByteArray;
+    var spriteData:Bytes;
+    var xmlData:Bytes;
 }
 
 typedef DialogueSpriteData = {
@@ -54,5 +53,5 @@ typedef DialogueData = {
 typedef DialogueInfo = {
     var info:Array<DialogueData>;
     var totalSprites:Array<DialogueFileData>;
-    var totalSounds:Array<ByteArray>;
+    var totalSounds:Array<Bytes>;
 }

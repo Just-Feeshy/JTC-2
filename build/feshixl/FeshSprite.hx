@@ -12,7 +12,6 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
-import flixel.math.FlxMatrix;
 import feshixl.math.FeshMath3D;
 import feshixl.math.FeshMatrix4x4;
 import openfl.geom.Rectangle;
