@@ -7,8 +7,10 @@ import Discord.DiscordClient;
 import Song.SwagSong;
 import Controls.Control;
 
-import flixel.addons.ui.FlxUIText;
 import flixel.FlxG;
+import flixel.FlxSprite;
+import flixel.FlxObject;
+import flixel.FlxCamera;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxAxes;
 import flixel.input.gamepad.FlxGamepad;
@@ -19,6 +21,7 @@ import flixel.addons.ui.FlxUI;
 import flixel.addons.ui.FlxUITabMenu;
 import flixel.system.debug.interaction.tools.Pointer.GraphicCursorCross;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.addons.ui.FlxUIText;
 import flixel.addons.ui.FlxUINumericStepper;
 import flixel.addons.ui.FlxUICheckBox;
 import flixel.addons.ui.FlxUIDropDownMenu;
@@ -26,14 +29,11 @@ import flixel.addons.ui.FlxUIButton;
 import flixel.addons.ui.FlxUIInputText;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxMath;
-import flixel.FlxSprite;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxTimer;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
-import flixel.FlxObject;
-import flixel.FlxCamera;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
@@ -107,7 +107,6 @@ class CharacterCreatorState extends MusicBeatState {
         camHUD.bgColor.alpha = 0;
         camGame.bgColor.alpha = 0;
 
-        //FlxG.cameras.reset(camHUD);
         FlxG.cameras.add(camGame);
         FlxG.cameras.add(camHUD);
 
@@ -903,7 +902,7 @@ class CharacterCreatorState extends MusicBeatState {
             characterAutosave = null;
             characterJSONs = null;
 
-            FlxG.switchState(new MainMenuState());
+            FlxG.switchState(new OptionsMenuState("editors"));
 		}
 
         var controlArray:Array<Bool> = [

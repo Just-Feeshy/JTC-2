@@ -120,7 +120,7 @@ class DialogueCreatorState extends MusicBeatState {
 
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
 
-        var escapeText:FlxText = new FlxText(30, 30, "ESCAPE - To Exit");
+        var escapeText:FlxText = new FlxText(30, 30, "ESCAPE - To Exit\n\nMade By: Feeshy");
         add(escapeText);
 
         super.create();
@@ -986,7 +986,7 @@ class DialogueCreatorState extends MusicBeatState {
 
 	function onComplete(event:Event):Void {
 		_file = cast(event.target, FileReference);
-        _file.removeEventListener(Event.COMPLETE, onComplete);
+        clearEvent();
 
         unableLabel.text = "";
 
@@ -1068,6 +1068,7 @@ class DialogueCreatorState extends MusicBeatState {
 	}
 
 	function clearEvent():Void {
+        _file.removeEventListener(Event.COMPLETE, onComplete);
         _file.removeEventListener(Event.COMPLETE, onSaveComplete);
         _file.removeEventListener(Event.CANCEL, onCancel);
         _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);

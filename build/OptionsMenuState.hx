@@ -619,8 +619,20 @@ class OptionsMenuState extends MusicBeatState {
 					{
 						catagory: this.catalog,
 						options: [
-							new Options(0, 0, "Dialogue Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+							new Options(0, 0, "Spritesheet Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
 								option.ID = 0;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									FlxG.switchState(new SpriteSheetCreator());
+
+								option.description = "Spritesheet Creator.";
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 10, "Dialogue Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 1;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -631,8 +643,8 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Dialogue Creator.";
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 10, "Character Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 1;
+							new Options(0, 20, "Character Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 2;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -642,7 +654,7 @@ class OptionsMenuState extends MusicBeatState {
 
 								option.description = "Character Creator.";
 								setting(option, "", option.ID);
-							})
+							}),
 						]
 					}
 				];
