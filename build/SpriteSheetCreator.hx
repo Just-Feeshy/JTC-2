@@ -56,6 +56,7 @@ class SpriteSheetCreator extends MusicBeatState {
         updateText();
         add(escapeText);
 
+        UI_thingy.cameras = [camHUD];
         escapeText.cameras = [camHUD];
 
         super.create();
