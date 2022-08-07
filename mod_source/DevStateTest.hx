@@ -17,8 +17,6 @@ class DevStateTest extends HelperStates {
     }
 
     override function create():Void {
-        testJSON();
-
         super.create();
     }
 }
