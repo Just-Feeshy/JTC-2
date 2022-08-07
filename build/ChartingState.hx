@@ -820,6 +820,8 @@ class ChartingState extends MusicBeatState
 		UI_Modifiers.scrollFactor.set();
 	}
 
+	var check_mute_inst:FlxUICheckBox;
+
 	var playOSU_Sound_RIGHT:Bool;
 	var playOSU_Sound_LEFT:Bool;
 
@@ -839,7 +841,7 @@ class ChartingState extends MusicBeatState
 			trace('CHECKED!');
 		};
 
-		var check_mute_inst:FlxUICheckBox = new FlxUICheckBox(10, 145, null, null, "Mute Instrumental (in editor)", 100);
+		check_mute_inst = new FlxUICheckBox(10, 145, null, null, "Mute Instrumental (in editor)", 100);
 		check_mute_inst.checked = false;
 		check_mute_inst.callback = function()
 		{
@@ -1253,28 +1255,39 @@ class ChartingState extends MusicBeatState
 		if (FlxG.sound.music != null) {
 			FlxG.sound.music.stop();
 		}
-
-		FlxG.sound.playMusic(Paths.inst(daSong), 0.6);
-
-		// WONT WORK FOR TUTORIAL OR TEST SONG!!! REDO LATER
+		
 		vocals = new FlxSound().loadEmbedded(Paths.voices(daSong));
-		vocals.looped = true;
 		FlxG.sound.list.add(vocals);
+
 		vocals.play();
 
+		setupSong(daSong);
 		FlxG.sound.music.pause();
-		vocals.pause();
-
 		Conductor.songPosition = sectionStartTime(curSection);
 		FlxG.sound.music.time = Conductor.songPosition;
+	}
 
-		FlxG.sound.music.onComplete = function()
-		{
-			vocals.pause();
+	function setupSong(daSong:String):Void {
+		FlxG.sound.playMusic(Paths.inst(daSong), 0.6);
+
+		if(check_mute_inst != null && check_mute_inst.checked) {
+			FlxG.sound.music.volume = 0;
+		}
+
+		FlxG.sound.music.onComplete = function() {
 			FlxG.sound.music.pause();
-			FlxG.sound.music.time = 0;
-			vocals.time = 0;
+			Conductor.songPosition = 0;
+
+			if(vocals != null) {
+				vocals.pause();
+				vocals.time = 0;
+			}
+
 			changeSection();
+			curSection = 0;
+			updateGrid();
+			updateSectionUI();
+			vocals.play();
 		};
 	}
 
