@@ -7,10 +7,15 @@ import flixel.animation.FlxBaseAnimation;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFilterFrames;
 import openfl.filters.BitmapFilter;
-import sys.FileSystem;
 
-import json2object.JsonParser;
+#if sys
+import sys.FileSystem;
 import sys.io.File;
+#end
+
+#if json2object
+import json2object.JsonParser;
+#end
 
 import ModInitialize;
 
@@ -283,11 +288,13 @@ class Character extends feshixl.FeshSprite {
 		finalizedY = y;
 	}
 
+	#if json2object
 	public static function loadInfo(character:String):ConfigCharacters {
 		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
 
 		return parser.fromJson(File.getContent(Paths.getPreloadPath('$character.json')), '${character.split('/')[1]}.json');
 	}
+	#end
 
 	public function refresh(character:String, camPos:FlxPoint) {
 		this.setPosition(finalizedX, finalizedY);

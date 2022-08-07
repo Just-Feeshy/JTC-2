@@ -2,13 +2,17 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+
+#if sys
 import sys.FileSystem;
+import sys.io.File;
+#end
 
 #if json2object
 import json2object.JsonParser;
-import sys.io.File;
-import ModInitialize;
 #end
+
+import ModInitialize;
 
 class HealthIcon extends FlxSprite
 {

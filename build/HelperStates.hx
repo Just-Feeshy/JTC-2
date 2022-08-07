@@ -71,7 +71,7 @@ class HelperStates extends FlxUIState {
 		/**
 		* Interesting, I know.
 		*/
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).execute();
 
@@ -135,7 +135,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function onCreate():Dynamic {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			return HelperStates.getLua(Type.getClass(this)).call("onCreate", []);
 		#end
@@ -144,7 +144,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function getModLua():ModLua {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			return HelperStates.getLua(Type.getClass(this));
 		}
@@ -154,7 +154,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function addCallback(name:String, method:Dynamic):Void {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).addCallback(name, method);
 		}
@@ -162,7 +162,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function attachSprite(name:String, spr:FlxSprite):Void {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			if(!HelperStates.getLua(Type.getClass(this)).luaSprites.exists(name))
 				HelperStates.getLua(Type.getClass(this)).luaSprites.set(name, spr);
@@ -171,7 +171,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function callLua(name:String, args:Array<Dynamic>):Dynamic {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			return HelperStates.getLua(Type.getClass(this)).call(name, args);
 		#end
@@ -180,7 +180,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function setLua(variable:String, data:Dynamic):Void {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).set(variable, data);
 		}
@@ -188,7 +188,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	public function resetScript() {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			var file:String = HelperStates.getLua(Type.getClass(this)).luaScript;
 
@@ -221,7 +221,7 @@ class HelperStates extends FlxUIState {
 	}
 
 	override function destroy() {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).close();
 		}
@@ -311,7 +311,7 @@ class HelperStates extends FlxUIState {
 				return;
 			}
 
-			#if USING_LUA
+			#if (USING_LUA && cpp)
 			_transition.finishCallback = function() {
 				callLua("finishedTransitionIn", []);
 			}
@@ -334,7 +334,7 @@ class HelperStates extends FlxUIState {
 			_transition.finishCallback = function() {
 				finishedTransition();
 
-				#if USING_LUA
+				#if (USING_LUA && cpp)
 				_transition.finishCallback = function() {
 					callLua("finishedTransitionOut", []);
 				}

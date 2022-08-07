@@ -1,6 +1,6 @@
 package;
 
-#if USING_LUA
+#if (USING_LUA && cpp)
 import llua.Lua;
 import llua.LuaL;
 import llua.State;
@@ -37,7 +37,7 @@ using StringTools;
 class ModLua {
     private var executed:Bool = false;
 
-    #if USING_LUA
+    #if (USING_LUA && cpp)
     private var lua:State = null;
     #end
 
@@ -61,7 +61,7 @@ class ModLua {
             return;
         }
 
-        #if USING_LUA
+        #if (USING_LUA && cpp)
         lua = LuaL.newstate();
 		LuaL.openlibs(lua);
 		Lua.init_callbacks(lua);
@@ -868,13 +868,13 @@ class ModLua {
     }
 
     public function addCallback(name:String, method:Dynamic):Void {
-        #if USING_LUA
+        #if (USING_LUA && cpp)
         Lua_helper.add_callback(lua, name, method);
         #end
     }
 
     public function set(variable:String, data:Dynamic):Void {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(lua == null) {
 			return;
 		}
@@ -885,7 +885,7 @@ class ModLua {
 	}
 
     public function call(event:String, args:Array<Dynamic>, index:Int = 0):Dynamic {
-        #if USING_LUA
+        #if (USING_LUA && cpp)
         if(lua == null) {
             trace("Error: Something went wrong with lua.");
             return 0;
@@ -963,7 +963,7 @@ class ModLua {
     }
 
     public function close():Void {
-        #if USING_LUA
+        #if (USING_LUA && cpp)
         if(lua == null) {
             return;
         }
@@ -1026,7 +1026,7 @@ class ModLua {
         #end
     }
 
-    #if USING_LUA
+    #if (USING_LUA && cpp)
     public function convertToLua(args:Array<Dynamic>, index:Int = 0):Int {
         if(index < args.length) {
             Convert.toLua(lua, args[index]);

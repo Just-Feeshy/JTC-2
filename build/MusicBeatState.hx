@@ -52,7 +52,7 @@ class MusicBeatState extends HelperStates
 	private function updateBeat():Void {
 		curBeat = Math.floor(curStep / 4);
 
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			HelperStates.getLua(Type.getClass(this)).call("updateBeat", []);
 		#end
@@ -72,14 +72,14 @@ class MusicBeatState extends HelperStates
 
 		curStep = lastChange.stepTime + Math.floor((songPos - lastChange.songTime) / Conductor.stepCrochet);
 
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			HelperStates.getLua(Type.getClass(this)).call("updateCurStep", []);
 		#end
 	}
 
 	public function stepHit():Void {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).call("onStepHit", []);
 			HelperStates.getLua(Type.getClass(this)).set("curStep", curStep);
@@ -91,7 +91,7 @@ class MusicBeatState extends HelperStates
 	}
 
 	public function beatHit():Void {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).call("onBeatHit", []);
 			HelperStates.getLua(Type.getClass(this)).set("curBeat", curBeat);

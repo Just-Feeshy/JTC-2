@@ -26,7 +26,9 @@ import Std.isOfType;
 import Std.is as isOfType;
 #end
 
+#if sys
 import sys.io.File;
+#end
 
 using StringTools;
 

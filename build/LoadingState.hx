@@ -8,14 +8,16 @@ import flixel.FlxSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.FlxGraphic;
 import flixel.util.FlxTimer;
+import flixel.math.FlxMath;
 
 import openfl.utils.Assets;
 import openfl.display.BitmapData;
 import lime.utils.Assets as LimeAssets;
 import lime.utils.AssetLibrary;
 import lime.utils.AssetManifest;
-
 import haxe.io.Path;
+
+import SaveData.SaveType;
 
 class LoadingState extends MusicBeatState
 {
@@ -26,6 +28,8 @@ class LoadingState extends MusicBeatState
 	var callbacks:MultiCallback;
 
 	var defaultValue:Bool = false;
+
+	var loadStuff:Float = 0;
 	
 	function new(target:FlxState, stopMusic:Bool) {
 		super();
@@ -33,9 +37,26 @@ class LoadingState extends MusicBeatState
 		this.target = target;
 		this.stopMusic = stopMusic;
 	}
+
+	var bgThing:FlxSprite;
+	var loadBar:FlxSprite;
 	
 	override function create()
 	{
+
+		bgThing = new FlxSprite(0, 0).loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(0, Paths.modJSON.background_images.length - 1)]));
+		bgThing.setGraphicSize(0, FlxG.height);
+		bgThing.updateHitbox();
+		bgThing.antialiasing = SaveData.getData(SaveType.GRAPHICS);
+		add(bgThing);
+		bgThing.scrollFactor.set();
+		bgThing.screenCenter();
+
+		loadBar = new FlxSprite(0, FlxG.height - 20).makeGraphic(FlxG.width, 10, 0xffff16d2);
+		loadBar.screenCenter(X);
+		loadBar.antialiasing = SaveData.getData(SaveType.GRAPHICS);
+		add(loadBar);
+
 		initSongsManifest().onComplete
 		(
 			function (lib)
@@ -102,9 +123,10 @@ class LoadingState extends MusicBeatState
 			trace('fired: ' + callbacks.getFired() + " unfired:" + callbacks.getUnfired());
 		#end
 
-		#if cpp
-
-		#end
+		if(callbacks != null) {
+			loadStuff = FlxMath.remapToRange(callbacks.numRemaining / callbacks.length, 1, 0, 0, 1);
+			loadBar.scale.x += 0.5 * (loadStuff - loadBar.scale.x);
+		}
 	}
 	
 	function onLoad()

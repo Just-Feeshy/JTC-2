@@ -164,7 +164,7 @@ class TitleState extends MusicBeatState {
 
 		FlxG.mouse.visible = false;
 
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableSprites.set("logoBl", logoBl);
 			modifiableSprites.set("gfDance", gfDance);

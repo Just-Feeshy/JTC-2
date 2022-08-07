@@ -182,7 +182,7 @@ class FreeplayState extends MusicBeatState
 
 		var swag:Alphabet = new Alphabet(1, 0, "swag");
 
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableSprites.set("menuBG", menuBG);
 		}
