@@ -43,6 +43,8 @@ class Character extends feshixl.FeshSprite {
 	public var finalizedWidth(default, null):Float = 0;
 	public var finalizedHeight(default, null):Float = 0;
 
+	public var danceBeatTimer:Int = 1;
+
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters)
 	{
 		super(x, y);

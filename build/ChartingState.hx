@@ -169,7 +169,7 @@ class ChartingState extends MusicBeatState
 			['time freeze', "Value 1 - 0 = Unfreeze time of music. 1 = Freeze time\nof music.\nValue 2 - Set tween value."],
 			['strum bounce', "Value 1 - Set size value.\nValue 2 - Set X offset value for player strum."],
 			['note rewind', "Value 1 - Set rewind value.\nValue 2 - Set tween value to the rewind speed."],
-			['character change', "Value 1 - New character's name.\nValue 2 - Character to change \n(Boyfriend's Side, Dad's Side, Girlfriend's Side)"],
+			['character change', "Value 1 - New character's name.\nValue 2 - Character to change \n(bf: Boyfriend's Side, dad: Dad's Side, gf: Girlfriend's Side)"],
 			['clear events', "Value 1 - Event's name.\nValue 2 - Second event's name. (optional)"],
 			['clear all', "Value 1 - nothing.\nValue 2 - nothing."]
 		]

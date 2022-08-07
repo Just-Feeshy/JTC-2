@@ -158,6 +158,9 @@ class PlayState extends MusicBeatState
 	public var notes:FlxTypedGroup<Note>;
 	public var unspawnNotes:Array<Note> = [];
 
+	public var waitForFinishPlayer:Bool = false;
+	public var waitForFinishOpponent:Bool = false;
+
 	private var strumLine:FlxSprite;
 
 	public var camFollow:FlxObject;
@@ -172,9 +175,6 @@ class PlayState extends MusicBeatState
 	private var camZooming:Bool = false;
 	private var curSong:String = "";
 	private var readableSong:String = "";
-
-	private var gfSpeed:Int = 1;
-	private var dadSpeed:Int = 1;
 	private var combo:Int = 0;
 
 	public var healthBarBG:FlxSprite;
@@ -374,6 +374,7 @@ class PlayState extends MusicBeatState
 
 		gf = new Character(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
+		gf.danceBeatTimer = 2;
 
 		for(i in 0...stageGroup.length) {
 			if(!stageGroup.members[i].hasGirlfriend()) {
@@ -1729,6 +1730,26 @@ class PlayState extends MusicBeatState
 			camFollow.setPosition(camPos.x + camMovementPos.x, camPos.y + camMovementPos.y);
 		}
 
+		if(dad.animation.curAnim != null) {
+			if (curBeat % dad.danceBeatTimer == 0 && !dad.animation.curAnim.name.startsWith("sing")) {
+				dad.dance();
+			}
+		}
+
+		if(boyfriend.animation.curAnim != null) {
+			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.animation.curAnim.name.startsWith("sing")) {
+				boyfriend.dance();
+			}
+		}
+
+		if (gf != null) {
+			if(gf.animation.curAnim != null) {
+				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing")) {
+					gf.dance();
+				}
+			}
+		}
+
 		if (camZooming)
 		{
 			FlxG.camera.zoom = FlxMath.lerp(defaultCamZoom, FlxG.camera.zoom, 0.95);
@@ -1745,16 +1766,6 @@ class PlayState extends MusicBeatState
 			{
 				case 16:
 					camZooming = true;
-					gfSpeed = 2;
-				case 48:
-					gfSpeed = 1;
-				case 80:
-					gfSpeed = 2;
-				case 112:
-					gfSpeed = 1;
-				case 163:
-					// FlxG.sound.music.stop();
-					// FlxG.switchState(new TitleState());
 			}
 		}
 
@@ -1764,8 +1775,6 @@ class PlayState extends MusicBeatState
 			{
 				case 128, 129, 130:
 					vocals.volume = 0;
-					// FlxG.sound.music.stop();
-					// FlxG.switchState(new PlayState());
 			}
 		}
 		// better streaming of shit
@@ -3168,25 +3177,6 @@ class PlayState extends MusicBeatState
 		iconP2.setGraphicSize(Std.int(iconP2.width + 30));
 		iconP1.updateHitbox();
 		iconP2.updateHitbox();
-
-		if (curBeat % gfSpeed == 0 && gf != null)
-		{
-			gf.dance();
-		}
-
-		if(dad.animation.curAnim != null) {
-			if (curBeat % dadSpeed == 0 && !dad.animation.curAnim.name.startsWith("sing")) {
-				dad.dance();
-			}
-		}
-
-		if (!boyfriend.animation.curAnim.name.startsWith("sing"))
-		{
-			if(boyfriend.animation.curAnim.name.startsWith("dodge") && boyfriend.animation.finished)
-				boyfriend.dance();
-			else if(!boyfriend.animation.curAnim.name.startsWith("dodge"))
-				boyfriend.dance();
-		}
 
 		if (curBeat % 8 == 7 && curSong == 'Bopeebo')
 		{

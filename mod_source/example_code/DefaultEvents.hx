@@ -152,22 +152,33 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 }
             }));
         }else if(eventName == "character change") {
-            if(eventValue2.contains("dad")) {
-                if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                    playState.remove(playState.dad);
-                    playState.dad.destroy();
-                    playState.dad = new Character(100, 100, eventValue);
-                    playState.dad.refresh(eventValue, playState.camPos);
-                    playState.add(playState.dad);
-                }
-            }else if(eventValue2.contains("bf") || eventValue2.contains("boyfriend")) {
-                if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                    playState.remove(playState.dad);
-                    playState.dad.destroy();
-                    playState.dad = new Character(100, 100, eventValue);
-                    playState.dad.refresh(eventValue, playState.camPos);
-                    playState.add(playState.dad);
-                }
+            switch(eventValue2.toLowerCase()) {
+                case "gf" | "girlfriend":
+                    if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                        playState.remove(playState.gf);
+                        playState.gf.destroy();
+                        playState.gf = new Character(400, 130, eventValue);
+                        playState.gf.refresh(eventValue, playState.camPos);
+                        playState.gf.danceBeatTimer = 2;
+                        playState.add(playState.gf);
+                    }
+                case "bf" | "boyfriend" | "player":
+                    if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                        playState.remove(playState.dad);
+                        playState.dad.destroy();
+                        playState.dad = new Character(100, 100, eventValue);
+                        playState.dad.refresh(eventValue, playState.camPos);
+                        playState.add(playState.dad);
+                    }
+                default:
+                    if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                        playState.remove(playState.dad);
+                        playState.dad.destroy();
+                        playState.dad = new Character(100, 100, eventValue);
+                        playState.dad.refresh(eventValue, playState.camPos);
+                        playState.add(playState.dad);
+                    }
+                
             }
         }else if(eventName == "clear events") {
             if(playState.eventStorage.contains(eventValue)) {
