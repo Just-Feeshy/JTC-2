@@ -47,7 +47,6 @@ import example_code.DefaultStage;
 import SaveData.SaveType;
 import ModInitialize;
 import BuiltInShaders;
-import Feeshmora;
 import DefaultHandler;
 
 using StringTools;
@@ -958,12 +957,6 @@ class ChartingState extends MusicBeatState
 
 		var fpsLabel = new FlxText(stepperFps.x + 65, stepperFps.y, "FPS");
 
-		var stepperMap:FlxUINumericStepper = new FlxUINumericStepper(140, 95, 1, colorMap, 0, ChooseFeeshmora.getMapSize("boyfriend"), 0);
-		stepperMap.value = colorMap;
-		stepperMap.name = 'song_mapping';
-
-		var mapLabel = new FlxText(stepperMap.x + 65, stepperMap.y, "Feeshmora Skins");
-
 		var player1DropDown = new FlxUIDropDownMenu(140, 215, FlxUIDropDownMenu.makeStrIdLabelArray(DefaultHandler.getcharacterJSON(), true), function(character:String)
 		{
 			_song.player1 = DefaultHandler.getcharacterJSON()[Std.parseInt(character)];
@@ -1003,8 +996,6 @@ class ChartingState extends MusicBeatState
 		tab_group_song.add(speedLabel);
 		tab_group_song.add(stepperFps);
 		tab_group_song.add(fpsLabel);
-		//tab_group_song.add(stepperMap);
-		//tab_group_song.add(mapLabel);
 		tab_group_song.add(player1DropDown);
 		tab_group_song.add(player2DropDown);
 		tab_group_song.add(player1Txt);

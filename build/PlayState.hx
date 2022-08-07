@@ -57,7 +57,6 @@ import flash.filters.BlurFilter;
 import flash.filters.BitmapFilterQuality;
 
 import SaveData.SaveType;
-import Feeshmora;
 
 using StringTools;
 
@@ -405,20 +404,6 @@ class PlayState extends MusicBeatState
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		dad.refresh(SONG.player2, camPos);
 
-		if(ChooseFeeshmora.chooseSkin.get("boyfriend").length >= 1) {
-			
-			boyfriend.setColorTransform(
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[0],
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[1],
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[2],
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[3],
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[4]),
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[5]),
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[6]),
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[7])
-			);
-		}
-
 		stageGroup.forEach(function(stage:StageBuilder) {
 			stage.configStage();
 		});
@@ -513,20 +498,6 @@ class PlayState extends MusicBeatState
 		counterTxt.scrollFactor.set();
 
 		iconP1 = new HealthIcon(SONG.player1, true, SONG.bpm);
-
-		if(ChooseFeeshmora.chooseSkin.get("boyfriend").length >= 1) {
-
-			iconP1.setColorTransform(
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[0],
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[1],
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[2],
-				ChooseFeeshmora.chooseSkin.get("boyfriend")[3],
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[4]),
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[5]),
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[6]),
-				Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[7])
-			);
-		}
 
 		iconP2 = new HealthIcon(SONG.player2, false);
 

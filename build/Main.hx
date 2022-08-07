@@ -7,7 +7,6 @@ import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import flixel.FlxGame;
-import sys.io.File;
 
 //import Feeshmora;
 

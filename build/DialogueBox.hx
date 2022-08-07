@@ -10,8 +10,6 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 
-import Feeshmora;
-
 using StringTools;
 
 class DialogueBox extends FlxSpriteGroup
@@ -113,17 +111,6 @@ class DialogueBox extends FlxSpriteGroup
 		portraitRight.scrollFactor.set();
 		add(portraitRight);
 		portraitRight.visible = false;
-
-		portraitRight.setColorTransform(
-			ChooseFeeshmora.chooseSkin.get("boyfriend")[0],
-			ChooseFeeshmora.chooseSkin.get("boyfriend")[1],
-			ChooseFeeshmora.chooseSkin.get("boyfriend")[2],
-			ChooseFeeshmora.chooseSkin.get("boyfriend")[3],
-			Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[4]),
-			Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[5]),
-			Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[6]),
-			Std.int(ChooseFeeshmora.chooseSkin.get("boyfriend")[7])
-		);
 		
 		box.animation.play('normalOpen');
 		box.setGraphicSize(Std.int(box.width * PlayState.daPixelZoom * 0.9));

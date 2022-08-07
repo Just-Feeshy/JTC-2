@@ -20,8 +20,6 @@ import flixel.effects.FlxFlicker;
 import lime.net.curl.CURLCode;
 import feshixl.math.FeshMath;
 
-import Feeshmora;
-
 using StringTools;
 
 class StoryMenuState extends MusicBeatState

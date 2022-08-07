@@ -26,7 +26,10 @@ import sys.FileSystem;
 import sys.io.File;
 #end
 
+#if windows
 import Discord.DiscordClient;
+#end
+
 import SaveData.SaveType;
 
 using StringTools;
@@ -37,9 +40,6 @@ class Preloader extends FlxState {
         SaveData.globalMEM = new Memory(10, 18, 0xFFFFFF);
 
         var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
-
-        if(File.getContent(Paths.mora("shaders", "json")).length < 11)
-            File.saveContent(Paths.mora("shaders", "json"), Json.stringify([0,0,0,0,0]));
 
         FlxG.mouse.visible = false;
 
@@ -64,7 +64,10 @@ class Preloader extends FlxState {
         
         //Initalize events
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, saveVolumeChanges);
+
+        #if sys
         Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, createLogReport);
+        #end
 
         FlxG.sound.volume = FlxG.save.data.volume;
 
@@ -94,6 +97,7 @@ class Preloader extends FlxState {
         }
     }
 
+    #if sys
     static function createLogReport(event:UncaughtErrorEvent):Void {
         var error:Error = null;
 
@@ -101,7 +105,6 @@ class Preloader extends FlxState {
             error = new Error(cast event.error);
         }
 
-        #if sys
         if(!FileSystem.exists("./crash-reports")) {
             FileSystem.createDirectory("./crash-reports");
         }
@@ -134,17 +137,20 @@ class Preloader extends FlxState {
         }
 
         FlxG.sound.music.stop();
+
+        #if windows
         DiscordClient.shutdown();
+        #end
 
         FlxG.sound.muted = true;
 
         var prevWindow:Window = Lib.current.stage.window;
         new CrashLogDisplay(prevWindow).attachReport([errMsg, "Uncaught Error: " + Std.string(event.error)]);
-        #end
         }catch(e:haxe.Exception) {
             trace(event.error);
         }
     }
+    #end
 
     override function update(elapsed:Float):Void {
         super.update(elapsed / 2);

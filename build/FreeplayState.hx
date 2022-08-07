@@ -23,7 +23,6 @@ import feshixl.math.FeshMath;
 import lime.utils.Assets;
 import haxe.Json;
 
-import Feeshmora;
 import ModInitialize;
 
 using StringTools;

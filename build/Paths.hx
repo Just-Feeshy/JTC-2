@@ -11,8 +11,11 @@ import lime.utils.Assets;
 
 import ModInitialize;
 import json2object.JsonParser;
+
+#if sys
 import sys.FileSystem;
 import sys.io.File;
+#end
 
 using StringTools;
 
