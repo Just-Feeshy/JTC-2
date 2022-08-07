@@ -5,7 +5,9 @@ import flixel.FlxSprite;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
 import flixel.graphics.FlxGraphic;
+import flixel.addons.ui.FlxUI;
 import flixel.addons.ui.FlxUITabMenu;
+import flixel.addons.ui.FlxUIDropDownMenu;
 import flixel.input.keyboard.FlxKey;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
@@ -44,7 +46,8 @@ class SpriteSheetCreator extends MusicBeatState {
         FlxCamera.defaultCameras = [camHUD];
 
         var tabs = [
-            {name: "Spritesheet", label: "Spritesheet"}
+            {name: "Spritesheet", label: "Spritesheet"},
+            {name: "T Export", label: 'Export'}
 		];
 
         UI_thingy = new FlxUITabMenu(null, tabs, true);
@@ -57,6 +60,8 @@ class SpriteSheetCreator extends MusicBeatState {
 
         add(UI_thingy);
 
+        createSpritesheetUI();
+
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
 
         escapeText = new FlxText(30, 30, "");
@@ -67,6 +72,23 @@ class SpriteSheetCreator extends MusicBeatState {
         escapeText.cameras = [camHUD];
 
         super.create();
+    }
+
+    function createSpritesheetUI():Void {
+        var tab_group_spritesheet = new FlxUI(null, UI_thingy);
+        tab_group_spritesheet.name = "Spritesheet";
+
+
+
+        UI_thingy.addGroup(tab_group_spritesheet);
+    }
+
+    function fillIfEmpty():Array<String> {
+        if(animNames.length > 0) {
+            return animNames;
+        }
+
+        return [""];
     }
 
     function updateText():Void {
