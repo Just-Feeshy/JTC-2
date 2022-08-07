@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
+import flixel.addons.ui.FlxUITabMenu;
 import flixel.input.keyboard.FlxKey;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
@@ -11,6 +12,8 @@ import openfl.events.IOErrorEvent;
 import openfl.net.FileReference;
 
 class SpriteSheetCreator extends MusicBeatState {
+    var UI_thingy:FlxUITabMenu;
+
     var _file:FileReference;
 
     var escapeText:FlxText;
@@ -32,6 +35,20 @@ class SpriteSheetCreator extends MusicBeatState {
         FlxG.cameras.add(camHUD);
 
         FlxCamera.defaultCameras = [camHUD];
+
+        var tabs = [
+            {name: "Spritesheet", label: "Spritesheet"}
+		];
+
+        UI_thingy = new FlxUITabMenu(null, tabs, true);
+
+        UI_thingy.resize(250, 210);
+		UI_thingy.x = Std.int(FlxG.width - UI_thingy.width - 25);
+        UI_thingy.screenCenter(Y);
+        UI_thingy.y -= Std.int(UI_thingy.height / 4);
+        UI_thingy.scrollFactor.set();
+
+        add(UI_thingy);
 
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
 
