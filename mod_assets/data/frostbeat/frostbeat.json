@@ -3006,7 +3006,6 @@
 		"song": "Frostbeat",
 		"stage": "funkroad",
 		"validScore": true,
-		"sections": 45,
 		"needsVoices": true,
 		"speed": 2.0,
 		"bpm": 135
