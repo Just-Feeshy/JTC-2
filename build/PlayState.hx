@@ -374,7 +374,6 @@ class PlayState extends MusicBeatState
 
 		gf = new Character(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
-		gf.danceBeatTimer = 2;
 
 		for(i in 0...stageGroup.length) {
 			if(!stageGroup.members[i].hasGirlfriend()) {
@@ -1758,6 +1757,13 @@ class PlayState extends MusicBeatState
 			{
 				case 16:
 					camZooming = true;
+					gf.danceBeatTimer = 2;
+				case 48:
+					gf.danceBeatTimer = 1;
+				case 80:
+					gf.danceBeatTimer = 2;
+				case 112:
+					gf.danceBeatTimer = 1;
 			}
 		}
 
@@ -3130,7 +3136,6 @@ class PlayState extends MusicBeatState
 			notes.sort(FlxSort.byY, FlxSort.DESCENDING);
 		}
 
-		//GF weird
 		if (gf != null) {
 			if(gf.animation.curAnim != null) {
 				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing")) {
