@@ -15,9 +15,10 @@ import flixel.text.FlxText;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
+import openfl.utils.ByteArray;
+import openfl.net.FileReference;
 import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
-import openfl.net.FileReference;
 import sys.FileSystem;
 import haxe.io.Bytes;
 import haxe.Json;
@@ -281,7 +282,7 @@ class DialogueCreatorState extends MusicBeatState {
         }
 
         if(displayText != null) {
-            displayText.sounds = [FeshBytesHandler.loadSoundFromByteArray(_info.totalSounds[_info.info[dialogueScene].soundIndex])];
+            displayText.sounds = [FeshBytesHandler.loadSoundFromByteArray(ByteArray.fromBytes(_info.totalSounds[_info.info[dialogueScene].soundIndex]))];
             displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
             displayText.size = _info.info[dialogueScene].textSize;
 

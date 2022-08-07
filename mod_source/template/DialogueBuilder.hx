@@ -13,8 +13,10 @@ import flixel.FlxCamera;
 import flixel.FlxState;
 import betterShit.BetterCams;
 import feshixl.filters.GuassianBlur;
+import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
 import openfl.filters.ShaderFilter;
+import openfl.utils.ByteArray;
 import lime.utils.Assets;
 import haxe.io.Bytes;
 import haxe.Json;
@@ -57,6 +59,18 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
         assetBinds = [];
         soundBinds = [];
+    }
+
+    function soundFromBytes():Void {
+        if(_info.totalSounds == null) {
+            return;
+        }
+
+        var index:Int = 0;
+
+        while(index < _info.totalSounds.length) {
+            soundBinds.push(FeshBytesHandler.loadSoundFromByteArray(ByteArray.fromBytes(_info.totalSounds[index++])));
+        }
     }
 
     function createAfterTransition():Void {
