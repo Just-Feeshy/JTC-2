@@ -17,6 +17,7 @@ import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
 import openfl.filters.ShaderFilter;
 import openfl.utils.ByteArray;
+import lime.utils.AssetType; //I got bored.
 import lime.utils.Assets;
 import haxe.io.Bytes;
 import haxe.Json;
@@ -91,7 +92,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     function refreshDisplay():Void {
         if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info.info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
-            if(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID] != null) {
+            if(totalExist(_info.info[dialogueScene].leftPortrait.assetID, IMAGE)) {
                 leftPortrait.implementXML(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID].xmlData);
                 leftPortrait.implementBitmap(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID].spriteData);
                 leftPortrait.compileSprite();
@@ -104,7 +105,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
 
         if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info.info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
-            if(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID] != null) {
+            if(totalExist(_info.info[dialogueScene].rightPortrait.assetID, IMAGE)) {
                 rightPortrait.implementXML(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID].xmlData);
                 rightPortrait.implementBitmap(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID].spriteData);
                 rightPortrait.compileSprite();
@@ -117,7 +118,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
 
         if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info.info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
-            if(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID] != null) {
+            if(totalExist(_info.info[dialogueScene].speechBubble.assetID, IMAGE)) {
                 speechBubble.implementXML(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID].xmlData);
                 speechBubble.implementBitmap(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID].spriteData);
                 speechBubble.compileSprite();
@@ -158,6 +159,26 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
         changingScene = false;
         dialogueScene++;
+    }
+
+    function totalExist(id:Int, type:AssetType):Bool {
+        if(type == IMAGE && _info.totalSprites == null) {
+            return false;
+        }
+
+        if(type == SOUND && _info.totalSounds == null) {
+            return false;
+        }
+
+        if(type == IMAGE && _info.totalSprites[id] != null) {
+            return true;
+        }
+
+        if(type == SOUND && _info.totalSounds[id] != null) {
+            return true;
+        }
+
+        return false;
     }
 
     function refreshDisplayPosition():Void {
