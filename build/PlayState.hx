@@ -1742,14 +1742,6 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (gf != null) {
-			if(gf.animation.curAnim != null) {
-				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing")) {
-					gf.dance();
-				}
-			}
-		}
-
 		if (camZooming)
 		{
 			FlxG.camera.zoom = FlxMath.lerp(defaultCamZoom, FlxG.camera.zoom, 0.95);
@@ -3136,6 +3128,15 @@ class PlayState extends MusicBeatState
 		if (generatedMusic)
 		{
 			notes.sort(FlxSort.byY, FlxSort.DESCENDING);
+		}
+
+		//GF weird
+		if (gf != null) {
+			if(gf.animation.curAnim != null) {
+				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing")) {
+					gf.dance();
+				}
+			}
 		}
 
 		if (SONG.notes[Math.floor(curStep / 16)] != null)
