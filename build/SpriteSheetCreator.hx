@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
+import flixel.graphics.FlxGraphic;
 import flixel.addons.ui.FlxUITabMenu;
 import flixel.input.keyboard.FlxKey;
 import openfl.events.Event;
@@ -21,10 +22,16 @@ class SpriteSheetCreator extends MusicBeatState {
     var camHUD:FlxCamera;
     var camGame:FlxCamera;
 
+    var animFrames:Map<String, Array<FlxGraphic>>;
+    var animNames:Array<String>;
+
     var frameIndex:Int = 0;
 
     override function create() {
         FlxG.mouse.visible = true;
+
+        animFrames = new Map<String, Array<FlxGraphic>>();
+        animNames = [];
 
         camHUD = new FlxCamera();
         camGame = new FlxCamera();
