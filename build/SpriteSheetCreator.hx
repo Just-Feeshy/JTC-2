@@ -8,11 +8,15 @@ import flixel.graphics.FlxGraphic;
 import flixel.addons.ui.FlxUI;
 import flixel.addons.ui.FlxUITabMenu;
 import flixel.addons.ui.FlxUIDropDownMenu;
+import flixel.addons.ui.FlxUIButton;
+import flixel.addons.ui.FlxUIInputText;
 import flixel.input.keyboard.FlxKey;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
 import openfl.net.FileReference;
+
+using StringTools;
 
 class SpriteSheetCreator extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
@@ -20,6 +24,7 @@ class SpriteSheetCreator extends MusicBeatState {
     var _file:FileReference;
 
     var escapeText:FlxText;
+    var displaySprite:FlxSprite;
 
     var camHUD:FlxCamera;
     var camGame:FlxCamera;
@@ -27,7 +32,7 @@ class SpriteSheetCreator extends MusicBeatState {
     var animFrames:Map<String, Array<FlxGraphic>>;
     var animNames:Array<String>;
 
-    var frameIndex:Int = 0;
+    var frameIndex(default, set):Int = 0;
 
     override function create() {
         FlxG.mouse.visible = true;
@@ -78,7 +83,30 @@ class SpriteSheetCreator extends MusicBeatState {
         var tab_group_spritesheet = new FlxUI(null, UI_thingy);
         tab_group_spritesheet.name = "Spritesheet";
 
+        var animSelector:FlxUIDropDownMenu = new FlxUIDropDownMenu(10, 30, FlxUIDropDownMenu.makeStrIdLabelArray(fillIfEmpty(), true), function(choose:String) {
+            if(choose.trim() != "") {
+                frameIndex = 0;
+            }
+        });
+        var animSelectorTxt:FlxText = new FlxText(10, 10, "Animation Selector:");
 
+        var inputName:FlxUIInputText = new FlxUIInputText(animSelector.x + animSelector.width + 10, 30, 80, "", 8);
+        var inputNameTxt:FlxText = new FlxText(inputName.x, 10, "Animation Name:");
+
+        var removeAnimButton:FlxUIButton = new FlxUIButton(inputName.x, 0, "Remove Anim", function() {
+
+        });
+        removeAnimButton.y = UI_thingy.height - removeAnimButton.height - 5;
+
+        var createAnimButton:FlxUIButton = new FlxUIButton(inputName.x, 0, "Create Anim", function() {
+            
+        });
+        createAnimButton.y = removeAnimButton.y - createAnimButton.height - 5;
+
+        tab_group_spritesheet.add(animSelector);
+        tab_group_spritesheet.add(animSelectorTxt);
+        tab_group_spritesheet.add(inputName);
+        tab_group_spritesheet.add(inputNameTxt);
 
         UI_thingy.addGroup(tab_group_spritesheet);
     }
@@ -89,6 +117,10 @@ class SpriteSheetCreator extends MusicBeatState {
         }
 
         return [""];
+    }
+
+    function updateSprite():Void {
+
     }
 
     function updateText():Void {
@@ -128,6 +160,13 @@ class SpriteSheetCreator extends MusicBeatState {
         _file.removeEventListener(Event.COMPLETE, onComplete);
         _file.removeEventListener(Event.CANCEL, onCancel);
         _file = null;
+    }
+
+    function set_frameIndex(index:Int):Int {
+        frameIndex = index;
+        updateSprite();
+        updateText();
+        return frameIndex;
     }
 
     override function destroy():Void {
