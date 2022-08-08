@@ -869,11 +869,11 @@ class CharacterCreatorState extends MusicBeatState {
         updateCursorPos();
 
         if(camGame.zoom <= 2 && camGame.zoom >= 0.1)
-            camGame.zoom += FlxG.mouse.wheel * FlxG.elapsed * 1.2;
+            camGame.zoom += FlxG.mouse.wheel * elapsed * 1.2;
         if(FlxG.keys.pressed.Q && camGame.zoom <= 2)
-            camGame.zoom += FlxG.elapsed;
+            camGame.zoom += elapsed;
         if(FlxG.keys.pressed.E && camGame.zoom >= 0.1)
-            camGame.zoom -= FlxG.elapsed;          
+            camGame.zoom -= elapsed;          
 
         if(camGame.zoom > 2)
             camGame.zoom = 2;

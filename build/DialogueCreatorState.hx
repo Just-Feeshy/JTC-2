@@ -995,6 +995,7 @@ class DialogueCreatorState extends MusicBeatState {
         for(i in 0...fileType.length) {
             if(_file.type == fileType[i]) {
                 foundFile = true;
+                break;
             }
         }
 

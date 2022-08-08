@@ -11,9 +11,11 @@ import flixel.addons.ui.FlxUIDropDownMenu;
 import flixel.addons.ui.FlxUIButton;
 import flixel.addons.ui.FlxUIInputText;
 import flixel.input.keyboard.FlxKey;
-import openfl.events.Event;
-import openfl.events.KeyboardEvent;
+import flixel.util.FlxDestroyUtil;
+import flixel.util.FlxColor;
+import openfl.display.BitmapData;
 import openfl.events.IOErrorEvent;
+import openfl.events.Event;
 import openfl.net.FileReference;
 
 using StringTools;
@@ -28,6 +30,8 @@ class SpriteSheetCreator extends MusicBeatState {
 
     var camHUD:FlxCamera;
     var camGame:FlxCamera;
+
+    var fileType:Array<String> = [];
 
     var animFrames:Map<String, Array<FlxGraphic>>;
     var animNames:Array<String>;
@@ -48,7 +52,7 @@ class SpriteSheetCreator extends MusicBeatState {
         FlxG.cameras.add(camGame);
         FlxG.cameras.add(camHUD);
 
-        FlxCamera.defaultCameras = [camHUD];
+        FlxCamera.defaultCameras = [camGame];
 
         var tabs = [
             {name: "Spritesheet", label: "Spritesheet"}
@@ -70,8 +74,6 @@ class SpriteSheetCreator extends MusicBeatState {
 
         createSpritesheetUI();
 
-        FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
-
         escapeText = new FlxText(30, 30, "");
         updateText();
         add(escapeText);
@@ -82,7 +84,41 @@ class SpriteSheetCreator extends MusicBeatState {
         super.create();
     }
 
+    override function update(elapsed:Float):Void {
+        if(FlxG.keys.pressed.ESCAPE) {
+            FlxG.switchState(new OptionsMenuState("editors"));
+        }
+
+        if(FlxG.camera.zoom <= 2 && FlxG.camera.zoom >= 0.1 && Math.abs(FlxG.mouse.wheel) > 0.1) {
+            FlxG.camera.zoom += FlxG.mouse.wheel * elapsed * 1.2;
+            updateText();
+        }
+
+        if(FlxG.keys.pressed.Q && FlxG.camera.zoom <= 2) {
+            FlxG.camera.zoom += elapsed;
+            updateText();
+        }
+
+        if(FlxG.keys.pressed.E && FlxG.camera.zoom >= 0.1) {
+            FlxG.camera.zoom -= elapsed;
+            updateText();
+        }
+
+        if(FlxG.camera.zoom > 2) {
+            FlxG.camera.zoom = 2;
+            updateText();
+        }
+
+        if(FlxG.camera.zoom < 0.1) {
+            FlxG.camera.zoom = 0.1;
+            updateText();
+        }
+
+        super.update(elapsed);
+    }
+
     var animSelector:FlxUIDropDownMenu;
+    var unableLabel:FlxText;
 
     function createSpritesheetUI():Void {
         var tab_group_spritesheet = new FlxUI(null, UI_thingy);
@@ -115,6 +151,8 @@ class SpriteSheetCreator extends MusicBeatState {
         createAnimButton.y = removeAnimButton.y - createAnimButton.height - 5;
 
         var importImageButton:FlxUIButton = new FlxUIButton(createAnimButton.x - createAnimButton.width - 10, createAnimButton.y, "Import PNG", function() {
+            fileType = [".png"];
+
             _file = new FileReference();
 			_file.addEventListener(Event.SELECT, onSelect);
 			_file.addEventListener(Event.CANCEL, onCancel);
@@ -122,12 +160,17 @@ class SpriteSheetCreator extends MusicBeatState {
             _file.browse();
         });
 
+        unableLabel = new FlxText(10, animSelector.y + animSelector.height + 5, "");
+		unableLabel.color = FlxColor.RED;
+
         tab_group_spritesheet.add(animSelector);
         tab_group_spritesheet.add(animSelectorTxt);
         tab_group_spritesheet.add(inputName);
         tab_group_spritesheet.add(inputNameTxt);
         tab_group_spritesheet.add(createAnimButton);
         tab_group_spritesheet.add(removeAnimButton);
+        tab_group_spritesheet.add(importImageButton);
+        tab_group_spritesheet.add(unableLabel);
 
         UI_thingy.addGroup(tab_group_spritesheet);
     }
@@ -159,22 +202,16 @@ class SpriteSheetCreator extends MusicBeatState {
     }
 
     function updateText():Void {
-        escapeText.text = 
-            "Frame Index: "
-            + frameIndex
+        escapeText.text =
+            "Zoom: "
+            + Std.int(FlxG.camera.zoom * 100) + "%"
+            + "\nFrame Index: "
+            + (frameIndex + 1)
             + "\n\nUP/DOWN - Increase/Decrease Frame Index"
             + "\nMouse Wheel | Q/E - Camera Zoom"
             + "\nESCAPE - To Exit"
             + "\n\nMade By: Feeshy"
         ;
-    }
-
-    function attachKeysToEditor(event:KeyboardEvent):Void {
-        var key:FlxKey = event.keyCode;
-
-        if(key == FlxKey.ESCAPE) {
-            FlxG.switchState(new OptionsMenuState("editors"));
-        }
     }
 
     function onSelect(event:Event):Void {
@@ -186,6 +223,39 @@ class SpriteSheetCreator extends MusicBeatState {
     function onComplete(event:Event):Void {
         clearEvent();
         _file = cast(event.target, FileReference);
+
+        var foundFile:Bool = false;
+
+        unableLabel.text = "";
+
+        for(i in 0...fileType.length) {
+            if(_file.type == fileType[i]) {
+                foundFile = true;
+                break;
+            }
+        }
+
+        if(!foundFile) {
+            unableLabel.text = "Unable to compile file:\n" + _file.name;
+            return;
+        }
+
+        if(animSelector == null) {
+            unableLabel.text = "No animations selected";
+            return;
+        }
+
+        if(!animFrames.exists(animSelector.selectedLabel)) {
+            unableLabel.text = "No animations selected";
+            return;
+        }
+
+        var graphicLoaded = FlxG.bitmap.add(BitmapData.fromBytes(_file.data));
+        graphicLoaded.persist = true;
+        graphicLoaded.destroyOnNoUse = false;
+
+        animFrames.get(animSelector.selectedLabel).push(graphicLoaded);
+        frameIndex = Std.int(Math.max(0, animFrames.get(animSelector.selectedLabel).length - 1));
     }
 
     function onCancel(_):Void {
@@ -206,8 +276,6 @@ class SpriteSheetCreator extends MusicBeatState {
     }
 
     override function destroy():Void {
-        FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
-
         super.destroy();
     }
 }

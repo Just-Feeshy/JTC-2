@@ -23,10 +23,6 @@ class Mod {
         Register.implementCustomNote("death", DeathNote);
         Register.add(STAGE, CheesyStage);
 
-        /**
-        if(FlxG.save.data.spanish == null) {
-            FlxG.save.data.spanish = false;
-        }
-        */
+        trace(Math.max(0, -1));
     }
 }
