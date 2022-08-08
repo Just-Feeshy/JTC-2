@@ -54,6 +54,10 @@ class SpriteSheetCreator extends MusicBeatState {
             {name: "Spritesheet", label: "Spritesheet"}
 		];
 
+        displaySprite = new FlxSprite();
+        updateSprite();
+        add(displaySprite);
+
         UI_thingy = new FlxUITabMenu(null, tabs, true);
 
         UI_thingy.resize(250, 210);
@@ -78,11 +82,13 @@ class SpriteSheetCreator extends MusicBeatState {
         super.create();
     }
 
+    var animSelector:FlxUIDropDownMenu;
+
     function createSpritesheetUI():Void {
         var tab_group_spritesheet = new FlxUI(null, UI_thingy);
         tab_group_spritesheet.name = "Spritesheet";
 
-        var animSelector:FlxUIDropDownMenu = new FlxUIDropDownMenu(10, 30, FlxUIDropDownMenu.makeStrIdLabelArray(fillIfEmpty(), true), function(choose:String) {
+        animSelector = new FlxUIDropDownMenu(10, 30, FlxUIDropDownMenu.makeStrIdLabelArray(fillIfEmpty(), true), function(choose:String) {
             if(choose.trim() != "") {
                 frameIndex = 0;
             }
@@ -108,6 +114,14 @@ class SpriteSheetCreator extends MusicBeatState {
         });
         createAnimButton.y = removeAnimButton.y - createAnimButton.height - 5;
 
+        var importImageButton:FlxUIButton = new FlxUIButton(createAnimButton.x - createAnimButton.width - 10, createAnimButton.y, "Import PNG", function() {
+            _file = new FileReference();
+			_file.addEventListener(Event.SELECT, onSelect);
+			_file.addEventListener(Event.CANCEL, onCancel);
+
+            _file.browse();
+        });
+
         tab_group_spritesheet.add(animSelector);
         tab_group_spritesheet.add(animSelectorTxt);
         tab_group_spritesheet.add(inputName);
@@ -127,7 +141,21 @@ class SpriteSheetCreator extends MusicBeatState {
     }
 
     function updateSprite():Void {
+        if(animSelector == null) {
+            return;
+        }
 
+        if(!animFrames.exists(animSelector.selectedLabel)) {
+            return;
+        }
+
+        var graphicArray:Array<FlxGraphic> = animFrames.get(animSelector.selectedLabel);
+
+        if(graphicArray.length > 0) {
+            displaySprite.loadGraphic(graphicArray[frameIndex]);
+            displaySprite.updateHitbox();
+            displaySprite.screenCenter();
+        }
     }
 
     function updateText():Void {
@@ -155,8 +183,9 @@ class SpriteSheetCreator extends MusicBeatState {
         _file.load();
     }
 
-    function onComplete(event:Event) {
-
+    function onComplete(event:Event):Void {
+        clearEvent();
+        _file = cast(event.target, FileReference);
     }
 
     function onCancel(_):Void {

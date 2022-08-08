@@ -985,8 +985,8 @@ class DialogueCreatorState extends MusicBeatState {
 	}
 
 	function onComplete(event:Event):Void {
-		_file = cast(event.target, FileReference);
         clearEvent();
+        _file = cast(event.target, FileReference);
 
         unableLabel.text = "";
 
