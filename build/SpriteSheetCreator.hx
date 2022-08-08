@@ -51,8 +51,7 @@ class SpriteSheetCreator extends MusicBeatState {
         FlxCamera.defaultCameras = [camHUD];
 
         var tabs = [
-            {name: "Spritesheet", label: "Spritesheet"},
-            {name: "T Export", label: 'Export'}
+            {name: "Spritesheet", label: "Spritesheet"}
 		];
 
         UI_thingy = new FlxUITabMenu(null, tabs, true);
@@ -94,12 +93,18 @@ class SpriteSheetCreator extends MusicBeatState {
         var inputNameTxt:FlxText = new FlxText(inputName.x, 10, "Animation Name:");
 
         var removeAnimButton:FlxUIButton = new FlxUIButton(inputName.x, 0, "Remove Anim", function() {
-
+            
         });
-        removeAnimButton.y = UI_thingy.height - removeAnimButton.height - 5;
+        removeAnimButton.y = UI_thingy.height + removeAnimButton.height - 5;
 
         var createAnimButton:FlxUIButton = new FlxUIButton(inputName.x, 0, "Create Anim", function() {
-            
+            if(inputName.text.trim() != "") {
+                animNames.push(inputName.text);
+                animFrames.set(inputName.text, []);
+                animSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(fillIfEmpty(), true));
+                inputName.text = "";
+                frameIndex = 0;
+            }
         });
         createAnimButton.y = removeAnimButton.y - createAnimButton.height - 5;
 
@@ -107,6 +112,8 @@ class SpriteSheetCreator extends MusicBeatState {
         tab_group_spritesheet.add(animSelectorTxt);
         tab_group_spritesheet.add(inputName);
         tab_group_spritesheet.add(inputNameTxt);
+        tab_group_spritesheet.add(createAnimButton);
+        tab_group_spritesheet.add(removeAnimButton);
 
         UI_thingy.addGroup(tab_group_spritesheet);
     }
