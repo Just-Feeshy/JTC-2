@@ -20,8 +20,13 @@ import openfl.events.IOErrorEvent;
 import openfl.events.Event;
 import openfl.net.FileReference;
 
+import SaveData.SaveType;
+
 using StringTools;
 
+/**
+* Heavily under WIP.
+*/
 class SpriteSheetCreator extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
 
@@ -29,11 +34,14 @@ class SpriteSheetCreator extends MusicBeatState {
 
     var escapeText:FlxText;
     var displaySprite:FlxSprite;
+    var camCursor:FlxSprite;
 
     var camHUD:FlxCamera;
     var camGAME:FlxCamera;
 
     var camFollow:FlxObject;
+
+    var existing:Bool = false;
 
     var fileType:Array<String> = [];
 
@@ -91,33 +99,48 @@ class SpriteSheetCreator extends MusicBeatState {
     }
 
     override function update(elapsed:Float):Void {
-        if(FlxG.keys.pressed.ESCAPE) {
-            FlxG.switchState(new OptionsMenuState("editors"));
-        }
+        if(!existing) {
+            if(FlxG.keys.pressed.ESCAPE) {
+                FlxG.switchState(new OptionsMenuState("editors"));
+                existing = true;
+            }
 
-        if(camGAME.zoom <= 2 && camGAME.zoom >= 0.1 && Math.abs(FlxG.mouse.wheel) > 0.1) {
-            camGAME.zoom += FlxG.mouse.wheel * elapsed * 1.2;
-            updateText();
-        }
+            if(camGAME.zoom <= 2 && camGAME.zoom >= 0.1 && Math.abs(FlxG.mouse.wheel) > 0.1) {
+                camGAME.zoom += FlxG.mouse.wheel * elapsed * 1.2;
+                updateText();
+            }
 
-        if(FlxG.keys.pressed.Q && camGAME.zoom <= 2) {
-            camGAME.zoom += elapsed;
-            updateText();
-        }
+            if(FlxG.keys.pressed.Q && camGAME.zoom <= 2) {
+                camGAME.zoom += elapsed;
+                updateText();
+            }
 
-        if(FlxG.keys.pressed.E && camGAME.zoom >= 0.1) {
-            camGAME.zoom -= elapsed;
-            updateText();
-        }
+            if(FlxG.keys.pressed.E && camGAME.zoom >= 0.1) {
+                camGAME.zoom -= elapsed;
+                updateText();
+            }
 
-        if(camGAME.zoom > 2) {
-            camGAME.zoom = 2;
-            updateText();
-        }
+            if(FlxG.keys.justPressed.UP) {
+                if(frameIndex < animFrames.get(animSelector.selectedLabel).length - 1) {
+                    frameIndex++;
+                }
+            }
 
-        if(camGAME.zoom < 0.1) {
-            camGAME.zoom = 0.1;
-            updateText();
+            if(FlxG.keys.justPressed.DOWN) {
+                if(frameIndex > 0) {
+                    frameIndex--;
+                }
+            }
+
+            if(camGAME.zoom > 2) {
+                camGAME.zoom = 2;
+                updateText();
+            }
+
+            if(camGAME.zoom < 0.1) {
+                camGAME.zoom = 0.1;
+                updateText();
+            }
         }
 
         super.update(elapsed);
@@ -141,7 +164,10 @@ class SpriteSheetCreator extends MusicBeatState {
         var inputNameTxt:FlxText = new FlxText(inputName.x, 10, "Animation Name:");
 
         var removeAnimButton:FlxUIButton = new FlxUIButton(inputName.x, 0, "Remove Anim", function() {
-            
+            animNames.remove(animSelector.selectedLabel);
+            animFrames.remove(animSelector.selectedLabel);
+            animSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(fillIfEmpty(), true));
+            frameIndex = 0;
         });
         removeAnimButton.y = UI_thingy.height + removeAnimButton.height - 5;
 
@@ -174,7 +200,7 @@ class SpriteSheetCreator extends MusicBeatState {
         tab_group_spritesheet.add(inputName);
         tab_group_spritesheet.add(inputNameTxt);
         tab_group_spritesheet.add(createAnimButton);
-        tab_group_spritesheet.add(removeAnimButton);
+        //tab_group_spritesheet.add(removeAnimButton);
         tab_group_spritesheet.add(importImageButton);
         tab_group_spritesheet.add(unableLabel);
 
