@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
+import flixel.FlxObject;
 import flixel.text.FlxText;
 import flixel.graphics.FlxGraphic;
 import flixel.addons.ui.FlxUI;
@@ -13,6 +14,7 @@ import flixel.addons.ui.FlxUIInputText;
 import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxColor;
+import flixel.math.FlxPoint;
 import openfl.display.BitmapData;
 import openfl.events.IOErrorEvent;
 import openfl.events.Event;
@@ -29,7 +31,9 @@ class SpriteSheetCreator extends MusicBeatState {
     var displaySprite:FlxSprite;
 
     var camHUD:FlxCamera;
-    var camGame:FlxCamera;
+    var camGAME:FlxCamera;
+
+    var camFollow:FlxObject;
 
     var fileType:Array<String> = [];
 
@@ -45,18 +49,20 @@ class SpriteSheetCreator extends MusicBeatState {
         animNames = [];
 
         camHUD = new FlxCamera();
-        camGame = new FlxCamera();
+        camGAME = new FlxCamera();
         camHUD.bgColor.alpha = 0;
-        camGame.bgColor.alpha = 0;
+        camGAME.bgColor.alpha = 0;
 
-        FlxG.cameras.add(camGame);
+        FlxG.cameras.add(camGAME);
         FlxG.cameras.add(camHUD);
 
-        FlxCamera.defaultCameras = [camGame];
+        FlxCamera.defaultCameras = [camGAME];
 
         var tabs = [
             {name: "Spritesheet", label: "Spritesheet"}
 		];
+
+        camFollow = new FlxObject(0, 0, 1, 1);
 
         displaySprite = new FlxSprite();
         updateSprite();
@@ -89,28 +95,28 @@ class SpriteSheetCreator extends MusicBeatState {
             FlxG.switchState(new OptionsMenuState("editors"));
         }
 
-        if(FlxG.camera.zoom <= 2 && FlxG.camera.zoom >= 0.1 && Math.abs(FlxG.mouse.wheel) > 0.1) {
-            FlxG.camera.zoom += FlxG.mouse.wheel * elapsed * 1.2;
+        if(camGAME.zoom <= 2 && camGAME.zoom >= 0.1 && Math.abs(FlxG.mouse.wheel) > 0.1) {
+            camGAME.zoom += FlxG.mouse.wheel * elapsed * 1.2;
             updateText();
         }
 
-        if(FlxG.keys.pressed.Q && FlxG.camera.zoom <= 2) {
-            FlxG.camera.zoom += elapsed;
+        if(FlxG.keys.pressed.Q && camGAME.zoom <= 2) {
+            camGAME.zoom += elapsed;
             updateText();
         }
 
-        if(FlxG.keys.pressed.E && FlxG.camera.zoom >= 0.1) {
-            FlxG.camera.zoom -= elapsed;
+        if(FlxG.keys.pressed.E && camGAME.zoom >= 0.1) {
+            camGAME.zoom -= elapsed;
             updateText();
         }
 
-        if(FlxG.camera.zoom > 2) {
-            FlxG.camera.zoom = 2;
+        if(camGAME.zoom > 2) {
+            camGAME.zoom = 2;
             updateText();
         }
 
-        if(FlxG.camera.zoom < 0.1) {
-            FlxG.camera.zoom = 0.1;
+        if(camGAME.zoom < 0.1) {
+            camGAME.zoom = 0.1;
             updateText();
         }
 
@@ -195,16 +201,23 @@ class SpriteSheetCreator extends MusicBeatState {
         var graphicArray:Array<FlxGraphic> = animFrames.get(animSelector.selectedLabel);
 
         if(graphicArray.length > 0) {
+            displaySprite.antialiasing = SaveData.getData(SaveType.GRAPHICS);
             displaySprite.loadGraphic(graphicArray[frameIndex]);
             displaySprite.updateHitbox();
             displaySprite.screenCenter();
+
+            camFollow.setPosition(displaySprite.getMidpoint().x, displaySprite.getMidpoint().y);
+            add(camFollow);
+
+            camGAME.follow(camFollow, LOCKON, 0.04);
+            camGAME.focusOn(camFollow.getPosition());
         }
     }
 
     function updateText():Void {
         escapeText.text =
             "Zoom: "
-            + Std.int(FlxG.camera.zoom * 100) + "%"
+            + Std.int(camGAME.zoom * 100) + "%"
             + "\nFrame Index: "
             + (frameIndex + 1)
             + "\n\nUP/DOWN - Increase/Decrease Frame Index"
