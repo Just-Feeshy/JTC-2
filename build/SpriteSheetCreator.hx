@@ -342,6 +342,9 @@ class SpriteSheetCreator extends MusicBeatState {
         toBytes = ohNo.encode(ohNo.rect, new PNGEncoderOptions(true), toBytes);
 
         _file = new FeshFileHandler();
+        _file.addEventListener(Event.COMPLETE, onSaveComplete);
+        _file.addEventListener(Event.CANCEL, onCancel);
+        _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 
         _file.savedFileCallback = function(name:String, path:String) {
             saveSpritesheetXml(name, path, xMatrix, yMatrix);
@@ -370,7 +373,7 @@ class SpriteSheetCreator extends MusicBeatState {
 
         xmlVersion += "</ TextureAtlas>";
 
-        if(_file == null) {
+        if(_file != null) {
             _file = new FeshFileHandler();
         }
 
