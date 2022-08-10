@@ -32,7 +32,11 @@ using StringTools;
 /**
 * Heavily under WIP.
 * Btw if your going to "borrow" this code or any other, please credit me.
+*
+* I can't do `FlxG.bitmap.add` cause it'll cause rendering issues.
+* @author Feeshy
 */
+@:access(flixel.graphics.FlxGraphic)
 class SpriteSheetCreator extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
 
@@ -130,21 +134,27 @@ class SpriteSheetCreator extends MusicBeatState {
             if(FlxG.keys.justPressed.UP) {
                 if(frameIndex < animFrames.get(animSelector.selectedLabel).length - 1) {
                     frameIndex++;
+                }else {
+                    frameIndex = 0;
                 }
             }
 
             if(FlxG.keys.justPressed.DOWN) {
                 if(frameIndex > 0) {
                     frameIndex--;
+                }else {
+                    frameIndex = animFrames.get(animSelector.selectedLabel).length - 1;
                 }
             }
 
             if(FlxG.keys.justPressed.RIGHT) {
                 column++;
+                updateText();
             }
 
             if(FlxG.keys.justPressed.LEFT && column > 1) {
                 column--;
+                updateText();
             }
 
             if(camGAME.zoom > 2) {
@@ -337,16 +347,16 @@ class SpriteSheetCreator extends MusicBeatState {
                     break;
                 }
 
-                if(happyMapX.exists(allGraphics[k + (i * column)].key)) {
+                if(!happyMapX.exists(allGraphics[k + (i * column)].key)) {
                     happyMapX.set(allGraphics[k + (i * column)].key, []);
                 }
 
-                if(happyMapY.exists(allGraphics[k + (i * column)].key)) {
+                if(!happyMapY.exists(allGraphics[k + (i * column)].key)) {
                     happyMapY.set(allGraphics[k + (i * column)].key, []);
                 }
 
                 happyMapX.get(allGraphics[k + (i * column)].key).push(xMatrix[i][k]);
-                happyMapY.get(allGraphics[k + (i * column)].key).push(xMatrix[i][k]);
+                happyMapY.get(allGraphics[k + (i * column)].key).push(yMatrix[i][k]);
 
                 ohNo.copyPixels(allGraphics[k + (i * column)].bitmap, allGraphics[k + (i * column)].bitmap.rect, new Point(xMatrix[i][k], yMatrix[i][k]));
             }
@@ -382,7 +392,7 @@ class SpriteSheetCreator extends MusicBeatState {
             var frameArray:Array<FlxGraphic> = animFrames.get(k);
 
             for(i in 0...frameArray.length) {
-                xmlVersion += '\t<SubTexture name="${k + nodeIDString(i)}" x="${xm.get(k)}" y="${ym.get(k)}" width="${frameArray[i].width}" height="${frameArray[i].height}">\n';
+                xmlVersion += '\t<SubTexture name="${k + nodeIDString(i)}" x="${xm.get(k)[i]}" y="${ym.get(k)[i]}" width="${frameArray[i].width}" height="${frameArray[i].height}">\n';
             }
 
             mapIndex++;
@@ -467,7 +477,7 @@ class SpriteSheetCreator extends MusicBeatState {
             return;
         }
 
-        var graphicLoaded = FlxG.bitmap.add(BitmapData.fromBytes(_file.data), false, animSelector.selectedLabel);
+        var graphicLoaded = new FlxGraphic(animSelector.selectedLabel, BitmapData.fromBytes(_file.data));
         graphicLoaded.persist = true;
         graphicLoaded.destroyOnNoUse = false;
 

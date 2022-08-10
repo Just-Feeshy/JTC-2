@@ -22,7 +22,5 @@ class Mod {
         Register.implementCustomNote("cheese", CheeseNote);
         Register.implementCustomNote("death", DeathNote);
         Register.add(STAGE, CheesyStage);
-
-        trace(Math.max(0, -1));
     }
 }
