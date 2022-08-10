@@ -377,7 +377,7 @@ class SpriteSheetCreator extends MusicBeatState {
         _file.addEventListener(Event.COMPLETE, onSaveComplete);
         _file.addEventListener(Event.CANCEL, onCancel);
         _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-        _file.save(xmlVersion, fileName.spit(".")[0] + ".xml");
+        _file.save(xmlVersion, fileName.split(".")[0] + ".xml");
     }
 
     function nodeIDString(id:Int):String {
