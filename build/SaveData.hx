@@ -39,6 +39,7 @@ enum SaveType {
     SHOW_FPS;
     SHOW_MEMORY;
     NOTE_OFFSET;
+    PLAY_AS_OPPONENT;
 }
 
 class SaveData {
@@ -83,6 +84,7 @@ class SaveData {
         FlxG.save.data.showMEM = getData(SaveType.SHOW_MEMORY);
         FlxG.save.data.gamepadBinds = getData(SaveType.CUSTOM_GAMEPAD_BINDS);
         FlxG.save.data.noteOffset = getData(SaveType.NOTE_OFFSET);
+        FlxG.save.data.playAsOpponent = getData(SaveType.PLAY_AS_OPPONENT);
 
         FlxG.save.flush();
 
@@ -300,6 +302,12 @@ class SaveData {
                 }
 
                 return FlxG.save.data.noteOffset;
+            case PLAY_AS_OPPONENT:
+                if(FlxG.save.data.playAsOpponent == null) {
+                    FlxG.save.data.playAsOpponent = false;
+                }
+
+                return FlxG.save.data.playAsOpponent;
             default:
                 return null;
         }
