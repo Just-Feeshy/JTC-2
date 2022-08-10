@@ -7,7 +7,7 @@ The purpose is to allow for fewer restrictions that come with using someone else
 ## Main Developers:
 ![jtc_dev_team](https://user-images.githubusercontent.com/58647349/173499193-ae4abb15-6879-40b1-b87a-d34a324a28ad.png)
 - [Suki](https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w) - Main Playtester
-- [FrogTreat](https://www.instagram.com/frogtreat/) - Director, Animator, Artist and Charter
+- [FrogTreat](https://oliwiadeyna.wixsite.com/frogtreat) - Director, Animator, Artist and Charter
 - [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Artist and Charter
 - [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer and Engine Creator
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
