@@ -7,14 +7,23 @@ import haxe.io.Path;
 import openfl.net.FileReference;
 
 class FeshFileHandler extends FileReference {
-    var fileSavedName:String = "";
+    public var savedFileCallback:(fileName:String, path:String)->Void = null;
 
     @:noCompletion
     override function saveFileDialog_onSelect(path:String):Void {
-        #if desktop
-		fileSavedName = Path.withoutDirectory(path);
-        #end
+        if(savedFileCallback != null) {
+            savedFileCallback(Path.withoutDirectory(path), path);
+        }
 
         super.saveFileDialog_onSelect(path);
+    }
+
+    @:noCompletion
+    override function saveFileDialog_onSave(path:String):Void {
+        if(savedFileCallback != null) {
+            savedFileCallback(Path.withoutDirectory(path), path);
+        }
+
+        super.saveFileDialog_onSave(path);
     }
 }

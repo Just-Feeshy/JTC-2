@@ -342,12 +342,15 @@ class SpriteSheetCreator extends MusicBeatState {
         _file.addEventListener(Event.COMPLETE, onSaveComplete);
         _file.addEventListener(Event.CANCEL, onCancel);
         _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-        _file.save(toBytes, "spritesheet.png");
 
-        saveSpritesheetXml(xMatrix, yMatrix);
+        _file.savedFileCallback = function(name:String, path:String) {
+            saveSpritesheetXml(name, xMatrix, yMatrix);
+        }
+
+        _file.save(toBytes, "spritesheet.png");
     }
 
-    function saveSpritesheetXml(xm:Array<Array<Int>>, ym:Array<Array<Int>>):Void {
+    function saveSpritesheetXml(fileName:String, xm:Array<Array<Int>>, ym:Array<Array<Int>>):Void {
         
     }
 
