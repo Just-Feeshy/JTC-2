@@ -1,9 +1,12 @@
 package;
 
-import flixel.group.FlxGroup.FlxTypedGroup;
+#if sys
 import sys.FileSystem;
+#end
+
 import flixel.FlxG;
-import betterShit.BetterCams;
+import feshixl.FeshCamera;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import openfl.events.Event;
 import SaveData.SaveType;
 import Note;
@@ -120,9 +123,9 @@ class DefaultHandler {
     }
 
     static function update(e:Event) {
-        var mainCam:BetterCams = cast FlxG.camera;
-        var camHUD:BetterCams = cast PlayState.camHUD;
-        var noteCam:BetterCams = cast PlayState.camNOTE;
+        var mainCam:FeshCamera = cast FlxG.camera;
+        var camHUD:FeshCamera = cast PlayState.camHUD;
+        var noteCam:FeshCamera = cast PlayState.camNOTE;
 
         mainCam.engineAngle = camAngle[0] + caculateShake(50, shakeCamTimer);
         camHUD.engineAngle = camAngle[1] + caculateShake(50, -shakeCamTimerHUD);

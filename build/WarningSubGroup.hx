@@ -7,7 +7,7 @@ import flixel.util.FlxColor;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.group.FlxSpriteGroup;
-import betterShit.BetterCams;
+import feshixl.FeshCamera;
 
 class WarningSubGroup extends FlxSpriteGroup {
     public var acceptedTermsOfService:Bool = false;

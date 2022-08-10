@@ -16,7 +16,7 @@ import flixel.util.FlxDestroyUtil;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import feshixl.math.FeshMath;
-import betterShit.BetterCams;
+import feshixl.FeshCamera;
 
 #if polymod
 import polymod.format.ParseRules.TargetSignatureElement;

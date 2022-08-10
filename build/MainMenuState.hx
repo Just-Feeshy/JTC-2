@@ -28,7 +28,7 @@ import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import lime.app.Application;
-import betterShit.BetterCams;
+import feshixl.FeshCamera;
 
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
@@ -63,9 +63,9 @@ private class StupidVibeShader extends FlxShader {
 class MainMenuState extends MusicBeatState
 {
 	//Cameras
-	var camX:BetterCams;
-	var camMenu:BetterCams;
-	var camNoBump:BetterCams;
+	var camX:FeshCamera;
+	var camMenu:FeshCamera;
+	var camNoBump:FeshCamera;
 
 	var curSelected:Int = 0;
 
@@ -100,9 +100,9 @@ class MainMenuState extends MusicBeatState
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;
 
-		camX = new BetterCams();
-		camMenu = new BetterCams();
-		camNoBump = new BetterCams();
+		camX = new FeshCamera();
+		camMenu = new FeshCamera();
+		camNoBump = new FeshCamera();
 		camX.bgColor.alpha = 0;
 		camNoBump.bgColor.alpha = 0;
 

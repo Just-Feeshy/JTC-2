@@ -15,11 +15,11 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import betterShit.BetterCams;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.math.FeshMath;
+import feshixl.FeshCamera;
 import lime.utils.Assets;
 import haxe.Json;
 
@@ -68,8 +68,8 @@ class FreeplayState extends MusicBeatState
 
 	private var menuBG:MenuBackground;
 	
-	var camFreeplay:BetterCams;
-	var camBackground:BetterCams;
+	var camFreeplay:FeshCamera;
+	var camBackground:FeshCamera;
 
 	override function create()
 	{
@@ -103,8 +103,8 @@ class FreeplayState extends MusicBeatState
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;
 
-		camFreeplay = new BetterCams();
-		camBackground = new BetterCams();
+		camFreeplay = new FeshCamera();
+		camBackground = new FeshCamera();
 		camFreeplay.bgColor.alpha = 0;
 		camBackground.bgColor.alpha = 0;
 

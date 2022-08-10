@@ -39,7 +39,6 @@ import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
-import betterShit.BetterCams;
 import haxe.Json;
 import lime.utils.Assets;
 import openfl.system.System;
@@ -47,6 +46,7 @@ import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.group.FeshEventGroup;
+import feshixl.FeshCamera;
 import openfl.Lib;
 
 import example_code.DefaultStage;
@@ -105,7 +105,7 @@ class PlayState extends MusicBeatState
 	public var eventStorage:Array<String> = [];
 
 	//Camera Shit
-	public static var camHUD:BetterCams;
+	public static var camHUD:FeshCamera;
 	public static var camNOTE:CameraNote;
 
 	//Note Stuff Funk U
@@ -186,7 +186,7 @@ class PlayState extends MusicBeatState
 	private var generatedMusic:Bool = false;
 	private var startingSong:Bool = false;
 
-	public var camGame:BetterCams;
+	public var camGame:FeshCamera;
 
 	var customNoteSprites:FlxTypedGroup<FlxSprite>;
 
@@ -251,9 +251,9 @@ class PlayState extends MusicBeatState
 
 		SaveData.saveClient();
 		
-		camGame = new BetterCams();
+		camGame = new FeshCamera();
 		camNOTE = new CameraNote();
-		camHUD = new BetterCams();
+		camHUD = new FeshCamera();
 		camHUD.bgColor.alpha = 0;
 		camNOTE.bgColor.alpha = 0;
 

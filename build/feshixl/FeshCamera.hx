@@ -1,4 +1,4 @@
-package betterShit;
+package feshixl;
 
 import flixel.FlxG;
 import flixel.FlxCamera;
@@ -17,7 +17,7 @@ import openfl.geom.Point;
 
 using flixel.util.FlxColorTransformUtil;
 
-class BetterCams extends FlxCamera {
+class FeshCamera extends FlxCamera {
 
     private var lockedFilters:Array<BitmapFilter>;
     private var wastefulFilters:Array<BitmapFilter>;

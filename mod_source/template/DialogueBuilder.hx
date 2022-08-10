@@ -11,7 +11,6 @@ import flixel.system.FlxSound;
 import flixel.util.FlxTimer;
 import flixel.FlxCamera;
 import flixel.FlxState;
-import betterShit.BetterCams;
 import feshixl.filters.GuassianBlur;
 import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;

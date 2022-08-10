@@ -1,16 +1,15 @@
 package;
 
-import WiggleEffect.WiggleEffectType;
-import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.util.FlxDestroyUtil;
 import openfl.filters.ShaderFilter;
 import openfl.filters.BitmapFilter;
+import WiggleEffect.WiggleEffectType;
 import flash.filters.BlurFilter;
-import betterShit.BetterCams;
+import feshixl.FeshCamera;
 
-class CameraNote extends BetterCams {
-    public var camNoteWOBBLE:FlxCamera;
+class CameraNote extends FeshCamera {
+    public var camNoteWOBBLE:FeshCamera;
 
     public var wobblePower:Float = 30;
 
@@ -24,7 +23,7 @@ class CameraNote extends BetterCams {
                 if(camNoteWOBBLE != null)
                     return;
 
-                camNoteWOBBLE = new FlxCamera();
+                camNoteWOBBLE = new FeshCamera();
                 camNoteWOBBLE.bgColor.alpha = 0;
                 camNoteWOBBLE.setFilters([new ShaderFilter(noteWiggleFLAG.shader)]);
 

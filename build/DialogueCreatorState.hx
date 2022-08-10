@@ -948,7 +948,7 @@ class DialogueCreatorState extends MusicBeatState {
         return null;
     }
 
-    function attachKeysToEditor(event:KeyboardEvent) {
+    function attachKeysToEditor(event:KeyboardEvent):Void {
         var key:FlxKey = event.keyCode;
 
         if(key == FlxKey.ESCAPE) {
@@ -956,7 +956,7 @@ class DialogueCreatorState extends MusicBeatState {
         }
     }
 
-    function saveLevel() {
+    function saveLevel():Void {
         var json = {
 			"info": _info.info
 		};

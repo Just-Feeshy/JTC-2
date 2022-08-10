@@ -17,7 +17,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
 import flixel.util.FlxColor;
-import betterShit.BetterCams;
+import feshixl.FeshCamera;
 import openfl.Lib;
 
 import openfl.filters.BlurFilter;
@@ -61,9 +61,9 @@ class OptionsMenuState extends MusicBeatState {
 	private var bar:FlxSprite;
 	private var displayDescription:FlxText;
 
-	private var camBackground:BetterCams;
-	private var camNoBlur:BetterCams;
-	private var camSubState:BetterCams;
+	private var camBackground:FeshCamera;
+	private var camNoBlur:FeshCamera;
+	private var camSubState:FeshCamera;
 
 	private var blurEffect:GuassianBlur;
 
@@ -98,9 +98,9 @@ class OptionsMenuState extends MusicBeatState {
 
 		SaveData.saveClient();
 
-        camBackground = new BetterCams();
-        camNoBlur = new BetterCams();
-		camSubState = new BetterCams();
+        camBackground = new FeshCamera();
+        camNoBlur = new FeshCamera();
+		camSubState = new FeshCamera();
         camBackground.bgColor.alpha = 0;
         camNoBlur.bgColor.alpha = 0;
 		camSubState.bgColor.alpha = 0;

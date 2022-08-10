@@ -15,10 +15,13 @@ import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
+import feshixl.utils.FeshFileHandler;
+import openfl.utils.ByteArray;
+import openfl.display.PNGEncoderOptions;
 import openfl.display.BitmapData;
 import openfl.events.IOErrorEvent;
 import openfl.events.Event;
-import openfl.net.FileReference;
+import openfl.geom.Point;
 
 import SaveData.SaveType;
 
@@ -30,7 +33,7 @@ using StringTools;
 class SpriteSheetCreator extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
 
-    var _file:FileReference;
+    var _file:FeshFileHandler;
 
     var escapeText:FlxText;
     var displaySprite:FlxSprite;
@@ -48,6 +51,7 @@ class SpriteSheetCreator extends MusicBeatState {
     var animFrames:Map<String, Array<FlxGraphic>>;
     var animNames:Array<String>;
 
+    var column:Int = 7; //hehe 7 lucky number.
     var frameIndex(default, set):Int = 0;
 
     override function create() {
@@ -132,6 +136,14 @@ class SpriteSheetCreator extends MusicBeatState {
                 }
             }
 
+            if(FlxG.keys.justPressed.RIGHT) {
+                column++;
+            }
+
+            if(FlxG.keys.justPressed.LEFT && column > 1) {
+                column--;
+            }
+
             if(camGAME.zoom > 2) {
                 camGAME.zoom = 2;
                 updateText();
@@ -185,11 +197,20 @@ class SpriteSheetCreator extends MusicBeatState {
         var importImageButton:FlxUIButton = new FlxUIButton(createAnimButton.x - createAnimButton.width - 10, createAnimButton.y, "Import PNG", function() {
             fileType = [".png"];
 
-            _file = new FileReference();
+            _file = new FeshFileHandler();
 			_file.addEventListener(Event.SELECT, onSelect);
 			_file.addEventListener(Event.CANCEL, onCancel);
 
             _file.browse();
+        });
+
+        var uniqueExportButton:FlxUIButton = new FlxUIButton(createAnimButton.x - createAnimButton.width - 10, removeAnimButton.y, "Export", function() {
+            if(animNames.length > 0) {
+                for(k in animFrames.keys()) {
+                    saveSpriteheet();
+                    break;
+                }
+            }
         });
 
         unableLabel = new FlxText(10, animSelector.y + animSelector.height + 5, "");
@@ -200,8 +221,9 @@ class SpriteSheetCreator extends MusicBeatState {
         tab_group_spritesheet.add(inputName);
         tab_group_spritesheet.add(inputNameTxt);
         tab_group_spritesheet.add(createAnimButton);
-        //tab_group_spritesheet.add(removeAnimButton);
+        tab_group_spritesheet.add(removeAnimButton);
         tab_group_spritesheet.add(importImageButton);
+        tab_group_spritesheet.add(uniqueExportButton);
         tab_group_spritesheet.add(unableLabel);
 
         UI_thingy.addGroup(tab_group_spritesheet);
@@ -245,23 +267,118 @@ class SpriteSheetCreator extends MusicBeatState {
             "Zoom: "
             + Std.int(camGAME.zoom * 100) + "%"
             + "\nFrame Index: "
-            + (frameIndex + 1)
-            + "\n\nUP/DOWN - Increase/Decrease Frame Index"
+            + frameIndex
+            + "\nColumns Per Row: "
+            + column
+            + "\n\nLEFT/RIGHT - Change how many columns per row"
+            + "\nUP/DOWN - Increase/Decrease Frame Index"
             + "\nMouse Wheel | Q/E - Camera Zoom"
             + "\nESCAPE - To Exit"
             + "\n\nMade By: Feeshy"
         ;
     }
 
+    /**
+    * This takes long to register and compile... Too bad!
+    */
+    function saveSpriteheet():Void {
+        var xMatrix:Array<Array<Int>> = [];
+        var yMatrix:Array<Array<Int>> = [];
+
+        var maxWidth:Int = 0;
+        var maxHeight:Int = 0;
+
+        var allGraphics:Array<FlxGraphic> = totalGraphics();
+
+        for(i in 0...Math.ceil(allGraphics.length / column)) {
+            xMatrix.push([]);
+            yMatrix.push([]);
+
+            var tempWidth:Int = 0;
+            var tempHeight:Int = 0;
+
+            for(k in 0...column) {
+                if(k + (i * column) >= allGraphics.length) {
+                    break;
+                }
+
+                xMatrix[i].push(tempWidth);
+                yMatrix[i].push(maxHeight);
+
+                tempWidth += allGraphics[k].width;
+
+                if(tempHeight < allGraphics[(i * column)].height) {
+                    tempHeight = allGraphics[(i * column)].height;
+                }
+            }
+
+            if(maxWidth < tempWidth) {
+                maxWidth = tempWidth;
+            }
+
+            if(i < Math.ceil(allGraphics.length / column) - 1) {
+                maxHeight += tempHeight;
+            }else {
+                maxHeight += tempHeight;
+            }
+        }
+
+        var ohNo:BitmapData = new BitmapData(maxWidth, maxHeight, true, 0x00000000);
+
+        for(i in 0...Math.ceil(allGraphics.length / column)) { //vertical
+            for(k in 0...column) { //horizontal
+                if(k + (i * column) >= allGraphics.length) {
+                    break;
+                }
+
+                ohNo.copyPixels(allGraphics[k + (i * column)].bitmap, allGraphics[k + (i * column)].bitmap.rect, new Point(xMatrix[i][k], yMatrix[i][k]));
+            }
+        }
+
+        var toBytes:ByteArray = new ByteArray();
+        toBytes = ohNo.encode(ohNo.rect, new PNGEncoderOptions(true), toBytes);
+
+        _file = new FeshFileHandler();
+        _file.addEventListener(Event.COMPLETE, onSaveComplete);
+        _file.addEventListener(Event.CANCEL, onCancel);
+        _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        _file.save(toBytes, "spritesheet.png");
+
+        saveSpritesheetXml(xMatrix, yMatrix);
+    }
+
+    function saveSpritesheetXml(xm:Array<Array<Int>>, ym:Array<Array<Int>>):Void {
+        
+    }
+
+    function onSaveComplete(_):Void {
+		clearEvent();
+	}
+
+    function onSaveError(_):Void {
+		clearEvent();
+		FlxG.log.error("Problem saving ERROR");
+	}
+
+    function totalGraphics():Array<FlxGraphic> {
+        var totalGraphicArray:Array<FlxGraphic> = [];
+
+        for(k in animFrames.keys()) {
+            totalGraphicArray = totalGraphicArray.concat(animFrames.get(k));
+        }
+
+        return totalGraphicArray;
+    }
+
     function onSelect(event:Event):Void {
-        _file = cast(event.target, FileReference);
+        _file = cast(event.target, FeshFileHandler);
         _file.addEventListener(Event.COMPLETE, onComplete);
         _file.load();
     }
 
     function onComplete(event:Event):Void {
         clearEvent();
-        _file = cast(event.target, FileReference);
+        _file = cast(event.target, FeshFileHandler);
 
         var foundFile:Bool = false;
 
@@ -303,7 +420,10 @@ class SpriteSheetCreator extends MusicBeatState {
 
     function clearEvent():Void {
         _file.removeEventListener(Event.COMPLETE, onComplete);
+        _file.removeEventListener(Event.COMPLETE, onSaveComplete);
         _file.removeEventListener(Event.CANCEL, onCancel);
+        _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        _file.removeEventListener(Event.SELECT, onSelect);
         _file = null;
     }
 
