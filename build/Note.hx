@@ -477,7 +477,7 @@ class Note extends feshixl.FeshSprite {
 			}
 		}
 
-		public function pressedByPlayer(boyfriend:Boyfriend, dad:Character, girlfriend:Character):Void {
+		public function pressedByPlayer(boyfriend:Character, dad:Character, girlfriend:Character):Void {
 			if(hasCustomAddon != null) {
 				hasCustomAddon.pressedByPlayer(this, boyfriend, dad, girlfriend);
 			}

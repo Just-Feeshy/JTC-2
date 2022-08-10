@@ -22,7 +22,6 @@ class HealthIcon extends FlxSprite
 	public var sprTracker:FlxSprite;
 
 	private var iconSway:Float = 0;
-	private var BPM:Int;
 
 	public var iconCharacters:Array<String>;
 
@@ -31,8 +30,9 @@ class HealthIcon extends FlxSprite
 	public var iconAnimInfo:Array<Int> = [];
 
 	public var character:String = "";
+	public var bpm:Int;
 
-	public function new(char:String = 'bf', isPlayer:Bool = false, ?storyBPM:Int = 0, ?loadAnims:Bool = true)
+	public function new(char:String = 'bf', isPlayer:Bool = false, ?storybpm:Int = 0, ?loadAnims:Bool = true)
 	{
 		super();
 
@@ -52,10 +52,10 @@ class HealthIcon extends FlxSprite
 
 		scrollFactor.set();
 
-		if(storyBPM <= 0)
+		if(storybpm <= 0)
 			updatePref += 1;
 
-		BPM = storyBPM;
+		bpm = storybpm;
 	}
 
 	public function loadAllAnims(isPlayer:Bool):Void {
@@ -98,8 +98,8 @@ class HealthIcon extends FlxSprite
 			if (sprTracker != null)
 				setPosition(sprTracker.x + sprTracker.width + 10, sprTracker.y - 30);
 	
-			if(BPM >= 1) {
-				var currentSway:Float = iconSway*(BPM/120);
+			if(bpm >= 1) {
+				var currentSway:Float = iconSway*(bpm/120);
 				iconSway += 0.004;
 	
 				angle = 15*Math.sin(currentSway * Math.PI);

@@ -155,6 +155,9 @@ class PlayState extends MusicBeatState
 	public var gf:Character;
 	public var boyfriend:Boyfriend;
 
+	public var currentPlayer(get, never):Character;
+	public var currentOpponent(get, never):Character;
+
 	public var notes:FlxTypedGroup<Note>;
 	public var unspawnNotes:Array<Note> = [];
 
@@ -171,6 +174,9 @@ class PlayState extends MusicBeatState
 
 	public static var playerStrums:FlxTypedSpriteGroup<Strum>;
 	public static var opponentStrums:FlxTypedSpriteGroup<Strum>;
+
+	public var currentStrums(get, never):FlxTypedSpriteGroup<Strum>;
+	public var oppositeStrums(get, never):FlxTypedSpriteGroup<Strum>;
 
 	private var camZooming:Bool = false;
 	private var curSong:String = "";
@@ -497,12 +503,20 @@ class PlayState extends MusicBeatState
 		counterTxt.antialiasing = FlxG.save.data.showAntialiasing;
 		counterTxt.scrollFactor.set();
 
-		iconP1 = new HealthIcon(SONG.player1, true, SONG.bpm);
+		iconP1 = new HealthIcon(SONG.player1, true);
 
 		iconP2 = new HealthIcon(SONG.player2, false);
 
+		if(SaveData.getData(PLAY_AS_OPPONENT)) {
+			iconP2.bpm = SONG.bpm;
+		}else {
+			iconP1.bpm = SONG.bpm;
+		}
+
 		healthBar = new HealthBar(healthBarBG.x + 4, healthBarBG.y + 4, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
 			'health', 0, 2);
+			
+		healthBar.subtractIt = SaveData.getData(PLAY_AS_OPPONENT);
 		healthBar.scrollFactor.set();
 
 		playerIconColor = CoolUtil.calculateAverageColor(iconP1.updateFramePixels());
@@ -1140,6 +1154,10 @@ class PlayState extends MusicBeatState
 					{
 						sustainNote.x += FlxG.width / 2; // general offset
 					}
+
+					if(SaveData.getData(PLAY_AS_OPPONENT)) {
+						sustainNote.mustPress = !sustainNote.mustPress;
+					}
 				}
 
 				swagNote.mustPress = gottaHitNote;
@@ -1147,6 +1165,10 @@ class PlayState extends MusicBeatState
 				if (swagNote.mustPress)
 				{
 					swagNote.x += FlxG.width / 2; // general offset	
+				}
+
+				if(SaveData.getData(PLAY_AS_OPPONENT)) {
+					swagNote.mustPress = !swagNote.mustPress;
 				}
 			}
 			daBeats += 1;
@@ -1297,6 +1319,10 @@ class PlayState extends MusicBeatState
 			}else {
 				babyArrow.ifOpponent = true;
 				opponentStrums.add(babyArrow);
+			}
+
+			if(SaveData.getData(PLAY_AS_OPPONENT)) {
+				babyArrow.ifOpponent = !babyArrow.ifOpponent;
 			}
 
 			babyArrow.playAnim('static');
@@ -1730,13 +1756,13 @@ class PlayState extends MusicBeatState
 		}
 
 		if(dad.animation.curAnim != null) {
-			if (curBeat % dad.danceBeatTimer == 0 && !dad.animation.curAnim.name.startsWith("sing")) {
+			if (curBeat % dad.danceBeatTimer == 0 && !dad.animation.curAnim.name.startsWith("sing") && !dad.stunned) {
 				dad.dance();
 			}
 		}
 
 		if(boyfriend.animation.curAnim != null) {
-			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.animation.curAnim.name.startsWith("sing")) {
+			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned) {
 				boyfriend.dance();
 			}
 		}
@@ -1830,11 +1856,11 @@ class PlayState extends MusicBeatState
 				var strumPos:Float = 0;
 
 				if(daNote.mustPress) {
-					strumAngle = playerStrums.members[daNote.noteData].directionAngle;
-					strumPos = playerStrums.members[daNote.noteData].y;
+					strumAngle = currentStrums.members[daNote.noteData].directionAngle;
+					strumPos = currentStrums.members[daNote.noteData].y;
 				}else {
-					strumAngle = opponentStrums.members[daNote.noteData].directionAngle;
-					strumPos = opponentStrums.members[daNote.noteData].y;
+					strumAngle = oppositeStrums.members[daNote.noteData].directionAngle;
+					strumPos = oppositeStrums.members[daNote.noteData].y;
 				}
 
 				final centerNote:Float = strumPos + Note.swagWidth / 2;
@@ -1876,8 +1902,8 @@ class PlayState extends MusicBeatState
 					}
 
 					if(daNote.playAnyAnimation) {
-						dad.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
-						dad.holdTimer = 0;
+						currentOpponent.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
+						currentOpponent.holdTimer = 0;
 					}
 
 					events.whenNoteIsPressed(daNote, this);
@@ -1887,7 +1913,7 @@ class PlayState extends MusicBeatState
 						setHealth(health - (0.02 * singDrainValue));
 					}
 
-					opponentStrums.forEach(function(spr:Strum) {
+					oppositeStrums.forEach(function(spr:Strum) {
 						if (Math.abs(daNote.noteData) == spr.ID) {
 							daNote.hit(spr);
 						}
@@ -1900,51 +1926,51 @@ class PlayState extends MusicBeatState
 				}
 
 				if (daNote.mustPress) {
-					daNote.setVisibility(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
+					daNote.setVisibility(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
 
 					daNote.setXaxis(
-						playerStrums.members,
-						playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
-						addToNoteX(addLuaToX(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote), daNote),
-						playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+						currentStrums.members,
+						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
+						addToNoteX(addLuaToX(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote), daNote),
+						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 					
-					daNote.setNoteAngle(addLuaToAngle(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
-					daNote.setNoteAlpha(playerStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
+					daNote.setNoteAngle(addLuaToAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+					daNote.setNoteAlpha(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
-					daNote.yAngle = playerStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
+					daNote.xAngle = currentStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
+					daNote.yAngle = currentStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
 
 					if (daNote.isSustainNote) {
 						if(daNote.prevNote.isSustainNote)
-							daNote.setXaxisSustain(playerStrums.members, playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+							daNote.setXaxisSustain(currentStrums.members, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 						else
-							daNote.setXaxisSustain(playerStrums.members, playerStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), playerStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+							daNote.setXaxisSustain(currentStrums.members, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					}
 				}
 				else {
-					daNote.setVisibility(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
+					daNote.setVisibility(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
 
 					daNote.setXaxis(
-						opponentStrums.members,
-						opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
-						addToNoteX(addLuaToX(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote), daNote),
-						opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+						oppositeStrums.members,
+						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
+						addToNoteX(addLuaToX(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote), daNote),
+						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 
-					daNote.setNoteAngle(addLuaToAngle(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
-					daNote.setNoteAlpha(opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
+					daNote.setNoteAngle(addLuaToAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, daNote), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+					daNote.setNoteAlpha(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
-					daNote.yAngle = opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
+					daNote.xAngle = oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
+					daNote.yAngle = oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
 
 					if (daNote.isSustainNote) {
 						if(daNote.prevNote.isSustainNote)
-							daNote.setXaxisSustain(opponentStrums.members, opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+							daNote.setXaxisSustain(oppositeStrums.members, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 						else
-							daNote.setXaxisSustain(opponentStrums.members, opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), opponentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+							daNote.setXaxisSustain(oppositeStrums.members, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					}
 				}
 
@@ -2014,7 +2040,7 @@ class PlayState extends MusicBeatState
 
 											if(daNote.playAnyAnimation) {
 												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+												currentPlayer.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 											}
 										}
 									}
@@ -2030,7 +2056,7 @@ class PlayState extends MusicBeatState
 
 											if(daNote.playAnyAnimation) {
 												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												boyfriend.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+												currentPlayer.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 											}
 										}
 									}
@@ -2067,7 +2093,7 @@ class PlayState extends MusicBeatState
 				// gitaroo man easter egg
 				FlxG.switchState(new GitarooPause());
 			} else {
-				openSubState(new PauseSubState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+				openSubState(new PauseSubState(currentPlayer.getScreenPosition().x, currentPlayer.getScreenPosition().y));
 			}
 		}	
 	
@@ -2099,7 +2125,7 @@ class PlayState extends MusicBeatState
 
 		for(i in 0...controlArray.length) {
 			if(controlArray[i]) {
-				var spr:Strum = playerStrums.members[i];
+				var spr:Strum = currentStrums.members[i];
 
 				if(spr != null) {
 					spr.setColorTransform(1,1,1,1,0,0,0,0);
@@ -2110,7 +2136,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function gameOverScreen():Void {
-		boyfriend.stunned = true;
+		currentPlayer.stunned = true;
 
 		if(modifierCheckList('blind effect'))
 			FlxG.camera.alpha = 1;
@@ -2126,9 +2152,7 @@ class PlayState extends MusicBeatState
 
 		setLua("inGameOver", true);
 
-		openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
-
-		// FlxG.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+		openSubState(new GameOverSubstate(currentPlayer.getScreenPosition().x, currentPlayer.getScreenPosition().y));
 		
 		#if windows
 		// Game Over doesn't get his own variable because it's only used here
@@ -2221,7 +2245,6 @@ class PlayState extends MusicBeatState
 	private function popUpScore(strumtime:Float, id:Int, abby:String):Void
 	{
 		var noteDiff:Float = Math.abs(strumtime - Conductor.trackPosition);
-		// boyfriend.playAnim('hey');
 		vocals.volume = 1;
 
 		var placement:String = Std.string(combo);
@@ -2505,7 +2528,7 @@ class PlayState extends MusicBeatState
 
 				missClicks++;
 
-				playerStrums.forEach(function(spr:Strum) {
+				currentStrums.forEach(function(spr:Strum) {
 					if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
 						if(controlArray[spr.noteData]) {
 							spr.playAnim('pressed');
@@ -2528,7 +2551,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (!boyfriend.stunned)
+		if (!currentPlayer.stunned)
 		{
 			setHealth(health - 0.04);
 
@@ -2553,21 +2576,21 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			boyfriend.stunned = true;
+			currentPlayer.stunned = true;
 
 			// get stunned for 5 seconds
 			new FlxTimer().start(5 / 60, function(tmr:FlxTimer)
 			{
-				boyfriend.stunned = false;
+				currentPlayer.stunned = false;
 			});
 
 			if(note == null) {
 				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-				boyfriend.playAnim(singAnims[direction] + "miss", true);
+				currentPlayer.playAnim(singAnims[direction] + "miss", true);
 			}else {
 				if(note.playAnyAnimation) {
 					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-					boyfriend.playAnim(singAnims[direction] + "miss", true);
+					currentPlayer.playAnim(singAnims[direction] + "miss", true);
 				}
 			}
 		}
@@ -2676,13 +2699,13 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			note.pressedByPlayer(boyfriend, dad, gf);
-			boyfriend.customAnimation = true;
+			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
+			currentPlayer.customAnimation = true;
 
 			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract) &&
-			(boyfriend.customAnimation && (boyfriend.animation.curAnim.name.startsWith("sing") ||
-			(boyfriend.animation.curAnim.name == "idle" || boyfriend.animation.curAnim.name.contains("dance"))))) {
-				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + boyfriend.hasBePlayer;
+			(currentPlayer.customAnimation && (currentPlayer.animation.curAnim.name.startsWith("sing") ||
+			(currentPlayer.animation.curAnim.name == "idle" || currentPlayer.animation.curAnim.name.contains("dance"))))) {
+				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + currentPlayer.hasBePlayer;
 
 				if(SONG.fifthKey) {
 					switch (note.noteData)
@@ -2696,15 +2719,15 @@ class PlayState extends MusicBeatState
 				events.whenNoteIsPressed(note, this);
 				cameraMovement(note.noteData, note.isSustainNote);
 
-				boyfriend.customAnimation = false;
+				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					boyfriend.playAnim(animPlay, true);
-					boyfriend.holdTimer = 0;
+					currentPlayer.playAnim(animPlay, true);
+					currentPlayer.holdTimer = 0;
 				}
 			}
 
-			playerStrums.forEach(function(spr:Strum)
+			currentStrums.forEach(function(spr:Strum)
 			{
 				if (Math.abs(note.noteData) == spr.ID)
 				{
@@ -3084,12 +3107,36 @@ class PlayState extends MusicBeatState
 		return wobbleModPower;
 	}
 
-	//Getter Function
+	//Getter Functions
 	override function get_songPos():Float
 		return Conductor.trackPosition;
 
-	function get_playerStrums():FlxTypedSpriteGroup<Strum> {
-		return playerStrums;
+	function get_currentStrums():FlxTypedSpriteGroup<Strum> {
+		if(SaveData.getData(PLAY_AS_OPPONENT))
+			return opponentStrums;
+		else
+			return playerStrums;
+	}
+
+	function get_oppositeStrums():FlxTypedSpriteGroup<Strum> {
+		if(SaveData.getData(PLAY_AS_OPPONENT))
+			return playerStrums;
+		else
+			return opponentStrums;
+	}
+
+	function get_currentPlayer():Character {
+		if(SaveData.getData(PLAY_AS_OPPONENT))
+			return dad;
+		else
+			return boyfriend;
+	}
+
+	function get_currentOpponent():Character {
+		if(SaveData.getData(PLAY_AS_OPPONENT))
+			return boyfriend;
+		else
+			return dad;
 	}
 
 	function get_accTotal():Float {
@@ -3138,7 +3185,7 @@ class PlayState extends MusicBeatState
 
 		if (gf != null) {
 			if(gf.animation.curAnim != null) {
-				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing")) {
+				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing") && !gf.stunned) {
 					gf.dance();
 				}
 			}

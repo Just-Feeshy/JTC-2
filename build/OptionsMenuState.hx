@@ -607,6 +607,25 @@ class OptionsMenuState extends MusicBeatState {
 
 								if(pressed)
 									isChangingOption = false;
+							}),
+							new GhostTapping(0, ((imNotSure + 9) * 10) + 120, "Play As Opponent", SaveType.PLAY_AS_OPPONENT, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 9;
+
+								if(pressed)
+									FlxG.save.data.playAsOpponent = !FlxG.save.data.playAsOpponent;
+
+								option.description = "Toggle whether to play as opponent.";
+
+								if(!SaveData.getData(SaveType.PLAY_AS_OPPONENT)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
+
+								if(pressed)
+									isChangingOption = false;
 							})
 						]
 					}

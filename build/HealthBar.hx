@@ -32,6 +32,8 @@ class HealthBar extends FlxSpriteGroup {
     public var parent:Dynamic;
     public var parentVariable:String;
 
+    public var subtractIt:Bool = false;
+
     public function new(x:Float, y:Float, width:Int = 100, height:Int = 10, ?parentRef:Dynamic, variable:String = "",
         min:Float = 0, max:Float = 100) {
         super(x, y);
@@ -107,14 +109,10 @@ class HealthBar extends FlxSpriteGroup {
     }
 
     public function setRange(min:Float, max:Float):Void {
-        if (max <= min) {
-            throw "HealthBar: max cannot be less than or equal to min";
-            return;
-        }
-
         this.min = min;
 		this.max = max;
-		this.range = max - min;
+
+		this.range = Std.int(Math.abs(max - min));
     }
 
     public function updateValueFromParent():Void {
@@ -122,7 +120,10 @@ class HealthBar extends FlxSpriteGroup {
     }
 
     function get_percent():Int {
-        return Std.int((value / range) * 100);
+        if(subtractIt)
+            return Std.int((1 - (value / range)) * 100);
+        else
+            return Std.int((value / range) * 100);
     }
 
     function get_value():Float {
@@ -136,17 +137,24 @@ class HealthBar extends FlxSpriteGroup {
     }
 
     function set_value(newValue:Float):Float {
-        if(emptyBar != null && filledBar != null) {
-            emptyBar.frames.frames[0].frame.width = barWidth - (barWidth * (value / range));
-            filledBar.frames.frames[0].frame.width = barWidth * (value / range);
+        var estimate:Float = 0;
 
-            if(barWidth - (barWidth * (value / range)) > 0) {
+        if(subtractIt)
+            estimate = 1 - (value / range);
+        else
+            estimate = value / range;
+
+        if(emptyBar != null && filledBar != null) {
+            emptyBar.frames.frames[0].frame.width = barWidth - (barWidth * estimate);
+            filledBar.frames.frames[0].frame.width = barWidth * estimate;
+
+            if(barWidth - (barWidth * estimate) > 0) {
                 emptyBar.visible = true;
             }else {
                 emptyBar.visible = false;
             }
 
-            if(barWidth * (value / range) > 0) {
+            if(barWidth * estimate > 0) {
                 filledBar.visible = true;
             }else {
                 filledBar.visible = false;
@@ -156,7 +164,7 @@ class HealthBar extends FlxSpriteGroup {
             filledBar.frame = filledBar.frames.frames[0];
             filledBar.frame.flipX = true;
 
-            filledBar.x = x + (barWidth - (barWidth * (value / range)));
+            filledBar.x = x + (barWidth - (barWidth * estimate));
         }
 
         return value = Math.max(min, Math.min(newValue, max));
