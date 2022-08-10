@@ -328,11 +328,25 @@ class SpriteSheetCreator extends MusicBeatState {
 
         var ohNo:BitmapData = new BitmapData(maxWidth, maxHeight, true, 0x00000000);
 
+        var happyMapX:Map<String, Array<Int>> = new Map<String, Array<Int>>();
+        var happyMapY:Map<String, Array<Int>> = new Map<String, Array<Int>>();
+
         for(i in 0...Math.ceil(allGraphics.length / column)) { //vertical
             for(k in 0...column) { //horizontal
                 if(k + (i * column) >= allGraphics.length) {
                     break;
                 }
+
+                if(happyMapX.exists(allGraphics[k + (i * column)].key)) {
+                    happyMapX.set(allGraphics[k + (i * column)].key, []);
+                }
+
+                if(happyMapY.exists(allGraphics[k + (i * column)].key)) {
+                    happyMapY.set(allGraphics[k + (i * column)].key, []);
+                }
+
+                happyMapX.get(allGraphics[k + (i * column)].key).push(xMatrix[i][k]);
+                happyMapY.get(allGraphics[k + (i * column)].key).push(xMatrix[i][k]);
 
                 ohNo.copyPixels(allGraphics[k + (i * column)].bitmap, allGraphics[k + (i * column)].bitmap.rect, new Point(xMatrix[i][k], yMatrix[i][k]));
             }
@@ -347,13 +361,16 @@ class SpriteSheetCreator extends MusicBeatState {
         _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 
         _file.savedFileCallback = function(name:String, path:String) {
-            saveSpritesheetXml(name, path, xMatrix, yMatrix);
+            saveSpritesheetXml(name, path, happyMapX, happyMapY);
+
+            happyMapX.clear();
+            happyMapY.clear();
         }
 
         _file.save(toBytes, "spritesheet.png");
     }
 
-    function saveSpritesheetXml(fileName:String, path:String, xm:Array<Array<Int>>, ym:Array<Array<Int>>):Void {
+    function saveSpritesheetXml(fileName:String, path:String, xm:Map<String, Array<Int>>, ym:Map<String, Array<Int>>):Void {
         var xmlVersion:String = 
         '<?xml version="1.0" encoding="utf-8"?>\n'
         + '<TextureAtlas imagePath="${fileName}">\n'
@@ -365,7 +382,7 @@ class SpriteSheetCreator extends MusicBeatState {
             var frameArray:Array<FlxGraphic> = animFrames.get(k);
 
             for(i in 0...frameArray.length) {
-                xmlVersion += '\t<SubTexture name="${k + nodeIDString(i)}" x="${xm[mapIndex][i]}" y="${ym[mapIndex][i]}" width="${frameArray[i].width}" height="${frameArray[i].height}">\n';
+                xmlVersion += '\t<SubTexture name="${k + nodeIDString(i)}" x="${xm.get(k)}" y="${ym.get(k)}" width="${frameArray[i].width}" height="${frameArray[i].height}">\n';
             }
 
             mapIndex++;
@@ -450,7 +467,7 @@ class SpriteSheetCreator extends MusicBeatState {
             return;
         }
 
-        var graphicLoaded = FlxG.bitmap.add(BitmapData.fromBytes(_file.data));
+        var graphicLoaded = FlxG.bitmap.add(BitmapData.fromBytes(_file.data), false, animSelector.selectedLabel);
         graphicLoaded.persist = true;
         graphicLoaded.destroyOnNoUse = false;
 
