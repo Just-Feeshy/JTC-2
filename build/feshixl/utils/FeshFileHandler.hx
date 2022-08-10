@@ -12,7 +12,8 @@ class FeshFileHandler extends FileReference {
     @:noCompletion
     override function saveFileDialog_onSelect(path:String):Void {
         if(savedFileCallback != null) {
-            savedFileCallback(Path.withoutDirectory(path), path);
+            savedFileCallback(Path.withoutDirectory(path), Path.directory(path));
+            savedFileCallback = null;
         }
 
         super.saveFileDialog_onSelect(path);
@@ -21,7 +22,8 @@ class FeshFileHandler extends FileReference {
     @:noCompletion
     override function saveFileDialog_onSave(path:String):Void {
         if(savedFileCallback != null) {
-            savedFileCallback(Path.withoutDirectory(path), path);
+            savedFileCallback(Path.withoutDirectory(path), Path.directory(path));
+            savedFileCallback = null;
         }
 
         super.saveFileDialog_onSave(path);

@@ -22,6 +22,8 @@ import openfl.display.BitmapData;
 import openfl.events.IOErrorEvent;
 import openfl.events.Event;
 import openfl.geom.Point;
+import lime.ui.FileDialog;
+import haxe.io.Bytes;
 
 import SaveData.SaveType;
 
@@ -29,6 +31,7 @@ using StringTools;
 
 /**
 * Heavily under WIP.
+* Btw if your going to "borrow" this code or any other, please credit me.
 */
 class SpriteSheetCreator extends MusicBeatState {
     var UI_thingy:FlxUITabMenu;
@@ -339,19 +342,54 @@ class SpriteSheetCreator extends MusicBeatState {
         toBytes = ohNo.encode(ohNo.rect, new PNGEncoderOptions(true), toBytes);
 
         _file = new FeshFileHandler();
-        _file.addEventListener(Event.COMPLETE, onSaveComplete);
-        _file.addEventListener(Event.CANCEL, onCancel);
-        _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 
         _file.savedFileCallback = function(name:String, path:String) {
-            saveSpritesheetXml(name, xMatrix, yMatrix);
+            saveSpritesheetXml(name, path, xMatrix, yMatrix);
         }
 
         _file.save(toBytes, "spritesheet.png");
     }
 
-    function saveSpritesheetXml(fileName:String, xm:Array<Array<Int>>, ym:Array<Array<Int>>):Void {
-        
+    function saveSpritesheetXml(fileName:String, path:String, xm:Array<Array<Int>>, ym:Array<Array<Int>>):Void {
+        var xmlVersion:String = 
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        + '<TextureAtlas imagePath="${fileName}">\n'
+        + '\t<!-- Created with Feeshmora FNF -->\n';
+
+        var mapIndex:Int = 0;
+
+        for(k in animFrames.keys()) {
+            var frameArray:Array<FlxGraphic> = animFrames.get(k);
+
+            for(i in 0...frameArray.length) {
+                xmlVersion += '\t<SubTexture name="${k + nodeIDString(i)}" x="${xm[mapIndex][i]}" y="${ym[mapIndex][i]}" width="${frameArray[i].width}" height="${frameArray[i].height}">\n';
+            }
+
+            mapIndex++;
+        }
+
+        xmlVersion += "</ TextureAtlas>";
+
+        if(_file == null) {
+            _file = new FeshFileHandler();
+        }
+
+        _file.addEventListener(Event.COMPLETE, onSaveComplete);
+        _file.addEventListener(Event.CANCEL, onCancel);
+        _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        _file.save(xmlVersion, fileName);
+    }
+
+    function nodeIDString(id:Int):String {
+        var newNumString:String = "";
+        var tempNum:String = Std.string(id);
+
+        for(i in 0...Std.int(Math.max(0, 4 - tempNum.length))) {
+            newNumString += "0";
+        }
+
+        newNumString += tempNum;
+        return newNumString;
     }
 
     function onSaveComplete(_):Void {
@@ -439,5 +477,18 @@ class SpriteSheetCreator extends MusicBeatState {
 
     override function destroy():Void {
         super.destroy();
+
+        for(k in animFrames.keys()) {
+            var frameArray:Array<FlxGraphic> = animFrames.get(k);
+
+            for(i in 0...frameArray.length) {
+                frameArray[i] = FlxDestroyUtil.destroy(frameArray[i]);
+                frameArray.shift();
+            }
+
+            animFrames.remove(k);
+        }
+
+        animFrames.clear();
     }
 }
