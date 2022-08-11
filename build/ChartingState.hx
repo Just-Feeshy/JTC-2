@@ -1259,8 +1259,6 @@ class ChartingState extends MusicBeatState
 		vocals = new FlxSound().loadEmbedded(Paths.voices(daSong));
 		FlxG.sound.list.add(vocals);
 
-		vocals.play();
-
 		setupSong(daSong);
 		FlxG.sound.music.pause();
 		Conductor.songPosition = sectionStartTime(curSection);

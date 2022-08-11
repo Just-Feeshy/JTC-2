@@ -2839,6 +2839,11 @@ class PlayState extends MusicBeatState
 	}
 
 	function generateStaticLua():Void {
+		modifiableSprites.set("iconP1", iconP1);
+		modifiableSprites.set("iconP2", iconP2);
+		modifiableSprites.set("healthBarBG", healthBarBG);
+		modifiableSprites.set("healthBar", healthBar);
+
 		modifiableCameras.set("camHUD", camHUD);
 		modifiableCameras.set("camGAME", FlxG.camera);
 		modifiableCameras.set("camNOTE", camNOTE);
@@ -2850,6 +2855,7 @@ class PlayState extends MusicBeatState
 		setLua("difficultyName", CoolUtil.difficultyArray[PlayState.storyDifficulty]);
 		setLua("week", Paths.modJSON.weeks.get("week_" + PlayState.storyWeek).week_name.toUpperCase());
 		setLua("weekRaw", PlayState.storyWeek);
+		setLua("totalKeysForStrum", PlayState.SONG.fifthKey ? 5 : 4);
 		setLua("hasCutscene", PlayState.SONG.video != null ? true : false);
 		setLua("inGameOver", false);
 
@@ -2953,19 +2959,19 @@ class PlayState extends MusicBeatState
 				setLua('defaultOpponentStrumY' + i, opponentStrums.members[i].y);
 			}
 
-			addCallback("setNoteStrumPos", function(id:Int, x:Int, y:Int) {
+			addCallback("setNoteStrumPos", function(id:Int, x:Float, y:Float) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 	
 				strumOBJ.x = x;
 				strumOBJ.y = y;
 			});
 	
-			addCallback("setNoteStrumAngle", function(id:Int, angle:Int) {
+			addCallback("setNoteStrumAngle", function(id:Int, angle:Float) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 				strumOBJ.angle = angle;
 			});
 	
-			addCallback("setPlayerStrumDirection", function(id:Int, angle:Int) {
+			addCallback("setPlayerStrumDirection", function(id:Int, angle:Float) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 				strumOBJ.directionAngle = angle;
 			});
