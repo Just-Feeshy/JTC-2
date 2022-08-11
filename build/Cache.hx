@@ -92,8 +92,7 @@ class Cache {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
 
             if (theseAssets.exists(key) && !permanentCache.contains(key)) {
-                trace("Remove cached file: " + key);
-
+                openfl.Assets.cache.removeBitmapData(key);
                 FlxG.bitmap.removeKey(key);
                 daBitmap.destroy();
 
@@ -116,15 +115,12 @@ class Cache {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
             
             if(daBitmap != null && !theseAssets.exists(key)) {
+                openfl.Assets.cache.removeBitmapData(key);
                 FlxG.bitmap.removeKey(key);
                 daBitmap.destroy();
 
                 daBitmap = null;
             }
         }
-
-        theseAssets.clear();
-        openfl.Assets.cache.clear();
-        System.gc();
     }
 }

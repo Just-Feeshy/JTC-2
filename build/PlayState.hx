@@ -548,12 +548,6 @@ class PlayState extends MusicBeatState
 		debugText.cameras = [camHUD];
 		counterTxt.cameras = [camHUD];
 
-		// if (SONG.song == 'South')
-		// FlxG.camera.alpha = 0.7;
-		// UI_camera.zoom = 1;
-
-		// cameras = [FlxG.cameras.list[1]];
-
 		startingSong = true;
 
 		if(!hasWarning)
@@ -2191,7 +2185,6 @@ class PlayState extends MusicBeatState
 
 			if (storyPlaylist.length <= 0) {
 				FlxG.sound.playMusic(Paths.music('Main Menu'));
-
 				FlxG.switchState(new StoryMenuState());
 
 				if (SONG.validScore && !modifierCheckList('blue balls')) { //Make sure to not override.
@@ -3253,6 +3246,13 @@ class PlayState extends MusicBeatState
 		});
 	}
 
+	@:access(flixel.FlxGame)
+	function clearCache():Void {
+		if(!(cast FlxG.game._requestedState is PlayState)) {
+			Cache.clear();
+		}
+	}
+
 	override public function destroy() {
 		super.destroy();
 
@@ -3280,6 +3280,7 @@ class PlayState extends MusicBeatState
 		}
 
 		DefaultHandler.kill();
-		Cache.clear();
+
+		clearCache();
 	}
 }

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="fishAndFrog.png">
+	<!-- Created with Feeshmora FNF -->
+	<SubTexture name="hehe0000" x="0" y="0" width="2444" height="2204">
+	<SubTexture name="hehe0001" x="2444" y="0" width="2444" height="2204">
+	<SubTexture name="hehe0002" x="4888" y="0" width="2444" height="2204">
+	<SubTexture name="hehe0003" x="7332" y="0" width="2444" height="2204">
+	<SubTexture name="hehe0004" x="9776" y="0" width="2444" height="2204">
+	<SubTexture name="hehe0005" x="12220" y="0" width="2444" height="2204">
+	<SubTexture name="hehe0006" x="14664" y="0" width="2444" height="2204">
+	<SubTexture name="hehe0007" x="0" y="2204" width="2444" height="2204">
+	<SubTexture name="hehe0008" x="2444" y="2204" width="2444" height="2204">
+	<SubTexture name="hehe0009" x="4888" y="2204" width="2444" height="2204">
+	<SubTexture name="hehe0010" x="7332" y="2204" width="2444" height="2204">
+	<SubTexture name="hehe0011" x="9776" y="2204" width="2444" height="2204">
+	<SubTexture name="hehe0012" x="12220" y="2204" width="2444" height="2204">
+	<SubTexture name="hehe0013" x="14664" y="2204" width="2444" height="2204">
+	<SubTexture name="hehe0014" x="0" y="4408" width="2444" height="2204">
+	<SubTexture name="hehe0015" x="2444" y="4408" width="2444" height="2204">
+	<SubTexture name="hehe0016" x="4888" y="4408" width="2444" height="2204">
+	<SubTexture name="hehe0017" x="7332" y="4408" width="2444" height="2204">
+	<SubTexture name="hehe0018" x="9776" y="4408" width="2444" height="2204">
+	<SubTexture name="hehe0019" x="12220" y="4408" width="2444" height="2204">
+	<SubTexture name="hehe0020" x="14664" y="4408" width="2444" height="2204">
+	<SubTexture name="hehe0021" x="0" y="6612" width="2444" height="2204">
+	<SubTexture name="hehe0022" x="2444" y="6612" width="2444" height="2204">
+	<SubTexture name="hehe0023" x="4888" y="6612" width="2444" height="2204">
+	<SubTexture name="hehe0024" x="7332" y="6612" width="2444" height="2204">
+	<SubTexture name="hehe0025" x="9776" y="6612" width="2444" height="2204">
+	<SubTexture name="hehe0026" x="12220" y="6612" width="2444" height="2204">
+	<SubTexture name="hehe0027" x="14664" y="6612" width="2444" height="2204">
+	<SubTexture name="hehe0028" x="0" y="8816" width="2444" height="2204">
+	<SubTexture name="hehe0029" x="2444" y="8816" width="2444" height="2204">
+	<SubTexture name="hehe0030" x="4888" y="8816" width="2444" height="2204">
+	<SubTexture name="hehe0031" x="7332" y="8816" width="2444" height="2204">
+	<SubTexture name="hehe0032" x="9776" y="8816" width="2444" height="2204">
+	<SubTexture name="hehe0033" x="12220" y="8816" width="2444" height="2204">
+	<SubTexture name="hehe0034" x="14664" y="8816" width="2444" height="2204">
+	<SubTexture name="hehe0035" x="0" y="11020" width="2444" height="2204">
+	<SubTexture name="hehe0036" x="2444" y="11020" width="2444" height="2204">
+	<SubTexture name="hehe0037" x="4888" y="11020" width="2444" height="2204">
+	<SubTexture name="hehe0038" x="7332" y="11020" width="2444" height="2204">
+	<SubTexture name="hehe0039" x="9776" y="11020" width="2444" height="2204">
+</TextureAtlas>
