@@ -512,7 +512,6 @@ class SpriteSheetCreator extends MusicBeatState {
             var frameArray:Array<FlxGraphic> = animFrames.get(k);
 
             for(i in 0...frameArray.length) {
-                openfl.Assets.cache.removeBitmapData(k);
                 frameArray[i] = FlxDestroyUtil.destroy(frameArray[i]);
                 frameArray.shift();
             }
@@ -521,5 +520,6 @@ class SpriteSheetCreator extends MusicBeatState {
         }
 
         animFrames.clear();
+        openfl.Assets.cache.clear();
     }
 }
