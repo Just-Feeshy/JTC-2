@@ -90,7 +90,7 @@ class Cache {
         */
 
         @:privateAccess
-		for (key in FlxG.bitmap._cache.keys()) {
+		for(key in FlxG.bitmap._cache.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
 
             if (theseAssets.exists(key) && !permanentCache.contains(key)) {
@@ -99,6 +99,13 @@ class Cache {
                 daBitmap.destroy();
 
                 daBitmap = null;
+            }
+        }
+
+        for(key in theseSounds.keys()) {
+            if (theseSounds.exists(key) && !permanentCache.contains(key)) {
+                Assets.cache.clear(key);
+				theseSounds.remove(key);
             }
         }
 
@@ -113,7 +120,7 @@ class Cache {
         */
 
         @:privateAccess
-		for (key in FlxG.bitmap._cache.keys()) {
+		for(key in FlxG.bitmap._cache.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
             
             if(daBitmap != null && !theseAssets.exists(key)) {
