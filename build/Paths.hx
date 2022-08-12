@@ -225,9 +225,11 @@ class Paths
 	static function ifImageCached(key:String, ?library:String):FlxGraphic {
 		var asset:FlxGraphic = Cache.getAsset(key, library);
 
-		//if(asset != null) {
-		//	trace("cached: " + key);
-		//}
+		/**
+		if(asset != null) {
+			trace("cached: " + key);
+		}
+		*/
 
 		return asset;
 	}

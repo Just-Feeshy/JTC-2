@@ -2,8 +2,6 @@ package;
 
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
-import flixel.addons.transition.FlxTransitionableState;
-
 import openfl.display.BitmapData;
 import openfl.media.Sound;
 import openfl.utils.ByteArray;
@@ -21,7 +19,7 @@ class Cache {
     static public function cacheAsset(key:String, ?library:String = ""):Void {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);
 
-        if (OpenFlAssets.exists(path, IMAGE)) {
+        if(OpenFlAssets.exists(path, IMAGE)) {
             if(!theseAssets.exists(path)) {
                 var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
                 graphics.persist = true;
@@ -44,12 +42,14 @@ class Cache {
         theseAssets.set(name, graphics);
     }
 
-    static public function cacheSound(key:String, ?library:String = ""):Void {
-        var soundPath:String = Paths.sound(key, library);
+    static public function cacheSound(directory:String = "sounds", key:String, ?library:String = ""):Void {
+        var path:String = Paths.getPath('$directory/$key.${Paths.SOUND_EXT}', SOUND, library);
 
-        if(soundPath != null) {
-            if(!theseSounds.exists(soundPath)) {
-                theseSounds.set(soundPath, Sound.fromFile(soundPath));
+        if(OpenFlAssets.exists(path, SOUND)) {
+            if(!theseSounds.exists(path)) {
+                theseSounds.set(path, Sound.fromFile(path));
+            }else {
+                trace("Warning: could not locate sound - " + path);
             }
         }
     }
@@ -69,13 +69,15 @@ class Cache {
         return null;
     }
 
-    static public function getSound(key:String, ?library:String = ""):Sound {
-        var soundPath:String = Paths.sound(key, library);
+    static public function getSound(directory:String = "sounds", key:String, ?library:String = ""):Sound {
+        var path:String = Paths.getPath('$directory/$key.${Paths.SOUND_EXT}', SOUND, library);
 
-        if(soundPath != null) {
-            if(theseSounds.exists(soundPath)) {
-                trace("Retrieved sound: " + soundPath);
-                return theseSounds.get(soundPath);
+        if(OpenFlAssets.exists(path, SOUND)) {
+            if(!theseSounds.exists(path)) {
+                trace("Retrieved sound: " + path);
+                return theseSounds.get(path);
+            }else {
+                return null;
             }
         }
 
