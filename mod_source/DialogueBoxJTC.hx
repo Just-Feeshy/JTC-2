@@ -27,7 +27,7 @@ class DialogueBoxJTC extends DialogueBuilder {
         bindAssetToID(2, "dialogue/jtcPortraitSas");
         bindAssetToID(3, "dialogue/jtcPortraitDamn");
         bindAssetToID(4, "dialogue/bfPortraitNormal");
-        bindAssetToID(5, "dialogue/bfPortraitCool");
+        bindAssetToID(5, "dialogue/bfPortraitCool"); 
         bindAssetToID(6, "dialogue/jtcPortraitTogether");
         bindAssetToID(7, "dialogue/jtcPortraitShrug");
         bindAssetToID(8, "dialogue/jtcPortraitPingPong");

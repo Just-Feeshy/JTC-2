@@ -13,8 +13,8 @@ import lime.utils.Assets;
 class Cache {
     public static var permanentCache:Array<String> = new Array<String>();
 
-    private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
-    private static var theseSounds:Map<String, Sound> = new Map<String, Sound>();
+    @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
+    @:noCompletion private static var theseSounds:Map<String, Sound> = new Map<String, Sound>();
 
     static public function cacheAsset(key:String, ?library:String = ""):Void {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);

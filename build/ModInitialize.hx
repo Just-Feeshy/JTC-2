@@ -87,3 +87,7 @@ typedef DiscordRPC = {
     var smallImageKey:String;
     var smallImageText:String;
 }
+
+typedef LoadingDisplay = {
+    
+}

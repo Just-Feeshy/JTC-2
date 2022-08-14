@@ -6,12 +6,15 @@ import flixel.system.FlxSound;
 
 #if cpp
 import cpp.UInt8;
+#else
+import haxe.io.BytesData;
 #end
 
 //oops
 class UselessShit {
     inline static public function beep():FlxSound {
-        var b:Array<#if cpp UInt8 #else Int #end> = [
+        #if cpp
+        var b:Array<UInt8>= [
             79,
             103,
             103,
@@ -8618,5 +8621,6 @@ class UselessShit {
 
         var sound2:ByteArray = ByteArray.fromBytesData(b);
         return FeshBytesHandler.loadSoundFromByteArray(sound2);
+        #end
     }
 }
