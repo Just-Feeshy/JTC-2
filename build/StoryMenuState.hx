@@ -370,18 +370,10 @@ class StoryMenuState extends MusicBeatState
 
 		if(sprDifficulty.exists && flicker) {
 			FlxFlicker.flicker(sprDifficulty, 1, 0.06, false, false, function(flick:FlxFlicker) {
-				#if cpp
 				CacheState.loadAndSwitchState(new PlayState());
-				#else
-				LoadingState.loadAndSwitchState(new PlayState());
-				#end
 			});
 		}else {
-			#if cpp
 			CacheState.loadAndSwitchState(new PlayState());
-			#else
-			LoadingState.loadAndSwitchState(new PlayState());
-			#end
 		}
 	}
 

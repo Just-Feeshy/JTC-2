@@ -157,5 +157,16 @@
             ["sacrifice the", "newborn"],
             ["Fesh", "Fesh"]
         ]
+    },
+
+    "loading_display": {
+        "show_loading_bar": true,
+
+        "loading_bar_colors": [
+            "0xff5A5A5A",
+            "0xffB5B5B5"
+        ],
+
+        "loading_bar_alpha": 0.6
     }
 }

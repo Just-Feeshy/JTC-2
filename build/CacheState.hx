@@ -3,8 +3,11 @@ package;
 import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.FlxState;
+import flixel.ui.FlxBar;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import sys.thread.Thread;
 import sys.FileSystem;
 import sys.io.File;
@@ -19,14 +22,17 @@ import json2object.JsonParser;
 #end
 
 class CacheState extends MusicBeatState {
+    public var cacheBar:Float = 0;
+
     var target:FlxState;
 	var stopMusic = false;
 
     var menuBG:FlxSprite;
+    var loadingBar:FlxBar;
+    var cacheTween:FlxTween;
     var loading:Alphabet;
 
     var colorSway:Float = 0;
-
     var timer:Float = 0;
 
     public function new(target:FlxState, stopMusic:Bool):Void {
@@ -42,6 +48,11 @@ class CacheState extends MusicBeatState {
         menuBG.scrollFactor.set();
         menuBG.screenCenter();
 		add(menuBG);
+
+        if(Paths.modJSON.loading_display.show_loading_bar) {
+            loadingBar = new FlxBar(0, 0, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width, 10, this,
+                "cacheBar", 0, 1);
+        }
 
         loading = new Alphabet(0, 0, "Loading", true, false, 30);
         loading.y = (FlxG.height - loading.height) - 30;
@@ -82,11 +93,14 @@ class CacheState extends MusicBeatState {
 
             for(i in 0...cacheList.length) {
                 Cache.cacheAsset(cacheList[i], "");
+                cacheBar = i / cacheList.length;
             }
+
+            cacheBar = cacheList.length;
         }
 
         new FlxTimer().start(0.1, function(tmr:FlxTimer) {
-            LoadingState.loadAndSwitchState(target, stopMusic);
+            CacheState.loadAndSwitchState(target, stopMusic, true);
         });
 	}
 
@@ -98,25 +112,36 @@ class CacheState extends MusicBeatState {
     }
     #end
 
-    function switchStateLoad():Void {
-        LoadingState.loadAndSwitchState(target, stopMusic);
-    }
+    static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
+        Paths.setCurrentLevel("week" + PlayState.storyWeek);
 
-    static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true):Void {
-        if(PlayState.SONG.video != null) {
+        #if NO_PRELOAD_ALL
+		var loaded = isSoundLoaded(getSongPath())
+			&& (!PlayState.SONG.needsVoices || isSoundLoaded(getVocalPath()))
+			&& isLibraryLoaded("shared");
+		
+		if (!loaded)
+			return new LoadingState(target, stopMusic);
+		#end
+
+		if (stopMusic && FlxG.sound.music != null) {
+			FlxG.sound.music.stop();
+        }
+
+        if(PlayState.SONG.video != null && !exception) {
             if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
                 FlxG.switchState(new VideoState(new CacheState(new PlayState(), true), PlayState.SONG.video));
             }else {
-                LoadingState.loadAndSwitchState(new VideoState(new PlayState(), PlayState.SONG.video));
+                FlxG.switchState(new VideoState(new PlayState(), PlayState.SONG.video));
             }
 
             return;
         }
 
-        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
+        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")) && !exception) {
             FlxG.switchState(new CacheState(new PlayState(), true));
         }else {
-            LoadingState.loadAndSwitchState(new PlayState());
+            FlxG.switchState(new PlayState());
         }
     }
 }

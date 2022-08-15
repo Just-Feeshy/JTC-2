@@ -255,12 +255,7 @@ class FreeplayState extends MusicBeatState
 			//FlxG.switchState(new InGameOptions("StoryMenuState", PlayState.SONG));
 
 			var peepeepoopoo:SwagSong = Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase());
-
-			#if cpp
 			CacheState.loadAndSwitchState(new PlayState());
-			#else
-			LoadingState.loadAndSwitchState(new PlayState());
-			#end
 		}
 	}
 

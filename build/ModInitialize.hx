@@ -12,6 +12,7 @@ typedef ConfigDef = {
     var song_util:SongUtils;
 	var main_menu:Main_Menu;
     var title_menu:Title_Menu;
+    var loading_display:LoadingDisplay;
 
     var custom_notes:Array<String>;
     var weeks:Map<String, WeekInfo>;
@@ -89,5 +90,7 @@ typedef DiscordRPC = {
 }
 
 typedef LoadingDisplay = {
-    
+    var show_loading_bar:Bool;
+    var loading_bar_colors:Array<String>;
+    var loading_bar_alpha:Float;
 }

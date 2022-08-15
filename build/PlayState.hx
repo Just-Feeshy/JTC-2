@@ -2217,11 +2217,7 @@ class PlayState extends MusicBeatState
 				PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + "-hard", PlayState.storyPlaylist[0]);
 				FlxG.sound.music.stop();
 
-				#if cpp
 				CacheState.loadAndSwitchState(new PlayState());
-				#else
-				LoadingState.loadAndSwitchState(new PlayState());
-				#end
 			}
 		}
 		else
