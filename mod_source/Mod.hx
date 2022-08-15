@@ -10,7 +10,7 @@ class Mod {
     static function onInit() {
         Register.remove(STAGE, DefaultStage); //Remove unwanted data from the game.
 
-        //Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));
+        Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));
         Register.attachLuaToState(MainMenuState, Paths.lua("jtc_menu"));
         Register.attachLuaToState(StoryMenuState, Paths.lua("jtc_storymenu"));
         Register.attachLuaToState(FreeplayState, Paths.lua("jtc_freeplay"));

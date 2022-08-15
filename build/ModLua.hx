@@ -17,8 +17,8 @@ import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.text.FlxText;
 import flixel.system.FlxSound;
-import lime.ui.Window;
 import feshixl.shaders.FeshShader;
+import lime.ui.Window;
 
 import SaveData.SaveType;
 
