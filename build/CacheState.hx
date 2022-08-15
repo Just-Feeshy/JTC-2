@@ -1,13 +1,8 @@
 package;
 
-import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.FlxState;
-import flixel.ui.FlxBar;
-import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
-import flixel.tweens.FlxTween;
-import flixel.tweens.FlxEase;
 import sys.thread.Thread;
 import sys.FileSystem;
 import sys.io.File;
@@ -22,18 +17,11 @@ import json2object.JsonParser;
 #end
 
 class CacheState extends MusicBeatState {
-    public var cacheBar:Float = 0;
-
     var target:FlxState;
 	var stopMusic = false;
-
-    var menuBG:FlxSprite;
-    var loadingBar:FlxBar;
-    var cacheTween:FlxTween;
-    var loading:Alphabet;
-
-    var colorSway:Float = 0;
     var timer:Float = 0;
+
+    var loadingScene:LoadingScene;
 
     public function new(target:FlxState, stopMusic:Bool):Void {
         super();
@@ -43,39 +31,14 @@ class CacheState extends MusicBeatState {
     }
 
     override function create() {
-        menuBG = new FlxSprite();
-		menuBG.loadGraphic(Paths.image(Paths.modJSON.background_images[FlxG.random.int(0, Paths.modJSON.background_images.length - 1)]));
-        menuBG.scrollFactor.set();
-        menuBG.screenCenter();
-		add(menuBG);
-
-        if(Paths.modJSON.loading_display.show_loading_bar) {
-            loadingBar = new FlxBar(0, 0, FlxBarFillDirection.LEFT_TO_RIGHT, FlxG.width, 10, this,
-                "cacheBar", 0, 1);
-        }
-
-        loading = new Alphabet(0, 0, "Loading", true, false, 30);
-        loading.y = (FlxG.height - loading.height) - 30;
-        add(loading);
+        loadingScene = new LoadingScene();
+        add(loadingScene);
 
 		Thread.create(() -> {
 			cacheStuff();
 		});
 
         super.create();
-    }
-
-    override function update(elapsed:Float):Void {
-        if(loading != null) {
-            loading.forEach(function(spr:FlxSprite) {
-                spr.color = FlxColor.fromRGBFloat(0.6 + Math.sin(colorSway * Math.PI) * 0.4,
-                0.6 + Math.sin(colorSway * Math.PI) * 0.4, 0.6 + Math.sin(colorSway * Math.PI) * 0.4);
-            });
-
-            colorSway += elapsed;
-        }
-        
-        super.update(elapsed);
     }
 
     function cacheStuff():Void {
@@ -93,10 +56,10 @@ class CacheState extends MusicBeatState {
 
             for(i in 0...cacheList.length) {
                 Cache.cacheAsset(cacheList[i], "");
-                cacheBar = i / cacheList.length;
+                loadingScene.setCacheValue(i / cacheList.length);
             }
 
-            cacheBar = cacheList.length;
+            loadingScene.setCacheValue(cacheList.length);
         }
 
         new FlxTimer().start(0.1, function(tmr:FlxTimer) {
