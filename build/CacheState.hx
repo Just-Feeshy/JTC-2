@@ -2,7 +2,6 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxState;
-import flixel.util.FlxTimer;
 import sys.thread.Thread;
 import sys.FileSystem;
 import sys.io.File;
@@ -59,12 +58,12 @@ class CacheState extends MusicBeatState {
                 loadingScene.setCacheValue(i / cacheList.length);
             }
 
-            loadingScene.setCacheValue(cacheList.length);
+            loadingScene.setCacheValue(1);
         }
 
-        new FlxTimer().start(0.1, function(tmr:FlxTimer) {
+        loadingScene.callback = function() {
             CacheState.loadAndSwitchState(target, stopMusic, true);
-        });
+        }
 	}
 
     #if json2object

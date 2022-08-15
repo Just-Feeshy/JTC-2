@@ -9,12 +9,14 @@ import flixel.group.FlxSpriteGroup;
 import flixel.ui.FlxBar;
 
 class LoadingScene extends FlxSpriteGroup {
+    public var callback:Void->Void;
+    public var cacheValue(default, null):Float = 0;
+
     var menuBG:FlxSprite;
     var loadingBar:FlxBar;
     var cacheTween:FlxTween;
     var loading:Alphabet;
 
-    var cacheValue:Float = 0;
     var prevCacheValue:Float = 0;
     var colorSway:Float = 0;
 
@@ -71,6 +73,11 @@ class LoadingScene extends FlxSpriteGroup {
             });
 
             colorSway += elapsed;
+        }
+
+        if(cacheValue >= 1 && callback != null) {
+            callback();
+            callback = null;
         }
 
         super.update(elapsed);
