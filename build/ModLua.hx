@@ -87,13 +87,10 @@ class ModLua {
         set('crochet', Conductor.crochet);
         set('stepCrochet', Conductor.stepCrochet);
 
-        /**
-        * No really point on this, unless if you homebrew a mod made with this "engine" to the switch.
-        */
-        #if switch
-        set('onSwitch', true);
+        #if debug
+        set("debug", true);
         #else
-        set('onSwitch', false);
+        set("debug", false);
         #end
 
         Lua_helper.add_callback(lua, "createSprite", function(name:String) {
