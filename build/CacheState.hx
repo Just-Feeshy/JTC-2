@@ -115,15 +115,6 @@ class CacheState extends MusicBeatState {
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
         Paths.setCurrentLevel("week" + PlayState.storyWeek);
 
-        #if NO_PRELOAD_ALL
-		var loaded = isSoundLoaded(getSongPath())
-			&& (!PlayState.SONG.needsVoices || isSoundLoaded(getVocalPath()))
-			&& isLibraryLoaded("shared");
-		
-		if (!loaded)
-			return new LoadingState(target, stopMusic);
-		#end
-
 		if (stopMusic && FlxG.sound.music != null) {
 			FlxG.sound.music.stop();
         }
