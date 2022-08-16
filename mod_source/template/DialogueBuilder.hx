@@ -14,6 +14,7 @@ import flixel.FlxState;
 import feshixl.filters.GuassianBlur;
 import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
+import openfl.media.Sound;
 import openfl.filters.ShaderFilter;
 import openfl.utils.ByteArray;
 import lime.utils.AssetType; //I got bored.
@@ -263,7 +264,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
     }
 
-    public function implementSong(path:String, bpm:Int):Void {
+    public function implementSong(path:Sound, bpm:Int):Void {
         if(FlxG.sound.music.playing) {
 			FlxG.sound.music.stop();
         }
@@ -288,7 +289,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         assetBinds[ID] = path;
     }
 
-    public function bindSoundToID(ID:Int, path:String):Void {
+    public function bindSoundToID(ID:Int, path:Sound):Void {
         soundBinds[ID] = new FlxSound().loadEmbedded(path);
     }
 

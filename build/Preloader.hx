@@ -34,7 +34,9 @@ import SaveData.SaveType;
 
 using StringTools;
 
-class Preloader extends FlxState {
+class Preloader extends HelperStates {
+    var loadingScene:LoadingScene;
+
     override function create():Void {
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
         SaveData.globalMEM = new Memory(10, 18, 0xFFFFFF);
@@ -65,19 +67,33 @@ class Preloader extends FlxState {
         //Initalize events
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, saveVolumeChanges);
 
-        #if sys
+        #if (sys && !debug)
         Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, createLogReport);
         #end
 
         FlxG.sound.volume = FlxG.save.data.volume;
 
+        #if sys
+        loadingScene = new LoadingScene();
+
+        add(loadingScene);
+
+        loadingScene.callback = function() {
+            Register.setup();
+            FlxG.switchState(new TitleState());
+            Register.compile();
+        }
+
+        loadingScene.cacheNecessaries();
+        #end
+
         super.create();
 
+        #if !sys
         Register.setup();
-
         FlxG.switchState(new TitleState());
-
         Register.compile();
+        #end
     }
 
     /**
@@ -97,7 +113,7 @@ class Preloader extends FlxState {
         }
     }
 
-    #if sys
+    #if (sys && !debug)
     static function createLogReport(event:UncaughtErrorEvent):Void {
         var error:Error = null;
 

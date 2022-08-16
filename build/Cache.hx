@@ -14,9 +14,30 @@ class Cache {
     public static var permanentCache:Array<String> = new Array<String>();
 
     @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
-    @:noCompletion private static var theseSounds:Map<String, Sound> = new Map<String, Sound>();
 
-    static public function cacheAsset(key:String, ?library:String = ""):Void {
+    static public function cacheListedFormat(path:String):Void {
+        switch(path.split('.')[1]) {
+            case "png":
+                cacheAssetDirectly(path);
+            case Paths.SOUND_EXT:
+                OpenFlAssets.getSound(path, true);
+        }
+    }
+
+    static public function cacheAssetDirectly(path:String):Void {
+        if(OpenFlAssets.exists(path, IMAGE)) {
+            if(!theseAssets.exists(path)) {
+                var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
+                graphics.persist = true;
+                graphics.destroyOnNoUse = false;
+                theseAssets.set(path, graphics);
+            }
+        }else {
+            trace("Warning: could not locate asset - " + path);
+        }
+    }
+
+    static public function cacheAsset(key:String, ?library:String = "", directly:Bool = false):Void {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);
 
         if(OpenFlAssets.exists(path, IMAGE)) {
@@ -42,21 +63,7 @@ class Cache {
         theseAssets.set(name, graphics);
     }
 
-    static public function cacheSound(directory:String = "sounds", key:String, ?library:String = ""):Void {
-        var path:String = Paths.getPath('$directory/$key.${Paths.SOUND_EXT}', SOUND, library);
-
-        if(OpenFlAssets.exists(path, SOUND)) {
-            if(!theseSounds.exists(path)) {
-                theseSounds.set(path, Sound.fromFile(path));
-            }else {
-                trace("Warning: could not locate sound - " + path);
-            }
-        }
-    }
-
-    static public function getAsset(key:String, ?library:String = ""):FlxGraphic {
-        var path:String = Paths.getPath('images/$key.png', IMAGE, library);
-
+    static public function getAssetDirectly(path:String):FlxGraphic {
         if (OpenFlAssets.exists(path, IMAGE)) {
             if(theseAssets.exists(path)) {
                 //trace("Retrieved file: " + path);
@@ -69,13 +76,13 @@ class Cache {
         return null;
     }
 
-    static public function getSound(directory:String = "sounds", key:String, ?library:String = ""):Sound {
-        var path:String = Paths.getPath('$directory/$key.${Paths.SOUND_EXT}', SOUND, library);
+    static public function getAsset(key:String, ?library:String = ""):FlxGraphic {
+        var path:String = Paths.getPath('images/$key.png', IMAGE, library);
 
-        if(OpenFlAssets.exists(path, SOUND)) {
-            if(!theseSounds.exists(path)) {
-                trace("Retrieved sound: " + path);
-                return theseSounds.get(path);
+        if (OpenFlAssets.exists(path, IMAGE)) {
+            if(theseAssets.exists(path)) {
+                //trace("Retrieved file: " + path);
+                return theseAssets.get(path);
             }else {
                 return null;
             }
@@ -99,13 +106,6 @@ class Cache {
                 daBitmap.destroy();
 
                 daBitmap = null;
-            }
-        }
-
-        for(key in theseSounds.keys()) {
-            if (theseSounds.exists(key) && !permanentCache.contains(key)) {
-                Assets.cache.clear(key);
-				theseSounds.remove(key);
             }
         }
 

@@ -9,6 +9,7 @@ typedef ConfigDef = {
 
 	var mod:Mod_Info;
     var background_images:Array<String>;
+    var cache_configuration:Array<String>;
     var song_util:SongUtils;
 	var main_menu:Main_Menu;
     var title_menu:Title_Menu;
@@ -16,16 +17,6 @@ typedef ConfigDef = {
 
     var custom_notes:Array<String>;
     var weeks:Map<String, WeekInfo>;
-};
-
-typedef ConfigCharacters = {
-    var file:String;
-    var animations:Map<String, AnimationInfo>;
-    var position:Map<String, Int>;
-    var icon:Array<Int>;
-    var playAnim:String;
-    var isPlayer:Bool;
-    var pixel:Bool;
 }
 
 typedef Mod_Info = {
@@ -35,6 +26,16 @@ typedef Mod_Info = {
     var stages:Array<String>;
     var events:Array<ConfigEvent>;
     var discord_rpc:DiscordRPC;
+}
+
+typedef ConfigCharacters = {
+    var file:String;
+    var animations:Map<String, AnimationInfo>;
+    var position:Map<String, Int>;
+    var icon:Array<Int>;
+    var playAnim:String;
+    var isPlayer:Bool;
+    var pixel:Bool;
 }
 
 typedef SongUtils = {

@@ -27,6 +27,13 @@
         }
     },
 
+    "cache_configuration": [
+        "mod_assets/songs/",
+        "assets/sounds/shared/missnote1.ogg",
+        "assets/sounds/shared/missnote2.ogg",
+        "assets/sounds/shared/missnote3.ogg"
+    ],
+
     "song_util": {
         "difficulties": [
             "EASY",

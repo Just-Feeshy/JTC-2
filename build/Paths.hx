@@ -1,13 +1,14 @@
 package;
 
 import flixel.FlxG;
-import haxe.Json;
-import openfl.display.BitmapData;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
+import openfl.display.BitmapData;
+import openfl.media.Sound;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
+import haxe.Json;
 
 import ModInitialize;
 import json2object.JsonParser;
@@ -182,56 +183,57 @@ class Paths
 		return getPreloadPath("videos/" + key);
 	}
 
+	inline static function ifImageCached(key:String, ?library:String):FlxGraphic {
+		var asset:FlxGraphic = Cache.getAsset(key, library);
+		return asset;
+	}
+
 	inline static public function sound(key:String, ?library:String)
 	{
-		if(Assets.exists(getPath('sounds/$key.$SOUND_EXT', SOUND, library))) {
-			return getPath('sounds/$key.$SOUND_EXT', SOUND, library);
+		var getPath:String = getPath('sounds/$key.$SOUND_EXT', SOUND, library);
+
+		if(Assets.exists(getPath)) {
+			return OpenFlAssets.getSound(getPath, true);
 		}else {
 			trace("Error: could not locate sound - " + key);
-			return "";
+			return null;
 		}
 	}
 
 	inline static public function music(key:String, ?library:String)
 	{
-		if(Assets.exists(getPath('music/$key.$SOUND_EXT', MUSIC, library)))
-			return getPath('music/$key.$SOUND_EXT', MUSIC, library);
-		else {
+		var getPath:String = getPath('music/$key.$SOUND_EXT', MUSIC, library);
+
+		if(Assets.exists(getPath)) {
+			return OpenFlAssets.getSound(getPath, true);
+		}else {
 			trace("Error: could not locate music - " + key);
-			return "";
+			return null;
 		}
 	}
 
 	inline static public function voices(song:String)
 	{
-		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT'))) {
-			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
+		var getPath:String = "songs:" + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
+
+		if(Assets.exists(getPath)) {
+			return OpenFlAssets.getSound(getPath, true);
 		}else {
 			trace("Error: could not locate voices - " + song + "." + SOUND_EXT);
-			return "";
+			return null;
 		}
 	}
 	
 	inline static public function inst(song:String)
 	{
-		if(Assets.exists('songs:' + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT')))
-			return 'songs:' + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT');
-		else {
+		var getPath:String = "songs:" + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT');
+
+		if(Assets.exists(getPath)) {
+			return OpenFlAssets.getSound(getPath, true);
+		}else {
 			trace("Error: could not locate instrumental - " + song + "." + SOUND_EXT);
-			return "";
+			return null;
 		}
-	}
-
-	static function ifImageCached(key:String, ?library:String):FlxGraphic {
-		var asset:FlxGraphic = Cache.getAsset(key, library);
-
-		/**
-		if(asset != null) {
-			trace("cached: " + key);
-		}
-		*/
-
-		return asset;
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)
