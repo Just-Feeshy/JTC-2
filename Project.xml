@@ -119,6 +119,7 @@
 	<assets path="assets/fonts" embed='true'/>
 	<!-- _______________________________ Libraries ______________________________ -->
 
+	<haxelib name="hxp" />
 	<haxelib name="flixel" />
 	<haxedev set='webgl' />
 

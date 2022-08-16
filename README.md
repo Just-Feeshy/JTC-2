@@ -28,6 +28,7 @@ flixel
 flixel-addons
 flixel-ui
 hscript
+hxp
 lime 7.9.0
 json2object 3.10.0
 ```
