@@ -30,6 +30,7 @@ class Character extends feshixl.FeshSprite {
 	public var debugMode:Bool = false;
 
 	public var dancing(default, null):Bool = false;
+	public var dadVar(default, null):Float = 4;
 
 	public var curCharacter:String = 'bf';
 
@@ -121,11 +122,11 @@ class Character extends feshixl.FeshSprite {
 				holdTimer += elapsed;
 			}
 
-			var dadVar:Float = 4;
-
-			if (curCharacter == 'dad')
+			if (curCharacter == 'dad') {
 				dadVar = 6.1;
-			if (holdTimer >= Conductor.stepCrochet * dadVar * 0.001)
+			}
+
+			if (holdTimer >= Conductor.stepCrochet * dadVar * 0.0011)
 			{
 				dance();
 				holdTimer = 0;

@@ -2427,8 +2427,10 @@ class PlayState extends MusicBeatState
 			}
 		});
 
-		if (boyfriend.holdTimer > Conductor.stepCrochet * 0.0044 && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
-			boyfriend.dance();
+		if(boyfriend.animation.curAnim != null) {
+			if(boyfriend.holdTimer > Conductor.stepCrochet * 0.0011 * boyfriend.dadVar && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
+				boyfriend.dance();
+			}
 		}
 	}
 
@@ -2700,8 +2702,10 @@ class PlayState extends MusicBeatState
 				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					currentPlayer.playNoDanceAnim(animPlay, true);
-					currentPlayer.holdTimer = 0;
+					if(!note.isSustainNote || (note.isSustainNote && currentPlayer.dancing)) {
+						currentPlayer.playNoDanceAnim(animPlay, true);
+						currentPlayer.holdTimer = 0;
+					}
 				}
 			}
 
