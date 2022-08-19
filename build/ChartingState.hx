@@ -2438,17 +2438,13 @@ class ChartingState extends MusicBeatState
 	* If chart from Psych Engine.
 	*/
 	function getSectionLength(section:Int) {
-		if (section == null) {
-			section = curSec;
-		}
-
-		var value:Null<Float> = null;
+		var value:Float = 16;
 		
 		if(_song.notes[section] != null) {
 			value = _song.notes[section].lengthInSteps;
 		}
 
-		return val != null ? val : 16;
+		return value;
 	}
 
 	function selectNote(note:Note):Void
