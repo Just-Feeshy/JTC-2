@@ -45,16 +45,15 @@ import openfl.system.System;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
+import openfl.filters.BlurFilter;
+import openfl.filters.BitmapFilterQuality;
 import feshixl.group.FeshEventGroup;
-import feshixl.FeshCamera;
 import openfl.Lib;
+import feshixl.FeshCamera;
 
 import example_code.DefaultStage;
 import template.CustomNote;
 import template.StageBuilder;
-
-import flash.filters.BlurFilter;
-import flash.filters.BitmapFilterQuality;
 
 import SaveData.SaveType;
 
@@ -1896,7 +1895,7 @@ class PlayState extends MusicBeatState
 					}
 
 					if(daNote.playAnyAnimation) {
-						currentOpponent.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
+						currentOpponent.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
 						currentOpponent.holdTimer = 0;
 					}
 
@@ -2034,7 +2033,7 @@ class PlayState extends MusicBeatState
 
 											if(daNote.playAnyAnimation) {
 												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												currentPlayer.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+												currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 											}
 										}
 									}
@@ -2050,7 +2049,7 @@ class PlayState extends MusicBeatState
 
 											if(daNote.playAnyAnimation) {
 												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												currentPlayer.playAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+												currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 											}
 										}
 									}
@@ -2547,7 +2546,7 @@ class PlayState extends MusicBeatState
 			if(gf != null) {
 				if (combo > 5 && gf.animOffsets.exists('sad'))
 				{
-					gf.playAnim('sad');
+					gf.playNoDanceAnim('sad');
 				}
 			}
 
@@ -2575,11 +2574,11 @@ class PlayState extends MusicBeatState
 
 			if(note == null) {
 				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-				currentPlayer.playAnim(singAnims[direction] + "miss", true);
+				currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
 			}else {
 				if(note.playAnyAnimation) {
 					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-					currentPlayer.playAnim(singAnims[direction] + "miss", true);
+					currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
 				}
 			}
 		}
@@ -2696,22 +2695,13 @@ class PlayState extends MusicBeatState
 			(currentPlayer.animation.curAnim.name == "idle" || currentPlayer.animation.curAnim.name.contains("dance"))))) {
 				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + currentPlayer.hasBePlayer;
 
-				if(SONG.fifthKey) {
-					switch (note.noteData)
-					{
-						case 2:
-							if(note.noteAbstract == "cherry")
-								animPlay = 'hey';
-					}
-				}
-
 				events.whenNoteIsPressed(note, this);
 				cameraMovement(note.noteData, note.isSustainNote);
 
 				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					currentPlayer.playAnim(animPlay, true);
+					currentPlayer.playNoDanceAnim(animPlay, true);
 					currentPlayer.holdTimer = 0;
 				}
 			}
@@ -3231,13 +3221,13 @@ class PlayState extends MusicBeatState
 
 		if (curBeat % 8 == 7 && curSong == 'Bopeebo')
 		{
-			boyfriend.playAnim('hey', true);
+			boyfriend.playNoDanceAnim('hey', true);
 		}
 
 		if (curBeat % 16 == 15 && SONG.song == 'Tutorial' && dad.curCharacter == 'gf' && curBeat > 16 && curBeat < 48)
 		{
-			boyfriend.playAnim('hey', true);
-			dad.playAnim('cheer', true);
+			boyfriend.playNoDanceAnim('hey', true);
+			dad.playNoDanceAnim('cheer', true);
 		}
 
 		stageGroup.forEach(function(stage:StageBuilder) {

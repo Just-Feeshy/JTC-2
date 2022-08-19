@@ -29,6 +29,8 @@ class Character extends feshixl.FeshSprite {
 	public var animations:Array<String>;
 	public var debugMode:Bool = false;
 
+	public var dancing(default, null):Bool = false;
+
 	public var curCharacter:String = 'bf';
 
 	public var customAnimation:Bool = false;
@@ -177,6 +179,8 @@ class Character extends feshixl.FeshSprite {
 	{
 		if (!debugMode)
 		{
+			dancing = true;
+
 			switch (curCharacter)
 			{
 				case 'gf' | 'fesh':
@@ -233,6 +237,11 @@ class Character extends feshixl.FeshSprite {
 					playAnim('idle');
 			}
 		}
+	}
+
+	public function playNoDanceAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+		dancing = false;
+		playAnim(AnimName, Force, Reversed, Frame);
 	}
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
