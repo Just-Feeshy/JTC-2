@@ -30,6 +30,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import haxe.Json;
 import lime.utils.Assets;
+import lime.utils.Log;
 import example_code.DefaultEvents.EventInfo;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
@@ -120,6 +121,7 @@ class ChartingState extends MusicBeatState
 	 * WILL BE THE CURRENT / LAST PLACED NOTE
 	**/
 	var curSelectedNote:Array<Dynamic>;
+	var prevSelectedNote:Array<Dynamic>;
 
 	var tempBpm:Int = 0;
 	var vocals:FlxSound;
@@ -360,6 +362,26 @@ class ChartingState extends MusicBeatState
 		else
 			UI_box.x = FlxG.width / 2;
 
+		selectingShader = new BuiltInShaders();
+		selectingShader.shader = ShaderType.GLIM_SELECTION;
+
+		instrucTxt = new FlxText(UI_box.x, UI_box.y + UI_box.height + GRID_SIZE, FlxG.width,
+            "Q/E - Change Strum.\n\n" +
+            "CTRL & Click Note - Select Note.\n\n" +
+            "SPACE - Stop or Resume.\n\n" +
+			"I/O - Zoom In/Out. (I prefer I/O over Z/X)\n\n" +
+			"Hold Control - Select Note.\n\n" +
+			"C - Do the same changes to selected note as the previous selected note.\n\n" +
+			"Hold UP/DOWN and C - Autoselected above/below selected note.\n(If no note selected, nothing will happen)"
+        , 12);
+
+		instrucTxt.scrollFactor.set();
+		add(instrucTxt);
+
+		zoomText = new FlxText(15, 15, "Zoom: " + zoomList[zoomMeter] + "%", 16);
+		zoomText.scrollFactor.set();
+		add(zoomText);
+
 		UI_box.y = 20;
 		add(UI_box);
 
@@ -371,23 +393,6 @@ class ChartingState extends MusicBeatState
 		UI_Modifiers.y = UI_box.height - UI_Modifiers.height + 20;
 
 		add(UI_Modifiers);
-
-		selectingShader = new BuiltInShaders();
-		selectingShader.shader = ShaderType.GLIM_SELECTION;
-
-		instrucTxt = new FlxText(UI_box.x, UI_box.y + UI_box.height + GRID_SIZE, FlxG.width,
-            "Q/E - Change Strum\n\n" +
-            "CTRL & Click Note - Select Note\n\n" +
-            "SPACE - Stop or Resume\n\n" +
-			"I/O - Zoom In/Out (I prefer I/O over Z/X)",
-        16);
-
-		instrucTxt.scrollFactor.set();
-		add(instrucTxt);
-
-		zoomText = new FlxText(15, 15, "Zoom: " + zoomList[zoomMeter] + "%", 16);
-		zoomText.scrollFactor.set();
-		add(zoomText);
 
 		super.create();
 
@@ -1162,6 +1167,14 @@ class ChartingState extends MusicBeatState
 		playAnimCheck.checked = true;
 		playAnimCheck.visible = false;
 
+		var commitChangesButton:FlxButton = new FlxButton(10, 0, "Save Changes", function() {
+			modifyNote(curSelectedNote);
+
+			updateGrid();
+			updateNoteUI();
+		});
+		commitChangesButton.y = UI_box.height - commitChangesButton.height + 10;
+
 		tab_group_note.add(writingNotesText);
 		tab_group_note.add(stepperSusLength);
 		tab_group_note.add(susLabel);
@@ -1175,6 +1188,7 @@ class ChartingState extends MusicBeatState
 		tab_group_note.add(noteTagInput);
 		tab_group_note.add(noteTagText);
 		tab_group_note.add(playAnimCheck);
+		tab_group_note.add(commitChangesButton);
 
 		if(noteAddons[0] != null)
 			tab_group_note.add(noteAddonEffect);
@@ -1476,6 +1490,23 @@ class ChartingState extends MusicBeatState
 		if(FlxG.keys.justPressed.O) {
 			zoomMeter++;
 			changeZoomDisplay();
+		}
+
+		if(FlxG.keys.justPressed.C && curSelectedNote != null) {
+			if(FlxG.keys.pressed.UP && _song.notes[curSection].sectionNotes.indexOf(curSelectedNote) > 0) {
+				prevSelectedNote = curSelectedNote;
+				curSelectedNote = _song.notes[curSection].sectionNotes[_song.notes[curSection].sectionNotes.indexOf(curSelectedNote) - 1];
+			}
+			
+			if(FlxG.keys.pressed.DOWN && _song.notes[curSection].sectionNotes.indexOf(curSelectedNote) < _song.notes[curSection].sectionNotes.length) {
+				prevSelectedNote = curSelectedNote;
+				curSelectedNote = _song.notes[curSection].sectionNotes[_song.notes[curSection].sectionNotes.indexOf(curSelectedNote) + 1];
+			}
+
+			modifyNote(curSelectedNote, prevSelectedNote);
+
+			updateNoteUI();
+			updateGrid();
 		}
 
 		if (writingNotes)
@@ -2265,6 +2296,48 @@ class ChartingState extends MusicBeatState
 		gridBG2.y = gridBG.height;
 	}
 
+	function modifyNote(curSel:Array<Dynamic>, ?otherSel:Array<Dynamic> = null):Void {
+		if(otherSel != null || curSel == otherSel) {
+			try {
+			curSelectedNote[3] = otherSel[3];
+			curSelectedNote[4] = otherSel[4];
+			curSelectedNote[5] = otherSel[5];
+			curSelectedNote[6] = otherSel[6];
+			}catch(e:haxe.Exception) {
+				Log.warn("oops! Can't have that! Reselect the note your tying to modify\nDon't worry this is an issue being looked at as soon as possible! ;)");
+			}
+		}else {
+			var daStrumTime = curSel[0];
+			var daNoteInfo = curSel[1];
+			var daSus = curSel[2];
+			var daNoteType = curSel[3];
+			var daSpeed = curSel[4];
+			var daTag = curSel[5];
+			var daAnimPlay = curSel[6];
+
+			daNoteType = wtfIsNote;
+
+			if(check_extra_stuff.checked) {
+				if(singleNoteSpeed.value != stepperSpeed.value) {
+					daSpeed = singleNoteSpeed.value;
+				}else {
+					daSpeed = _song.speed;
+				}
+				
+				daTag = noteTagInput.text;
+				daAnimPlay = playAnimCheck.checked;
+			}
+
+			curSelectedNote[0] = daStrumTime;
+			curSelectedNote[1] = daNoteInfo;
+			curSelectedNote[2] = daSus;
+			curSelectedNote[3] = daNoteType;
+			curSelectedNote[4] = daSpeed;
+			curSelectedNote[5] = daTag;
+			curSelectedNote[6] = daAnimPlay;
+		}
+	}
+
 	function setupNotes(sectionInfo:Array<Dynamic>, section:Int, yOffset:Float):Void {
 		for (i in sectionInfo)
 		{
@@ -2309,6 +2382,7 @@ class ChartingState extends MusicBeatState
 				if (curSelectedNote[0] == note.strumTime && curSelectedNote[1] == daNoteInfo) {
 					lastNote = note;
 					lastNote.shader = selectingShader;
+					lastNote.color = FlxColor.fromRGBFloat(0.8, 0.8, 0.8);
 				}
 			}	
 
@@ -2362,7 +2436,17 @@ class ChartingState extends MusicBeatState
 		{
 			if (i[0] == note.strumTime && i[1] == Math.floor(note.x / GRID_SIZE))
 			{
+				prevSelectedNote = curSelectedNote;
 				curSelectedNote = i;
+
+				/**
+				* Double check.
+				*/
+				curSelectedNote[3] = note.noteAbstract;
+				curSelectedNote[5] = note.tag;
+				curSelectedNote[6] = note.playAnyAnimation;
+
+				wtfIsNote = curSelectedNote[3];
 			}
 		}
 
