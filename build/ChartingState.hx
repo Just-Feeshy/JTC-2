@@ -1029,7 +1029,7 @@ class ChartingState extends MusicBeatState
 		tab_group_section.name = 'Section';
 
 		stepperLength = new FlxUINumericStepper(10, 10, 4, 0, 0, 999, 0);
-		stepperLength.value = _song.notes[curSection].lengthInSteps;
+		stepperLength.value = getSectionLength();
 		stepperLength.name = "section_length";
 
 		stepperSectionBPM = new FlxUINumericStepper(10, 80, 1, Conductor.bpm, 0, 999, 0);
@@ -1110,7 +1110,7 @@ class ChartingState extends MusicBeatState
 		writingNotesText = new FlxUIText(20,100, 0, "");
 		writingNotesText.setFormat("Arial",20,FlxColor.WHITE,FlxTextAlign.LEFT,FlxTextBorderStyle.OUTLINE,FlxColor.BLACK);
 
-		stepperSusLength = new FlxUINumericStepper(10, 10, Conductor.stepCrochet / 2, 0, 0, Conductor.stepCrochet * _song.notes[curSection].lengthInSteps * 4);
+		stepperSusLength = new FlxUINumericStepper(10, 10, Conductor.stepCrochet / 2, 0, 0, Conductor.stepCrochet * getSectionLength() * 4);
 		stepperSusLength.value = 0;
 		stepperSusLength.name = 'note_susLength';
 
@@ -1415,20 +1415,10 @@ class ChartingState extends MusicBeatState
 				updateGrid();
 			}
 		}
-
-		// FlxG.log.add(id + " WEED " + sender + " WEED " + data + " WEED " + params);
 	}
 
 	var updatedSection:Bool = false;
 
-	/* this function got owned LOL
-		function lengthBpmBullshit():Float
-		{
-			if (_song.notes[curSection].changeBPM)
-				return _song.notes[curSection].lengthInSteps * (_song.notes[curSection].bpm / _song.bpm);
-			else
-				return _song.notes[curSection].lengthInSteps;
-	}*/
 	function sectionStartTime(section:Int):Float
 	{
 		var daBPM:Int = _song.bpm;
@@ -1439,7 +1429,7 @@ class ChartingState extends MusicBeatState
 			{
 				daBPM = _song.notes[i].bpm;
 			}
-			daPos += 4 * (1000 * 60 / daBPM);
+			daPos += (getSectionLength(section) / 4) * (1000 * 60 / daBPM);
 		}
 		return daPos;
 	}
@@ -1495,12 +1485,26 @@ class ChartingState extends MusicBeatState
 		if(FlxG.keys.justPressed.C && curSelectedNote != null) {
 			if(FlxG.keys.pressed.UP && _song.notes[curSection].sectionNotes.indexOf(curSelectedNote) > 0) {
 				prevSelectedNote = curSelectedNote;
-				curSelectedNote = _song.notes[curSection].sectionNotes[_song.notes[curSection].sectionNotes.indexOf(curSelectedNote) - 1];
+
+				for(i in 0...(_song.notes[curSection].sectionNotes.indexOf(curSelectedNote) - 1)) {
+					curSelectedNote = _song.notes[curSection].sectionNotes[i];
+
+					if(curSelectedNote != null) {
+						break;
+					}
+				}
 			}
 			
 			if(FlxG.keys.pressed.DOWN && _song.notes[curSection].sectionNotes.indexOf(curSelectedNote) < _song.notes[curSection].sectionNotes.length) {
 				prevSelectedNote = curSelectedNote;
-				curSelectedNote = _song.notes[curSection].sectionNotes[_song.notes[curSection].sectionNotes.indexOf(curSelectedNote) + 1];
+
+				for(i in (_song.notes[curSection].sectionNotes.indexOf(curSelectedNote) + 1)..._song.notes[curSection].sectionNotes.length) {
+					curSelectedNote = _song.notes[curSection].sectionNotes[i];
+
+					if(curSelectedNote != null) {
+						break;
+					}
+				}
 			}
 
 			modifyNote(curSelectedNote, prevSelectedNote);
@@ -1549,7 +1553,7 @@ class ChartingState extends MusicBeatState
 
 		}
 
-		strumLine.y = getYfromStrum((Conductor.songPosition - sectionStartTime(curSection)) / (zoomList[zoomMeter]/100) % (Conductor.stepCrochet * _song.notes[curSection].lengthInSteps));
+		strumLine.y = getYfromStrum((Conductor.songPosition - sectionStartTime(curSection)) / (zoomList[zoomMeter]/100) % (Conductor.stepCrochet * getSectionLength()));
 		camFollow.y = strumLine.y;
 
 		if (curBeat % 4 == 0 && curStep >= 16 * (curSection + 1))
@@ -1799,11 +1803,11 @@ class ChartingState extends MusicBeatState
 	function checkSectionsY():Float {
 		if(check_show_extra != null) {
 			if(check_show_extra.checked && _song.notes[curSection + 1] != null) {
-				return (GRID_SIZE * _song.notes[curSection].lengthInSteps) + (GRID_SIZE * _song.notes[curSection + 1].lengthInSteps);
+				return (GRID_SIZE * getSectionLength()) + (GRID_SIZE * getSectionLength(curSection + 1));
 			}
 		}
 
-		return GRID_SIZE * _song.notes[curSection].lengthInSteps;
+		return GRID_SIZE * getSectionLength();
 	}
 
 	function changeZoomDisplay():Void {
@@ -1995,7 +1999,7 @@ class ChartingState extends MusicBeatState
 
 		for (note in _song.notes[daSec - sectionNum].sectionNotes)
 		{
-			var strum = note[0] + Conductor.stepCrochet * (_song.notes[daSec].lengthInSteps * sectionNum);
+			var strum = note[0] + Conductor.stepCrochet * (getSectionLength(daSec) * sectionNum);
 			trace(note);
 			var copiedNote:Array<Dynamic> = [strum, note[1], note[2], note[3]];
 			_song.notes[daSec].sectionNotes.push(copiedNote);
@@ -2010,7 +2014,7 @@ class ChartingState extends MusicBeatState
 	
 		for (note in _song.notes[daSec - sectionNum].sectionNotes)
 		{
-			var strum = note[0] + Conductor.stepCrochet * (_song.notes[daSec].lengthInSteps * sectionNum);
+			var strum = note[0] + Conductor.stepCrochet * (getSectionLength(daSec) * sectionNum);
 			var copiedNote:Array<Dynamic>;
 
 			note[1] = (note[1] + (mainGrid/2)) % mainGrid;
@@ -2131,7 +2135,7 @@ class ChartingState extends MusicBeatState
 	function updateSectionUI():Void {
 		var sec = _song.notes[curSection];
 
-		stepperLength.value = sec.lengthInSteps;
+		stepperLength.value = getSectionLength();
 		check_mustHitSection.checked = sec.mustHitSection;
 		check_changeBPM.checked = sec.changeBPM;
 		stepperSectionBPM.value = sec.bpm;
@@ -2174,7 +2178,7 @@ class ChartingState extends MusicBeatState
 			gridLayout.remove(gridLayout.members[0], true);
 		}
 
-		gridBG = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * _song.notes[curSection].lengthInSteps * (zoomList[zoomMeter]/100)));
+		gridBG = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength() * (zoomList[zoomMeter]/100)));
 
 		if(strumLine != null) {
 			strumLine.makeGraphic(Std.int(GRID_SIZE * mainGrid), 4);
@@ -2282,14 +2286,14 @@ class ChartingState extends MusicBeatState
 
 	function createSecondGrid():Void {
 		if(sectionStartTime(curSection + 1) <= FlxG.sound.music.length) {
-			gridBG2 = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * _song.notes[curSection].lengthInSteps * (zoomList[zoomMeter]/100)));
+			gridBG2 = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength() * (zoomList[zoomMeter]/100)));
 
 			var sectionInfo:Array<Dynamic> = _song.notes[curSection + 1].sectionNotes;
 
 			if(_song.notes[curSection + 1] != null)
 				setupNotes(sectionInfo, curSection + 1, gridBG.height);
 		}else {
-			gridBG2 = new FlxSprite().makeGraphic(GRID_SIZE * mainGrid, Std.int(GRID_SIZE * _song.notes[curSection].lengthInSteps * (zoomList[zoomMeter]/100)), 0x333333);
+			gridBG2 = new FlxSprite().makeGraphic(GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength() * (zoomList[zoomMeter]/100)), 0x333333);
 			gridBG2.alpha = 0.4;
 		}
 
@@ -2299,12 +2303,12 @@ class ChartingState extends MusicBeatState
 	function modifyNote(curSel:Array<Dynamic>, ?otherSel:Array<Dynamic> = null):Void {
 		if(otherSel != null || curSel == otherSel) {
 			try {
-			curSelectedNote[3] = otherSel[3];
-			curSelectedNote[4] = otherSel[4];
-			curSelectedNote[5] = otherSel[5];
-			curSelectedNote[6] = otherSel[6];
+				curSelectedNote[3] = otherSel[3];
+				curSelectedNote[4] = otherSel[4];
+				curSelectedNote[5] = otherSel[5];
+				curSelectedNote[6] = otherSel[6];
 			}catch(e:haxe.Exception) {
-				Log.warn("oops! Can't have that! Reselect the note your tying to modify.\nDon't worry this is an issue being looked at as soon as possible! ;)");
+				Log.warn("oops! WE caught an unexpected error! Reselect the note your tying to modify.\nDon't worry these issues are being looked at as soon as possible! ;)");
 			}
 		}else {
 			var daStrumTime = curSel[0];
@@ -2428,6 +2432,23 @@ class ChartingState extends MusicBeatState
 		};
 
 		_song.notes.push(sec);
+	}
+
+	/**
+	* If chart from Psych Engine.
+	*/
+	function getSectionLength(?section:Null<Int> = null) {
+		if (section == null) {
+			section = curSec;
+		}
+
+		var value:Null<Float> = null;
+		
+		if(_song.notes[section] != null) {
+			value = _song.notes[section].lengthInSteps;
+		}
+
+		return val != null ? val : 16;
 	}
 
 	function selectNote(note:Note):Void
