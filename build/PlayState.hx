@@ -2832,6 +2832,9 @@ class PlayState extends MusicBeatState
 		modifiableSprites.set("iconP2", iconP2);
 		modifiableSprites.set("healthBarBG", healthBarBG);
 		modifiableSprites.set("healthBar", healthBar);
+		modifiableSprites.set("boyfriend", boyfriend);
+		modifiableSprites.set("gf", gf);
+		modifiableSprites.set("dad", dad);
 
 		modifiableCameras.set("camHUD", camHUD);
 		modifiableCameras.set("camGAME", FlxG.camera);
