@@ -2178,12 +2178,15 @@ class ChartingState extends MusicBeatState
 			gridLayout.remove(gridLayout.members[0], true);
 		}
 
+		gridBG = FlxDestroyUtil.destroy(gridBG);
 		gridBG = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength(curSection) * (zoomList[zoomMeter]/100)));
 
 		if(strumLine != null) {
 			strumLine.makeGraphic(Std.int(GRID_SIZE * mainGrid), 4);
 			strumLine.updateHitbox();
 		}
+
+		trace(Std.int(GRID_SIZE * getSectionLength(curSection) * (zoomList[zoomMeter]/100)));
 
 		var totalHeight:Float = gridBG.height;
 
@@ -2441,7 +2444,9 @@ class ChartingState extends MusicBeatState
 		var value:Float = 16;
 		
 		if(_song.notes[section] != null) {
-			value = _song.notes[section].lengthInSteps;
+			if(_song.notes[section].lengthInSteps > 0) {
+				value = _song.notes[section].lengthInSteps;
+			}
 		}
 
 		return value;
