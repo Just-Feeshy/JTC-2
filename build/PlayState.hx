@@ -2691,8 +2691,7 @@ class PlayState extends MusicBeatState
 			currentPlayer.customAnimation = true;
 
 			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract) &&
-			(currentPlayer.customAnimation && (currentPlayer.animation.curAnim.name.startsWith("sing") ||
-			(currentPlayer.animation.curAnim.name == "idle" || currentPlayer.animation.curAnim.name.contains("dance"))))) {
+			(currentPlayer.customAnimation && (currentPlayer.animation.curAnim.name.startsWith("sing") || currentPlayer.dancing))) {
 				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + currentPlayer.hasBePlayer;
 
 				events.whenNoteIsPressed(note, this);
