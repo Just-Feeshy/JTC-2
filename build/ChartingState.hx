@@ -1029,7 +1029,7 @@ class ChartingState extends MusicBeatState
 		tab_group_section.name = 'Section';
 
 		stepperLength = new FlxUINumericStepper(10, 10, 4, 0, 0, 999, 0);
-		stepperLength.value = getSectionLength();
+		stepperLength.value = getSectionLength(curSection);
 		stepperLength.name = "section_length";
 
 		stepperSectionBPM = new FlxUINumericStepper(10, 80, 1, Conductor.bpm, 0, 999, 0);
@@ -1110,7 +1110,7 @@ class ChartingState extends MusicBeatState
 		writingNotesText = new FlxUIText(20,100, 0, "");
 		writingNotesText.setFormat("Arial",20,FlxColor.WHITE,FlxTextAlign.LEFT,FlxTextBorderStyle.OUTLINE,FlxColor.BLACK);
 
-		stepperSusLength = new FlxUINumericStepper(10, 10, Conductor.stepCrochet / 2, 0, 0, Conductor.stepCrochet * getSectionLength() * 4);
+		stepperSusLength = new FlxUINumericStepper(10, 10, Conductor.stepCrochet / 2, 0, 0, Conductor.stepCrochet * getSectionLength(curSection) * 4);
 		stepperSusLength.value = 0;
 		stepperSusLength.name = 'note_susLength';
 
@@ -1553,7 +1553,7 @@ class ChartingState extends MusicBeatState
 
 		}
 
-		strumLine.y = getYfromStrum((Conductor.songPosition - sectionStartTime(curSection)) / (zoomList[zoomMeter]/100) % (Conductor.stepCrochet * getSectionLength()));
+		strumLine.y = getYfromStrum((Conductor.songPosition - sectionStartTime(curSection)) / (zoomList[zoomMeter]/100) % (Conductor.stepCrochet * getSectionLength(curSection)));
 		camFollow.y = strumLine.y;
 
 		if (curBeat % 4 == 0 && curStep >= 16 * (curSection + 1))
@@ -1803,11 +1803,11 @@ class ChartingState extends MusicBeatState
 	function checkSectionsY():Float {
 		if(check_show_extra != null) {
 			if(check_show_extra.checked && _song.notes[curSection + 1] != null) {
-				return (GRID_SIZE * getSectionLength()) + (GRID_SIZE * getSectionLength(curSection + 1));
+				return (GRID_SIZE * getSectionLength(curSection)) + (GRID_SIZE * getSectionLength(curSection + 1));
 			}
 		}
 
-		return GRID_SIZE * getSectionLength();
+		return GRID_SIZE * getSectionLength(curSection);
 	}
 
 	function changeZoomDisplay():Void {
@@ -2135,7 +2135,7 @@ class ChartingState extends MusicBeatState
 	function updateSectionUI():Void {
 		var sec = _song.notes[curSection];
 
-		stepperLength.value = getSectionLength();
+		stepperLength.value = getSectionLength(curSection);
 		check_mustHitSection.checked = sec.mustHitSection;
 		check_changeBPM.checked = sec.changeBPM;
 		stepperSectionBPM.value = sec.bpm;
@@ -2178,7 +2178,7 @@ class ChartingState extends MusicBeatState
 			gridLayout.remove(gridLayout.members[0], true);
 		}
 
-		gridBG = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength() * (zoomList[zoomMeter]/100)));
+		gridBG = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength(curSection) * (zoomList[zoomMeter]/100)));
 
 		if(strumLine != null) {
 			strumLine.makeGraphic(Std.int(GRID_SIZE * mainGrid), 4);
@@ -2286,14 +2286,14 @@ class ChartingState extends MusicBeatState
 
 	function createSecondGrid():Void {
 		if(sectionStartTime(curSection + 1) <= FlxG.sound.music.length) {
-			gridBG2 = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength() * (zoomList[zoomMeter]/100)));
+			gridBG2 = FlxGridOverlay.create(GRID_SIZE, GRID_SIZE, GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength(curSection) * (zoomList[zoomMeter]/100)));
 
 			var sectionInfo:Array<Dynamic> = _song.notes[curSection + 1].sectionNotes;
 
 			if(_song.notes[curSection + 1] != null)
 				setupNotes(sectionInfo, curSection + 1, gridBG.height);
 		}else {
-			gridBG2 = new FlxSprite().makeGraphic(GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength() * (zoomList[zoomMeter]/100)), 0x333333);
+			gridBG2 = new FlxSprite().makeGraphic(GRID_SIZE * mainGrid, Std.int(GRID_SIZE * getSectionLength(curSection) * (zoomList[zoomMeter]/100)), 0x333333);
 			gridBG2.alpha = 0.4;
 		}
 
@@ -2437,7 +2437,7 @@ class ChartingState extends MusicBeatState
 	/**
 	* If chart from Psych Engine.
 	*/
-	function getSectionLength(?section:Null<Int> = null) {
+	function getSectionLength(section:Int) {
 		if (section == null) {
 			section = curSec;
 		}
