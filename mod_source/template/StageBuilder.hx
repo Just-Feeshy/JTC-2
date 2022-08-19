@@ -99,6 +99,7 @@ abstract class StageBuilder extends FlxBasic {
         if(sprites != null) {
             for(k in sprites.keys()) {
                 sprites.get(k).destroy();
+                sprites.remove(k);
             }
 
             sprites.clear();
