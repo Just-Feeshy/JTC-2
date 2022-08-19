@@ -2304,7 +2304,7 @@ class ChartingState extends MusicBeatState
 			curSelectedNote[5] = otherSel[5];
 			curSelectedNote[6] = otherSel[6];
 			}catch(e:haxe.Exception) {
-				Log.warn("oops! Can't have that! Reselect the note your tying to modify\nDon't worry this is an issue being looked at as soon as possible! ;)");
+				Log.warn("oops! Can't have that! Reselect the note your tying to modify.\nDon't worry this is an issue being looked at as soon as possible! ;)");
 			}
 		}else {
 			var daStrumTime = curSel[0];
