@@ -4,6 +4,13 @@ local constant = 2
 local allStrumsX = {}
 local allStrumsY = {}
 
+local jtcStrumAnims = {
+    "singRIGHT",
+    "singUP",
+    "singDOWN",
+    "singLEFT"
+}
+
 function generatedStage()
     allStrumsX = {
         defaultOpponentStrumX0;
