@@ -136,6 +136,13 @@ class CheesyStage extends StageBuilder {
         }
     }
 
+	override function configStage():Void {
+		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
+			Register.getInGameCharacter(BOYFRIEND).danceBeatTimer = 1;
+			Register.getInGameCharacter(OPPONENT).danceBeatTimer = 1;
+		}
+	}
+
 	override function whenCreatingScene():Void {
 		if(playstate.iconP1.iconAnimInfo[0] == 28 && playstate.iconP1.iconAnimInfo[1] == 29) {
 			playstate.healthBar.filledColor = tripleIconColors[0];

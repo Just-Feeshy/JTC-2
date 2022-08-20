@@ -47,7 +47,7 @@ class Character extends feshixl.FeshSprite {
 	public var finalizedWidth(default, null):Float = 0;
 	public var finalizedHeight(default, null):Float = 0;
 
-	public var danceBeatTimer:Int = 1;
+	public var danceBeatTimer:Int = 2;
 
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters)
 	{
@@ -113,12 +113,9 @@ class Character extends feshixl.FeshSprite {
 			flipX = !flipX;
 	}
 
-	override function update(elapsed:Float)
-	{
-		if (!isPlayer)
-		{
-			if (animation.curAnim.name.startsWith('sing'))
-			{
+	override function update(elapsed:Float) {
+		if (!isPlayer) {
+			if (animation.curAnim.name.startsWith('sing')) {
 				holdTimer += elapsed;
 			}
 
@@ -126,15 +123,13 @@ class Character extends feshixl.FeshSprite {
 				dadVar = 6.1;
 			}
 
-			if (holdTimer >= Conductor.stepCrochet * dadVar * 0.0011)
-			{
+			if (holdTimer >= Conductor.stepCrochet * dadVar * 0.0011) {
 				dance();
 				holdTimer = 0;
 			}
 		}
 
-		switch (curCharacter)
-		{
+		switch (curCharacter) {
 			case 'gf' | 'fesh':
 				if (animation.curAnim.name == 'hairFall' && animation.curAnim.finished)
 					playAnim('danceRight');
@@ -146,7 +141,9 @@ class Character extends feshixl.FeshSprite {
 	override function destroy() {
 		super.destroy();
 
-		animOffsets.clear();
+		if(animOffsets != null) {
+			animOffsets.clear();
+		}
 
 		curCharacter = null;
 
@@ -321,7 +318,7 @@ class Character extends feshixl.FeshSprite {
 		camPos.y += _info.position.get('camPosY');
 	}
 
-	private function setIndexis(character:String):Void {
+	function setIndexis(character:String):Void {
 		switch(character) {
 			case 'gf' | 'fesh':
 				animations = ['sad', 'danceLeft', 'danceRight', 'hairBlow', 'hairFall'];

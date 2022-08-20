@@ -1173,7 +1173,7 @@ class ChartingState extends MusicBeatState
 			updateGrid();
 			updateNoteUI();
 		});
-		commitChangesButton.y = UI_box.height - commitChangesButton.height - 20;
+		commitChangesButton.y = UI_box.height - commitChangesButton.height - 30;
 
 		tab_group_note.add(writingNotesText);
 		tab_group_note.add(stepperSusLength);

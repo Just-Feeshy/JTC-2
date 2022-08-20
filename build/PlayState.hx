@@ -1895,7 +1895,10 @@ class PlayState extends MusicBeatState
 					}
 
 					if(daNote.playAnyAnimation) {
-						currentOpponent.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
+						if(!daNote.isSustainNote || (daNote.isSustainNote && currentOpponent.dancing)) {
+							currentOpponent.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
+						}
+
 						currentOpponent.holdTimer = 0;
 					}
 
@@ -2427,10 +2430,8 @@ class PlayState extends MusicBeatState
 			}
 		});
 
-		if(boyfriend.animation.curAnim != null) {
-			if(boyfriend.holdTimer > Conductor.stepCrochet * 0.0011 * boyfriend.dadVar && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
-				boyfriend.dance();
-			}
+		if(boyfriend.holdTimer > Conductor.stepCrochet * 0.0011 * boyfriend.dadVar && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
+			boyfriend.dance();
 		}
 	}
 
@@ -2704,8 +2705,9 @@ class PlayState extends MusicBeatState
 				if(note.playAnyAnimation) {
 					if(!note.isSustainNote || (note.isSustainNote && currentPlayer.dancing)) {
 						currentPlayer.playNoDanceAnim(animPlay, true);
-						currentPlayer.holdTimer = 0;
 					}
+
+					currentPlayer.holdTimer = 0;
 				}
 			}
 
@@ -3179,6 +3181,22 @@ class PlayState extends MusicBeatState
 				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing") && !gf.stunned) {
 					gf.dance();
 				}
+			}
+		}
+
+		if(dad.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.dadVar) {
+			var dadAnim:String = dad.animation.curAnim.name;
+			
+			if(dadAnim.startsWith("sing")) {
+				dad.playNoDanceAnim(dadAnim, true);
+			}
+		}
+
+		if(boyfriend.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.dadVar) {
+			var boyfriendAnim:String = boyfriend.animation.curAnim.name;
+			
+			if(boyfriendAnim.startsWith("sing")) {
+				boyfriend.playNoDanceAnim(boyfriendAnim, true);
 			}
 		}
 
