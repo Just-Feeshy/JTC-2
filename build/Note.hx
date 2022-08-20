@@ -39,7 +39,7 @@ class Note extends feshixl.FeshSprite {
 
 	public var prevNote:Note;
 	public var downscrollNote:Bool;
-	public var howSpeed:Float = 0;
+	public var howSpeed:Null<Float> = 0;
 	public var setupPosition:Float = 0;
 
 	public var playAnyAnimation:Bool = true;

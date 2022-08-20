@@ -2373,7 +2373,7 @@ class ChartingState extends MusicBeatState
 				note.placeModifierSymbol("T");
 			}
 
-			if(daSpeed > _song.speed) {
+			if(daSpeed != _song.speed) {
 				note.placeModifierSymbol("S");
 			}
 
@@ -2464,6 +2464,12 @@ class ChartingState extends MusicBeatState
 				/**
 				* Double check.
 				*/
+				if(note.howSpeed != null) {
+					curSelectedNote[4] = note.howSpeed;
+				}else {
+					curSelectedNote[4] = _song.speed;
+				}
+
 				curSelectedNote[3] = note.noteAbstract;
 				curSelectedNote[5] = note.tag;
 				curSelectedNote[6] = note.playAnyAnimation;

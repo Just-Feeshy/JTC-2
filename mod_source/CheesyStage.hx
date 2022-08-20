@@ -149,7 +149,7 @@ class CheesyStage extends StageBuilder {
 			tweenHealthBar(tripleIconColors, "player", playstate);
 		}
 
-		if(PlayState.SONG.song.toLowerCase() != "funk-off" && PlayState.SONG.song.toLowerCase() != "ping-pong" ) {
+		if(PlayState.SONG.song.toLowerCase() != "funk-off" && PlayState.SONG.song.toLowerCase() != "ping-pong") {
 			playstate.iconP2.createAnim("joul", [24, 30, 24]);
 		}
 	}
