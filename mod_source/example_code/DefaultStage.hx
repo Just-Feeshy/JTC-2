@@ -55,23 +55,23 @@ class DefaultStage extends StageBuilder {
                 halloweenBG.animation.addByPrefix('lightning', 'halloweem bg lightning strike', 24, false);
                 halloweenBG.animation.play('idle');
                 halloweenBG.antialiasing = FlxG.save.data.showAntialiasing;
-                addToStage(halloweenBG);
+                add(halloweenBG);
 			}
 			case 'philly': {
                 directory = "week3";
 
 				var bg:FlxSprite = new FlxSprite(-100).loadGraphic(Paths.image('philly/sky'));
 				bg.scrollFactor.set(0.1, 0.1);
-				addToStage(bg);
+				add(bg);
 
 				var city:FlxSprite = new FlxSprite(-10).loadGraphic(Paths.image('philly/city'));
 				city.scrollFactor.set(0.3, 0.3);
 				city.setGraphicSize(Std.int(city.width * 0.85));
 				city.updateHitbox();
-				addToStage(city);
+				add(city);
 
 				phillyCityLights = new FlxTypedGroup<FlxSprite>();
-				addToStage(phillyCityLights);
+				add(phillyCityLights);
 
 				for (i in 0...5) {
 						var light:FlxSprite = new FlxSprite(city.x).loadGraphic(Paths.image('philly/win' + i));
@@ -84,10 +84,10 @@ class DefaultStage extends StageBuilder {
 				}
 
 				var streetBehind:FlxSprite = new FlxSprite(-40, 50).loadGraphic(Paths.image('philly/behindTrain'));
-				addToStage(streetBehind);
+				add(streetBehind);
 
 				phillyTrain = new FlxSprite(2000, 360).loadGraphic(Paths.image('philly/train'));
-                addToStage(phillyTrain);
+                add(phillyTrain);
 
 				trainSound = new FlxSound().loadEmbedded(Paths.sound('train_passes'));
 				FlxG.sound.list.add(trainSound);
@@ -95,7 +95,7 @@ class DefaultStage extends StageBuilder {
 				// var cityLights:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.win0.png);
 
 				var street:FlxSprite = new FlxSprite(-40, streetBehind.y).loadGraphic(Paths.image('philly/street'));
-				addToStage(street);
+				add(street);
 			}
 			case 'limo': {
                 directory = "week4";
@@ -104,17 +104,17 @@ class DefaultStage extends StageBuilder {
 
 				var skyBG:FlxSprite = new FlxSprite(-120, -50).loadGraphic(Paths.image('limo/limoSunset'));
 				skyBG.scrollFactor.set(0.1, 0.1);
-				addToStage(skyBG);
+				add(skyBG);
 
 				var bgLimo:FlxSprite = new FlxSprite(-200, 480);
 				bgLimo.frames = Paths.getSparrowAtlas('limo/bgLimo');
 				bgLimo.animation.addByPrefix('drive', "background limo pink", 24);
 				bgLimo.animation.play('drive');
 				bgLimo.scrollFactor.set(0.4, 0.4);
-				addToStage(bgLimo);
+				add(bgLimo);
 
 				grpLimoDancers = new FlxTypedGroup<BackgroundDancer>();
-				addToStage(grpLimoDancers);
+				add(grpLimoDancers);
 
 				for (i in 0...5)
 				{
@@ -154,7 +154,7 @@ class DefaultStage extends StageBuilder {
 				bg.active = false;
 				bg.setGraphicSize(Std.int(bg.width * 0.8));
 				bg.updateHitbox();
-				addToStage(bg);
+				add(bg);
 
 				upperBoppers = new FlxSprite(-240, -90);
 				upperBoppers.frames = Paths.getSparrowAtlas('christmas/upperBop');
@@ -163,7 +163,7 @@ class DefaultStage extends StageBuilder {
 				upperBoppers.scrollFactor.set(0.33, 0.33);
 				upperBoppers.setGraphicSize(Std.int(upperBoppers.width * 0.85));
 				upperBoppers.updateHitbox();
-				addToStage(upperBoppers);
+				add(upperBoppers);
 
 				var bgEscalator:FlxSprite = new FlxSprite(-1100, -600).loadGraphic(Paths.image('christmas/bgEscalator'));
 				bgEscalator.antialiasing = true;
@@ -171,12 +171,12 @@ class DefaultStage extends StageBuilder {
 				bgEscalator.active = false;
 				bgEscalator.setGraphicSize(Std.int(bgEscalator.width * 0.9));
 				bgEscalator.updateHitbox();
-				addToStage(bgEscalator);
+				add(bgEscalator);
 
 				var tree:FlxSprite = new FlxSprite(370, -250).loadGraphic(Paths.image('christmas/christmasTree'));
 				tree.antialiasing = true;
 				tree.scrollFactor.set(0.40, 0.40);
-				addToStage(tree);
+				add(tree);
 
 				bottomBoppers = new FlxSprite(-300, 140);
 				bottomBoppers.frames = Paths.getSparrowAtlas('christmas/bottomBop');
@@ -185,18 +185,18 @@ class DefaultStage extends StageBuilder {
 					bottomBoppers.scrollFactor.set(0.9, 0.9);
 					bottomBoppers.setGraphicSize(Std.int(bottomBoppers.width * 1));
 				bottomBoppers.updateHitbox();
-				addToStage(bottomBoppers);
+				add(bottomBoppers);
 
 				var fgSnow:FlxSprite = new FlxSprite(-600, 700).loadGraphic(Paths.image('christmas/fgSnow'));
 				fgSnow.active = false;
 				fgSnow.antialiasing = true;
-				addToStage(fgSnow);
+				add(fgSnow);
 
 				santa = new FlxSprite(-840, 150);
 				santa.frames = Paths.getSparrowAtlas('christmas/santa');
 				santa.animation.addByPrefix('idle', 'santa idle in fear', 24, false);
 				santa.antialiasing = true;
-				addToStage(santa);
+				add(santa);
 			}
 			case 'mallEvil': {
                 directory = "week5";
@@ -207,16 +207,16 @@ class DefaultStage extends StageBuilder {
 				bg.active = false;
 				bg.setGraphicSize(Std.int(bg.width * 0.8));
 				bg.updateHitbox();
-				addToStage(bg);
+				add(bg);
 
 				var evilTree:FlxSprite = new FlxSprite(300, -300).loadGraphic(Paths.image('christmas/evilTree'));
 				evilTree.antialiasing = true;
 				evilTree.scrollFactor.set(0.2, 0.2);
-				addToStage(evilTree);
+				add(evilTree);
 
 				var evilSnow:FlxSprite = new FlxSprite(-200, 700).loadGraphic(Paths.image("christmas/evilSnow"));
 				evilSnow.antialiasing = true;
-                addToStage(evilSnow);
+                add(evilSnow);
 			}
 			case 'school': {
                 directory = "week6";
@@ -225,21 +225,21 @@ class DefaultStage extends StageBuilder {
 
 				var bgSky = new FlxSprite().loadGraphic(Paths.image('weeb/weebSky'));
 				bgSky.scrollFactor.set(0.1, 0.1);
-				addToStage(bgSky);
+				add(bgSky);
 
 				var repositionShit = -200;
 
 				var bgSchool:FlxSprite = new FlxSprite(repositionShit, 0).loadGraphic(Paths.image('weeb/weebSchool'));
 				bgSchool.scrollFactor.set(0.6, 0.90);
-				addToStage(bgSchool);
+				add(bgSchool);
 
 				var bgStreet:FlxSprite = new FlxSprite(repositionShit).loadGraphic(Paths.image('weeb/weebStreet'));
 				bgStreet.scrollFactor.set(0.95, 0.95);
-				addToStage(bgStreet);
+				add(bgStreet);
 
 				var fgTrees:FlxSprite = new FlxSprite(repositionShit + 170, 130).loadGraphic(Paths.image('weeb/weebTreesBack'));
 				fgTrees.scrollFactor.set(0.9, 0.9);
-				addToStage(fgTrees);
+				add(fgTrees);
 
 				var bgTrees:FlxSprite = new FlxSprite(repositionShit - 380, -800);
 				var treetex = Paths.getPackerAtlas('weeb/weebTrees');
@@ -247,14 +247,14 @@ class DefaultStage extends StageBuilder {
 				bgTrees.animation.add('treeLoop', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], 12);
 				bgTrees.animation.play('treeLoop');
 				bgTrees.scrollFactor.set(0.85, 0.85);
-				addToStage(bgTrees);
+				add(bgTrees);
 
 				var treeLeaves:FlxSprite = new FlxSprite(repositionShit, -40);
 				treeLeaves.frames = Paths.getSparrowAtlas('weeb/petals');
 				treeLeaves.animation.addByPrefix('leaves', 'PETALS ALL', 24, true);
 				treeLeaves.animation.play('leaves');
 				treeLeaves.scrollFactor.set(0.85, 0.85);
-				addToStage(treeLeaves);
+				add(treeLeaves);
 
 				var widShit = Std.int(bgSky.width * 6);
 
@@ -281,7 +281,7 @@ class DefaultStage extends StageBuilder {
 
 				bgGirls.setGraphicSize(Std.int(bgGirls.width * 6));
 				bgGirls.updateHitbox();
-				addToStage(bgGirls);
+				add(bgGirls);
 			}
 			case 'schoolEvil': {
                 directory = "week6";
@@ -300,7 +300,7 @@ class DefaultStage extends StageBuilder {
                 bg.animation.play('idle');
                 bg.scrollFactor.set(0.8, 0.9);
                 bg.scale.set(6, 6);
-                addToStage(bg);
+                add(bg);
 			}
 			case 'stage': {
                 directory = "week1";
@@ -311,7 +311,7 @@ class DefaultStage extends StageBuilder {
                 bg.antialiasing = true;
                 bg.scrollFactor.set(0.9, 0.9);
                 bg.active = false;
-                addToStage(bg);
+                add(bg);
 
                 var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(Paths.image('stagefront'));
                 stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
@@ -319,7 +319,7 @@ class DefaultStage extends StageBuilder {
                 stageFront.antialiasing = true;
                 stageFront.scrollFactor.set(0.9, 0.9);
                 stageFront.active = false;
-                addToStage(stageFront);
+                add(stageFront);
 
                 var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image('stagecurtains'));
                 stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
@@ -328,7 +328,7 @@ class DefaultStage extends StageBuilder {
                 stageCurtains.scrollFactor.set(1.3, 1.3);
                 stageCurtains.active = false;
 
-                addToStage(stageCurtains);
+                add(stageCurtains);
 			}
 		}
     }
@@ -342,7 +342,7 @@ class DefaultStage extends StageBuilder {
 				Register.getInGameCharacter(BOYFRIEND).x += 260;
 
 				resetFastCar();
-				addToStage(fastCar);
+				add(fastCar);
 
 			case 'mall':
 				Register.getInGameCharacter(BOYFRIEND).x += 200;
@@ -356,7 +356,7 @@ class DefaultStage extends StageBuilder {
 				Register.getInGameCharacter(GIRLFRIEND).y += 300;
 			case 'schoolEvil':
 				var evilTrail = new FlxTrail(Register.getInGameCharacter(OPPONENT), null, 4, 24, 0.3, 0.069);
-				addToStage(evilTrail);
+				add(evilTrail);
 
 				Register.getInGameCharacter(BOYFRIEND).x += 200;
 				Register.getInGameCharacter(BOYFRIEND).y += 220;
@@ -369,13 +369,13 @@ class DefaultStage extends StageBuilder {
         super.whenCreatingScene();
 
 		if(stage == "limo") {
-			removeFromStage(Register.getInGameCharacter(BOYFRIEND));
-			removeFromStage(Register.getInGameCharacter(OPPONENT));
+			remove(Register.getInGameCharacter(BOYFRIEND));
+			remove(Register.getInGameCharacter(OPPONENT));
 
-			addToStage(limo);
+			add(limo);
 
-			addToStage(Register.getInGameCharacter(BOYFRIEND));
-			addToStage(Register.getInGameCharacter(OPPONENT));
+			add(Register.getInGameCharacter(BOYFRIEND));
+			add(Register.getInGameCharacter(OPPONENT));
 		}
     }
 

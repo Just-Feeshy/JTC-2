@@ -32,11 +32,6 @@ import sys.io.File;
 
 using StringTools;
 
-enum ClassType {
-    EVENT;
-    STAGE;
-}
-
 /**
 * Basically the FlxG for Feeshmora.
 */
@@ -58,8 +53,8 @@ class Register {
 
     #if !macro
     @:allow(PlayState) private static var events:Array<Class<IFeshEvent>> = [];
-    @:allow(PlayState) private static var stages:Array<Class<StageBuilder>> = [];
     @:allow(PlayState) private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
+    @:allow(PlayState) private static var stage:Class<StageBuilder> = DefaultStage;
 
     @:allow(Preloader)
     private inline static function setup() {
@@ -67,8 +62,7 @@ class Register {
         * Default initialization for game.
         */
 
-        add(EVENT, DefaultEvents);
-        add(STAGE, DefaultStage);
+        addEvent(DefaultEvents);
 
         addCustomTransition("fade", FadeTransition);
         addCustomTransition("tile", TileTransition);
@@ -128,30 +122,18 @@ class Register {
         return null;
     }
 
-    public inline static function add(addonType:ClassType, addonClass:Dynamic):Void {
-        switch(addonType) {
-            case EVENT:
-                var daEvent:Class<IFeshEvent> = addonClass;
-
-                if(!events.contains(daEvent))
-                    events.insert(0, daEvent);
-            case STAGE:
-                if(!stages.contains(addonClass))
-                    stages.insert(0, addonClass);
-        }
+    public inline static function setStageForMod(stage:Class<StageBuilder>):Void {
+        Register.stage = stage;
     }
 
-    public inline static function remove(addonType:ClassType, addonClass:Dynamic):Void {
-        switch(addonType) {
-            case EVENT:
-                var daEvent:Class<IFeshEvent> = addonClass;
+    public inline static function addEvent(daEvent:Class<IFeshEvent>):Void {
+        if(!events.contains(daEvent))
+            events.insert(0, daEvent);
+    }
 
-                if(events.contains(daEvent))
-                    events.remove(daEvent);
-            case STAGE:
-                if(stages.contains(addonClass))
-                    stages.remove(addonClass);
-        }
+    public inline static function removeEvent(daEvent:Class<IFeshEvent>):Void {
+        if(events.contains(daEvent))
+            events.remove(daEvent);
     }
 
     public inline static function implementDialogueToSong(name:String, dialogueClass:Class<IDialogue>) {

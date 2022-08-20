@@ -8,7 +8,7 @@ import NotesJTC;
 
 class Mod {
     static function onInit() {
-        Register.remove(STAGE, DefaultStage); //Remove unwanted data from the game.
+        Register.setStageForMod(CheesyStage); //Remove unwanted data from the game.
 
         Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));
         Register.attachLuaToState(MainMenuState, Paths.lua("jtc_menu"));
@@ -21,6 +21,5 @@ class Mod {
         Register.implementCustomNote("cool", CoolNote);
         Register.implementCustomNote("cheese", CheeseNote);
         Register.implementCustomNote("death", DeathNote);
-        Register.add(STAGE, CheesyStage);
     }
 }

@@ -1,7 +1,7 @@
 package template;
 
 import flixel.FlxG;
-import flixel.FlxBasic;
+import flixel.group.FlxGroup;
 import flixel.math.FlxPoint;
 
 #if (haxe_ver >= 4.2)
@@ -10,36 +10,20 @@ import Std.isOfType;
 import Std.is as isOfType;
 #end
 
-abstract class StageBuilder extends FlxBasic {
-    private var sprites:Map<String, FlxBasic>;
+/**
+* If you want to include the default game stage
+* then extend your stage class off of the `DefaultStage`.
+*/
+abstract class StageBuilder extends FlxGroup {
     private var stage:String;
     private var directory(default, set):String;
 
     private var playstate(get, never):PlayState;
 
     public function new(stage:String) {
-        super();
-
-        sprites = new Map<String, FlxBasic>();
-
         this.stage = stage;
-    }
 
-    public function addToStageAndMap(name:String, thing:FlxBasic):Void {
-        sprites.set(name, thing);
-
-        if(isOfType(FlxG.state, PlayState))
-            FlxG.state.add(thing);
-    }
-
-    public function addToStage(thing:FlxBasic):Void {
-        if(isOfType(FlxG.state, PlayState))
-            FlxG.state.add(thing);
-    }
-
-    public function removeFromStage(thing:FlxBasic):Void {
-        if(isOfType(FlxG.state, PlayState))
-            FlxG.state.remove(thing);
+        super();
     }
 
     public function configStage():Void {
@@ -96,16 +80,6 @@ abstract class StageBuilder extends FlxBasic {
     }
 
     override public function destroy():Void {
-        if(sprites != null) {
-            for(k in sprites.keys()) {
-                sprites.get(k).destroy();
-                sprites.remove(k);
-            }
-
-            sprites.clear();
-        }
-
-        sprites = null;
         stage = null;
         directory = null;
     }

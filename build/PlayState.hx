@@ -62,7 +62,7 @@ using StringTools;
 class PlayState extends MusicBeatState
 {
 	//More Stuff
-	private var stageGroup:FlxTypedGroup<StageBuilder>;
+	private var stage:StageBuilder;
 
 	private var createdCharacters:Bool;
 	private var trippyFog:FlxSprite;
@@ -147,8 +147,6 @@ class PlayState extends MusicBeatState
 	private var curSection:Int = 0;
 
 	private var vocals:FlxSound;
-
-	public var newCharacters:Map<String, Character>;
 
 	public var dad:Character;
 	public var gf:Character;
@@ -332,17 +330,13 @@ class PlayState extends MusicBeatState
 		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
 		#end
 
-		stageGroup = new FlxTypedGroup<StageBuilder>();
-		add(stageGroup);
-
 		if(SONG.stage == null)
 			SONG.stage = DefaultStage.setMainGameStage(SONG.song.toLowerCase());
 
 		curStage = SONG.stage;
 
-		for(i in 0...Register.stages.length) {
-			stageGroup.add(cast Type.createInstance(Register.stages[i], [curStage]));
-		}
+		stage = cast Type.createInstance(Register.stage, [curStage]);
+		add(stage);
 
 		events = new FeshEventGroup();
 
@@ -375,17 +369,12 @@ class PlayState extends MusicBeatState
 			gfVersion = SONG.girlfriend;
 		}
 
-		newCharacters = new Map<String, Character>();
-
 		gf = new Character(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
-
-		for(i in 0...stageGroup.length) {
-			if(!stageGroup.members[i].hasGirlfriend()) {
-				gf.destroy();
-				gf = null;
-				break;
-			}
+		
+		if(!stage.hasGirlfriend()) {
+			gf.destroy();
+			gf = null;
 		}
 
 		dad = new Character(100, 100, SONG.player2);
@@ -409,9 +398,7 @@ class PlayState extends MusicBeatState
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		dad.refresh(SONG.player2, camPos);
 
-		stageGroup.forEach(function(stage:StageBuilder) {
-			stage.configStage();
-		});
+		stage.configStage();
 
 		boyfriend.setPosition(boyfriend.x - SONG.player1X, boyfriend.y - SONG.player1Y);
 		dad.setPosition(dad.x - SONG.player2X, dad.y - SONG.player2Y);
@@ -765,14 +752,12 @@ class PlayState extends MusicBeatState
 		}
 
 		if(!createdCharacters) {
-			add(gf);
+			stage.add(gf);
 
-			add(dad);
-			add(boyfriend);
+			stage.add(dad);
+			stage.add(boyfriend);
 
-			stageGroup.forEach(function(stage:StageBuilder) {
-				stage.whenCreatingScene();
-			});
+			stage.whenCreatingScene();
 		} else {
 			return;
 		}
@@ -1737,13 +1722,11 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			stageGroup.forEach(function(stage:StageBuilder) {
-				var newCamPos:FlxPoint = stage.setCamPos(camPos);
+			var newCamPos:FlxPoint = stage.setCamPos(camPos);
 
-				if(newCamPos != null) {
-					camPos = newCamPos;
-				}
-			});
+			if(newCamPos != null) {
+				camPos = newCamPos;
+			}
 
 			camFollow.setPosition(camPos.x + camMovementPos.x, camPos.y + camMovementPos.y);
 		}
@@ -2867,6 +2850,17 @@ class PlayState extends MusicBeatState
 			gameOverScreen();
 		});
 
+		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float) {
+			if(getModLua().luaSprites.exists(name)) {
+                return;
+            }
+
+			var characterSprite:Character = new Character(x, y, characterName);
+			characterSprite.active = true;
+
+            getModLua().luaSprites.set(name, characterSprite);
+		});
+
 		addCallback("setHealthBarColors", function(opponentHex:String, playerHex:String) {
 			var opponentColor:FlxColor = 0;
 			var playerColor:FlxColor = 0;
@@ -3159,9 +3153,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		stageGroup.forEach(function(stage:StageBuilder) {
-			stage.curStep();
-		});
+		stage.curStep();
 	}
 
 	var lightningStrikeBeat:Int = 0;
@@ -3178,7 +3170,7 @@ class PlayState extends MusicBeatState
 
 		if (gf != null) {
 			if(gf.animation.curAnim != null) {
-				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing") && !gf.stunned) {
+				if (curBeat % (gf.danceBeatTimer - 1) == 0 && !gf.animation.curAnim.name.startsWith("sing") && !gf.stunned) {
 					gf.dance();
 				}
 			}
@@ -3251,9 +3243,7 @@ class PlayState extends MusicBeatState
 			dad.playNoDanceAnim('cheer', true);
 		}
 
-		stageGroup.forEach(function(stage:StageBuilder) {
-			stage.curBeat();
-		});
+		stage.curBeat();
 	}
 
 	@:access(flixel.FlxGame)
@@ -3266,22 +3256,9 @@ class PlayState extends MusicBeatState
 	override public function destroy() {
 		super.destroy();
 
-		if(newCharacters != null) {
-            for(k in newCharacters.keys()) {
-                var spr:Character = newCharacters.get(k);
-
-                if(spr != null) {
-                    spr.destroy();
-                }
-            }
-
-            newCharacters.clear();
-            newCharacters = null;
-        }
-
 		FlxG.sound.destroy();
 
-		stageGroup = FlxDestroyUtil.destroy(stageGroup);
+		stage = FlxDestroyUtil.destroy(stage);
 		events = FlxDestroyUtil.destroy(events);
 
 		if(getModLua() != null) {

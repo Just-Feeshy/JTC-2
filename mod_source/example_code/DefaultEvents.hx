@@ -159,7 +159,6 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                         playState.gf.destroy();
                         playState.gf = new Character(400, 130, eventValue);
                         playState.gf.refresh(eventValue, playState.camPos);
-                        playState.gf.danceBeatTimer = 1;
                         playState.add(playState.gf);
                     }
                 case "bf" | "boyfriend" | "player":

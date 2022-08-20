@@ -54,7 +54,7 @@ class CheesyStage extends StageBuilder {
 				bg.antialiasing = true;
 				bg.scrollFactor.set(0.95, 0.95);
 				bg.active = false;
-				addToStage(bg);
+				add(bg);
 
 				var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image('funklights'));
 				stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
@@ -63,7 +63,7 @@ class CheesyStage extends StageBuilder {
 				stageCurtains.scrollFactor.set(1.3, 1.3);
 				stageCurtains.active = false;
 
-				addToStage(stageCurtains);
+				add(stageCurtains);
 			case "funkroad":
 				setDefaultCameraZoom(0.50);
 
@@ -72,7 +72,7 @@ class CheesyStage extends StageBuilder {
 				funkroadSky.scrollFactor.set(0.7, 0.7);
 				funkroadSky.scale.set(1.2,1.2);
 				funkroadSky.active = false;
-				addToStage(funkroadSky);
+				add(funkroadSky);
 
 				var frostFrames = Paths.getSparrowAtlas('funkroad');
 
@@ -84,7 +84,7 @@ class CheesyStage extends StageBuilder {
 				frostbiteBG.scrollFactor.set(0.9, 0.9);
 				frostbiteBG.scale.set(1.2,1.2);
 				frostbiteBG.updateHitbox();
-				addToStage(frostbiteBG);
+				add(frostbiteBG);
 
 				var frostCarFrames = Paths.getSparrowAtlas('daddycar');
 
@@ -96,7 +96,7 @@ class CheesyStage extends StageBuilder {
 				frostbiteCAR.scrollFactor.set(1.0, 0.9);
 				frostbiteCAR.scale.set(0.7,0.7);
 				frostbiteCAR.updateHitbox();
-				addToStage(frostbiteCAR);
+				add(frostbiteCAR);
         }
     }
 
