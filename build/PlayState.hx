@@ -1118,6 +1118,9 @@ class PlayState extends MusicBeatState
 					sustainNote.scrollFactor.set();
 
 					sustainNote.howSpeed = oldNote.howSpeed;
+					sustainNote.tag = oldNote.tag;
+
+					sustainNote.playAnyAnimation = oldNote.playAnyAnimation;
 
 					sustainNote.setupPosition = DefaultHandler.compilePosition((daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet) * swagNote.howSpeed);
 

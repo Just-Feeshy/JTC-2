@@ -2186,8 +2186,6 @@ class ChartingState extends MusicBeatState
 			strumLine.updateHitbox();
 		}
 
-		trace(Std.int(GRID_SIZE * getSectionLength(curSection) * (zoomList[zoomMeter]/100)));
-
 		var totalHeight:Float = gridBG.height;
 
 		if(UI_Modifiers != null)
@@ -2328,7 +2326,7 @@ class ChartingState extends MusicBeatState
 				if(singleNoteSpeed.value != stepperSpeed.value) {
 					daSpeed = singleNoteSpeed.value;
 				}else {
-					daSpeed = _song.speed;
+					daSpeed = 0;
 				}
 				
 				daTag = noteTagInput.text;
@@ -2373,7 +2371,7 @@ class ChartingState extends MusicBeatState
 				note.placeModifierSymbol("T");
 			}
 
-			if(daSpeed != _song.speed) {
+			if(daSpeed != _song.speed && daSpeed != 0) {
 				note.placeModifierSymbol("S");
 			}
 
@@ -2464,7 +2462,7 @@ class ChartingState extends MusicBeatState
 				/**
 				* Double check.
 				*/
-				if(note.howSpeed != null) {
+				if(note.howSpeed != null && note.howSpeed != 0) {
 					curSelectedNote[4] = note.howSpeed;
 				}else {
 					curSelectedNote[4] = _song.speed;
@@ -2541,7 +2539,7 @@ class ChartingState extends MusicBeatState
 			if(singleNoteSpeed.value != stepperSpeed.value) {
 				noteSpeed = singleNoteSpeed.value;
 			}else {
-				noteSpeed = _song.speed;
+				noteSpeed = 0;
 			}
 			
 			noteTag = noteTagInput.text;
