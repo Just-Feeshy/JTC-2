@@ -508,21 +508,6 @@ class DefaultStage extends StageBuilder {
         super.update(elapsed);
     }
 
-    override function destroy():Void {
-        super.destroy();
-
-        halloweenBG = FlxDestroyUtil.destroy(halloweenBG);
-        phillyCityLights = FlxDestroyUtil.destroy(phillyCityLights);
-        grpLimoDancers = FlxDestroyUtil.destroy(grpLimoDancers);
-        phillyTrain = FlxDestroyUtil.destroy(phillyTrain);
-        limo = FlxDestroyUtil.destroy(limo);
-        upperBoppers = FlxDestroyUtil.destroy(upperBoppers);
-        bottomBoppers = FlxDestroyUtil.destroy(bottomBoppers);
-        fastCar = FlxDestroyUtil.destroy(fastCar);
-        santa = FlxDestroyUtil.destroy(santa);
-        bgGirls = FlxDestroyUtil.destroy(bgGirls);
-    }
-
     /**
     * Not important, if you want to make your own stage builder.
     */

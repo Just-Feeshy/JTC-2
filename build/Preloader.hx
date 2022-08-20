@@ -37,6 +37,10 @@ using StringTools;
 class Preloader extends HelperStates {
     var loadingScene:LoadingScene;
 
+    public function new() {
+        super("void", "void");
+    }
+
     override function create():Void {
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
         SaveData.globalMEM = new Memory(10, 18, 0xFFFFFF);

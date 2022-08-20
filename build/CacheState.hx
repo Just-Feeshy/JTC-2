@@ -15,7 +15,7 @@ import ModInitialize;
 import json2object.JsonParser;
 #end
 
-class CacheState extends MusicBeatState {
+class CacheState extends HelperStates {
     var target:FlxState;
 	var stopMusic = false;
     var timer:Float = 0;
@@ -23,7 +23,7 @@ class CacheState extends MusicBeatState {
     var loadingScene:LoadingScene;
 
     public function new(target:FlxState, stopMusic:Bool):Void {
-        super();
+        super("void", "void");
 
         this.target = target;
         this.stopMusic = stopMusic;
