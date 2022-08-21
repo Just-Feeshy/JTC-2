@@ -51,6 +51,7 @@ import feshixl.group.FeshEventGroup;
 import openfl.Lib;
 import feshixl.FeshCamera;
 
+import example_code.DefaultEvents;
 import example_code.DefaultStage;
 import template.CustomNote;
 import template.StageBuilder;
@@ -89,6 +90,8 @@ class PlayState extends MusicBeatState
 	private var isPixel:Bool = false;
 
 	//Event Stuff
+	public var eventInfo(default, null):Array<EventInfo>;
+
 	public var eventCounter:Int = 0;
 	public var prevEventStep:Int = 0;
 
@@ -531,6 +534,13 @@ class PlayState extends MusicBeatState
 		iconP2.cameras = [camHUD];
 		debugText.cameras = [camHUD];
 		counterTxt.cameras = [camHUD];
+
+		if(SONG.modifiers != null)
+			eventInfo = SONG.modifiers.copy();
+		else
+			eventInfo = [];
+
+		eventInfo.sort((a, b) -> Std.int(Reflect.field(a, "modGridY") - Reflect.field(b, "modGridY")));
 
 		startingSong = true;
 
@@ -3067,31 +3077,23 @@ class PlayState extends MusicBeatState
 	}
 
 	function eventLoad():Void {
-		var stepCounter = 0;
-
-		if(SONG.modifiers == null)
-			SONG.modifiers = [];
-
-		while(stepCounter < SONG.modifiers.length) {
-			var gridY = Reflect.field(SONG.modifiers[stepCounter], "modGridY");
-
-			if((curStep*40) == gridY) //Just wanna make sure...
-				break;
-
-			stepCounter++;
-		}
-
-		if(stepCounter > SONG.modifiers.length)
+		if(eventInfo.length == 0)
 			return;
 
-		eventCounter = stepCounter;
-		return eventLoad_DefaultHandler();
+		var gridY = Reflect.field(eventInfo[0], "modGridY");
+
+		if((curStep*40) == gridY)
+			return eventLoad_DefaultHandler();
+		else
+			return;
 	}
 
 	function eventLoad_DefaultHandler():Void {
-		var value:String = Reflect.field(SONG.modifiers[eventCounter], "modValue");
-		var value2:String = Reflect.field(SONG.modifiers[eventCounter], "modValueTwo");
-		var skill:String = Reflect.field(SONG.modifiers[eventCounter], "modSkill");
+		var value:String = Reflect.field(eventInfo[0], "modValue");
+		var value2:String = Reflect.field(eventInfo[0], "modValueTwo");
+		var skill:String = Reflect.field(eventInfo[0], "modSkill");
+
+		eventInfo.shift();
 
 		if(!eventStorage.contains(skill))
 			eventStorage.push(skill);
@@ -3276,6 +3278,8 @@ class PlayState extends MusicBeatState
 
 		stage = FlxDestroyUtil.destroy(stage);
 		events = FlxDestroyUtil.destroy(events);
+
+		eventInfo = null;
 
 		if(getModLua() != null) {
 			getModLua().close();
