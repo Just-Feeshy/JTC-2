@@ -1,0 +1,79 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "DD dance IDLE",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "DD dance DOWN",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				-31
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "DD dance right",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				-6
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "DD dance left",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				-12
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "DD dance up",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				35
+			],
+			"looped": false
+		},
+		"punch": {
+			"prefix": "DD dance punch",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				735,
+				35
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": -630,
+		"camPosY": 0,
+		"y": 0,
+		"camPosX": 0
+	},
+	"playAnim": "",
+	"file": "DD_assets.xml",
+	"icon": [
+		12,
+		13,
+		12
+	]
+}

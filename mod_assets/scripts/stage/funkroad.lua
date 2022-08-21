@@ -35,7 +35,6 @@ function generatedStage()
     }
 
     print("display")
-    
 end
 
 function onUpdateAfterCountdown(elapsed)

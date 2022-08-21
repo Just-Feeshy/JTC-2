@@ -142,8 +142,6 @@ class PlayState extends MusicBeatState
 
 	var daRating:String = "sick";
 
-	//public var testers(default, set):Int;
-
 	private var curSection:Int = 0;
 
 	private var vocals:FlxSound;
@@ -2862,6 +2860,26 @@ class PlayState extends MusicBeatState
 			characterSprite.active = true;
 
             getModLua().luaSprites.set(name, characterSprite);
+		});
+
+		addCallback("addSpriteToStage", function(name:String) {
+			var spr:FlxSprite = getModLua().getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+			stage.add(spr);
+		});
+
+		addCallback("removeSpriteToStage", function(name:String) {
+			var spr:FlxSprite = getModLua().getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+			stage.remove(spr);
 		});
 
 		addCallback("setHealthBarColors", function(opponentHex:String, playerHex:String) {
