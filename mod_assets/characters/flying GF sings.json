@@ -54,7 +54,7 @@
 	"isPlayer": true,
 	"pixel": false,
 	"position": {
-		"x": 0,
+		"x": 12,
 		"camPosY": -130,
 		"y": -260,
 		"camPosX": 0

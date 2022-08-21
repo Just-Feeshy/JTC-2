@@ -34,7 +34,9 @@ function generatedStage()
         defaultPlayerStrumY3;
     }
 
-    print("display")
+    --removeSpriteToStage("dad")
+    scaleSprite("dad", 1.1, 1.1)
+    --setSpritePosition("dad", 0, 0)
 end
 
 function onUpdateAfterCountdown(elapsed)

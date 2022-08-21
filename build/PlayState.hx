@@ -1608,11 +1608,6 @@ class PlayState extends MusicBeatState
 		else
 			iconP2.animation.curAnim.curFrame = 0;
 
-		#if !(debug || USING_MOD_DEBUG)
-		if (FlxG.keys.justPressed.EIGHT)
-			FlxG.switchState(new AnimationDebug(SONG.player2));
-		#end
-
 		if (startingSong)
 		{
 			if (startedCountdown)

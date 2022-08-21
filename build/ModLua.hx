@@ -144,6 +144,20 @@ class ModLua {
             return true;
         });
 
+        Lua_helper.add_callback(lua, "scaleSprite", function(name:String, x:Float, y:Float, shouldUpdateHitbox:Bool = true) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.scale.set(x, y);
+
+            if(shouldUpdateHitbox) {
+                spr.updateHitbox();
+            }
+        });
+
         Lua_helper.add_callback(lua, "loadGraphic", function(name:String, image:String, gridX:Int = 0, gridY:Int = 0) {
 			var spr:FlxSprite = getSprite(name);
 
