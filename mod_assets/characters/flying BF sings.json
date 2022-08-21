@@ -1,15 +1,5 @@
 {
 	"animations": {
-		"idle": {
-			"prefix": "flying dance IDLE",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				0,
-				0
-			],
-			"looped": false
-		},
 		"singDOWN": {
 			"prefix": "flying dance DOWN",
 			"name": "",
@@ -17,6 +7,46 @@
 			"offset": [
 				21,
 				-11
+			],
+			"looped": false
+		},
+		"singRIGHTmiss": {
+			"prefix": "flying miss RIGHT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				11,
+				-23
+			],
+			"looped": false
+		},
+		"singLEFTmiss": {
+			"prefix": "flying miss LEFT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-27,
+				-15
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "flying dance UP",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-4,
+				5
+			],
+			"looped": false
+		},
+		"idle": {
+			"prefix": "flying dance IDLE",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
 			],
 			"looped": false
 		},
@@ -30,6 +60,16 @@
 			],
 			"looped": false
 		},
+		"singDOWNmiss": {
+			"prefix": "flying miss DOWN",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-6,
+				-18
+			],
+			"looped": false
+		},
 		"singLEFT": {
 			"prefix": "flying dance LEFT",
 			"name": "",
@@ -40,13 +80,13 @@
 			],
 			"looped": false
 		},
-		"singUP": {
-			"prefix": "flying dance UP",
+		"singUPmiss": {
+			"prefix": "flying miss UP",
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				-4,
-				5
+				-10,
+				-27
 			],
 			"looped": false
 		}

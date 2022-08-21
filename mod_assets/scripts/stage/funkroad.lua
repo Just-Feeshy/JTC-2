@@ -1,8 +1,14 @@
+--imports
+local luaCharacter = require("/assets/scripts/extraCharacterScript")
+
+--variables
 local a = 0
 local constant = 2
 
 local allStrumsX = {}
 local allStrumsY = {}
+
+local skaterJoul = nil
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -11,6 +17,7 @@ local jtcStrumAnims = {
     "singLEFT"
 }
 
+--functions
 function generatedStage()
     allStrumsX = {
         defaultOpponentStrumX0;
@@ -34,9 +41,11 @@ function generatedStage()
         defaultPlayerStrumY3;
     }
 
-    --removeSpriteToStage("dad")
+    skaterJoul = luaCharacter.new("skater-boi", "skater-boi", 100, 100)
+
+    removeSpriteToStage("dad")
     scaleSprite("dad", 1.1, 1.1)
-    --setSpritePosition("dad", 0, 0)
+    setSpritePosition("dad", -585, 0)
 end
 
 function onUpdateAfterCountdown(elapsed)
@@ -46,4 +55,14 @@ function onUpdateAfterCountdown(elapsed)
     --end
     
     a = a + (elapsed * (curBpm/120))
+end
+
+function updateCharacter()
+    if skaterJoul ~= nil then
+        skaterJoul.dance("idle")
+    end
+end
+
+function onUpdate(elapsed)
+    updateCharacter()
 end

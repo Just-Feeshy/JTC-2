@@ -30,7 +30,7 @@ class Character extends feshixl.FeshSprite {
 	public var debugMode:Bool = false;
 
 	public var dancing(default, null):Bool = false;
-	public var dadVar(default, null):Float = 4;
+	public var singMultiplier(default, null):Float = 4;
 
 	public var curCharacter:String = 'bf';
 
@@ -47,7 +47,7 @@ class Character extends feshixl.FeshSprite {
 	public var finalizedWidth(default, null):Float = 0;
 	public var finalizedHeight(default, null):Float = 0;
 
-	public var danceBeatTimer:Int = 2;
+	public var danceBeatTimer:Int = 1;
 
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters)
 	{
@@ -120,10 +120,10 @@ class Character extends feshixl.FeshSprite {
 			}
 
 			if (curCharacter == 'dad') {
-				dadVar = 6.1;
+				singMultiplier = 6.1;
 			}
 
-			if (holdTimer >= Conductor.stepCrochet * dadVar * 0.0011) {
+			if (holdTimer >= Conductor.stepCrochet * singMultiplier * 0.0011) {
 				dance();
 				holdTimer = 0;
 			}

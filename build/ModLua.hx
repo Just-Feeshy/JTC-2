@@ -87,6 +87,8 @@ class ModLua {
         set('crochet', Conductor.crochet);
         set('stepCrochet', Conductor.stepCrochet);
 
+        set('getCwd', Sys.getCwd());
+
         #if debug
         set("debug", true);
         #else
@@ -850,6 +852,8 @@ class ModLua {
             }
         });
         #end
+
+        call("initialized", []);
     }
 
     public function getObjectFromMap(name:String):Dynamic {
