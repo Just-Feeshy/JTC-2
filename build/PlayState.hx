@@ -3093,7 +3093,7 @@ class PlayState extends MusicBeatState
 
 		events.whenTriggered(skill, value, value2, this);
 
-		callLua("whenEventTriggered", [skill, value, value2]);
+		callLua("onEventTriggered", [skill, value, value2]);
 	}
 
 	function set_wobbleModPower(value:Float):Float {

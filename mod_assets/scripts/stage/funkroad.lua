@@ -43,9 +43,14 @@ function generatedStage()
     skaterboi = require("assets/scripts/modules/character")
     skaterboi.create("skater-boi", "skater-boi", 100, 100)
 
-    removeSpriteToStage("dad")
-    scaleSprite("dad", 1.1, 1.1)
-    setSpritePosition("dad", -585, 0)
+    --removeSpriteToStage("dad")
+end
+
+function onEventTriggered(eventName, value, value2)
+    if eventName == "character change" and value == "dad-car" then
+        scaleSprite("dad", 1.1, 1.1)
+        setSpritePosition("dad", -585, 0)
+    end
 end
 
 function updateCharacter()
