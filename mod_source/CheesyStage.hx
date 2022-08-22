@@ -11,6 +11,8 @@ import flixel.tweens.FlxTween;
 import lime.utils.Assets;
 import haxe.Json;
 
+using StringTools;
+
 class CheesyStage extends StageBuilder {
 	final doubleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
@@ -25,6 +27,9 @@ class CheesyStage extends StageBuilder {
 
 	var allTweens:Array<FlxTween>;
 	var tweenIndex:Int = 0;
+
+	var boyfriend:Character;
+	var dad:Character;
 
     public function new(stage:String) {
         super(stage);
@@ -137,11 +142,12 @@ class CheesyStage extends StageBuilder {
     }
 
 	override function configStage():Void {
+		boyfriend = Register.getInGameCharacter(BOYFRIEND);
+		dad = Register.getInGameCharacter(OPPONENT);
+
 		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
-			Register.getInGameCharacter(BOYFRIEND).shouldPlayDance = false;
-			Register.getInGameCharacter(OPPONENT).shouldPlayDance = false;
-			Register.getInGameCharacter(BOYFRIEND).danceBeatTimer = 1;
-			Register.getInGameCharacter(OPPONENT).danceBeatTimer = 1;
+			boyfriend.shouldPlayDance = false;
+			dad.shouldPlayDance = false;
 		}
 	}
 
@@ -174,13 +180,13 @@ class CheesyStage extends StageBuilder {
 
 	override function update(elapsed:Float):Void {
 		if(dad.animation.curAnim != null) {
-			if (curBeat % dad.danceBeatTimer == 0 && !dad.animation.curAnim.name.startsWith("sing") && !dad.stunned && dad.shouldPlayDance) {
+			if (!dad.animation.curAnim.name.startsWith("sing") && !dad.stunned) {
 				dad.dance();
 			}
 		}
 
 		if(boyfriend.animation.curAnim != null) {
-			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned && boyfriend.shouldPlayDance) {
+			if (!boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned) {
 				boyfriend.dance();
 			}
 		}
@@ -189,6 +195,9 @@ class CheesyStage extends StageBuilder {
 	}
 
 	override function destroy():Void {
+		boyfriend = null;
+		dad = null;
+
 		super.destroy();
 		cleanTween();
 	}

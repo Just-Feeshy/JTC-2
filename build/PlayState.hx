@@ -337,8 +337,6 @@ class PlayState extends MusicBeatState
 		curStage = SONG.stage;
 
 		stage = cast Type.createInstance(Register.stage, [curStage]);
-		add(stage);
-
 		events = new FeshEventGroup();
 
 		for(i in 0...Register.events.length) {
@@ -400,6 +398,7 @@ class PlayState extends MusicBeatState
 		dad.refresh(SONG.player2, camPos);
 
 		stage.configStage();
+		add(stage);
 
 		boyfriend.setPosition(boyfriend.x - SONG.player1X, boyfriend.y - SONG.player1Y);
 		dad.setPosition(dad.x - SONG.player2X, dad.y - SONG.player2Y);
