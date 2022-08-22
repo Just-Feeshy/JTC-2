@@ -45,7 +45,9 @@ function generatedStage()
 end
 
 function onEventTriggered(eventName, value, value2)
-    if eventName == "character change" and value == "dad-car" then
+    print(eventName + " " + value + " " + value2)
+
+    if eventName == "character change" and value == "dad-car" and value2 == "dad" then
         daddyIshere = true
 
         scaleSprite("dad", 1.1, 1.1)
