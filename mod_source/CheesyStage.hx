@@ -138,6 +138,8 @@ class CheesyStage extends StageBuilder {
 
 	override function configStage():Void {
 		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
+			Register.getInGameCharacter(BOYFRIEND).shouldPlayDance = false;
+			Register.getInGameCharacter(OPPONENT).shouldPlayDance = false;
 			Register.getInGameCharacter(BOYFRIEND).danceBeatTimer = 1;
 			Register.getInGameCharacter(OPPONENT).danceBeatTimer = 1;
 		}
@@ -170,9 +172,24 @@ class CheesyStage extends StageBuilder {
 		return true;
 	}
 
+	override function update(elapsed:Float):Void {
+		if(dad.animation.curAnim != null) {
+			if (curBeat % dad.danceBeatTimer == 0 && !dad.animation.curAnim.name.startsWith("sing") && !dad.stunned && dad.shouldPlayDance) {
+				dad.dance();
+			}
+		}
+
+		if(boyfriend.animation.curAnim != null) {
+			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned && boyfriend.shouldPlayDance) {
+				boyfriend.dance();
+			}
+		}
+
+		super.update(elapsed);
+	}
+
 	override function destroy():Void {
 		super.destroy();
-
 		cleanTween();
 	}
 }

@@ -16,7 +16,6 @@ local jtcStrumAnims = {
 }
 
 --functions
-
 function generatedStage()
     allStrumsX = {
         defaultOpponentStrumX0;
@@ -41,6 +40,7 @@ function generatedStage()
     }
 
     skaterboi.add("skater-boi", "skater-boi", 100, 100)
+    skaterboi.dance()
 
     removeSpriteToStage("dad")
     scaleSprite("dad", 1.1, 1.1)

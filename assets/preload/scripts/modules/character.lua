@@ -1,4 +1,4 @@
---Character template to make initialzing characters through lua easier.
+--Character template to make initialzing characters through lua a little easier.
 --Made by Feeshy
 
 --NOTE: Using a metadata table would cause issues, and I'm too lazy to figure out a solution.
@@ -7,7 +7,7 @@ character = {
     name = "";
     holdTimer = 0;
     singMultiplier = 4;
-    stunned = false;
+    stunned = 0;
     dancing = 1;
 }
 
@@ -23,7 +23,9 @@ function character.add(name, characterName, x, y)
 end
 
 function character.dance()
-    print(tonumber(character.dancing))
+    if character.dancing then
+        print("hello world")
+    end
 end
 
 return character
