@@ -2672,7 +2672,8 @@ class PlayState extends MusicBeatState
 			currentPlayer.customAnimation = true;
 
 			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract) &&
-			(currentPlayer.customAnimation && (currentPlayer.animation.curAnim.name.startsWith("sing") || currentPlayer.dancing))) {
+			(currentPlayer.customAnimation && ((currentPlayer.animation.curAnim.name.startsWith("sing") && !currentPlayer.animation.curAnim.name.startsWith("miss"))
+			|| currentPlayer.dancing))) {
 				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + currentPlayer.hasBePlayer;
 
 				events.whenNoteIsPressed(note, this);
@@ -3199,7 +3200,7 @@ class PlayState extends MusicBeatState
 		if(dad.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier) {
 			var dadAnim:String = dad.animation.curAnim.name;
 			
-			if(dadAnim.startsWith("sing")) {
+			if(dadAnim.startsWith("sing") && !dadAnim.endsWith("miss")) {
 				dad.playNoDanceAnim(dadAnim, true);
 			}
 		}
@@ -3207,7 +3208,7 @@ class PlayState extends MusicBeatState
 		if(boyfriend.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier) {
 			var boyfriendAnim:String = boyfriend.animation.curAnim.name;
 			
-			if(boyfriendAnim.startsWith("sing")) {
+			if(boyfriendAnim.startsWith("sing") && !boyfriendAnim.endsWith("miss")) {
 				boyfriend.playNoDanceAnim(boyfriendAnim, true);
 			}
 		}
