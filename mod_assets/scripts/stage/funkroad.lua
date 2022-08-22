@@ -44,19 +44,6 @@ function generatedStage()
     skaterboi.create("skater-boi", "skater-boi", 100, 100)
 end
 
-function onEventTriggered(eventName, value, value2)
-    print(eventName + " " + value + " " + value2)
-
-    if eventName == "character change" and value == "dad-car" and value2 == "dad" then
-        daddyIshere = true
-
-        scaleSprite("dad", 1.1, 1.1)
-        setSpritePosition("dad", -585, 0)
-
-        print("silly")
-    end
-end
-
 function updateCharacter()
     --if skaterboi ~= nil then
     --    skaterboi.dance("idle")
@@ -66,6 +53,7 @@ end
 function onStepHit()
     if curStep == 631 and not daddyIshere then
         callEvent("character change", "dad-car", "dad")
+        daddyIshere = true
     end
 end
 

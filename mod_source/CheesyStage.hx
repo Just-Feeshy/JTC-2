@@ -189,6 +189,8 @@ class CheesyStage extends StageBuilder {
 			}
 		}else {
 			dad = Register.getInGameCharacter(OPPONENT);
+			dad.scale.set(1.1, 1.1);
+			dad.updateHitbox();
 			dadShouldDance = false;
 			dad.shouldPlayDance = true;
 		}

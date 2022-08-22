@@ -49,10 +49,6 @@ class FeshEventGroup implements IFeshEvent implements IFlxDestroyable {
                 i++;
             }
         }
-
-        #if (USING_LUA && cpp)
-        playState.callLua("onEventTriggered", [eventName, eventValue, eventValue2]);
-        #end
     }
 
     /**
