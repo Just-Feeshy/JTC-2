@@ -11,9 +11,8 @@ character = {
     dancing = 1;
 }
 
-function character.add(name, characterName, x, y)
+function character.create(name, characterName, x, y)
     createCharacterSprite(name, characterName, x, y)
-    addSpriteToStage(name)
 
     character.name = name
     character.holdTimer = 0
@@ -22,9 +21,13 @@ function character.add(name, characterName, x, y)
     character.dancing = 1
 end
 
-function character.dance()
-    if character.dancing then
-        print("hello world")
+function character.add()
+    addSpriteToStage(name)
+end
+
+function character.dance(name)
+    if character.dancing == 1 then
+        playAnim(character.name, name)
     end
 end
 
