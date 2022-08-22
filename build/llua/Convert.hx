@@ -2,6 +2,12 @@ package llua;
 
 import llua.State;
 
+#if (haxe_ver >= 4.2)
+import Std.isOfType;
+#else
+import Std.is as isOfType;
+#end
+
 class Convert {
 
 	/**

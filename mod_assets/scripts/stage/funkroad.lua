@@ -1,5 +1,5 @@
 --imports
-local luaCharacter = require("mod_assets/scripts/modules/skaterboi")
+local skaterboi = require("assets/scripts/modules/character")
 
 --variables
 local a = 0
@@ -16,6 +16,7 @@ local jtcStrumAnims = {
 }
 
 --functions
+
 function generatedStage()
     allStrumsX = {
         defaultOpponentStrumX0;
@@ -38,6 +39,8 @@ function generatedStage()
         defaultPlayerStrumY2;
         defaultPlayerStrumY3;
     }
+
+    skaterboi.add("skater-boi", "skater-boi", 100, 100)
 
     removeSpriteToStage("dad")
     scaleSprite("dad", 1.1, 1.1)
