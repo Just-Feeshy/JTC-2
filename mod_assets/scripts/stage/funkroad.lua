@@ -42,14 +42,16 @@ function generatedStage()
 
     skaterboi = require("assets/scripts/modules/character")
     skaterboi.create("skater-boi", "skater-boi", 100, 100)
-
-    --removeSpriteToStage("dad")
 end
 
 function onEventTriggered(eventName, value, value2)
     if eventName == "character change" and value == "dad-car" then
+        daddyIshere = true
+
         scaleSprite("dad", 1.1, 1.1)
         setSpritePosition("dad", -585, 0)
+
+        print("silly")
     end
 end
 
@@ -57,6 +59,12 @@ function updateCharacter()
     --if skaterboi ~= nil then
     --    skaterboi.dance("idle")
     --end
+end
+
+function onStepHit()
+    if curStep == 631 and not daddyIshere then
+        callEvent("character change", "dad-car", "dad")
+    end
 end
 
 function onUpdate(elapsed)

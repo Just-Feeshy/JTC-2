@@ -31,6 +31,8 @@ class CheesyStage extends StageBuilder {
 	var boyfriend:Character;
 	var dad:Character;
 
+	var dadShouldDance:Bool = true;
+
     public function new(stage:String) {
         super(stage);
 
@@ -179,10 +181,16 @@ class CheesyStage extends StageBuilder {
 	}
 
 	override function update(elapsed:Float):Void {
-		if(dad.animation.curAnim != null) {
-			if (!dad.animation.curAnim.name.startsWith("sing") && !dad.stunned) {
-				dad.dance();
+		if(dad.exists) {
+			if(dad.animation.curAnim != null) {
+				if (!dad.animation.curAnim.name.startsWith("sing") && !dad.stunned && dadShouldDance) {
+					dad.dance();
+				}
 			}
+		}else {
+			dad = Register.getInGameCharacter(OPPONENT);
+			dadShouldDance = false;
+			dad.shouldPlayDance = true;
 		}
 
 		if(boyfriend.animation.curAnim != null) {
