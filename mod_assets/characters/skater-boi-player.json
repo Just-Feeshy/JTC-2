@@ -1,0 +1,69 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "skater dance IDLE",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "skater dance DOWN",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-75,
+				-229
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "skater dance RIGHT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				191,
+				-44
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "skater dance LEFT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-68,
+				-15
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "skater dance UP",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-61,
+				61
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": true,
+	"pixel": false,
+	"position": {
+		"x": 0,
+		"camPosY": 0,
+		"y": -96,
+		"camPosX": 0
+	},
+	"playAnim": "",
+	"file": "skater_assets.xml",
+	"icon": [
+		24,
+		30,
+		24
+	]
+}

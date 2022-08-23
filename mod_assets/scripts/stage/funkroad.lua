@@ -14,7 +14,7 @@ local jtcStrumAnims = {
     "singLEFT"
 }
 
-local daddyIshere = false
+local daddyIsHere = false
 
 --functions
 function generatedStage()
@@ -40,20 +40,26 @@ function generatedStage()
         defaultPlayerStrumY3;
     }
 
-    skaterboi = require("assets/scripts/modules/character")
-    skaterboi.create("skater-boi", "skater-boi", 100, 100)
+    skaterboi = require("mod_assets/scripts/modules/character")
+    skaterboi.create("skater-boi-player", "skater-boi-player", 600, 100)
 end
 
 function updateCharacter()
-    --if skaterboi ~= nil then
-    --    skaterboi.dance("idle")
-    --end
+    if skaterboi ~= nil and daddyIsHere then
+        skaterboi.dance("idle")
+    end
 end
 
 function onStepHit()
-    if curStep == 631 and not daddyIshere then
+    if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
-        daddyIshere = true
+        addSpriteToStage("skater-boi-player")
+        daddyIsHere = true
+    end
+
+    if curStep == 631 then
+        removeSpriteToStage("boyfriend")
+        insertSpriteToStage(getSpriteIndexFromStage("skater-boi-player") + 1, "boyfriend")
     end
 end
 

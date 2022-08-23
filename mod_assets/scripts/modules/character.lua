@@ -1,6 +1,4 @@
 --Character template to make initialzing characters through lua a little easier.
---Made by Feeshy
-
 --NOTE: Using a metadata table would cause issues, and I'm too lazy to figure out a solution.
 
 character = {
@@ -19,10 +17,6 @@ function character.create(name, characterName, x, y)
     character.singMultiplier = 4
     character.stunned = 0
     character.dancing = 1
-end
-
-function character.add()
-    addSpriteToStage(name)
 end
 
 function character.dance(name)

@@ -193,6 +193,8 @@ class CheesyStage extends StageBuilder {
 			dad.updateHitbox();
 			dadShouldDance = false;
 			dad.shouldPlayDance = true;
+
+			boyfriend.x += 200;
 		}
 
 		if(boyfriend.animation.curAnim != null) {
