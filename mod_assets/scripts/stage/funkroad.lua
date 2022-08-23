@@ -71,6 +71,10 @@ function onStepHit()
     end
 end
 
+function onBeatHit()
+
+end
+
 function onUpdate(elapsed)
     updateCharacter()
 
