@@ -18,6 +18,14 @@ local daddyIsHere = false
 
 --functions
 function generatedStage()
+    createSprite("frostbiteCAR")
+    setSpritePosition("frostbiteCAR", 50, 0)
+    compileSpriteSheet("frostbiteCAR", 'daddycar', "sparrow")
+    playAnimationByPrefix("frostbiteCAR", 'drive', "daddycar", 24, true)
+    setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
+    scaleSprite("frostbiteCAR", 0.7, 0.7)
+    insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
+
     allStrumsX = {
         defaultOpponentStrumX0;
         defaultOpponentStrumX1;

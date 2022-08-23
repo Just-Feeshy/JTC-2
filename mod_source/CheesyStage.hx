@@ -92,18 +92,6 @@ class CheesyStage extends StageBuilder {
 				frostbiteBG.scale.set(1.2,1.2);
 				frostbiteBG.updateHitbox();
 				add(frostbiteBG);
-
-				var frostCarFrames = Paths.getSparrowAtlas('daddycar');
-
-				var frostbiteCAR:FlxSprite = new FlxSprite(50, 100);
-				frostbiteCAR.frames = frostCarFrames;
-				frostbiteCAR.animation.addByPrefix('drive', "daddycar", 24, true);
-				frostbiteCAR.animation.play('drive');
-				frostbiteCAR.antialiasing = true;
-				frostbiteCAR.scrollFactor.set(1.0, 0.9);
-				frostbiteCAR.scale.set(0.7,0.7);
-				frostbiteCAR.updateHitbox();
-				add(frostbiteCAR);
         }
     }
 
