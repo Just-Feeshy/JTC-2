@@ -31,6 +31,7 @@ function character.dance(name)
     end
 
     if character.holdTimer >= stepCrochet * 0.0044 then
+        character.dancing = 1
         playAnim(character.name, name)
         character.holdTimer = 0
     end
@@ -38,6 +39,7 @@ end
 
 function character.singByNote(note)
     if not note[6] or (note[6] and character.dancing == 1) then
+        character.dancing = 1
         playAnim(character.name, character.sings[note[3] + 1], true)
     end
 
