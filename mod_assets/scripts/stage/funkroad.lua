@@ -50,6 +50,7 @@ function generatedStage()
 
     skaterboi = require("mod_assets/scripts/modules/character")
     skaterboi.create("skater-boi-player", "skater-boi-player", 600, 100)
+    skaterboi.initSing(jtcStrumAnims)
 end
 
 function updateCharacter()
@@ -73,6 +74,21 @@ end
 
 function onBeatHit()
 
+end
+
+function goodNoteHit(note)
+    if skaterboi ~= nil and daddyIsHere then
+        if note[4] == "j" or note[4] == "t" then
+            skaterboi.singByNote(note)
+            print("haha funni")
+        end
+
+        --if !note[6] or (note[6] and skaterboi.dancing == 1) then
+        --    playAnim("skater-boi-player", skaterboi.sings[note[3] + 1], true)
+        --end
+    
+        --skaterboi.holdTimer = 0
+    end
 end
 
 function onUpdate(elapsed)
