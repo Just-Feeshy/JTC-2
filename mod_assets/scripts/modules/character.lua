@@ -37,10 +37,11 @@ function character.dance(name)
     end
 end
 
-function character.singByNote(note)
-    if not note[6] or (note[6] and character.dancing == 1) then
-        character.dancing = 1
-        playAnim(character.name, character.sings[note[3] + 1], true)
+function character.singByNote(noteData, isSustainNote)
+    if not isSustainNote or (isSustainNote and character.dancing == 1) then
+        character.dancing = 0
+        playAnim(character.name, character.sings[noteData + 1], true)
+        character.holdTimer = character.holdTimer + curElapsed
     end
 
     character.holdTimer = 0

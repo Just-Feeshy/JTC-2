@@ -2730,7 +2730,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	private function cameraMovement(noteCData:Int, isSus:Bool) {
+	function cameraMovement(noteCData:Int, isSus:Bool) {
 		if(modifierCheckList('camera move') && Main.feeshmoraModifiers && !isSus) {
 			if(noteCData == 0) {
 				camMovementPos.x = (-SONG.bpm / 45) * 5 * cameraMovementInsensity;

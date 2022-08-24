@@ -56,13 +56,19 @@ class Convert {
 
 	static inline function objectToLua(l:State, res:Any) {
 
-		Lua.createtable(l, 0, 0); // TODO: find table length ?
-		for (n in Reflect.fields(res)){
+		var length = 0;
+
+		for(n in Reflect.fields(res)) {
+			length++;
+		}
+
+		Lua.createtable(l, length, 0);
+
+		for (n in Reflect.fields(res)) {
 			Lua.pushstring(l, n);
 			toLua(l, Reflect.field(res, n));
 			Lua.settable(l, -3);
 		}
-
 	}
 
 	/**

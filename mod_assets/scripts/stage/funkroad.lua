@@ -76,11 +76,11 @@ function onBeatHit()
 
 end
 
-function goodNoteHit(note)
+function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
     if skaterboi ~= nil and daddyIsHere then
-        if note[4] == "j" or note[4] == "t" then
-            skaterboi.singByNote(note)
-            print("haha funni")
+        if tag == true then
+            skaterboi.singByNote(noteData, isSustainNote)
+            print(tag)
         end
 
         --if !note[6] or (note[6] and skaterboi.dancing == 1) then
@@ -88,6 +88,17 @@ function goodNoteHit(note)
         --end
     
         --skaterboi.holdTimer = 0
+    end
+
+    print(noteAbstract)
+
+    if tag ~= "" then
+        print(caculatePos)
+        print(strumTime)
+        print(noteData)
+        print(tag)
+        print(noteAbstract)
+        print(isSustainNote)
     end
 end
 
