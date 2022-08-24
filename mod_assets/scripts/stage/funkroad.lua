@@ -78,7 +78,7 @@ end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
     if skaterboi ~= nil and daddyIsHere then
-        if tag == true then
+        if tag == "joul" or tag == "t" then
             skaterboi.singByNote(noteData, isSustainNote)
             print(tag)
         end
@@ -88,16 +88,6 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
         --end
     
         --skaterboi.holdTimer = 0
-    end
-
-    if tag ~= "" then
-        print(caculatePos)
-        print(strumTime)
-        print(noteData)
-        print(tag)
-        print(noteAbstract)
-        print(isSustainNote)
-        print("")
     end
 end
 

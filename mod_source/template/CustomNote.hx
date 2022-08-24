@@ -29,7 +29,7 @@ interface ICustomNote {
     function getTrailGroup():FlxTypedGroup<FlxSprite>; //Add a custom trail to this note.
     function hasOppositeScroll():Bool; //If this note goes on the scroll intended to be in.
     function cantHaveHold():Bool; //If this note should have holds or not.
-    function getIndividualSpeed():Float; //How much faster this note is compared to a regular note.
+    function addToNoteSpeed():Float; //How much faster this note is compared to a regular note.
     function playerShouldntHit():Bool; //If player shouldn't hit this note.
     function noDefaultSplash():Bool; //If this note shouldn't play the default note splash.
     function giveHealth(isSustain:Bool):Float; //How much health is given to the player when this note is hit.
@@ -130,7 +130,7 @@ class CustomNoteTemplate implements ICustomNote {
         return false;
     }
 
-    public function getIndividualSpeed():Float {
+    public function addToNoteSpeed():Float {
         return 0;
     }
 

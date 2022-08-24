@@ -1091,9 +1091,6 @@ class PlayState extends MusicBeatState
 
 				if(daNoteAbstract != null && !DefaultHandler.tempNoteAbstracts.contains(daNoteAbstract))
 					DefaultHandler.tempNoteAbstracts.push(daNoteAbstract);
-				
-				if(songNotes[6] > 0 || songNotes[6] != null)
-					swagNote.howSpeed = songNotes[6];
 
 				if(songNotes[5] != null)
 					swagNote.playAnyAnimation = songNotes[5];
