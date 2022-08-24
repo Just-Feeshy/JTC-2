@@ -1092,14 +1092,15 @@ class PlayState extends MusicBeatState
 				if(daNoteAbstract != null && !DefaultHandler.tempNoteAbstracts.contains(daNoteAbstract))
 					DefaultHandler.tempNoteAbstracts.push(daNoteAbstract);
 				
-				if(songNotes[4] > 0)
-					swagNote.howSpeed = songNotes[4];
+				if(songNotes[6] > 0 || songNotes[6] != null)
+					swagNote.howSpeed = songNotes[6];
 
 				if(songNotes[5] != null)
-					swagNote.tag = songNotes[5];
+					swagNote.playAnyAnimation = songNotes[5];
 
-				if(songNotes[6] != null)
-					swagNote.playAnyAnimation = songNotes[6];
+				if(songNotes[4] != null) {
+					swagNote.tag = songNotes[4];
+				}
 
 				swagNote.setupPosition = DefaultHandler.compilePosition(daStrumTime);
 
@@ -2720,6 +2721,10 @@ class PlayState extends MusicBeatState
 				vocals.volume = 1;
 
 				hits++;
+			}
+
+			if(note.tag != "") {
+				trace(note.tag);
 			}
 
 			callLua("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);

@@ -90,8 +90,6 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
         --skaterboi.holdTimer = 0
     end
 
-    print(noteAbstract)
-
     if tag ~= "" then
         print(caculatePos)
         print(strumTime)
@@ -99,6 +97,7 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
         print(tag)
         print(noteAbstract)
         print(isSustainNote)
+        print("")
     end
 end
 

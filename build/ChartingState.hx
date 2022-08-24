@@ -1149,7 +1149,7 @@ class ChartingState extends MusicBeatState
 		subLabel = new FlxText(subDivideDummy.x + 65,subDivideDummy.y,'Subdivide Placement');
 		subLabel.visible = false;
 
-		singleNoteSpeed = new FlxUINumericStepper(150, subDivideDummy.y + 15, 0.1, _song.speed, 0.1, 10, 1);
+		singleNoteSpeed = new FlxUINumericStepper(150, subDivideDummy.y + 15, 0, _song.speed, 0, 10, 1);
 		singleNoteSpeed.value = _song.speed;
 		singleNoteSpeed.name = 'note_speed';
 		singleNoteSpeed.visible = false;
@@ -2161,8 +2161,8 @@ class ChartingState extends MusicBeatState
 	{
 		if (curSelectedNote != null) {
 			stepperSusLength.value = curSelectedNote[2];
-			singleNoteSpeed.value = curSelectedNote[4];
-			noteTagInput.text = curSelectedNote[5];
+			noteTagInput.text = curSelectedNote[4];
+			singleNoteSpeed.value = curSelectedNote[6];
 
 			if(curSelectedNote[6] != null) {
 				playAnimCheck.checked = curSelectedNote[6];
@@ -2316,9 +2316,9 @@ class ChartingState extends MusicBeatState
 			var daNoteInfo = curSel[1];
 			var daSus = curSel[2];
 			var daNoteType = curSel[3];
-			var daSpeed = curSel[4];
-			var daTag = curSel[5];
-			var daAnimPlay = curSel[6];
+			var daTag = curSel[4];
+			var daAnimPlay = curSel[5];
+			var daSpeed = curSel[6];
 
 			daNoteType = wtfIsNote;
 
@@ -2337,9 +2337,9 @@ class ChartingState extends MusicBeatState
 			curSelectedNote[1] = daNoteInfo;
 			curSelectedNote[2] = daSus;
 			curSelectedNote[3] = daNoteType;
-			curSelectedNote[4] = daSpeed;
-			curSelectedNote[5] = daTag;
-			curSelectedNote[6] = daAnimPlay;
+			curSelectedNote[4] = daTag;
+			curSelectedNote[5] = daAnimPlay;
+			curSelectedNote[6] = daSpeed;
 		}
 	}
 
@@ -2350,9 +2350,9 @@ class ChartingState extends MusicBeatState
 			var daNoteInfo = i[1];
 			var daSus = i[2];
 			var daNoteType = i[3];
-			var daSpeed = i[4];
-			var daTag = i[5];
-			var daAnimPlay = i[6];
+			var daTag = i[4];
+			var daAnimPlay = i[5];
+			var daSpeed = i[6];
 
 			var note:Note = new Note(daStrumTime, daNoteInfo % Math.floor(mainGrid/2), null, false, daNoteType);
 			note.sustainLength = daSus;
@@ -2459,20 +2459,20 @@ class ChartingState extends MusicBeatState
 				prevSelectedNote = curSelectedNote;
 				curSelectedNote = i;
 
+				curSelectedNote[3] = note.noteAbstract;
+				curSelectedNote[4] = note.tag;
+				curSelectedNote[5] = note.playAnyAnimation;
+
+				wtfIsNote = curSelectedNote[3];
+
 				/**
 				* Double check.
 				*/
 				if(note.howSpeed != null && note.howSpeed != 0) {
-					curSelectedNote[4] = note.howSpeed;
+					curSelectedNote[6] = note.howSpeed;
 				}else {
-					curSelectedNote[4] = _song.speed;
+					curSelectedNote[6] = 0;
 				}
-
-				curSelectedNote[3] = note.noteAbstract;
-				curSelectedNote[5] = note.tag;
-				curSelectedNote[6] = note.playAnyAnimation;
-
-				wtfIsNote = curSelectedNote[3];
 			}
 		}
 
@@ -2548,13 +2548,13 @@ class ChartingState extends MusicBeatState
 
 		if (n != null) {
 			n.noteAbstract = wtfIsNote;
-			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? mainGrid/2 : 0), n.sustainLength, n.noteAbstract, n.howSpeed, n.tag, n.playAnyAnimation]);
+			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? mainGrid/2 : 0), n.sustainLength, n.noteAbstract, n.tag, n.playAnyAnimation, n.howSpeed]);
 		}
 		else {
 			if(!check_extra_stuff.checked)
 				noteSpeed = 0;
 
-			_song.notes[curSection + extraSection].sectionNotes.push([noteStrum, noteData, noteSus, wtfIsNote, noteSpeed, noteTag, playAnyAnim]);
+			_song.notes[curSection + extraSection].sectionNotes.push([noteStrum, noteData, noteSus, wtfIsNote, noteTag, playAnyAnim, noteSpeed]);
 		}
 
 		curSelectedNote = _song.notes[curSection + extraSection].sectionNotes[_song.notes[curSection + extraSection].sectionNotes.length - 1];

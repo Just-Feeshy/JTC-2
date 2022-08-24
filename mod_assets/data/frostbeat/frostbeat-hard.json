@@ -31,7 +31,6 @@
 						1,
 						0,
 						"regular",
-						
 						"joul",
 						false
 					],
@@ -40,7 +39,6 @@
 						0,
 						0,
 						"regular",
-						
 						"joul",
 						false
 					],
@@ -48,8 +46,7 @@
 						7083.33333333333,
 						1,
 						0,
-						"regular",
-						
+						"regular",				
 						"joul",
 						false
 					],
@@ -57,8 +54,7 @@
 						7291.66666666667,
 						3,
 						0,
-						"regular",
-						
+						"regular",						
 						"joul",
 						false
 					],
