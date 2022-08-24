@@ -1426,11 +1426,7 @@ class ChartingState extends MusicBeatState
 			noteTagInput.visible = false;
 			noteTagText.visible = false;
 			playAnimCheck.visible = false;
-			stepperSpeed.visible = true;
 			speedLabel.visible = true;
-		}else if(check_extra_stuff.checked && stepperSpeed.visible) {
-			stepperSpeed.visible = false;
-			speedLabel.visible = false;
 		}
 
 		if(FlxG.sound.music.time < 0) {
