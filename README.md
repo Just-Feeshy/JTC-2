@@ -9,7 +9,7 @@ The purpose of making my own engine is to allow for fewer restrictions that come
 - [Suki](https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w) - Main Playtester
 - [FrogTreat](https://oliwiadeyna.wixsite.com/frogtreat) - Director, Animator, Artist and Charter
 - [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Artist and Charter
-- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer and Engine Creator
+- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer and Engine Developer
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
 - [JDST](https://twitter.com/JDSTtwt) - Song Composer and Joul's Soundfont
 
