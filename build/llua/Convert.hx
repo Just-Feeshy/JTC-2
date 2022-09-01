@@ -2,12 +2,6 @@ package llua;
 
 import llua.State;
 
-#if (haxe_ver >= 4.2)
-import Std.isOfType;
-#else
-import Std.is as isOfType;
-#end
-
 class Convert {
 
 	/**
@@ -56,19 +50,13 @@ class Convert {
 
 	static inline function objectToLua(l:State, res:Any) {
 
-		var length = 0;
-
-		for(n in Reflect.fields(res)) {
-			length++;
-		}
-
-		Lua.createtable(l, length, 0);
-
-		for (n in Reflect.fields(res)) {
+		Lua.createtable(l, 0, 0); // TODO: find table length ?
+		for (n in Reflect.fields(res)){
 			Lua.pushstring(l, n);
 			toLua(l, Reflect.field(res, n));
 			Lua.settable(l, -3);
 		}
+
 	}
 
 	/**

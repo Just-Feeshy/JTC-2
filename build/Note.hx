@@ -91,13 +91,7 @@ class Note extends feshixl.FeshSprite {
 			noteOffset = FlxPoint.get();
 
 			noteAbstract = noteType;
-			
-			if(hasCustomAddon != null)
-				howSpeed += hasCustomAddon.addToNoteSpeed();
-			else
-				howSpeed = PlayState.SONG.speed;
-
-
+			howSpeed = PlayState.SONG.speed;
 			hasCustomAddon = getAddon();
 
 			switch(noteType) {
@@ -128,6 +122,8 @@ class Note extends feshixl.FeshSprite {
 			if(hasCustomAddon != null) {
 				if(hasCustomAddon.hasOppositeScroll())
 					downscrollNote = !FlxG.save.data.helpme;
+
+				howSpeed += hasCustomAddon.getIndividualSpeed();
 
 				if(downscrollNote) {
 					noteOffset.x = -hasCustomAddon.getNoteOffsetX(isSustainNote);
