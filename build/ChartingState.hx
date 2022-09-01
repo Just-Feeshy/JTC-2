@@ -2500,6 +2500,10 @@ class ChartingState extends MusicBeatState
 					curSelectedNote = null;
 				}
 
+				if(i == prevSelectedNote) {
+					prevSelectedNote = null;
+				}
+
 				_song.notes[section].sectionNotes.remove(i);
 				break;
 			}
