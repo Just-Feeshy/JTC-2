@@ -70,8 +70,6 @@ class MenuBackground extends FlxSpriteGroup {
                     this.members[i].alpha = 1;
 
                 if(this.members[i].ID == prevSelected) {
-                    trace("no no");
-                    
                     cleanTween();
                     allTweens.push(FlxTween.tween(this.members[i], {alpha: 0}, 0.3, {ease: FlxEase.quadOut,
                         onComplete: function(twn:FlxTween) {

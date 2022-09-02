@@ -504,6 +504,16 @@ class ModLua {
             spr.cameras = [cam];
         });
 
+        Lua_helper.add_callback(lua, "getSpriteIndexFromState", function(name:String) {
+			var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return -1;
+            }
+
+			return FlxG.state.members.indexOf(spr);
+		});
+
         Lua_helper.add_callback(lua, "addSpriteToState", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 

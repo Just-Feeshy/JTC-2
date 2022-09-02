@@ -2852,6 +2852,27 @@ class PlayState extends MusicBeatState
             getModLua().luaSprites.set(name, characterSprite);
 		});
 
+		addCallback("getSpriteIndexFromStage", function(name:String) {
+			var spr:FlxSprite = getModLua().getSprite(name);
+
+            if(spr == null) {
+                return -1;
+            }
+
+			return stage.members.indexOf(spr);
+		});
+
+		addCallback("insertSpriteToStage", function(position:Int, name:String) {
+            var spr:FlxSprite = getModLua().getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            stage.insert(position, spr);
+        });
+
+
 		addCallback("addSpriteToStage", function(name:String) {
 			var spr:FlxSprite = getModLua().getSprite(name);
 
