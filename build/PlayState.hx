@@ -17,6 +17,7 @@ import flixel.FlxSubState;
 import flixel.effects.FlxFlicker;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.input.keyboard.FlxKey;
+import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.addons.effects.FlxTrail;
 import flixel.addons.effects.FlxTrailArea;
 import flixel.addons.effects.chainable.FlxEffectSprite;
@@ -47,6 +48,9 @@ import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
+import openfl.events.Event;
+import openfl.events.KeyboardEvent;
+import feshixl.events.FeshGamepadEvent;
 import feshixl.group.FeshEventGroup;
 import openfl.Lib;
 import feshixl.FeshCamera;
@@ -118,7 +122,7 @@ class PlayState extends MusicBeatState
 	private var trippyShader:ShaderFilter;
 
 	//Controls
-	private var keysMatrix:Array<Array<Int>> = [];
+	private var keys2DArray:Array<Array<Int>> = [];
 
 	//Da Variables
 	private var hits:Int = 0;
@@ -550,6 +554,16 @@ class PlayState extends MusicBeatState
 		setupKeyStuff();
 		eventLoad();
 
+		if(FlxG.keys.enabled) {
+			FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, getPressed);
+			FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, getReleased);
+		}
+
+		if(FlxG.gamepads.firstActive != null) {
+			FlxG.stage.addEventListener(FeshGamepadEvent.BUTTON_DOWN, getPressed);
+			FlxG.stage.addEventListener(FeshGamepadEvent.BUTTON_UP, getReleased);
+		}
+
 		super.create();
 	}
 
@@ -558,6 +572,82 @@ class PlayState extends MusicBeatState
 			singAnims = ["singLEFT", "singDOWN", "singUP", "singUP", "singRIGHT"];
 		}else {
 			singAnims = ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
+		}
+
+		FlxG.save.data.gamepadBinds = [
+			FlxGamepadInputID.LEFT_TRIGGER, //LEFT
+			FlxGamepadInputID.LEFT_SHOULDER, //DOWN
+			FlxGamepadInputID.RIGHT_SHOULDER, //UP
+			FlxGamepadInputID.RIGHT_TRIGGER, //RIGHT
+			FlxGamepadInputID.X //SPACE
+		];
+
+		switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
+			case 0:
+				if(SONG.fifthKey) {
+					keys2DArray[0] = [FlxKey.A, FlxKey.LEFT];
+					keys2DArray[1] = [FlxKey.S, FlxKey.DOWN];
+					keys2DArray[2] = [FlxKey.SPACE];
+					keys2DArray[3] = [FlxKey.W, FlxKey.UP];
+					keys2DArray[4] = [FlxKey.D, FlxKey.RIGHT];
+				}else {
+					keys2DArray[0] = [FlxKey.A, FlxKey.LEFT];
+					keys2DArray[1] = [FlxKey.S, FlxKey.DOWN];
+					keys2DArray[2] = [FlxKey.W, FlxKey.UP];
+					keys2DArray[3] = [FlxKey.D, FlxKey.RIGHT];
+				}
+			case 1:
+				if(SONG.fifthKey) {
+					keys2DArray[0] = [FlxKey.D, FlxKey.LEFT];
+					keys2DArray[1] = [FlxKey.F, FlxKey.DOWN];
+					keys2DArray[2] = [FlxKey.SPACE];
+					keys2DArray[3] = [FlxKey.J, FlxKey.UP];
+					keys2DArray[4] = [FlxKey.K, FlxKey.RIGHT];
+				}else {
+					keys2DArray[0] = [FlxKey.D, FlxKey.LEFT];
+					keys2DArray[1] = [FlxKey.F, FlxKey.DOWN];
+					keys2DArray[2] = [FlxKey.J, FlxKey.UP];
+					keys2DArray[3] = [FlxKey.K, FlxKey.RIGHT];
+				}
+			case 2:
+				if(SONG.fifthKey) {
+					keys2DArray[0] = [FlxKey.Z, FlxKey.LEFT];
+					keys2DArray[1] = [FlxKey.X, FlxKey.DOWN];
+					keys2DArray[2] = [FlxKey.SPACE];
+					keys2DArray[3] = [ONE, NUMPADONE, FlxKey.UP];
+					keys2DArray[4] = [TWO, NUMPADTWO, FlxKey.RIGHT];
+				}else {
+					keys2DArray[0] = [FlxKey.Z, FlxKey.LEFT];
+					keys2DArray[1] = [FlxKey.X, FlxKey.DOWN];
+					keys2DArray[2] = [ONE, NUMPADONE, FlxKey.UP];
+					keys2DArray[3] = [TWO, NUMPADTWO, FlxKey.RIGHT];
+				}
+			case 3:
+				if(SONG.fifthKey) {
+					keys2DArray[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
+					keys2DArray[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
+					keys2DArray[2] = SaveData.getData(CUSTOM_KEYBINDS)[4];
+					keys2DArray[3] = SaveData.getData(CUSTOM_KEYBINDS)[2];
+					keys2DArray[4] = SaveData.getData(CUSTOM_KEYBINDS)[3];
+				}else {
+					keys2DArray[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
+					keys2DArray[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
+					keys2DArray[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
+					keys2DArray[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
+				}
+		}
+
+		if(SONG.fifthKey) {
+			keys2DArray[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
+			keys2DArray[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
+			keys2DArray[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[4]);
+			keys2DArray[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
+			keys2DArray[4].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
+		}else {
+			keys2DArray[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
+			keys2DArray[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
+			keys2DArray[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
+			keys2DArray[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
 		}
 	}
 
@@ -1067,14 +1157,12 @@ class PlayState extends MusicBeatState
 					daNoteAbstract = CoolUtil.coolTextFile(Paths.pak('mapHandler'))[FlxG.random.int(1, CoolUtil.coolTextFile(Paths.pak('mapHandler')).length-1)];
 
 				var oldNote:Note;
-				
 				if (unspawnNotes.length > 0)
 					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 				else
 					oldNote = null;
 
 				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote, false, daNoteAbstract, false, true);
-				swagNote.mustPress = gottaHitNote;
 				swagNote.sustainLength = songNotes[2];
 				swagNote.scrollFactor.set(0, 0);
 				swagNote.refresh(SONG.fifthKey);
@@ -1094,15 +1182,13 @@ class PlayState extends MusicBeatState
 
 				if(daNoteAbstract != null && !DefaultHandler.tempNoteAbstracts.contains(daNoteAbstract))
 					DefaultHandler.tempNoteAbstracts.push(daNoteAbstract);
-				
-				if(songNotes[4] > 0)
-					swagNote.howSpeed = songNotes[4];
 
 				if(songNotes[5] != null)
-					swagNote.tag = songNotes[5];
+					swagNote.playAnyAnimation = songNotes[5];
 
-				if(songNotes[6] != null)
-					swagNote.playAnyAnimation = songNotes[6];
+				if(songNotes[4] != null) {
+					swagNote.tag = songNotes[4];
+				}
 
 				swagNote.setupPosition = DefaultHandler.compilePosition(daStrumTime);
 
@@ -1150,6 +1236,8 @@ class PlayState extends MusicBeatState
 						sustainNote.mustPress = !sustainNote.mustPress;
 					}
 				}
+
+				swagNote.mustPress = gottaHitNote;
 
 				if (swagNote.mustPress)
 				{
@@ -1809,7 +1897,6 @@ class PlayState extends MusicBeatState
 
 		if (generatedMusic && !inCutscene)
 		{
-			keyShit();
 			defaultGameStuff();
 
 			if(trippyFog.alpha == 0.5) {
@@ -2076,9 +2163,18 @@ class PlayState extends MusicBeatState
 		#end
 	}
 
-	function keyReleased():Void {
+	function getReleased(event:Event):Void {
 		if(paused || inCutscene)
 			return;
+
+		var getEvent:Event = cast event;
+		var index:Int = 0;
+
+		if(event is FeshGamepadEvent) {
+			index = getKeyOrButton(Reflect.field(getEvent, "buttonCode"));
+		}else {
+			index = getKeyOrButton(Reflect.field(getEvent, "keyCode"));
+		}
 
 		var controlArray = [
 			controls.GAME_LEFT_R,
@@ -2097,14 +2193,12 @@ class PlayState extends MusicBeatState
 			];
 		}
 
-		for(i in 0...controlArray.length) {
-			if(controlArray[i]) {
-				var spr:Strum = currentStrums.members[i];
+		if(controlArray[index]) {
+			var spr:Strum = currentStrums.members[index];
 
-				if(spr != null) {
-					spr.setColorTransform(1,1,1,1,0,0,0,0);
-					spr.playAnim('static');
-				}
+			if(spr != null) {
+				spr.setColorTransform(1,1,1,1,0,0,0,0);
+				spr.playAnim('static');
 			}
 		}
 	}
@@ -2413,10 +2507,19 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	function keyShit():Void
+	function getPressed(event:Event):Void
 	{
 		if(paused || inCutscene)
 			return;
+
+		var getEvent:Event = cast event;
+		var index:Int = 0;
+
+		if(event is FeshGamepadEvent) {
+			index = getKeyOrButton(Reflect.field(getEvent, "buttonCode"));
+		}else {
+			index = getKeyOrButton(Reflect.field(getEvent, "keyCode"));
+		}
 
 		var checkControlStatus:Bool = false;
 
@@ -2448,14 +2551,12 @@ class PlayState extends MusicBeatState
 			notes.forEachAlive(function(daNote:Note) {
 				if(daNote.canBeHit && daNote.mustPress && !daNote.tooLate
 				&& !daNote.wasGoodHit && !daNote.isSustainNote) {
-					for(i in 0...controlArray.length) {
-						if(controlArray[i] && daNote.noteData == i) {
-							if(noteList[i] == null) {
-								noteList[i] = [];
-							}
-
-							noteList[i].push(daNote);
+					if(controlArray[index] && daNote.noteData == index) {
+						if(noteList[index] == null) {
+							noteList[index] = [];
 						}
+
+						noteList[index].push(daNote);
 					}
 				}
 			});
@@ -2487,29 +2588,42 @@ class PlayState extends MusicBeatState
 
 			if(counter == noteList.length) {
 				if(!GhostTapping.ghostTap) {
-					for(i in 0...controlArray.length) {
-						if(controlArray[i]) {
-							noteMiss(i);
-							break;
-						}
+					if(controlArray[index]) {
+						noteMiss(index);
 					}
 				}
 
 				missClicks++;
 
-				currentStrums.forEach(function(spr:Strum) {
-					if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-						if(controlArray[spr.noteData]) {
-							spr.playAnim('pressed');
-						}
+				trace(index);
+
+				var spr:Strum = currentStrums.members[index];
+
+				if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+					if(controlArray[index]) {
+						spr.playAnim('pressed');
 					}
-				});
+				}
 
 				counter = 0;
 			}
 		}
+	}
 
-		keyReleased();
+	function getKeyOrButton(keyCode:Int):Int {
+		var index:Int = 0;
+
+		if (keyCode != FlxKey.NONE) {
+			while(index < keys2DArray.length) {
+				if(keys2DArray[index].contains(keyCode)) {
+					return index;
+				}
+
+				index++;
+			}
+		}
+
+		return -1;
 	}
 
 	function noteMiss(direction:Int = 1, ?note:Note, ?evenTho:Bool = false):Void

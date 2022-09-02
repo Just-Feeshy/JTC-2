@@ -101,7 +101,7 @@ class Strum extends feshixl.FeshSprite {
 		super.update(elapsed / (FlxG.save.data.showAntialiasing ? 1 : 1.5));
 
 		if (animation.finished && ifOpponent && animation.curAnim.name != 'static') {
-			animation.play('static');
+			playAnim('static');
 			centerOffsets();
 			centerOrigin();
 		}

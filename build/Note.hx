@@ -39,7 +39,6 @@ class Note extends feshixl.FeshSprite {
 
 	public var prevNote:Note;
 	public var downscrollNote:Bool;
-	public var howSpeed:Null<Float> = 0;
 	public var setupPosition:Float = 0;
 
 	public var playAnyAnimation:Bool = true;
@@ -77,6 +76,8 @@ class Note extends feshixl.FeshSprite {
 
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
+
+	private var howSpeed(default, null):Null<Float> = 0;
 
 	public var tag:String = "";
 
