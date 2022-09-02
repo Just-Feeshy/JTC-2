@@ -40,6 +40,7 @@ class Character extends feshixl.FeshSprite {
 
 	public var isPlayer:Bool = false;
 	public var stunned:Bool = false;
+	public var shouldPlayDance:Bool = true;
 	public var hasBePlayer:String = "";
 
 	@:isVar public var _info(get, default):ConfigCharacters;
