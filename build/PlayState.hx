@@ -1212,8 +1212,6 @@ class PlayState extends MusicBeatState
 
 					var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, oldNote, true, daNoteAbstract);
 					sustainNote.scrollFactor.set();
-
-					sustainNote.howSpeed = oldNote.howSpeed;
 					sustainNote.tag = oldNote.tag;
 
 					sustainNote.playAnyAnimation = oldNote.playAnyAnimation;
