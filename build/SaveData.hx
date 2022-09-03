@@ -5,7 +5,6 @@ import flixel.util.FlxSave;
 import flixel.util.FlxDestroyUtil;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
-
 import openfl.display.FPS;
 
 enum SaveType {

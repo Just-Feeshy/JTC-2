@@ -27,7 +27,6 @@ import openfl.ui.GameInput;
 import openfl.ui.Keyboard;
 import openfl.ui.Mouse;
 import openfl.ui.MouseCursor;
-import feshixl.events.FeshGamepadEvent;
 #if lime
 import lime.app.Application;
 import lime.app.IModule;
@@ -1523,31 +1522,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 	}
 
 	#if lime
-    @:noCompletion private function __onButton(type:String, gamepad:Gamepad, button:GamepadButton) {
-        var stack = new Array<DisplayObject>();
-
-		if(__focus == null) {
-			__getInteractive(stack);
-		}else {
-			__focus.__getInteractive(stack);
-		}
-
-		if(stack.length > 0) {
-            var event = new FeshGamepadEvent(type, true, true, button);
-
-            stack.reverse();
-			__dispatchStack(event, stack);
-
-            if(event.__preventDefault) {
-                if (type == FeshGamepadEvent.BUTTON_DOWN) {
-                    gamepad.onButtonDown.cancel();
-                }else {
-                    gamepad.onButtonUp.cancel();
-                }
-            }
-        }
-    }
-
 	@:noCompletion private function __onKey(type:String, keyCode:KeyCode, modifier:KeyModifier):Void
 	{
 		__dispatchPendingMouseEvent();
@@ -1847,7 +1821,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		{
 			try
 			{
-                __onButton(FeshGamepadEvent.BUTTON_DOWN, gamepad, button);
 				GameInput.__onGamepadButtonDown(gamepad, button);
 			}
 			catch (e:Dynamic)
@@ -1857,7 +1830,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		}
 		else
 		{
-            __onButton(FeshGamepadEvent.BUTTON_DOWN, gamepad, button);
 			GameInput.__onGamepadButtonDown(gamepad, button);
 		}
 	}
@@ -1868,7 +1840,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		{
 			try
 			{
-                __onButton(FeshGamepadEvent.BUTTON_UP, gamepad, button);
 				GameInput.__onGamepadButtonUp(gamepad, button);
 			}
 			catch (e:Dynamic)
@@ -1878,7 +1849,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		}
 		else
 		{
-            __onButton(FeshGamepadEvent.BUTTON_UP, gamepad, button);
 			GameInput.__onGamepadButtonUp(gamepad, button);
 		}
 	}

@@ -50,60 +50,30 @@ class TitleState extends MusicBeatState {
 		Conductor.songPosition -= Conductor.crochet * 5;
 		credits.sort(sortByShit);
 
-		/**
-		#if (polymod && windows)
-		polymod.Polymod.init({modRoot: "mod_", dirs: ['introMod']});
-		#end
-		**/
-
 		PlayerSettings.init();
-		
-		#if FREEPLAY
-		FlxG.switchState(new FreeplayState());
-		#elseif CHARTING
-		FlxG.switchState(new ChartingState());
-		#else
-		new FlxTimer().start(1, function(tmr:FlxTimer)
-		{
-			startIntro();
-		});
-		#end
 
 		#if windows
 		DiscordClient.initialize();
 		
 		Application.current.onExit.add (function (exitCode) {
 			DiscordClient.shutdown();
-		 });
+		});
 		#end
 
 		super.create();
+
+		startIntro();
 	}
 
 	function startIntro()
 	{
-		if (!initialized)
-		{
-			// HAD TO MODIFY SOME BACKEND SHIT
-			// IF THIS PR IS HERE IF ITS ACCEPTED UR GOOD TO GO
-			// https://github.com/HaxeFlixel/flixel-addons/pull/348
-
-			// var music:FlxSound = new FlxSound();
-			// music.loadStream(Paths.music('freakyMenu'));
-			// FlxG.sound.list.add(music);
-			// music.play();
-			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
-
-			FlxG.sound.music.fadeIn(4, 0, 0.7);
-		}
+		FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+		FlxG.sound.music.fadeIn(4, 0, 0.7);
 
 		Conductor.changeBPM(102);
 		persistentUpdate = true;
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		// bg.antialiasing = true;
-		// bg.setGraphicSize(Std.int(bg.width * 0.6));
-		// bg.updateHitbox();
 		add(bg);
 
 		logoBl = new FlxSprite(-150, -100);
@@ -112,8 +82,6 @@ class TitleState extends MusicBeatState {
 		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24);
 		logoBl.animation.play('bump');
 		logoBl.updateHitbox();
-		// logoBl.screenCenter();
-		// logoBl.color = FlxColor.BLACK;
 
 		gfDance = new FlxSprite(FlxG.width * 0.4, FlxG.height * 0.07);
 		gfDance.frames = Paths.getSparrowAtlas('gfDanceTitle');
@@ -147,8 +115,6 @@ class TitleState extends MusicBeatState {
 
 		credTextShit = new Alphabet(0, 0, "ninjamuffin99\nPhantomArcade\nkawaisprite\nevilsk8er", true);
 		credTextShit.screenCenter();
-
-		// credTextShit.alignment = CENTER;
 
 		credTextShit.visible = false;
 
@@ -250,10 +216,9 @@ class TitleState extends MusicBeatState {
 			{
 				FlxG.switchState(new MainMenuState(true));
 			});
-			// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
 		}
 
-		if (pressedEnter && !skippedIntro)
+		if (pressedEnter && !skippedIntro && initialized)
 		{
 			skipIntro();
 		}
@@ -308,10 +273,6 @@ class TitleState extends MusicBeatState {
 	{
 		super.beatHit();
 
-		if(logoBl.exists) {
-			logoBl.animation.play('bump');
-		}
-
 		danceLeft = !danceLeft;
 
 		if(gfDance.exists) {
@@ -319,6 +280,10 @@ class TitleState extends MusicBeatState {
 				gfDance.animation.play('danceRight');
 			else
 				gfDance.animation.play('danceLeft');
+		}
+
+		if(logoBl.exists) {
+			logoBl.animation.play('bump');
 		}
 
 		FlxG.log.add(curBeat);

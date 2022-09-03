@@ -11,6 +11,7 @@ end
 function onStartIntro()
     decreaseSpriteSizeBy("gfDance", 1.5, 1.5)
     setSpritePosition("gfDance", windowWidth * 0.4, windowHeight * 0.21)
+    playAnim("gfDance", "danceRight")
 
     compileSpriteSheet("logoBl", "JTC logo bumpin")
     playAnimationByPrefix("logoBl", "bump", "JTC logobumpin")

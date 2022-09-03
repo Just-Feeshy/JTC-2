@@ -16,8 +16,8 @@ import flixel.FlxState;
 import flixel.FlxSubState;
 import flixel.effects.FlxFlicker;
 import flixel.addons.display.FlxGridOverlay;
-import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
+import flixel.input.keyboard.FlxKey;
 import flixel.addons.effects.FlxTrail;
 import flixel.addons.effects.FlxTrailArea;
 import flixel.addons.effects.chainable.FlxEffectSprite;
@@ -41,7 +41,7 @@ import flixel.util.FlxSort;
 import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
 import haxe.Json;
-import lime.utils.Assets;
+import openfl.Lib;
 import openfl.system.System;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
@@ -50,10 +50,9 @@ import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
-import feshixl.events.FeshGamepadEvent;
 import feshixl.group.FeshEventGroup;
-import openfl.Lib;
 import feshixl.FeshCamera;
+import lime.utils.Assets;
 
 import example_code.DefaultEvents;
 import example_code.DefaultStage;
@@ -78,6 +77,7 @@ class PlayState extends MusicBeatState
 	private var curChar:String = '';
 	private var camMovementPos:FlxPoint;
 	private var prevDadNoteData:Int = -1;
+	private var gamepadDetected:Bool = false;
 
 	private var healthTween:FlxTween;
 
@@ -559,10 +559,7 @@ class PlayState extends MusicBeatState
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, getReleased);
 		}
 
-		if(FlxG.gamepads.firstActive != null) {
-			FlxG.stage.addEventListener(FeshGamepadEvent.BUTTON_DOWN, getPressed);
-			FlxG.stage.addEventListener(FeshGamepadEvent.BUTTON_UP, getReleased);
-		}
+		gamepadDetected = (FlxG.gamepads.lastActive != null ? true : false);
 
 		super.create();
 	}
@@ -581,6 +578,8 @@ class PlayState extends MusicBeatState
 			FlxGamepadInputID.RIGHT_TRIGGER, //RIGHT
 			FlxGamepadInputID.X //SPACE
 		];
+
+		SaveData.saveClient();
 
 		switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
 			case 0:
@@ -635,19 +634,6 @@ class PlayState extends MusicBeatState
 					keys2DArray[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
 					keys2DArray[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
 				}
-		}
-
-		if(SONG.fifthKey) {
-			keys2DArray[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
-			keys2DArray[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
-			keys2DArray[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[4]);
-			keys2DArray[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
-			keys2DArray[4].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
-		}else {
-			keys2DArray[0].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[0]);
-			keys2DArray[1].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[1]);
-			keys2DArray[2].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[2]);
-			keys2DArray[3].push(SaveData.getData(CUSTOM_GAMEPAD_BINDS)[3]);
 		}
 	}
 
@@ -1893,6 +1879,10 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		if(gamepadDetected) {
+			controllerInput();
+		}
+
 		if (generatedMusic && !inCutscene)
 		{
 			defaultGameStuff();
@@ -2161,18 +2151,55 @@ class PlayState extends MusicBeatState
 		#end
 	}
 
+	function controllerInput():Void {
+		var controlPressArray:Array<Bool> = [
+			controls.GAME_LEFT_P,
+			controls.GAME_DOWN_P,
+			controls.GAME_UP_P,
+			controls.GAME_RIGHT_P
+		];
+
+		var controlReleaseArray:Array<Bool> = [
+			controls.GAME_LEFT_R,
+			controls.GAME_DOWN_R,
+			controls.GAME_UP_R,
+			controls.GAME_RIGHT_R
+		];
+
+		if (controlPressArray.contains(true)) {
+			var index:Int = 0;
+
+			while(index < controlPressArray.length) {
+				if (controlPressArray[index]) {
+					getPressed(new KeyboardEvent(KeyboardEvent.KEY_DOWN, true, true, -1, keys2DArray[index][0]));
+				}
+
+				index++;
+			}
+		}
+
+		if(controlReleaseArray.contains(true)) {
+			var index:Int = 0;
+
+			while(index < controlReleaseArray.length) {
+				if (controlReleaseArray[index]) {
+					getReleased(new KeyboardEvent(KeyboardEvent.KEY_DOWN, true, true, -1, keys2DArray[index][0]));
+				}
+
+				index++;
+			}
+		}
+	}
+
 	function getReleased(event:Event):Void {
 		if(paused || inCutscene)
 			return;
 
-		var getEvent:Event = cast event;
+		var getEvent = cast event;
 		var index:Int = 0;
 
-		if(event is FeshGamepadEvent) {
-			index = getKeyOrButton(Reflect.field(getEvent, "buttonCode"));
-		}else {
-			index = getKeyOrButton(Reflect.field(getEvent, "keyCode"));
-		}
+		
+		index = getKeyOrButton(getEvent.keyCode);
 
 		var controlArray = [
 			controls.GAME_LEFT_R,
@@ -2446,10 +2473,6 @@ class PlayState extends MusicBeatState
 
 			daLoop++;
 		}
-		/* 
-			trace(combo);
-			trace(seperatedScore);
-		 */
 
 		coolText.text = Std.string(seperatedScore);
 		// add(coolText);
@@ -2510,14 +2533,10 @@ class PlayState extends MusicBeatState
 		if(paused || inCutscene)
 			return;
 
-		var getEvent:Event = cast event;
+		var getEvent = cast event;
 		var index:Int = 0;
 
-		if(event is FeshGamepadEvent) {
-			index = getKeyOrButton(Reflect.field(getEvent, "buttonCode"));
-		}else {
-			index = getKeyOrButton(Reflect.field(getEvent, "keyCode"));
-		}
+		index = getKeyOrButton(getEvent.keyCode);
 
 		var checkControlStatus:Bool = false;
 
@@ -2592,8 +2611,6 @@ class PlayState extends MusicBeatState
 				}
 
 				missClicks++;
-
-				trace(index);
 
 				var spr:Strum = currentStrums.members[index];
 
@@ -3325,7 +3342,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(dad.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier) {
-			var dadAnim:String = dad.animation.curAnim.name;
+			var dadAnim:String = dad.animation.curAnim.name.replace("miss", "");
 			
 			if(dadAnim.startsWith("sing")) {
 				dad.playNoDanceAnim(dadAnim, true);
@@ -3333,7 +3350,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(boyfriend.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier) {
-			var boyfriendAnim:String = boyfriend.animation.curAnim.name;
+			var boyfriendAnim:String = boyfriend.animation.curAnim.name.replace("miss", "");
 			
 			if(boyfriendAnim.startsWith("sing")) {
 				boyfriend.playNoDanceAnim(boyfriendAnim, true);
@@ -3404,11 +3421,15 @@ class PlayState extends MusicBeatState
 	override public function destroy() {
 		super.destroy();
 
+		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, getPressed);
+		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, getReleased);
+
 		FlxG.sound.destroy();
 
 		stage = FlxDestroyUtil.destroy(stage);
 		events = FlxDestroyUtil.destroy(events);
 
+		keys2DArray = null;
 		eventInfo = null;
 
 		if(getModLua() != null) {
