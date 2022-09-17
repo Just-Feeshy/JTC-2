@@ -297,7 +297,11 @@ class ModLua {
 
             @:privateAccess
             if(spr.animation._animations.exists(animation)) {
-                if(Std.isOfType(spr, feshixl.FeshSprite)) {
+                if(Std.isOfType(spr, Character)) {
+                    var obj:Dynamic = spr;
+					var spr:Character = obj;
+                    spr.playNoDanceAnim(animation, forced, reverse, startFrame);
+                }else if(Std.isOfType(spr, feshixl.FeshSprite)) {
                     var obj:Dynamic = spr;
 					var spr:feshixl.FeshSprite = obj;
                     spr.playAnim(animation, forced, reverse, startFrame);
@@ -307,6 +311,20 @@ class ModLua {
             }
 
             return true;
+        });
+
+        Lua_helper.add_callback(lua, "sprAnimFinished", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null ) {
+                return false;
+            }
+
+            if(spr.animation.curAnim == null) {
+                return false;
+            }
+
+            return spr.animation.curAnim.finished;
         });
 
         Lua_helper.add_callback(lua, "setCustomFieldToSprite", function(name:String, prop:String, value:Dynamic) {
@@ -958,6 +976,15 @@ class ModLua {
         if(spr == null && curState is HelperStates) {
             if(curState.modifiableTexts.exists(name))
                 spr = curState.modifiableTexts.get(name);
+        }
+
+        if(spr != null) {
+            return spr;
+        }
+
+        if(curState is PlayState) {
+            if(curState.modifiableCharacters.exists(name))
+                spr = curState.modifiableCharacters.get(name);
         }
 
         return spr;

@@ -49,13 +49,13 @@ function generatedStage()
     }
 
     skaterboi = require("mod_assets/scripts/modules/character")
-    skaterboi.create("skater-boi-player", "skater-boi-player", 600, 100)
+    skaterboi.create("skater-boi-player", "skater-boi-player", 600, 100, true)
     skaterboi.initSing(jtcStrumAnims)
 end
 
 function updateCharacter()
     if skaterboi ~= nil and daddyIsHere then
-        skaterboi.dance("idle")
+        skaterboi.dance()
     end
 end
 
@@ -81,8 +81,6 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
         if tag == "joul" or tag == "t" then
             skaterboi.singByNote(noteData, isSustainNote)
         end
-    
-        --skaterboi.holdTimer = 0
     end
 end
 

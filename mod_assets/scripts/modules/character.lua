@@ -3,51 +3,38 @@
 
 character = {
     name = "";
-    holdTimer = 0;
-    singMultiplier = 4;
-    stunned = 0;
-    dancing = 1;
 
     sings = {};
 }
 
-function character.create(name, characterName, x, y)
-    createCharacterSprite(name, characterName, x, y)
+function character.create(name, characterName, x, y, isPlayer)
+    createCharacterSprite(name, characterName, x, y, isPlayer)
 
     character.name = name
-    character.holdTimer = 0
-    character.singMultiplier = 4
-    character.stunned = 0
-    character.dancing = 1
 end
 
 function character.initSing(args)
     character.sings = args
 end
 
-function character.dance(name)
-    if character.dancing == 1 and character.stunned == 0 then
-        playAnim(character.name, name)
+function character.dance()
+    if getCharacterDancing(character.name) and not getCharacterStunned(character.name) then
+        characterDance(character.name)
     end
 
-    if character.dancing == 0 then
-        character.holdTimer = character.holdTimer + curElapsed
-    end
-
-    if character.holdTimer >= stepCrochet * 0.0044 and character.dancing == 0 then
-        character.dancing = 1
-        playAnim(character.name, name)
-        character.holdTimer = 0
+    if getCharacterIsPlayer(character.name) then
+        if getCharacterHoldTimer(character.name) > stepCrochet * 0.0044 and not getCharacterDancing(character.name) and not getCharacterStunned(character.name) then
+            characterDance(character.name)
+        end
     end
 end
 
 function character.singByNote(noteData, isSustainNote)
-    if character.holdTimer < stepCrochet * 0.0044 then
-        if not isSustainNote or (isSustainNote and character.dancing == 1) then
-            character.dancing = 0
-            playAnim(character.name, character.sings[noteData + 1], true)
-        end
+    if not isSustainNote or (isSustainNote and getCharacterDancing(character.name)) then
+        playAnim(character.name, character.sings[noteData + 1], true)
     end
+
+    setCharacterHoldTimer(character.name, 0)
 end
 
 return character

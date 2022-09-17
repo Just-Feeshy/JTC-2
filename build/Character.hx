@@ -30,7 +30,7 @@ class Character extends feshixl.FeshSprite {
 	public var debugMode:Bool = false;
 
 	public var dancing(default, null):Bool = false;
-	public var singMultiplier(default, null):Float = 4;
+	public var singMultiplier:Float = 4;
 
 	public var curCharacter:String = 'bf';
 

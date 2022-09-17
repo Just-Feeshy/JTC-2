@@ -65,6 +65,9 @@ using StringTools;
 
 class PlayState extends MusicBeatState
 {
+	//Lua Stuff
+	public var modifiableCharacters:Map<String, Character>;
+
 	//More Stuff
 	private var stage:StageBuilder;
 
@@ -248,6 +251,8 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function create() {
+		modifiableCharacters = new Map<String, Character>();
+
 		Cache.clearNoneCachedAssets();
 
 		FlxG.mouse.visible = false;
@@ -2929,9 +2934,10 @@ class PlayState extends MusicBeatState
 		modifiableSprites.set("iconP2", iconP2);
 		modifiableSprites.set("healthBarBG", healthBarBG);
 		modifiableSprites.set("healthBar", healthBar);
-		modifiableSprites.set("boyfriend", boyfriend);
-		modifiableSprites.set("gf", gf);
-		modifiableSprites.set("dad", dad);
+		
+		modifiableCharacters.set("boyfriend", boyfriend);
+		modifiableCharacters.set("gf", gf);
+		modifiableCharacters.set("dad", dad);
 
 		modifiableCameras.set("camHUD", camHUD);
 		modifiableCameras.set("camGAME", FlxG.camera);
@@ -2969,17 +2975,85 @@ class PlayState extends MusicBeatState
 			gameOverScreen();
 		});
 
-		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float) {
-			if(getModLua().luaSprites.exists(name)) {
+		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool) {
+			if(modifiableCharacters.exists(name)) {
                 return;
             }
 
-			var characterSprite:Character = new Character(x, y, characterName);
+			var characterSprite:Character;
+
+			if(isPlayer) {
+				characterSprite = new Boyfriend(x, y, characterName);
+			}else {
+				characterSprite = new Character(x, y, characterName);
+			}
+			
 			characterSprite.refresh(characterName, camPos);
 			characterSprite.active = true;
 
-            getModLua().luaSprites.set(name, characterSprite);
+            modifiableCharacters.set(name, characterSprite);
 		});
+
+		addCallback("characterDance", function(name:String) {
+            var character:Character = modifiableCharacters.get(name);
+
+            if(character == null) {
+                return false;
+            }
+
+            character.dance();
+            return true;
+        });
+
+		addCallback("setCharacterHoldTimer", function(name:String, value:Float) {
+            var character:Character = modifiableCharacters.get(name);
+
+            if(character == null) {
+                return;
+            }
+
+            character.holdTimer = value;
+        });
+
+		addCallback("getCharacterIsPlayer", function(name:String) {
+            var character:Character = modifiableCharacters.get(name);
+
+            if(character == null) {
+                return false;
+            }
+
+            return character.isPlayer;
+        });
+
+		addCallback("getCharacterDancing", function(name:String) {
+            var character:Character = modifiableCharacters.get(name);
+
+            if(character == null) {
+                return false;
+            }
+
+            return character.dancing;
+        });
+
+		addCallback("getCharacterStunned", function(name:String) {
+            var character:Character = modifiableCharacters.get(name);
+
+            if(character == null) {
+                return false;
+            }
+
+            return character.stunned;
+        });
+
+		addCallback("getCharacterHoldTimer", function(name:String) {
+            var character:Character = modifiableCharacters.get(name);
+
+            if(character != null) {
+                return character.holdTimer;
+            }
+
+            return 0;
+        });
 
 		addCallback("getSpriteIndexFromStage", function(name:String) {
 			var spr:FlxSprite = getModLua().getSprite(name);
@@ -3440,5 +3514,18 @@ class PlayState extends MusicBeatState
 		DefaultHandler.kill();
 
 		clearCache();
+
+		if(modifiableCharacters != null) {
+            for(k in modifiableCharacters.keys()) {
+                var spr:Character = modifiableCharacters.get(k);
+
+                if(spr != null) {
+                    spr.destroy();
+                }
+            }
+
+            modifiableCharacters.clear();
+            modifiableCharacters = null;
+        }
 	}
 }
