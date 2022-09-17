@@ -2987,7 +2987,8 @@ class PlayState extends MusicBeatState
 			}else {
 				characterSprite = new Character(x, y, characterName);
 			}
-			
+
+			var characterSprite:Character = new Character(x, y, characterName);
 			characterSprite.refresh(characterName, camPos);
 			characterSprite.active = true;
 
