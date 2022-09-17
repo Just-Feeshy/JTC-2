@@ -38,13 +38,13 @@ function character.dance(name)
 end
 
 function character.singByNote(noteData, isSustainNote)
-    if not isSustainNote or (isSustainNote and character.dancing == 1) then
-        character.dancing = 0
-        playAnim(character.name, character.sings[noteData + 1], true)
-        character.holdTimer = character.holdTimer + curElapsed
+    if character.holdTimer < stepCrochet * 0.0044 then
+        if not isSustainNote or (isSustainNote and character.dancing == 1) then
+            character.dancing = 0
+            playAnim(character.name, character.sings[noteData + 1], true)
+            character.holdTimer = character.holdTimer + curElapsed
+        end
     end
-
-    character.holdTimer = 0
 end
 
 return character

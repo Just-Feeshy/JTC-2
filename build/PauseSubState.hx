@@ -113,8 +113,16 @@ class PauseSubState extends MusicBeatSubstate
 			switch (daSelected)
 			{
 				case "Resume":
+					pauseMusic.stop();
+                    FlxG.sound.list.remove(pauseMusic);
+                    pauseMusic = null;
+
 					close();
 				case "Restart Song":
+					pauseMusic.stop();
+                    FlxG.sound.list.remove(pauseMusic);
+                    pauseMusic = null;
+
 					FlxG.resetState();
 				case "Exit to menu":
 					FlxG.switchState(new MainMenuState());

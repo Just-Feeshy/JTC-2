@@ -80,12 +80,7 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
     if skaterboi ~= nil and daddyIsHere then
         if tag == "joul" or tag == "t" then
             skaterboi.singByNote(noteData, isSustainNote)
-            print(tag)
         end
-
-        --if !note[6] or (note[6] and skaterboi.dancing == 1) then
-        --    playAnim("skater-boi-player", skaterboi.sings[note[3] + 1], true)
-        --end
     
         --skaterboi.holdTimer = 0
     end

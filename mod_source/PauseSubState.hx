@@ -260,4 +260,11 @@ class PauseSubState extends MusicBeatSubstate {
             }
         }
     }
+
+    override function destroy() {
+        cleanTween();
+        pauseMusic.destroy();
+
+        super.destroy();
+    }
 }
