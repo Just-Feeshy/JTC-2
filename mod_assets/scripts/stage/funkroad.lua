@@ -2,7 +2,6 @@
 local skaterboi = nil
 
 local a = 0
-local b = 0
 local constant = 2
 local size = 20
 
@@ -102,7 +101,6 @@ function onUpdate(elapsed)
         end
 
         a = a + (elapsed * 0.5) * (curBpm/120)
-        b = a * 0.5
     end
 end
 
