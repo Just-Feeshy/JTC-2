@@ -377,10 +377,6 @@ class CharacterCreatorState extends MusicBeatState {
             }    
         });
 
-        var flipSides:FlxUIButton = new FlxUIButton(characterSelector.x - 90, createCharacterButton.y, "Flip Sides", function() {
-            character.flipX = !character.flipX;
-        });
-
         var characterSelectorText:FlxText = new FlxText(characterSelector.x, characterSelector.y - 15, 0, 'Character Selector:');
         var characterNameText:FlxText = new FlxText(characterName.x, characterName.y - 15, 0, 'Character Name:');
 
@@ -464,7 +460,6 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_display.add(dedIxonTxt);
         tab_group_display.add(hapeyIxon);
         tab_group_display.add(hapeyIxonTxt);
-        tab_group_display.add(flipSides);
         tab_group_display.add(characterSelector);
         tab_group_display.add(fileName);
         tab_group_display.add(fileText);
@@ -629,7 +624,7 @@ class CharacterCreatorState extends MusicBeatState {
 
         var offsetYInputTxt:FlxText = new FlxText(70, offsetYInput.y, "offset Y");
 
-        checkPlayable = new FlxUICheckBox(140, shadowMan.y + 50, null, null, "Is Playable");
+        checkPlayable = new FlxUICheckBox(140, shadowMan.y + 50, null, null, "Is Flipped");
         checkPlayable.checked = characterAutosave.get(character.curCharacter).isPlayer;
 
         canBePixel = new FlxUICheckBox(140, shadowMan.y + 80, null, null, "Is Pixel");

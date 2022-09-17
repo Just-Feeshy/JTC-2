@@ -88,10 +88,10 @@ function onUpdate(elapsed)
     updateCharacter()
 
     if startedCountdown then
-        --for i = 0, (totalKeysForStrum - 1) * 2 do
+        for i = 0, (totalKeysForStrum - 1) * 2 do
             --print(allStrumsX[1])
-            --setNoteStrumPos(i, allStrumsX[1] + (math.cos(a) * constant), allStrumsY[1] + (math.sin(a * 4) / constant))
-        --end
+            setNoteStrumPos(i, allStrumsX[i + 1] + (math.cos(a) * constant), allStrumsY[i + 1] + (math.sin(a * 4) / constant))
+        end
 
         a = a + (elapsed * (curBpm/120))
     end

@@ -105,7 +105,7 @@ class Character extends feshixl.FeshSprite {
 
 				playAnim(_info.playAnim);
 
-				isPlayer = _info.isPlayer;
+				flipX = _info.isPlayer;
 		}
 
 		dance();
