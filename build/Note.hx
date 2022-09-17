@@ -493,7 +493,7 @@ class Note extends feshixl.FeshSprite {
 		}
 
 		public function setInverseAxis(strumPos:Float, strumAngle:Float):Void {
-			x = (strumPos + noteOffset.x) + Math.sin(FeshMath.radians(strumAngle)) * caculatePos;
+			x = (strumPos + noteOffset.x) + Math.sin(strumAngle) * caculatePos;
 		}
 
 		public function getNoteAxis():Float {
@@ -501,7 +501,7 @@ class Note extends feshixl.FeshSprite {
 		}
 
 		public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
-			y = (strumPos + noteOffset.y) + Math.cos(FeshMath.radians(strumAngle)) * caculatePos;
+			y = (strumPos + noteOffset.y) + Math.cos(strumAngle) * caculatePos;
 		}
 
 		//More complicated method
