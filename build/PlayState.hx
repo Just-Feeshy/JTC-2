@@ -1989,7 +1989,7 @@ class PlayState extends MusicBeatState
 						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 					
-					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, 0);
+					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, -currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					daNote.setNoteAlpha(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.
@@ -2010,7 +2010,7 @@ class PlayState extends MusicBeatState
 						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 
-					daNote.setNoteAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, 0);
+					daNote.setNoteAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, -oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					daNote.setNoteAlpha(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.

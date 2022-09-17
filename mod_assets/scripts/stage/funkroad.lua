@@ -2,6 +2,7 @@
 local skaterboi = nil
 
 local a = 0
+local b = 0
 local constant = 2
 local size = 20
 
@@ -92,21 +93,29 @@ function onUpdate(elapsed)
         for i = 0, (totalKeysForStrum * 2) - 1 do
             setNoteStrumPos(i, defaultNoteMovement(i, a), allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size)
 
-            local Xdistance = defaultNoteMovement(i, -a) - defaultNoteMovement(i, a)
-            local Ydistance = (windowHeight / 2) - allStrumsY[i + 1]
+            local Xdistance = allStrumsX[i + 1] - defaultNoteMovement(i, a)
+            local Ydistance = (windowHeight * 0.5) - allStrumsY[i + 1]
 
-            local angle = math.atan(Ydistance / Xdistance)
+            local angle = getOppositeAngle(math.atan(Ydistance / Xdistance))
 
-            print(angle)
-            setPlayerStrumDirection(i, angle)
+            setPlayerStrumDirection(i, (math.pi * 0.5) - angle)
         end
 
-        a = a + (elapsed / 2) * (curBpm/120)
+        a = a + (elapsed * 0.5) * (curBpm/120)
+        b = a * 0.5
     end
 end
 
 
 --math functions
+function getOppositeAngle(angle)
+    if math.floor(angle) <= -1 then
+        return math.pi + angle
+    end
+
+    return angle
+end
+
 function defaultNoteMovement(i, var)
     return allStrumsX[i + 1] + (math.cos(var) * constant) * size
 end
