@@ -51,7 +51,7 @@
 			"looped": false
 		}
 	},
-	"isPlayer": false,
+	"isPlayer": true,
 	"pixel": false,
 	"position": {
 		"x": 0,
