@@ -1985,7 +1985,7 @@ class PlayState extends MusicBeatState
 					daNote.setXaxis(
 						currentStrums.members,
 						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
-						addToNoteX(addLuaToX(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote), daNote),
+						addToNoteX(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote),
 						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 					
@@ -1997,10 +1997,7 @@ class PlayState extends MusicBeatState
 					daNote.yAngle = currentStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
 
 					if (daNote.isSustainNote) {
-						if(daNote.prevNote.isSustainNote)
-							daNote.setXaxisSustain(currentStrums.members, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
-						else
-							daNote.setXaxisSustain(currentStrums.members, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+						daNote.setXaxisSustain(currentStrums.members, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x + (Note.swagWidth / 3), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					}
 				}
 				else {
@@ -2021,10 +2018,7 @@ class PlayState extends MusicBeatState
 					daNote.yAngle = oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
 
 					if (daNote.isSustainNote) {
-						if(daNote.prevNote.isSustainNote)
-							daNote.setXaxisSustain(oppositeStrums.members, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.prevNote.getInverseAxis(), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
-						else
-							daNote.setXaxisSustain(oppositeStrums.members, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote.getInverseAxis() + (daNote.prevNote.width / 3), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+						daNote.setXaxisSustain(oppositeStrums.members, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x + (Note.swagWidth / 3), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
 					}
 				}
 
@@ -2893,16 +2887,6 @@ class PlayState extends MusicBeatState
 
 		notes.remove(note, true);
 		note.destroy();
-	}
-
-	function addLuaToX(daX:Float, note:Note):Float {
-		var xLua:Null<Float> = callLua("addToNoteX", [daX, note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
-		var finalLuaVar:Float = daX;
-
-		if(xLua != null)
-			finalLuaVar = xLua + daX;
-
-		return finalLuaVar;
 	}
 
 	function addLuaToAngle(daAngle:Float, note:Note):Float {

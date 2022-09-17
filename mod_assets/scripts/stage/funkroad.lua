@@ -3,6 +3,7 @@ local skaterboi = nil
 
 local a = 0
 local constant = 2
+local size = 20
 
 local allStrumsX = {}
 local allStrumsY = {}
@@ -88,11 +89,10 @@ function onUpdate(elapsed)
     updateCharacter()
 
     if startedCountdown then
-        for i = 0, (totalKeysForStrum - 1) * 2 do
-            --print(allStrumsX[1])
-            setNoteStrumPos(i, allStrumsX[i + 1] + (math.cos(a) * constant), allStrumsY[i + 1] + (math.sin(a * 4) / constant))
+        for i = 0, (totalKeysForStrum * 2) - 1 do
+            setNoteStrumPos(i, allStrumsX[i + 1] + (math.cos(a) * constant) * size, allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size)
         end
 
-        a = a + (elapsed * (curBpm/120))
+        a = a + ((elapsed / 2) * (curBpm/120))
     end
 end
