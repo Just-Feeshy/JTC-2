@@ -1976,7 +1976,10 @@ class PlayState extends MusicBeatState
 						vocals.volume = 1;
 
 					callLua("opponentNoteHit", [daNote.caculatePos, daNote.strumTime, daNote.noteData, daNote.tag, daNote.noteAbstract, daNote.isSustainNote]);
-					removeNote(daNote);
+
+					if(!daNote.isSustainNote) {
+						removeNote(daNote);
+					}
 				}
 
 				if (daNote.mustPress) {
@@ -2057,65 +2060,61 @@ class PlayState extends MusicBeatState
 
 				var detector:Bool = Conductor.trackPosition > DefaultHandler.getNoteTime(daNote.strumTime) + 260;
 
-				if (detector && daNote.mustPress)
-					{
-						if (daNote.isSustainNote && daNote.wasGoodHit)
-							{
-								removeNote(daNote);
-							}
-							else 
-							{
-								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
-	
-									if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note") {
-										setHealth(health - 2);
-									}else{
-										setHealth(health - daNote.missDamage());
-									}
-
-									vocals.volume = 0;
-								}
-			
-								if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
-									if(daNote.tooLate || !daNote.wasGoodHit) {
-										if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
-											combo = 0;
-
-											if(daNote.isSustainNote)
-												missesHold += 1;
-											else
-												misses += 1;
-
-											if(daNote.playAnyAnimation) {
-												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
-											}
-										}
-									}
-								}else{
-									if(daNote.tooLate || !daNote.wasGoodHit) {
-										if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
-											combo = 0;
-											
-											if(daNote.isSustainNote)
-												missesHold += 1;
-											else
-												misses += 1;
-
-											if(daNote.playAnyAnimation) {
-												FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-												currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
-											}
-										}
-									}
-								}
-							}
-		
-						daNote.active = false;
-						daNote.visible = false;
-		
+				if (detector) {
+					if (daNote.isSustainNote && daNote.wasGoodHit) {
 						removeNote(daNote);
+					}else if(daNote.mustPress) {
+						if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
+
+							if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note") {
+								setHealth(health - 2);
+							}else{
+								setHealth(health - daNote.missDamage());
+							}
+
+							vocals.volume = 0;
+						}
+	
+						if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
+							if(daNote.tooLate || !daNote.wasGoodHit) {
+								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
+									combo = 0;
+
+									if(daNote.isSustainNote)
+										missesHold += 1;
+									else
+										misses += 1;
+
+									if(daNote.playAnyAnimation) {
+										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+									}
+								}
+							}
+						}else{
+							if(daNote.tooLate || !daNote.wasGoodHit) {
+								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
+									combo = 0;
+									
+									if(daNote.isSustainNote)
+										missesHold += 1;
+									else
+										misses += 1;
+
+									if(daNote.playAnyAnimation) {
+										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+									}
+								}
+							}
+						}
 					}
+	
+					daNote.active = false;
+					daNote.visible = false;
+	
+					removeNote(daNote);
+				}
 			});
 
 			#if (USING_LUA && cpp)

@@ -365,8 +365,9 @@ class Note extends feshixl.FeshSprite {
 					}
 	
 					if(hasCustomAddon != null) {
-						if(hasCustomAddon.makeLongNoteLong())
+						if(hasCustomAddon.makeLongNoteLong()) {
 							prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
+						}
 					}else {
 						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
 					}

@@ -20,11 +20,19 @@ class Strum extends feshixl.FeshSprite {
 
 	private var rendered:Bool = false;
 
+	#if (debug || USING_MOD_DEBUG)
+	private var testRotationArray:Array<Float> = [
+		0.25,
+		0.5
+	];
+
+	private var TCR:Int = 0;
+	#end
+
 	override public function new(x:Float, y:Float) {
 		super(x, y);
 		
 		onlyFans = 1;
-		directionAngle = 0;
 
 		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.blindEffect.enabled) {
 			visible = false;
@@ -115,5 +123,12 @@ class Strum extends feshixl.FeshSprite {
 				visible = true;
 			}
 		}
+
+		#if (debug || USING_MOD_DEBUG)
+		if (FlxG.keys.justPressed.TWO) {
+			TCR = (TCR + 1) % testRotationArray.length;
+			directionAngle = Math.PI * testRotationArray[TCR];
+		}
+		#end
 	}
 }
