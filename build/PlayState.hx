@@ -1527,9 +1527,7 @@ class PlayState extends MusicBeatState
 		if(downscroll && note.isSustainNote) {
 			if(note.height < 50) {
 				noteCacurations += 10 * (Conductor.crochet / 400) * 3.1 * FlxMath.roundDecimal(note.howSpeed, 2);
-
-				if(isPixel)
-					noteCacurations += 8;
+				if(isPixel) noteCacurations += 8;
 			}
 
 			noteCacurations += (Note.swagWidth / 2) - (60.5 * (FlxMath.roundDecimal(note.howSpeed, 2) - 1));
@@ -1701,8 +1699,10 @@ class PlayState extends MusicBeatState
 			{
 				Conductor.songPosition += FlxG.elapsed * 1000;
 				Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
-				if (Conductor.trackPosition >= 0)
+
+				if (Conductor.trackPosition >= 0) {
 					startSong();
+				}
 			}
 		}
 		else

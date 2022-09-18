@@ -287,12 +287,6 @@ class Note extends feshixl.FeshSprite {
 				noteScore * 0.2;
 
 				alpha = 1;
-	
-				if(noteAbstract != "poison" && noteAbstract != "reverse poison") {
-					x += width;
-				}else {
-					x += width/2;
-				}
 
 				if (PlayState.curStage.startsWith('school') && noteAbstract == "regular")
 					x += 30;
@@ -378,7 +372,6 @@ class Note extends feshixl.FeshSprite {
 					}
 
 					prevNote.updateHitbox();
-					// prevNote.setGraphicSize();
 				}
 			}
 		}
