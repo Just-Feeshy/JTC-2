@@ -1938,7 +1938,7 @@ class PlayState extends MusicBeatState
 					}
 				}
 
-				if (!daNote.mustPress && daNote.shouldBeDead && daNote.wasGoodHit && !daNote.ignore) {
+				if (!daNote.mustPress && !daNote.shouldBeDead && daNote.wasGoodHit && !daNote.ignore) {
 					opponentNoteHit(daNote);
 				}
 
