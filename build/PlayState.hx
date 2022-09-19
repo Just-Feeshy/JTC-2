@@ -1523,18 +1523,19 @@ class PlayState extends MusicBeatState
 
 	function caculateNoteY(note:Note, downscroll:Bool):Float {
 		var noteCacurations:Float = ((-0.45 * (downscroll ? -1 : 1)) * (Conductor.trackPosition - DefaultHandler.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * FlxMath.roundDecimal(note.howSpeed, 2));
+		var extraPos:Float = 0;
 
 		if(downscroll && note.isSustainNote) {
 			if(note.height < 50) {
-				noteCacurations += 10 * (Conductor.crochet / 400) * 3.1 * FlxMath.roundDecimal(note.howSpeed, 2);
-				if(isPixel) noteCacurations += 8;
+				extraPos += 10 * (Conductor.crochet / 400) * 3.1 * FlxMath.roundDecimal(note.howSpeed, 2);
+				if(isPixel) extraPos += 8;
 			}
 
-			noteCacurations += (Note.swagWidth / 2) - (60.5 * (FlxMath.roundDecimal(note.howSpeed, 2) - 1));
-			noteCacurations += 27.5 * ((SONG.bpm / 100) - 1) * (FlxMath.roundDecimal(note.howSpeed, 2) - 1);
+			extraPos += (Note.swagWidth / 2) - (60.5 * (FlxMath.roundDecimal(note.howSpeed, 2) - 1));
+			extraPos += 27.5 * ((SONG.bpm / 100) - 1) * (FlxMath.roundDecimal(note.howSpeed, 2) - 1);
 		}
 
-		return noteCacurations;
+		return noteCacurations + extraPos;
 	}
 
 	function addToNoteX(alreadyX:Float, note:Note):Float {
@@ -1913,10 +1914,11 @@ class PlayState extends MusicBeatState
 					strumPos = oppositeStrums.members[daNote.noteData].y;
 				}
 
-				final centerNote:Float = strumPos + Note.swagWidth / 2;
-
 				daNote.caculatePos = caculateNoteY(daNote, daNote.downscrollNote);
 				daNote.setNoteAxis(strumPos, strumAngle);
+
+				final properCutOff:Float = daNote.caculatePos + (strumPos - strumLine.y);
+				final centerNote:Float = strumPos;
 
 				// fixed it kinda
 				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)
@@ -1924,13 +1926,13 @@ class PlayState extends MusicBeatState
 					if(longConditionForNote(daNote, centerNote)) {
 						if(daNote.downscrollNote) {
 							var swagRect = new FlxRect(0, 0, daNote.frameWidth, daNote.frameHeight);
-							swagRect.height = (centerNote - daNote.y) / daNote.scale.y;
+							swagRect.height = (centerNote - properCutOff) / daNote.scale.y;
 							swagRect.y = daNote.frameHeight - swagRect.height;
 
 							daNote.clipRect = swagRect;
 						}else {
 							var swagRect = new FlxRect(0, 0, daNote.width / daNote.scale.x, daNote.height / daNote.scale.y);
-							swagRect.y = (centerNote - daNote.y) / daNote.scale.y;
+							swagRect.y = (centerNote - properCutOff) / daNote.scale.y;
 							swagRect.height -= swagRect.y;
 
 							daNote.clipRect = swagRect;

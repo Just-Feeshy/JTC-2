@@ -24,7 +24,8 @@ class Strum extends feshixl.FeshSprite {
 	#if (debug || USING_MOD_DEBUG)
 	private var testRotationArray:Array<Float> = [
 		0.25,
-		0.5
+		0.5,
+		1
 	];
 
 	private var TCR:Int = 0;
