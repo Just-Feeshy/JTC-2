@@ -53,6 +53,7 @@ class Note extends feshixl.FeshSprite {
 	public var canBeHit:Bool = false;
 	public var tooLate:Bool = false;
 	public var wasGoodHit:Bool = false;
+	public var shouldBeDead:Bool = false;
 	public var isEndStrum:Bool = false;
 
 	public var caculatePos:Float = 0;

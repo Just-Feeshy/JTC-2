@@ -1938,49 +1938,8 @@ class PlayState extends MusicBeatState
 					}
 				}
 
-				if (!daNote.mustPress && daNote.wasGoodHit && !daNote.ignore)
-				{
-					if (SONG.song != 'Tutorial')
-						camZooming = true;
-
-					var altAnim:String = opponentAltAnim;
-
-					if (SONG.notes[Math.floor(curStep / 16)] != null)
-					{
-						if (SONG.notes[Math.floor(curStep / 16)].altAnim)
-							altAnim = '-alt';
-					}
-
-					if(daNote.playAnyAnimation) {
-						if(!daNote.isSustainNote || (daNote.isSustainNote && currentOpponent.dancing)) {
-							currentOpponent.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + altAnim);
-						}
-
-						currentOpponent.holdTimer = 0;
-					}
-
-					events.whenNoteIsPressed(daNote, this);
-					cameraMovement(daNote.noteData, daNote.isSustainNote);
-
-					if(modifierCheckList('sing drain') && health > 0.2) {
-						setHealth(health - (0.02 * singDrainValue));
-					}
-
-					oppositeStrums.forEach(function(spr:Strum) {
-						if(Math.abs(daNote.noteData) == spr.ID) {
-							daNote.hit(spr);
-							spr.holdTimer = Conductor.stepCrochet * 0.0011;
-						}
-					});
-
-					if (SONG.needsVoices)
-						vocals.volume = 1;
-
-					callLua("opponentNoteHit", [daNote.caculatePos, daNote.strumTime, daNote.noteData, daNote.tag, daNote.noteAbstract, daNote.isSustainNote]);
-
-					if(!daNote.isSustainNote) {
-						removeNote(daNote);
-					}
+				if (!daNote.mustPress && daNote.shouldBeDead && daNote.wasGoodHit && !daNote.ignore) {
+					opponentNoteHit(daNote);
 				}
 
 				if (daNote.mustPress) {
@@ -2123,6 +2082,52 @@ class PlayState extends MusicBeatState
 				updateLuaVars();
 			}
 			#end
+		}
+	}
+
+	function opponentNoteHit(note:Note):Void {
+		if (SONG.song != 'Tutorial')
+			camZooming = true;
+
+		var altAnim:String = opponentAltAnim;
+
+		if (SONG.notes[Math.floor(curStep / 16)] != null)
+		{
+			if (SONG.notes[Math.floor(curStep / 16)].altAnim)
+				altAnim = '-alt';
+		}
+
+		if(note.playAnyAnimation) {
+			if(!note.isSustainNote || (note.isSustainNote && currentOpponent.dancing)) {
+				currentOpponent.playNoDanceAnim(singAnims[Std.int(Math.abs(note.noteData))] + altAnim);
+			}
+
+			currentOpponent.holdTimer = 0;
+		}
+
+		events.whenNoteIsPressed(note, this);
+		cameraMovement(note.noteData, note.isSustainNote);
+
+		if(modifierCheckList('sing drain') && health > 0.2) {
+			setHealth(health - (0.02 * singDrainValue));
+		}
+
+		oppositeStrums.forEach(function(spr:Strum) {
+			if(Math.abs(note.noteData) == spr.ID) {
+				note.hit(spr);
+				spr.holdTimer = Conductor.stepCrochet * 0.0011;
+			}
+		});
+
+		if (SONG.needsVoices)
+			vocals.volume = 1;
+
+		callLua("opponentNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
+
+		if(!note.isSustainNote) {
+			removeNote(note);
+		}else {
+			note.shouldBeDead = true;
 		}
 	}
 
@@ -2854,6 +2859,8 @@ class PlayState extends MusicBeatState
 
 			if (!note.isSustainNote) {
 				removeNote(note);
+			}else {
+				note.shouldBeDead = true;
 			}
 		}
 	}
