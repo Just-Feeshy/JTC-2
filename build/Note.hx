@@ -78,6 +78,7 @@ class Note extends feshixl.FeshSprite {
 	private var tickDivider:Float = 1;
 
 	public var howSpeed(default, null):Null<Float> = 0;
+	public var earlyHit(default, null):Float = 0.5;
 
 	public var tag:String = "";
 
@@ -374,6 +375,8 @@ class Note extends feshixl.FeshSprite {
 
 					prevNote.updateHitbox();
 				}
+			}else if(!isSustainNote) {
+				earlyHit = 1;
 			}
 		}
 
@@ -704,8 +707,11 @@ class Note extends feshixl.FeshSprite {
 			{
 				canBeHit = false;
 		
-				if (DefaultHandler.getNoteTime(strumTime) <= Conductor.trackPosition)
-					wasGoodHit = true;
+				if (DefaultHandler.getNoteTime(strumTime) < Conductor.trackPosition + (Conductor.safeZoneOffset * earlyHit)) {
+					if((isSustainNote && prevNote.wasGoodHit) || DefaultHandler.getNoteTime(strumTime) <= Conductor.trackPosition) {
+						wasGoodHit = true;
+					}
+				}
 			}
 		
 			if (tooLate) {

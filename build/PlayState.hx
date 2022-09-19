@@ -1967,8 +1967,9 @@ class PlayState extends MusicBeatState
 					}
 
 					oppositeStrums.forEach(function(spr:Strum) {
-						if (Math.abs(daNote.noteData) == spr.ID) {
+						if(Math.abs(daNote.noteData) == spr.ID) {
 							daNote.hit(spr);
+							spr.holdTimer = Conductor.stepCrochet * 0.0011;
 						}
 					});
 
@@ -2222,7 +2223,10 @@ class PlayState extends MusicBeatState
 			if(spr != null) {
 				spr.setColorTransform(1,1,1,1,0,0,0,0);
 				spr.playAnim('static');
+				spr.holdTimer = 0;
 			}
+
+			callLua('onKeyRelease', [getEvent.keyCode]);
 		}
 	}
 
@@ -2620,6 +2624,8 @@ class PlayState extends MusicBeatState
 
 				counter = 0;
 			}
+
+			callLua('onKeyPress', [getEvent.keyCode]);
 		}
 	}
 

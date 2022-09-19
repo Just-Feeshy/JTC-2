@@ -14,6 +14,7 @@ class Strum extends feshixl.FeshSprite {
 	public var xAxis:Bool;
 
 	public var directionAngle:Float = 0;
+	public var holdTimer:Float = 0;
 
 	public var prevVisible:Bool = true;
 	public var onlyVisible:Bool = true;
@@ -106,12 +107,13 @@ class Strum extends feshixl.FeshSprite {
 	}
 
 	override function update(elapsed:Float):Void {
-		super.update(elapsed / (FlxG.save.data.showAntialiasing ? 1 : 1.5));
+		if(holdTimer > 0) {
+			holdTimer -= elapsed;
 
-		if (animation.finished && ifOpponent && animation.curAnim.name != 'static') {
-			playAnim('static');
-			centerOffsets();
-			centerOrigin();
+			if(holdTimer <= 0) {
+				playAnim('static');
+				holdTimer = 0;
+			}
 		}
 
 		if(Main.feeshmoraModifiers && DefaultHandler.modifiers != null) {
@@ -130,5 +132,7 @@ class Strum extends feshixl.FeshSprite {
 			directionAngle = Math.PI * testRotationArray[TCR];
 		}
 		#end
+
+		super.update(elapsed / (FlxG.save.data.showAntialiasing ? 1 : 1.5));
 	}
 }
