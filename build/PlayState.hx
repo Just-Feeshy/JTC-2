@@ -2224,6 +2224,10 @@ class PlayState extends MusicBeatState
 			];
 		}
 
+		if(index >= controlArray.length) {
+			return;
+		}
+
 		if(controlArray[index]) {
 			var spr:Strum = currentStrums.members[index];
 
@@ -2622,6 +2626,10 @@ class PlayState extends MusicBeatState
 				missClicks++;
 
 				var spr:Strum = currentStrums.members[index];
+
+				if(index >= controlArray.length) {
+					return;
+				}
 
 				if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
 					if(controlArray[index]) {
