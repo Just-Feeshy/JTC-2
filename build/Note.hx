@@ -365,16 +365,8 @@ class Note extends feshixl.FeshSprite {
 								prevNote.animation.play('redhold');
 						}
 					}
-	
-					if(hasCustomAddon != null) {
-						if(hasCustomAddon.makeLongNoteLong()) {
-							prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
-						}
-					}else {
-						prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
-					}
 
-					prevNote.updateHitbox();
+					makeLongNote(prevNote);
 				}
 			}else if(!isSustainNote) {
 				earlyHit = 1;
@@ -654,6 +646,18 @@ class Note extends feshixl.FeshSprite {
 			}
 	
 			return customNote;
+		}
+
+		function makeLongNote(note:Note):Void {
+			if(hasCustomAddon != null) {
+				if(hasCustomAddon.makeLongNoteLong()) {
+					note.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
+				}
+			}else {
+				note.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
+			}
+
+			note.updateHitbox();
 		}
 
 		override function update(elapsed:Float) {

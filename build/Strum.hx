@@ -21,16 +21,6 @@ class Strum extends feshixl.FeshSprite {
 
 	private var rendered:Bool = false;
 
-	#if (debug || USING_MOD_DEBUG)
-	private var testRotationArray:Array<Float> = [
-		0.25,
-		0.5,
-		1
-	];
-
-	private var TCR:Int = 0;
-	#end
-
 	override public function new(x:Float, y:Float) {
 		super(x, y);
 		
@@ -128,9 +118,8 @@ class Strum extends feshixl.FeshSprite {
 		}
 
 		#if (debug || USING_MOD_DEBUG)
-		if (FlxG.keys.justPressed.TWO) {
-			TCR = (TCR + 1) % testRotationArray.length;
-			directionAngle = Math.PI * testRotationArray[TCR];
+		if (FlxG.keys.pressed.TWO) {
+			directionAngle += elapsed;
 		}
 		#end
 
