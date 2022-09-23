@@ -18,10 +18,6 @@ import flixel.text.FlxText;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
 
-#if polymod
-import polymod.format.ParseRules.TargetSignatureElement;
-#end
-
 import template.CustomNote;
 import SaveData.SaveType;
 
@@ -491,10 +487,7 @@ class Note extends feshixl.FeshSprite {
 		x = (strumPos + noteOffset.x) + Math.sin(strumAngle) * caculatePos;
 
 		if(height < 50) {
-			if(downscrollNote)
-				endPieceOffsetX = (Note.swagWidth - width) * Math.sin(angle + Math.PI);
-			else
-				endPieceOffsetX = (Note.swagWidth - width) * Math.sin(angle);
+			endPieceOffsetX = ((Note.swagWidth * 0.5) - width) * Math.sin(getScrollAngle());
 		}
 
 		x += endPieceOffsetX;
@@ -508,13 +501,10 @@ class Note extends feshixl.FeshSprite {
 		y = (strumPos + noteOffset.y) + Math.cos(strumAngle) * caculatePos;
 
 		if(height < 50) {
-			if(downscrollNote)
-				endPieceOffsetY = FlxMath.lerp(0, Note.swagWidth - height, (Math.PI - angle) / -Math.PI);
-			else
-				endPieceOffsetY = FlxMath.lerp(0, Note.swagWidth - height, angle / -Math.PI);
+			endPieceOffsetY = FlxMath.lerp(0, Note.swagWidth - height, getScrollAngle() / -Math.PI);
 		}
 
-		y += endPieceOffsetY;
+		y -= endPieceOffsetY;
 	}
 
 	//More complicated method
@@ -753,6 +743,11 @@ class Note extends feshixl.FeshSprite {
 		}else {
 			return 0.069;
 		}
+	}
+
+	public function getScrollAngle():Float {
+		if(downscrollNote)return angle + Math.PI;
+		return angle;
 	}
 
 	static public function getColorFacing(noteID:Int):String {
