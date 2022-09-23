@@ -1905,7 +1905,7 @@ class PlayState extends MusicBeatState
 				daNote.caculatePos = calculateNoteY(daNote, daNote.downscrollNote);
 				daNote.setNoteAxis(strumPos, strumAngle);
 
-				final properCutOff:Float = daNote.caculatePos + daNote.endPieceOffsetY + strumPos;
+				final properCutOff:Float = daNote.caculatePos + (daNote.endPieceOffsetY * Math.sin(daNote.angle)) + strumPos;
 				final centerNote:Float = strumPos + Note.swagWidth / 2;
 
 				// fixed it kinda
