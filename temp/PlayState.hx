@@ -164,7 +164,7 @@ class PlayState extends MusicBeatState
 	public var currentOpponent(get, never):Character;
 
 	public var notes:FlxTypedGroup<Note>;
-	public var unspawnNotes:Array<Note> = [];
+	public var unspawnNotes:Array<INote> = [];
 
 	public var waitForFinishPlayer:Bool = false;
 	public var waitForFinishOpponent:Bool = false;
@@ -1147,9 +1147,9 @@ class PlayState extends MusicBeatState
 				if(modifierCheckList('custom hell') && Main.feeshmoraModifiers)
 					daNoteAbstract = CoolUtil.coolTextFile(Paths.pak('mapHandler'))[FlxG.random.int(1, CoolUtil.coolTextFile(Paths.pak('mapHandler')).length-1)];
 
-				var oldNote:Note;
+				var oldNote:INote;
 				if (unspawnNotes.length > 0)
-					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+					oldNote = cast unspawnNotes[Std.int(unspawnNotes.length - 1)];
 				else
 					oldNote = null;
 
@@ -1157,7 +1157,6 @@ class PlayState extends MusicBeatState
 				swagNote.sustainLength = songNotes[2];
 				swagNote.scrollFactor.set(0, 0);
 				swagNote.refresh(SONG.fifthKey);
-				swagNote.refresh(SONG.fifthKey, true);
 
 				for (i in 0...keys) {
 					var splashSprite:SplashSprite = new SplashSprite();
@@ -1196,7 +1195,7 @@ class PlayState extends MusicBeatState
 					swagNote.hasCustomAddon.whenIsFirstRendered(swagNote, keys);
 
 				for (susNote in 0...Math.floor(susLength)) {
-					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
+					oldNote = cast unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
 					if(!oldNote.isSustainNote && oldNote.trail != null)
 						oldNote.trail.members[0].visible = true;
@@ -1224,6 +1223,8 @@ class PlayState extends MusicBeatState
 					if(SaveData.getData(PLAY_AS_OPPONENT)) {
 						sustainNote.mustPress = !sustainNote.mustPress;
 					}
+
+					sustainNote.updateHitbox();
 				}
 
 				swagNote.mustPress = gottaHitNote;
@@ -1236,6 +1237,8 @@ class PlayState extends MusicBeatState
 				if(SaveData.getData(PLAY_AS_OPPONENT)) {
 					swagNote.mustPress = !swagNote.mustPress;
 				}
+
+				swagNote.updateHitbox();
 			}
 			daBeats += 1;
 		}
@@ -1249,7 +1252,7 @@ class PlayState extends MusicBeatState
 		generatedMusic = true;
 	}
 
-	function sortByShit(Obj1:Note, Obj2:Note):Int
+	function sortByShit(Obj1:INote, Obj2:INote):Int
 	{
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
 	}
@@ -1862,8 +1865,12 @@ class PlayState extends MusicBeatState
 			{
 				spawnTime /= Math.min(1, unspawnNotes[0].howSpeed);
 
-				var dunceNote:Note = unspawnNotes[0];
-				notes.add(dunceNote);
+				var dunceNote = cast unspawnNotes[0];
+
+				if(dunceNote is SustainNote)
+					trace("sus");
+				else
+					notes.add(dunceNote);
 
 				if(dunceNote.hasCustomAddon != null)
 					dunceNote.hasCustomAddon.whenIsSpawned(dunceNote);
@@ -1905,8 +1912,8 @@ class PlayState extends MusicBeatState
 				daNote.caculatePos = calculateNoteY(daNote, daNote.downscrollNote);
 				daNote.setNoteAxis(strumPos, strumAngle);
 
-				final properCutOff:Float = daNote.caculatePos + daNote.endPieceOffsetX;
-				final centerNote:Float = Note.swagWidth * 0.5;
+				final properCutOff:Float = daNote.caculatePos + daNote.endPieceOffsetY + strumPos;
+				final centerNote:Float = strumPos + Note.swagWidth / 2;
 
 				// fixed it kinda
 				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)

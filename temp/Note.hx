@@ -16,7 +16,6 @@ import flixel.util.FlxDestroyUtil;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import feshixl.math.FeshMath;
-import feshixl.FeshSprite;
 import feshixl.FeshCamera;
 
 import template.CustomNote;
@@ -24,7 +23,7 @@ import SaveData.SaveType;
 
 using StringTools;
 
-class Note extends FeshSprite {
+class Note extends feshixl.FeshSprite implements INote {
 	public static final swagWidth:Float = 160 * 0.7;
 	public static final PURP_NOTE:Int = 0;
 	public static final GREEN_NOTE:Int = 2;
@@ -34,7 +33,7 @@ class Note extends FeshSprite {
 	public static var AFFECTED_SCROLLSPEED:Float = 1;
 	public static var AFFECTED_STRUMTIME:Float = 0;
 
-	public var prevNote:Note;
+	public var prevNote:INote;
 	public var downscrollNote:Bool;
 	public var setupPosition:Float = 0;
 
@@ -51,6 +50,7 @@ class Note extends FeshSprite {
 	public var tooLate:Bool = false;
 	public var wasGoodHit:Bool = false;
 	public var shouldBeDead:Bool = false;
+	public var isEndStrum:Bool = false;
 
 	public var caculatePos:Float = 0;
 
@@ -69,7 +69,7 @@ class Note extends FeshSprite {
 
 	public var trail:FlxTypedGroup<FlxSprite>;
 
-	public var hasCustomAddon:ICustomNote;
+	public var hasCustomAddon(default, null):ICustomNote;
 
 	private var ifPlayState:Bool = false;
 	private var tickDivider:Float = 1;
@@ -84,7 +84,7 @@ class Note extends FeshSprite {
 
 	public var modifiedSymbol:FlxText;
 
-	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?noteType:String = "regular",  ?ifcircle:Bool, ?ifPlayState:Bool)
+	public function new(strumTime:Float, noteData:Int, ?prevNote:INote, ?sustainNote:Bool = false, ?noteType:String = "regular",  ?ifcircle:Bool, ?ifPlayState:Bool)
 	{
 		super();
 
@@ -322,7 +322,7 @@ class Note extends FeshSprite {
 						animation.play('bluehold end');
 					case 0:
 						animation.play('purplehold end');
-				}
+				}		
 			}
 
 			updateHitbox();
@@ -363,6 +363,7 @@ class Note extends FeshSprite {
 					}
 				}
 
+				trace("haha");
 				makeLongNote(prevNote);
 			}
 		}else if(!isSustainNote) {
@@ -370,91 +371,30 @@ class Note extends FeshSprite {
 		}
 	}
 
-	public function refresh(fifth:Bool, ?findSus:Bool):Void {
-		if(!findSus) {
-			if(fifth && !isSustainNote) {
-				switch (noteData) {
-					case 0:
-						animation.play('purpleScroll');
-					case 1:
-						animation.play('blueScroll');
-					case 2:
-						animation.play('diamondScroll');
-					case 3:
-						animation.play('greenScroll');
-					case 4:
-						animation.play('redScroll');
-				}
-			}else if(!fifth && !isSustainNote) {
-				switch (noteData) {
-					case 0:
-						animation.play('purpleScroll');
-					case 1:
-						animation.play('blueScroll');
-					case 2:
-						animation.play('greenScroll');
-					case 3:
-						animation.play('redScroll');
-				}
+	public function refresh(fifth:Bool):Void {
+		if(fifth && !isSustainNote) {
+			switch (noteData) {
+				case 0:
+					animation.play('purpleScroll');
+				case 1:
+					animation.play('blueScroll');
+				case 2:
+					animation.play('diamondScroll');
+				case 3:
+					animation.play('greenScroll');
+				case 4:
+					animation.play('redScroll');
 			}
-		}	
-
-		if(findSus) {
-			if(!isSustainNote)
-				return;
-
-			if(fifth) {
-				if(animation.curAnim.name.split(" ")[1] == "") {
-					switch (noteData) {
-						case 0:
-							animation.play('purplehold');
-						case 1:
-							animation.play('bluehold');
-						case 2:
-							animation.play('redhold');
-						case 3:
-							animation.play('greenhold');
-						case 4:
-							animation.play('redhold');
-					}
-				}else {
-					switch (noteData) {
-						case 0:
-							animation.play('purplehold end');
-						case 1:
-							animation.play('bluehold end');
-						case 2:
-							animation.play('redhold end');
-						case 3:
-							animation.play('greenhold end');
-						case 4:
-							animation.play('redhold end');
-					}
-				}
-			}else {
-				if(animation.curAnim.name.split(" ")[1] == null) {
-					switch (noteData) {
-						case 0:
-							animation.play('purplehold');
-						case 1:
-							animation.play('bluehold');
-						case 2:
-							animation.play('greenhold');
-						case 3:
-							animation.play('redhold');
-					}
-				}else {
-					switch (noteData) {
-						case 0:
-							animation.play('purplehold end');
-						case 1:
-							animation.play('bluehold end');
-						case 2:
-							animation.play('greenhold end');
-						case 3:
-							animation.play('redhold end');
-					}
-				}	
+		}else if(!fifth && !isSustainNote) {
+			switch (noteData) {
+				case 0:
+					animation.play('purpleScroll');
+				case 1:
+					animation.play('blueScroll');
+				case 2:
+					animation.play('greenScroll');
+				case 3:
+					animation.play('redScroll');
 			}
 		}
 	}
@@ -481,14 +421,6 @@ class Note extends FeshSprite {
 
 	public function setInverseAxis(strumPos:Float, strumAngle:Float):Void {
 		x = (strumPos + noteOffset.x) + Math.sin(strumAngle) * caculatePos;
-
-		/*
-		if(height < 50) {
-			endPieceOffsetX = ((Note.swagWidth * 0.5) - width) * Math.sin(getScrollAngle());
-		}
-
-		x += endPieceOffsetX;
-		*/
 	}
 
 	public function getNoteAxis():Float {
@@ -498,13 +430,11 @@ class Note extends FeshSprite {
 	public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
 		y = (strumPos + noteOffset.y) + Math.cos(strumAngle) * caculatePos;
 
-		/*
 		if(height < 50) {
-			endPieceOffsetY = FlxMath.lerp(0, Note.swagWidth - height, getScrollAngle() / -Math.PI);
+			endPieceOffsetY = (Note.swagWidth - height) * (getProperAngle() / Math.PI);
 		}
 
-		y -= endPieceOffsetY;
-		*/
+		y += endPieceOffsetY;
 	}
 
 	//More complicated method
@@ -745,9 +675,11 @@ class Note extends FeshSprite {
 		}
 	}
 
-	public function getScrollAngle():Float {
-		if(downscrollNote)return angle + Math.PI;
-		return angle;
+	override function getProperAngle():Float {
+		var returnAngle = super.getProperAngle();
+		if(downscrollNote)returnAngle += Math.PI;
+
+		return returnAngle % (Math.PI * 2);
 	}
 
 	static public function getColorFacing(noteID:Int):String {
