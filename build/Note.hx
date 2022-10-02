@@ -479,16 +479,8 @@ class Note extends FeshSprite {
 		return x;
 	}
 
-	public function setInverseAxis(strumPos:Float, strumAngle:Float):Void {
+	public function setInverseAxis(strumPos:Float, strumAngle:Float, customEndSus:Bool):Void {
 		x = (strumPos + noteOffset.x) + Math.sin(strumAngle) * caculatePos;
-
-		/*
-		if(height < 50) {
-			endPieceOffsetX = ((Note.swagWidth * 0.5) - width) * Math.sin(getScrollAngle());
-		}
-
-		x += endPieceOffsetX;
-		*/
 	}
 
 	public function getNoteAxis():Float {
@@ -497,14 +489,6 @@ class Note extends FeshSprite {
 
 	public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
 		y = (strumPos + noteOffset.y) + Math.cos(strumAngle) * caculatePos;
-
-		/*
-		if(height < 50) {
-			endPieceOffsetY = FlxMath.lerp(0, Note.swagWidth - height, getScrollAngle() / -Math.PI);
-		}
-
-		y -= endPieceOffsetY;
-		*/
 	}
 
 	//More complicated method
@@ -557,16 +541,16 @@ class Note extends FeshSprite {
 
 	public function setXaxisSustain(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
 		if(hasCustomAddon != null)
-			setInverseAxis(hasCustomAddon.setSustainXPosition(this, strums, alreadyX), strumAngle);
+			setInverseAxis(hasCustomAddon.setSustainXPosition(this, strums, alreadyX), strumAngle, hasCustomAddon.customEndSustainNotePosition());
 		else
-			setInverseAxis(alreadyX, strumAngle);
+			setInverseAxis(alreadyX, strumAngle, false);
 	}
 
 	public function setXaxis(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
 		if(hasCustomAddon != null)
-			setInverseAxis(hasCustomAddon.setXPosition(this, strums, alreadyX), strumAngle);
+			setInverseAxis(hasCustomAddon.setXPosition(this, strums, alreadyX), strumAngle, hasCustomAddon.customEndSustainNotePosition());
 		else {
-			setInverseAxis(alreadyX, strumAngle);
+			setInverseAxis(alreadyX, strumAngle, false);
 		}
 	}
 
