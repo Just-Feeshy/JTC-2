@@ -1526,13 +1526,13 @@ class PlayState extends MusicBeatState
 		var yAddon:Float = 0;
 		
 		if(note.height < 50 && note.isSustainNote) {
-			yAddon += (Note.swagWidth - note.height) * 0.5;
+			yAddon -= (Note.swagWidth - note.height) * 0.5;
 
 			if(note.downscrollNote) {
 				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
-				yAddon *= -1;
 			}else {
 				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
+				yAddon *= -1;
 			}
 		}
 
