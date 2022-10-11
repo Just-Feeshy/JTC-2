@@ -73,6 +73,10 @@ class PoisonNote extends CustomNoteTemplate {
     override function makeLongNoteLong():Bool {
         return false;
     }
+
+    override function customEndSustainNotePosition():Bool {
+        return true;
+    }
 }
 
 class ReverseNote extends CustomNoteTemplate {
@@ -233,5 +237,9 @@ class ReversePoisonNote extends ReverseNote {
 
     override function cantHaveHold():Bool {
         return false;
+    }
+
+    override function customEndSustainNotePosition():Bool {
+        return true;
     }
 }

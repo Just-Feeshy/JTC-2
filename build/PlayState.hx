@@ -1523,7 +1523,38 @@ class PlayState extends MusicBeatState
 
 	function calculateNoteY(note:Note, downscroll:Bool):Float {
 		var noteCacurations:Float = ((-0.45 * (downscroll ? -1 : 1)) * (Conductor.trackPosition - DefaultHandler.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * FlxMath.roundDecimal(note.howSpeed, 2));
-		return noteCacurations;
+		var yAddon:Float = 0;
+		
+		if(note.height < 50 && note.isSustainNote) {
+			yAddon -= (Note.swagWidth - note.height) * 0.5;
+
+			if(note.downscrollNote) {
+				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
+			}else {
+				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
+				yAddon *= -1;
+			}
+		}
+
+		return noteCacurations - yAddon;
+	}
+
+	function cutOff(note:Note, downscroll:Bool):Float {
+		var noteCacurations:Float = ((-0.45 * (downscroll ? -1 : 1)) * (Conductor.trackPosition - DefaultHandler.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * FlxMath.roundDecimal(note.howSpeed, 2));
+		var yAddon:Float = 0;
+		
+		if(note.height < 50 && note.isSustainNote) {
+			yAddon += (Note.swagWidth - note.height) * 0.5;
+
+			if(note.downscrollNote) {
+				yAddon += ((Note.swagWidth - note.height));
+				yAddon *= -1;
+			}else {
+				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
+			}
+		}
+
+		return noteCacurations - yAddon;
 	}
 
 	function addToNoteX(alreadyX:Float, note:Note):Float {
@@ -1905,8 +1936,8 @@ class PlayState extends MusicBeatState
 				daNote.caculatePos = calculateNoteY(daNote, daNote.downscrollNote);
 				daNote.setNoteAxis(strumPos, strumAngle);
 
-				final properCutOff:Float = daNote.caculatePos + strumPos;
-				final centerNote:Float = strumPos + Note.swagWidth / 2;
+				final properCutOff:Float = cutOff(daNote, daNote.downscrollNote) + strumPos;
+				final centerNote:Float = strumPos + Note.swagWidth * 0.5;
 
 				// fixed it kinda
 				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)

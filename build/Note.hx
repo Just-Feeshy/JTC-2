@@ -16,6 +16,7 @@ import flixel.util.FlxDestroyUtil;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import feshixl.math.FeshMath;
+import feshixl.FeshSprite;
 import feshixl.FeshCamera;
 
 import template.CustomNote;
@@ -23,7 +24,7 @@ import SaveData.SaveType;
 
 using StringTools;
 
-class Note extends feshixl.FeshSprite {
+class Note extends FeshSprite {
 	public static final swagWidth:Float = 160 * 0.7;
 	public static final PURP_NOTE:Int = 0;
 	public static final GREEN_NOTE:Int = 2;
@@ -50,7 +51,6 @@ class Note extends feshixl.FeshSprite {
 	public var tooLate:Bool = false;
 	public var wasGoodHit:Bool = false;
 	public var shouldBeDead:Bool = false;
-	public var isEndStrum:Bool = false;
 
 	public var caculatePos:Float = 0;
 
@@ -295,8 +295,6 @@ class Note extends feshixl.FeshSprite {
 			}
 
 			if(PlayState.SONG.fifthKey) {
-				isEndStrum = true;
-
 				switch (noteData)
 				{
 					case 2:
@@ -324,7 +322,7 @@ class Note extends feshixl.FeshSprite {
 						animation.play('bluehold end');
 					case 0:
 						animation.play('purplehold end');
-				}		
+				}
 			}
 
 			updateHitbox();
@@ -334,8 +332,6 @@ class Note extends feshixl.FeshSprite {
 
 			if (prevNote.isSustainNote)
 			{
-				prevNote.isEndStrum = false;
-
 				if(PlayState.SONG.fifthKey) {
 					switch (prevNote.noteData)
 					{
@@ -483,14 +479,8 @@ class Note extends feshixl.FeshSprite {
 		return x;
 	}
 
-	public function setInverseAxis(strumPos:Float, strumAngle:Float):Void {
+	public function setInverseAxis(strumPos:Float, strumAngle:Float, customEndSus:Bool):Void {
 		x = (strumPos + noteOffset.x) + Math.sin(strumAngle) * caculatePos;
-
-		if(height < 50) {
-			endPieceOffsetX = ((Note.swagWidth * 0.5) - width) * Math.sin(getScrollAngle());
-		}
-
-		x += endPieceOffsetX;
 	}
 
 	public function getNoteAxis():Float {
@@ -499,12 +489,13 @@ class Note extends feshixl.FeshSprite {
 
 	public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
 		y = (strumPos + noteOffset.y) + Math.cos(strumAngle) * caculatePos;
+		var yAddon:Float = 0;
 
 		if(height < 50) {
-			endPieceOffsetY = FlxMath.lerp(0, Note.swagWidth - height, getScrollAngle() / -Math.PI);
+			yAddon = ((Note.swagWidth - height - 10) * 0.5) * Math.abs(Math.sin(angle));
 		}
 
-		y -= endPieceOffsetY;
+		y += yAddon;
 	}
 
 	//More complicated method
@@ -557,16 +548,16 @@ class Note extends feshixl.FeshSprite {
 
 	public function setXaxisSustain(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
 		if(hasCustomAddon != null)
-			setInverseAxis(hasCustomAddon.setSustainXPosition(this, strums, alreadyX), strumAngle);
+			setInverseAxis(hasCustomAddon.setSustainXPosition(this, strums, alreadyX), strumAngle, hasCustomAddon.customEndSustainNotePosition());
 		else
-			setInverseAxis(alreadyX, strumAngle);
+			setInverseAxis(alreadyX, strumAngle, false);
 	}
 
 	public function setXaxis(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
 		if(hasCustomAddon != null)
-			setInverseAxis(hasCustomAddon.setXPosition(this, strums, alreadyX), strumAngle);
+			setInverseAxis(hasCustomAddon.setXPosition(this, strums, alreadyX), strumAngle, hasCustomAddon.customEndSustainNotePosition());
 		else {
-			setInverseAxis(alreadyX, strumAngle);
+			setInverseAxis(alreadyX, strumAngle, false);
 		}
 	}
 

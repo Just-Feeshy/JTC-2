@@ -19,6 +19,7 @@ interface ICustomNote {
     function trailUpdate(trail:FlxTypedGroup<FlxSprite>):Void; //Update trail attaced to this note. @param trail could be null.
     function noteUpdate(note:Note):Void; //Update this note in game.
     function makeLongNoteLong():Bool; //Make the long of this note long in size.
+    function customEndSustainNotePosition():Bool; //Enable if the end part of a sustain note should have custom positioning.
     function setNoteAlpha(note:Note, alpha:Float):Float; //Set custom alpha value for this note.
     function setNoteAngle(note:Note, angle:Float):Float; //Set custom angle value for this note.
     function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float; //Set custom x value for this regular note.
@@ -104,6 +105,10 @@ class CustomNoteTemplate implements ICustomNote {
 
     public function setSustainXPosition(note:Note, strums:Array<Strum>, x:Float) {
         return x;
+    }
+
+    public function customEndSustainNotePosition():Bool {
+        return false;
     }
 
     public function setVisibility(note:Note, staticArrowVisible:Bool):Bool {
