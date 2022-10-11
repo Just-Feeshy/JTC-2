@@ -1,6 +1,8 @@
 --variables
 local skaterboi = nil
 
+local beatSection = 0
+
 local a = 0
 local constant = 2
 local size = 20
@@ -71,10 +73,16 @@ function onStepHit()
         removeSpriteToStage("boyfriend")
         insertSpriteToStage(getSpriteIndexFromStage("skater-boi-player") + 1, "boyfriend")
     end
-end
 
-function onBeatHit()
+    if curStep == 147 and beatSection == 0 then
+        callEvent("bump per beat", "2", "1.05")
+        beatSection = beatSection + 1
+    end
 
+    if(curStep == 210 and beatSection == 1) then
+        callEvent("bump per beat", "1", "1.1")
+        beatSection = beatSection + 1
+    end
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)

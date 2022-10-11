@@ -186,8 +186,7 @@ class PlayState extends MusicBeatState
 	public var currentStrums(get, never):FlxTypedSpriteGroup<Strum>;
 	public var oppositeStrums(get, never):FlxTypedSpriteGroup<Strum>;
 
-	public var camZooming:Bool = false;
-
+	private var camZooming:Bool = false;
 	private var curSong:String = "";
 	private var readableSong:String = "";
 	private var combo:Int = 0;
