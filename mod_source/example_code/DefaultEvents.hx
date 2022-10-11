@@ -41,158 +41,162 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
     }
 
     public function whenTriggered(eventName:String, eventValue:String, eventValue2:String, playState:PlayState) {
-        if(eventName == "mirror chart") {
-            if(!flipped && eventValue == "0") {
-                return;
-            }
+        switch(eventName) {
+            case "mirror chart":
+                if(!flipped && eventValue == "0") {
+                    return;
+                }
+    
+                if(flipped && eventValue == "1") {
+                    return;
+                }
+    
+                playState.notes.forEachAlive(function(daNote:Note) {
+                    if(PlayState.SONG.fifthKey)
+                        daNote.noteData = Std.int(Math.abs(daNote.noteData-(5-1)));
+                    else
+                        daNote.noteData = Std.int(Math.abs(daNote.noteData-(4-1)));
+    
+                    daNote.refresh(PlayState.SONG.fifthKey);
+                    daNote.refresh(PlayState.SONG.fifthKey, true);
+                });
+    
+                for(i in 0...playState.unspawnNotes.length) {
+                    var note:Note = playState.unspawnNotes[i];
+    
+                    if(PlayState.SONG.fifthKey)
+                        note.noteData = Std.int(Math.abs(note.noteData-(5-1)));
+                    else
+                        note.noteData = Std.int(Math.abs(note.noteData-(4-1)));
+    
+                    note.refresh(PlayState.SONG.fifthKey);
+                    note.refresh(PlayState.SONG.fifthKey, true);
+                }
+            case "sing drain":
+                playState.singDrainValue = Std.parseInt(eventValue);
+                DefaultHandler.modifiers.singDrain.enabled = true;
+            case "fadein notes":
+                playState.fadeInValue = Std.parseInt(eventValue);
+                DefaultHandler.modifiers.fadeInNotes.enabled = true;
+            case "blind effect":
+                if(eventValue == "0") {
+                    setModifierToDefault("blind effect");
+                    playState.camGame.engineAlpha = 1;
+                }
+    
+                if(eventValue == "1") {
+                    DefaultHandler.modifiers.blindEffect.enabled = true;
+                    playState.camGame.engineAlpha = 0;
+                }
+            case "note woggle":
+                if(Std.parseFloat(eventValue) > 0) {
+                    DefaultHandler.modifiers.wobbleNotes.enabled = true;
+                }
+    
+                storeTween(eventName, FlxTween.tween(playState, {wobbleModPower : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500), {
+                    onComplete: function(tween:FlxTween) {
+                        if(playState.wobbleModPower == 0) {
+                            setModifierToDefault("note woggle");
+                        }
+    
+                        cancelTween(eventName);
+                    }
+                }));
+            case "camera move":
+                playState.cameraMovementInsensity = Std.parseFloat(eventValue);
 
-            if(flipped && eventValue == "1") {
-                return;
-            }
-
-            playState.notes.forEachAlive(function(daNote:Note) {
-                if(PlayState.SONG.fifthKey)
-                    daNote.noteData = Std.int(Math.abs(daNote.noteData-(5-1)));
+                if(Std.parseFloat(eventValue) > 0) {
+                    DefaultHandler.modifiers.wobbleNotes.enabled = true;
+                }else {
+                    setModifierToDefault("camera move");
+                }
+            case "alt animation":
+                if(eventValue2.contains("bf") || eventValue2.contains("boyfriend"))
+                    playState.playerAltAnim = eventValue;
                 else
-                    daNote.noteData = Std.int(Math.abs(daNote.noteData-(4-1)));
+                    playState.opponentAltAnim = eventValue;
+            case "jumpspeed":
+                storeTween(eventName, FlxTween.tween(Note, {AFFECTED_SCROLLSPEED : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/1000) * Std.parseFloat(eventValue2), {
+                    onComplete: function(tween:FlxTween) {
+                        cancelTween(eventName);
+                    }
+                }));
+            case "sicko shake":
+                DefaultHandler.shakeCamTimer = Std.parseInt(eventValue);
+			    DefaultHandler.shakeCamTimerHUD = Std.parseInt(eventValue2);
+            case "time freeze":
+                if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing) {
+                    playState.resyncVocals();
+                }
+    
+                storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.crochet/500) * Std.parseFloat(eventValue2), {
+                    onComplete: function(tween:FlxTween) {
+                        if(Std.parseInt(eventValue) == 1) {
+                            playState.pauseMusic();
+                        }
+    
+                        cancelTween(eventName);
+                    }
+                }));
+            case "strum bounce":
+                offsetBounce = Std.parseInt(eventValue2);
+                DefaultHandler.sizeTimer = Std.parseInt(eventValue);
 
-                daNote.refresh(PlayState.SONG.fifthKey);
-                daNote.refresh(PlayState.SONG.fifthKey, true);
-            });
-
-            for(i in 0...playState.unspawnNotes.length) {
-                var note:Note = playState.unspawnNotes[i];
-
-                if(PlayState.SONG.fifthKey)
-                    note.noteData = Std.int(Math.abs(note.noteData-(5-1)));
+                if(playState.flipWiggle >= 1)
+                    playState.flipWiggle = -1;
                 else
-                    note.noteData = Std.int(Math.abs(note.noteData-(4-1)));
-
-                note.refresh(PlayState.SONG.fifthKey);
-                note.refresh(PlayState.SONG.fifthKey, true);
-            }
-        }else if(eventName == "sing drain") {
-            playState.singDrainValue = Std.parseInt(eventValue);
-            DefaultHandler.modifiers.singDrain.enabled = true;
-        }else if(eventName == "fadein notes") {
-            playState.fadeInValue = Std.parseInt(eventValue);
-            DefaultHandler.modifiers.fadeInNotes.enabled = true;
-        }else if(eventName == "blind effect") {
-            if(eventValue == "0") {
-                setModifierToDefault("blind effect");
-                playState.camGame.engineAlpha = 1;
-            }
-
-            if(eventValue == "1") {
-                DefaultHandler.modifiers.blindEffect.enabled = true;
-                playState.camGame.engineAlpha = 0;
-            }
-        }else if(eventName == "note woggle") {
-            if(Std.parseFloat(eventValue) > 0) {
-                DefaultHandler.modifiers.wobbleNotes.enabled = true;
-            }
-
-            storeTween(eventName, FlxTween.tween(playState, {wobbleModPower : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500), {
-                onComplete: function(tween:FlxTween) {
-                    if(playState.wobbleModPower == 0) {
-                        setModifierToDefault("note woggle");
+                    playState.flipWiggle = 1;
+            case "note rewind":
+                storeTween(eventName, FlxTween.tween(Note, {AFFECTED_STRUMTIME : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500) * Std.parseFloat(eventValue2), {
+                    onComplete: function(tween:FlxTween) {
+                        cancelTween(eventName);
                     }
-
-                    cancelTween(eventName);
+                }));
+            case "character change":
+                switch(eventValue2.toLowerCase()) {
+                    case "gf" | "girlfriend":
+                        if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                            playState.remove(playState.gf);
+                            playState.gf.destroy();
+                            playState.gf = new Character(400, 130, eventValue);
+                            playState.gf.refresh(eventValue, playState.camPos);
+                            playState.add(playState.gf);
+                        }
+                    case "bf" | "boyfriend" | "player":
+                        if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                            playState.remove(playState.dad);
+                            playState.dad.destroy();
+                            playState.dad = new Character(100, 100, eventValue);
+                            playState.dad.refresh(eventValue, playState.camPos);
+                            playState.add(playState.dad);
+                        }
+                    default:
+                        if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
+                            playState.remove(playState.dad);
+                            playState.dad.destroy();
+                            playState.dad = new Character(100, 100, eventValue);
+                            playState.dad.refresh(eventValue, playState.camPos);
+                            playState.add(playState.dad);
+                        }
+                    
                 }
-            }));
-        }else if(eventName == "camera move") {
-            playState.cameraMovementInsensity = Std.parseFloat(eventValue);
-
-            if(Std.parseFloat(eventValue) > 0) {
-                DefaultHandler.modifiers.wobbleNotes.enabled = true;
-            }else {
-                setModifierToDefault("camera move");
-            }
-        }else if(eventName == "alt animation") {
-            if(eventValue2.contains("bf") || eventValue2.contains("boyfriend"))
-                playState.playerAltAnim = eventValue;
-            else
-                playState.opponentAltAnim = eventValue;
-        }else if(eventName == "jumpspeed") {
-            storeTween(eventName, FlxTween.tween(Note, {AFFECTED_SCROLLSPEED : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/1000) * Std.parseFloat(eventValue2), {
-                onComplete: function(tween:FlxTween) {
-                    cancelTween(eventName);
+            case "bump per beat":
+                playState.bumpPerBeat = Std.parseInt(eventValue);
+                playState.bumpForce = Std.parseInt(eventValue2);
+            case "clear events":
+                if(playState.eventStorage.contains(eventValue)) {
+                    playState.eventStorage.remove(eventValue);
+                    setModifierToDefault(eventValue);
                 }
-            }));
-        }else if(eventName == "sicko shake") {
-			DefaultHandler.shakeCamTimer = Std.parseInt(eventValue);
-			DefaultHandler.shakeCamTimerHUD = Std.parseInt(eventValue2);
-		}else if(eventName == "time freeze") {
-            if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing) {
-				playState.resyncVocals();
-            }
-
-			storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.crochet/500) * Std.parseFloat(eventValue2), {
-                onComplete: function(tween:FlxTween) {
-                    if(Std.parseInt(eventValue) == 1) {
-                        playState.pauseMusic();
-                    }
-
-                    cancelTween(eventName);
+    
+                if(playState.eventStorage.contains(eventValue2)) {
+                    playState.eventStorage.remove(eventValue2);
+                    setModifierToDefault(eventValue2);
                 }
-            }));
-        }else if(eventName == "strum bounce") {
-            offsetBounce = Std.parseInt(eventValue2);
-			DefaultHandler.sizeTimer = Std.parseInt(eventValue);
-
-			if(playState.flipWiggle >= 1)
-				playState.flipWiggle = -1;
-			else
-				playState.flipWiggle = 1;
-		}else if(eventName == "note rewind") {
-            storeTween(eventName, FlxTween.tween(Note, {AFFECTED_STRUMTIME : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500) * Std.parseFloat(eventValue2), {
-                onComplete: function(tween:FlxTween) {
-                    cancelTween(eventName);
-                }
-            }));
-        }else if(eventName == "character change") {
-            switch(eventValue2.toLowerCase()) {
-                case "gf" | "girlfriend":
-                    if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                        playState.remove(playState.gf);
-                        playState.gf.destroy();
-                        playState.gf = new Character(400, 130, eventValue);
-                        playState.gf.refresh(eventValue, playState.camPos);
-                        playState.add(playState.gf);
-                    }
-                case "bf" | "boyfriend" | "player":
-                    if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                        playState.remove(playState.dad);
-                        playState.dad.destroy();
-                        playState.dad = new Character(100, 100, eventValue);
-                        playState.dad.refresh(eventValue, playState.camPos);
-                        playState.add(playState.dad);
-                    }
-                default:
-                    if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                        playState.remove(playState.dad);
-                        playState.dad.destroy();
-                        playState.dad = new Character(100, 100, eventValue);
-                        playState.dad.refresh(eventValue, playState.camPos);
-                        playState.add(playState.dad);
-                    }
-                
-            }
-        }else if(eventName == "clear events") {
-            if(playState.eventStorage.contains(eventValue)) {
-                playState.eventStorage.remove(eventValue);
-                setModifierToDefault(eventValue);
-            }
-
-            if(playState.eventStorage.contains(eventValue2)) {
-                playState.eventStorage.remove(eventValue2);
-                setModifierToDefault(eventValue2);
-            }
-        }else if(eventName == "clear all") {
-            reflushModifiers();
-            playState.eventStorage.splice(0, playState.eventStorage.length);
-            playState.eventStorage = [];
+            case "clear all":
+                reflushModifiers();
+                playState.eventStorage.splice(0, playState.eventStorage.length);
+                playState.eventStorage = [];
         }
     }
 

@@ -489,8 +489,21 @@ class DefaultStage extends StageBuilder {
             lightningStrikeShit();
         }
 
+		bumpZooms();
+
         super.curBeat();
     }
+
+	@:access(PlayState)
+	function bumpZooms():Void {
+
+		// HARDCODING FOR MILF ZOOMS!
+		if (PlayState.SONG.song.toLowerCase() == 'milf' && playstate.curBeat >= 168 && playstate.curBeat < 200 && playstate.camZooming && FlxG.camera.zoom < 1.35) {
+			FlxG.camera.zoom += 15 * FlxG.elapsed;
+			PlayState.camHUD.zoom += 6 * FlxG.elapsed;
+			PlayState.camNOTE.zoom += 6 * FlxG.elapsed;
+		}
+	}
 
     override function update(elapsed:Float):Void {
         switch(stage) {

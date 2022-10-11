@@ -169,6 +169,9 @@ class PlayState extends MusicBeatState
 	public var waitForFinishPlayer:Bool = false;
 	public var waitForFinishOpponent:Bool = false;
 
+	public var bumpPerBeat:Int = 4;
+	public var bumpForce:Float = 1;
+
 	private var strumLine:FlxSprite;
 
 	public var camFollow:FlxObject;
@@ -183,7 +186,8 @@ class PlayState extends MusicBeatState
 	public var currentStrums(get, never):FlxTypedSpriteGroup<Strum>;
 	public var oppositeStrums(get, never):FlxTypedSpriteGroup<Strum>;
 
-	private var camZooming:Bool = false;
+	public var camZooming:Bool = false;
+
 	private var curSong:String = "";
 	private var readableSong:String = "";
 	private var combo:Int = 0;
@@ -3470,19 +3474,11 @@ class PlayState extends MusicBeatState
 		// FlxG.log.add('change bpm' + SONG.notes[Std.int(curStep / 16)].changeBPM);
 		wiggleShit.update(Conductor.crochet);
 
-		// HARDCODING FOR MILF ZOOMS!
-		if (curSong.toLowerCase() == 'milf' && curBeat >= 168 && curBeat < 200 && camZooming && FlxG.camera.zoom < 1.35)
-		{
-			FlxG.camera.zoom += 15 * FlxG.elapsed;
-			camHUD.zoom += 6 * FlxG.elapsed;
-			camNOTE.zoom += 6 * FlxG.elapsed;
-		}
-
-		if(curBeat % 4 == 0) {
+		if(curBeat % bumpPerBeat == 0) {
 			if (camZooming && FlxG.camera.zoom < 1.35) {
-				FlxG.camera.zoom += 15 * FlxG.elapsed;
-				camHUD.zoom += 6 * FlxG.elapsed;
-				camNOTE.zoom += 6 * FlxG.elapsed;
+				FlxG.camera.zoom += 15 * bumpForce * FlxG.elapsed;
+				camHUD.zoom += 6 * bumpForce * FlxG.elapsed;
+				camNOTE.zoom += 6 * bumpForce * FlxG.elapsed;
 			}
 	
 			#if (USING_LUA && cpp)

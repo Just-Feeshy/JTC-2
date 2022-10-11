@@ -172,6 +172,7 @@ class ChartingState extends MusicBeatState
 			['strum bounce', "Value 1 - Set size value.\nValue 2 - Set X offset value for player strum."],
 			['note rewind', "Value 1 - Set rewind value.\nValue 2 - Set tween value to the rewind speed."],
 			['character change', "Value 1 - New character's name.\nValue 2 - Character to change \n(bf: Boyfriend's Side, dad: Dad's Side, gf: Girlfriend's Side)"],
+			['bump per beat', "Value 1 - Each bump for beat.\nValue 2 - The amount of force for each bump."],
 			['clear events', "Value 1 - Event's name.\nValue 2 - Second event's name. (optional)"],
 			['clear all', "Value 1 - nothing.\nValue 2 - nothing."]
 		]
@@ -191,6 +192,7 @@ class ChartingState extends MusicBeatState
 		'strum bounce' => "Regular",
 		'note rewind' => "Regular",
 		'character change' => "Regular",
+		'bump per beat' => "Regular",
 		'clear events' => "Regular",
 		'clear all' => "Regular"
 	];
@@ -749,6 +751,11 @@ class ChartingState extends MusicBeatState
 				case "opponent change":
 					createEvent.modValue = makeRegularValue.text.toLowerCase();
 					createEvent.modValueTwo = RegularTwoValueLabel.text.toLowerCase();
+				case "bump per beat":
+					if(Std.parseInt(makeRegularValue.text) != null)
+						createEvent.modValue = Std.string(Math.max(0, Std.parseInt(makeRegularValue.text)));
+					else
+						createEvent.modValue = "1";
 				case "clear all":
 					createEvent.modValue = null;
 					createEvent.modValueTwo = null;
