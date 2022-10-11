@@ -489,6 +489,13 @@ class Note extends FeshSprite {
 
 	public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
 		y = (strumPos + noteOffset.y) + Math.cos(strumAngle) * caculatePos;
+		var yAddon:Float = 0;
+
+		if(height < 50) {
+			yAddon = ((Note.swagWidth - height - 10) * 0.5) * Math.abs(Math.sin(angle));
+		}
+
+		y += yAddon;
 	}
 
 	//More complicated method
