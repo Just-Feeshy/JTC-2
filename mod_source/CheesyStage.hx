@@ -39,6 +39,7 @@ class CheesyStage extends StageBuilder {
 	var doBounce:Bool = false;
 	var bounceIndex:Int = 0;
 	var bounceHold:Float = 0;
+	var bounceStrength:Int = 2;
 
     public function new(stage:String) {
         super(stage);
@@ -139,8 +140,8 @@ class CheesyStage extends StageBuilder {
     }
 
 	function lazyModchartSpin(index:Int) {
-		FlxTween.tween(PlayState.playerStrums.members[index], {yAngle: PlayState.playerStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / 120);
-		FlxTween.tween(PlayState.opponentStrums.members[index], {yAngle: PlayState.opponentStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / 120);
+		FlxTween.tween(PlayState.playerStrums.members[index], {yAngle: PlayState.playerStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / (60 * bounceStrength), {ease: FlxEase.quadOut});
+		FlxTween.tween(PlayState.opponentStrums.members[index], {yAngle: PlayState.opponentStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / (60 * bounceStrength), {ease: FlxEase.quadOut});
 	}
 
 	override function configStage():Void {
