@@ -3211,9 +3211,44 @@ class PlayState extends MusicBeatState
 				strumOBJ.y = y;
 			});
 	
+			addCallback("setNoteStrumAngleX", function(id:Int, angle:Float) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				strumOBJ.xAngle = angle;
+			});
+
+			addCallback("setNoteStrumAngleY", function(id:Int, angle:Float) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				strumOBJ.yAngle = angle;
+			});
+
+			addCallback("setNoteStrumAngleZ", function(id:Int, angle:Float) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				strumOBJ.angle = angle;
+			});
+
 			addCallback("setNoteStrumAngle", function(id:Int, angle:Float) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 				strumOBJ.angle = angle;
+			});
+
+			addCallback("getNoteStrumAngleX", function(id:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				return strumOBJ.xAngle;
+			});
+
+			addCallback("getNoteStrumAngleY", function(id:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				return strumOBJ.yAngle;
+			});
+
+			addCallback("getNoteStrumAngleZ", function(id:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				return strumOBJ.angle;
+			});
+
+			addCallback("getNoteStrumAngle", function(id:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				return strumOBJ.angle;
 			});
 	
 			addCallback("setPlayerStrumDirection", function(id:Int, angle:Float) {
@@ -3248,6 +3283,45 @@ class PlayState extends MusicBeatState
 			});
 
 			addCallback("noteTweenAngle", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				if(strumOBJ != null) {
+					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+						onComplete: function(twn:FlxTween) {
+							getModLua().luaTweens.remove(name);
+							callLua('onTweenCompleted', [name]);
+						}
+					}));
+				}
+			});
+
+			addCallback("noteTweenAngleX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				if(strumOBJ != null) {
+					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {xAngle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+						onComplete: function(twn:FlxTween) {
+							getModLua().luaTweens.remove(name);
+							callLua('onTweenCompleted', [name]);
+						}
+					}));
+				}
+			});
+
+			addCallback("noteTweenAngleY", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				if(strumOBJ != null) {
+					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {yAngle: value}, duration, {ease: Register.getFlxEaseByString(ease),
+						onComplete: function(twn:FlxTween) {
+							getModLua().luaTweens.remove(name);
+							callLua('onTweenCompleted', [name]);
+						}
+					}));
+				}
+			});
+
+			addCallback("noteTweenAngleZ", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 
 				if(strumOBJ != null) {

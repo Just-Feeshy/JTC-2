@@ -86,8 +86,6 @@ class LoadingScene extends FlxSpriteGroup {
             for(i in 0...compileList.length) {
                 if(compileList[i].startsWith("assets/songs") || compileList[i].startsWith("mod_assets/songs")) {
                     compileList[i] = "songs:" + compileList[i];
-                }else if(compileList[i].startsWith("assets/shared")) {
-                    compileList[i] = "shared:" + compileList[i];
                 }
 
                 Cache.cacheListedFormat(compileList[i]);

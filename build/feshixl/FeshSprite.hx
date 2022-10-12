@@ -271,7 +271,7 @@ class FeshSprite extends FlxSprite {
 		}
 
         yAngle = ret;
-		return ret;
+		return ret % Math.PI * 2;
     }
 
     @:noCompletion
@@ -283,7 +283,7 @@ class FeshSprite extends FlxSprite {
 		}
 
         angle = ret;
-		return ret;
+		return ret % Math.PI * 2;
     }
 
     @:noCompletion
@@ -294,7 +294,7 @@ class FeshSprite extends FlxSprite {
     @:noCompletion
     function set_zAngle(Value:Float):Float {
         angle = Value;
-        return Value;
+        return Value % Math.PI * 2;
     }
 
     @:noCompletion

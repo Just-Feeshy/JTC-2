@@ -33,6 +33,13 @@ class CheesyStage extends StageBuilder {
 
 	var dadShouldDance:Bool = true;
 
+	/*
+	* Variables for lazy modcharts.
+	*/
+	var doBounce:Bool = false;
+	var bounceIndex:Int = 0;
+	var bounceHold:Float = 0;
+
     public function new(stage:String) {
         super(stage);
 
@@ -131,6 +138,11 @@ class CheesyStage extends StageBuilder {
         }
     }
 
+	function lazyModchartSpin(index:Int) {
+		FlxTween.tween(PlayState.playerStrums.members[index], {yAngle: PlayState.playerStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / 120);
+		FlxTween.tween(PlayState.opponentStrums.members[index], {yAngle: PlayState.opponentStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / 120);
+	}
+
 	override function configStage():Void {
 		boyfriend = Register.getInGameCharacter(BOYFRIEND);
 		dad = Register.getInGameCharacter(OPPONENT);
@@ -191,7 +203,29 @@ class CheesyStage extends StageBuilder {
 			}
 		}
 
+		if(doBounce && bounceHold > Conductor.stepCrochet * 0.0022) {
+			lazyModchartSpin(bounceIndex);
+			bounceHold = 0;
+
+			bounceIndex++;
+
+			if(bounceIndex >= Std.int(playstate.strumLineNotes.length * 0.5)) {
+				doBounce = false;
+				bounceIndex = 0;
+			}
+		}else if(doBounce) {
+			bounceHold += elapsed;
+		}
+
 		super.update(elapsed);
+	}
+
+	override function curBeat() {
+		if(@:privateAccess playstate.curBeat % 8 == 0) {
+			doBounce = true;
+		}
+
+		super.curBeat();
 	}
 
 	override function destroy():Void {

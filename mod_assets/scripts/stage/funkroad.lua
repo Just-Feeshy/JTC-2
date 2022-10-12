@@ -83,6 +83,11 @@ function onStepHit()
         callEvent("bump per beat", "1", "1.1")
         beatSection = beatSection + 1
     end
+
+    if(curStep == 475 and beatSection == 2) then
+        callEvent("bump per beat", "1", "1")
+        beatSection = beatSection + 1
+    end
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
@@ -98,7 +103,7 @@ function onUpdate(elapsed)
 
     if startedCountdown then
         for i = 0, (totalKeysForStrum * 2) - 1 do
-            setNoteStrumPos(i, defaultNoteMovement(i, a), allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size)
+            setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 25))
 
             local Xdistance = allStrumsX[i + 1] - defaultNoteMovement(i, a)
             local Ydistance = (windowHeight * 0.5) - allStrumsY[i + 1]
@@ -111,7 +116,6 @@ function onUpdate(elapsed)
         a = a + (elapsed * 0.5) * (curBpm/120)
     end
 end
-
 
 --math functions
 function getOppositeAngle(angle)
