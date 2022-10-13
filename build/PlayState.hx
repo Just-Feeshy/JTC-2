@@ -51,8 +51,8 @@ import openfl.filters.BitmapFilterQuality;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import feshixl.group.FeshEventGroup;
+import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
-import feshixl.FeshMath;
 import lime.utils.Assets;
 
 import example_code.DefaultEvents;
