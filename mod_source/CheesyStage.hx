@@ -204,7 +204,7 @@ class CheesyStage extends StageBuilder {
 			}
 		}
 
-		if(doBounce && bounceHold > Conductor.stepCrochet * 0.0022) {
+		if(doBounce && bounceHold > Conductor.stepCrochet * 0.0011) {
 			lazyModchartSpin(bounceIndex);
 			bounceHold = 0;
 
