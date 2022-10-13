@@ -26,7 +26,23 @@ class FeshMath {
 	 * Converts specified angle in radians to degrees.
 	 * @return angle in degrees
 	 */
-	 public inline static function degrees(rads:Float):Float {
+	public inline static function degrees(rads:Float):Float {
 		return rads * (180 / Math.PI);
+	}
+
+	/**
+	 * Returns the trigonometric secant of the specified angle `v`, in radians.
+	 * If `v` is `NaN` or infinite, the result is `NaN`.
+	 */
+	public inline static function sec(v:Float):Float {
+		return 1 / Math.cos(v);
+	}
+
+	/**
+	 * Returns the trigonometric cosecant of the specified angle `v`, in radians.
+	 * If `v` is `NaN` or infinite, the result is `NaN`.
+	 */
+	public inline static function csc(v:Float):Float {
+		return 1 / Math.sin(v);
 	}
 }
