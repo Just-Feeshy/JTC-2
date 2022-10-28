@@ -67,7 +67,7 @@ class TitleState extends MusicBeatState {
 
 	function startIntro()
 	{
-		FlxG.sound.playMusic(Paths.music(Paths.modJSON.title_menu.music.name), 0);
+		FlxG.sound.playMusic(Paths.music(Paths.modJSON.title_menu.music.song), 0);
 		FlxG.sound.music.fadeIn(4, 0, 0.7);
 
 		Conductor.changeBPM(Paths.modJSON.title_menu.music.bpm);

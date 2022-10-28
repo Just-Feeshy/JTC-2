@@ -64,7 +64,7 @@ typedef Title_Menu = {
 }
 
 typedef TitleMusic = {
-    var name:String;
+    var song:String;
     var bpm:Int;
 };
 
