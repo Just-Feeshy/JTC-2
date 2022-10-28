@@ -76,6 +76,11 @@
     "title_menu": {
         "credit_engine_creator": false,
 
+        "music": {
+            "song": "freakyMenu",
+            "bpm": 102
+        },
+
         "mod_creators": [
             ""
         ],

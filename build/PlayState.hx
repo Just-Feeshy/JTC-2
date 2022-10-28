@@ -1977,7 +1977,7 @@ class PlayState extends MusicBeatState
 						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 					
-					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -organizeIGuess(daNote));
+					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
 					daNote.setNoteAlpha(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.
@@ -1998,7 +1998,7 @@ class PlayState extends MusicBeatState
 						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 
-					daNote.setNoteAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -organizeIGuess(daNote));
+					daNote.setNoteAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
 					daNote.setNoteAlpha(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
 					//Nothing planned for now.
@@ -2108,16 +2108,6 @@ class PlayState extends MusicBeatState
 			}
 			#end
 		}
-	}
-
-	function organizeIGuess(note:Note):Float {
-		var multiBy:Float = 1;
-
-		if(note.isSustainNote) {
-			multiBy = FeshMath.sec(note.yAngle);
-		}
-
-		return multiBy;
 	}
 
 	function opponentNoteHit(note:Note):Void {

@@ -55,11 +55,18 @@ typedef Main_Menu = {
 typedef Title_Menu = {
     var credit_engine_creator:Bool;
 
+    var music:TitleMusic;
+
     var mod_creators:Array<String>;
     var waky:Array<Waky>;
 
     var random_waky:Array<Array<String>>;
 }
+
+typedef TitleMusic = {
+    var name:String;
+    var bpm:Int;
+};
 
 typedef Waky = {
     var texts:Array<String>;
