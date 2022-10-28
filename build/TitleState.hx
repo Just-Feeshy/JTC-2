@@ -62,6 +62,8 @@ class TitleState extends MusicBeatState {
 
 		super.create();
 
+		luaFunctions();
+
 		if(!callLua("cancelDefaultIntro", [])) {
 			startIntro();
 		}
@@ -314,18 +316,27 @@ class TitleState extends MusicBeatState {
 
 	var skippedIntro:Bool = false;
 
-	function skipIntro():Void
+	function skipIntro(flash:Bool = true):Void
 	{
 		if (!skippedIntro)
 		{
 			remove(ngSpr);
 
-			FlxG.camera.flash(FlxColor.WHITE, 4);
+			if(flash) {
+				FlxG.camera.flash(FlxColor.WHITE, 4);
+			}
+
 			remove(credGroup);
 			skippedIntro = true;
 
 			callLua("onSkipIntro", []);
 		}
+	}
+
+	function luaFunctions():Void {
+		addCallback("skipIntro", function(flash:Bool) {
+			skipIntro(flash);
+		});
 	}
 
 	inline function sortByShit(str1:String, str2:String):Int {
