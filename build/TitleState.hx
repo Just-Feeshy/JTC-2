@@ -62,7 +62,9 @@ class TitleState extends MusicBeatState {
 
 		super.create();
 
-		startIntro();
+		if(!callLua("cancelDefaultIntro", [])) {
+			startIntro();
+		}
 	}
 
 	function startIntro()
