@@ -64,8 +64,6 @@ class TitleState extends MusicBeatState {
 
 		luaFunctions();
 
-		FlxG.switchState(new OptionsMenuState());
-
 		if(!callLua("cancelDefaultIntro", [])) {
 			startIntro();
 		}

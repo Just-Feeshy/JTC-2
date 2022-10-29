@@ -66,9 +66,6 @@ using StringTools;
 
 class PlayState extends MusicBeatState
 {
-	//Cache Stuff
-	public var precacheList:Map<String, String> = new Map<String, String>();
-
 	//Lua Stuff
 	public var modifiableCharacters:Map<String, Character>;
 
@@ -2074,7 +2071,7 @@ class PlayState extends MusicBeatState
 										misses += 1;
 
 									if(daNote.playAnyAnimation) {
-										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 									}
 								}
@@ -2090,7 +2087,7 @@ class PlayState extends MusicBeatState
 										misses += 1;
 
 									if(daNote.playAnyAnimation) {
-										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 									}
 								}
@@ -2708,7 +2705,7 @@ class PlayState extends MusicBeatState
 			combo = 0;
 
 			if(note == null) {
-				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
 				songScore -= 10;
 			}else {
 				if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
@@ -2728,11 +2725,11 @@ class PlayState extends MusicBeatState
 			});
 
 			if(note == null) {
-				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
 				currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
 			}else {
 				if(note.playAnyAnimation) {
-					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
 					currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
 				}
 			}
