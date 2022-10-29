@@ -9,6 +9,8 @@ import flixel.util.FlxTimer;
 
 import flixel.util.FlxAxes;
 
+import SaveData.SaveType;
+
 using StringTools;
 
 /**
@@ -91,11 +93,10 @@ class Alphabet extends FlxSpriteGroup
 			}
 
 			var isNumber:Bool = AlphaCharacter.numbers.indexOf(character) != -1;
+			var isSymbol:Bool = AlphaCharacter.symbols.indexOf(character) != -1;
 			var isLetter:Bool = AlphaCharacter.alphabet.indexOf(character.toLowerCase()) != -1;
 
-			if (isNumber || isLetter)
-				// if (AlphaCharacter.alphabet.contains(character.toLowerCase()))
-			{
+			if (isNumber || isLetter || isSymbol) {
 				if (lastSprite != null)
 				{
 					xPos = lastSprite.x + lastSprite.width;
@@ -119,6 +120,8 @@ class Alphabet extends FlxSpriteGroup
 				}else {
 					if (isNumber) {
 						letter.createNumber(character);
+					}else if(isSymbol) {
+						letter.createSymbol(character);
 					}else {
 						letter.createLetter(character);
 					}
@@ -270,11 +273,11 @@ class Alphabet extends FlxSpriteGroup
 
 class AlphaCharacter extends FlxSprite
 {
-	public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
+	@:final public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
 
-	public static var numbers:String = "1234567890";
+	@:final public static var numbers:String = "1234567890";
 
-	public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
+	@:final public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
 
 	public var spaceLocation:Int = 0;
 
@@ -286,7 +289,7 @@ class AlphaCharacter extends FlxSprite
 		var tex = Paths.getSparrowAtlas('alphabet');
 		frames = tex;
 
-		antialiasing = true;
+		antialiasing = SaveData.getData(SaveType.GRAPHICS);
 	}
 
 	public function isBoldNumbers() {
@@ -337,7 +340,7 @@ class AlphaCharacter extends FlxSprite
 			case '.':
 				animation.addByPrefix(letter, 'period', 24);
 				animation.play(letter);
-				y += 50;
+				y += 95;
 			case "'":
 				animation.addByPrefix(letter, 'apostraphie', 24);
 				animation.play(letter);

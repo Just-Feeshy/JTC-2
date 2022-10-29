@@ -83,8 +83,6 @@ class OptionsMenuState extends MusicBeatState {
 
 	private var changeBlur:Bool = false;
 
-	private var settingTxt:String = "";
-
 	private var catalog:String;
 
 	public function new(?catalog:String = "none") {
@@ -238,11 +236,28 @@ class OptionsMenuState extends MusicBeatState {
 								}
 
 								option.description = "Set note offset.";
-								setting(option, "", option.ID);
+								setting(option, Std.string(FlxG.save.data.noteOffset), option.ID);
+							}),
+							new Options(0, 60, "Miss Note Volume", SaveType.MISS_SOUND_VOLUME, function(option:Options, pressed:Bool) {
+								option.ID = 6;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed) {
+									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+									option.optionSubState = OptionsSubState.newSubState(SaveType.MISS_SOUND_VOLUME);
+									option.optionSubState.cameras = [camSubState];
+
+									openSubStateCustom(option.optionSubState);
+								}
+
+								option.description = "Set miss note volume.";
+								setting(option, Std.string(FlxG.save.data.missVolume), option.ID);
 							}),
 							#if !mobile
-							new Options(0, 60, "FPS Counter", SaveType.SHOW_FPS, function(option:Options, pressed:Bool) {
-								option.ID = 6;
+							new Options(0, 70, "FPS Counter", SaveType.SHOW_FPS, function(option:Options, pressed:Bool) {
+								option.ID = 7;
 
 								if(pressed)
 									FlxG.save.data.showFPS = !FlxG.save.data.showFPS;
@@ -264,8 +279,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 70, "Memory Counter", SaveType.SHOW_MEMORY, function(option:Options, pressed:Bool) {
-								option.ID = 7;
+							new Options(0, 80, "Memory Counter", SaveType.SHOW_MEMORY, function(option:Options, pressed:Bool) {
+								option.ID = 8;
 
 								if(pressed)
 									FlxG.save.data.showMEM = !FlxG.save.data.showMEM;
@@ -288,8 +303,8 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							#end
-							new Options(0, 60 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
-								option.ID = 6 + Math.ceil(extra / 10);
+							new Options(0, 70 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
+								option.ID = 7 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
@@ -307,8 +322,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 70 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-								option.ID = 7 + Math.ceil(extra / 10);
+							new Options(0, 80 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
+								option.ID = 8 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.helpme = !FlxG.save.data.helpme;
@@ -326,8 +341,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 80 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-								option.ID = 8 + Math.ceil(extra / 10);
+							new Options(0, 90 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
+								option.ID = 9 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
@@ -345,8 +360,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 90 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-								option.ID = 9 + Math.ceil(extra / 10);
+							new Options(0, 100 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
+								option.ID = 10 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
@@ -364,8 +379,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new GhostTapping(0, 100 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-								option.ID = 10 + Math.ceil(extra / 10);
+							new GhostTapping(0, 110 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
+								option.ID = 11 + Math.ceil(extra / 10);
 
 								if(pressed)
 									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
@@ -988,6 +1003,22 @@ class OptionsMenuState extends MusicBeatState {
 		}
 	}
 
+	function updateChanges(selection:Bool):Void {
+		remove(optionSetting);
+		optionSetting = FlxDestroyUtil.destroy(optionSetting);
+
+		for(i in 0...optionList[curCatalog].options.length) {
+			var item:Options = optionList[curCatalog].options[i];
+
+			if (item.targetY == 0 && selection) {
+				item.callback(item, true);
+				optionLuaCallback(item.text);
+			}else {
+				item.callback(item, false);
+			}
+		}
+	}
+
 	override function openSubStateCustom(SubState:FlxSubState):Void {
 		changeBlur = true;
 
@@ -1000,6 +1031,7 @@ class OptionsMenuState extends MusicBeatState {
 	override function closeSubState() {
 		isChangingOption = false;
 		FlxTween.tween(blurEffect, {size: 0}, 0.75, {ease: FlxEase.quadOut});
+		updateChanges(false);
 
 		super.closeSubState();
 	}
@@ -1022,22 +1054,7 @@ class OptionsMenuState extends MusicBeatState {
 
 		if((accepted || FlxG.mouse.justPressed) && !isChangingOption) {
 			isChangingOption = true;
-			
-			settingTxt = "";
-
-			remove(optionSetting);
-			optionSetting = FlxDestroyUtil.destroy(optionSetting);
-
-			for(i in 0...optionList[curCatalog].options.length) {
-				var item:Options = optionList[curCatalog].options[i];
-
-				if (item.targetY == 0) {
-					item.callback(item, true);
-					optionLuaCallback(item.text);
-				}else {
-					item.callback(item, false);
-				}
-			}
+			updateChanges(true);
 		}
 
 		if(escaped && !isChangingOption) {

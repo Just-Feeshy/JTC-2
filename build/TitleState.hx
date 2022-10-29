@@ -64,6 +64,8 @@ class TitleState extends MusicBeatState {
 
 		luaFunctions();
 
+		FlxG.switchState(new OptionsMenuState());
+
 		if(!callLua("cancelDefaultIntro", [])) {
 			startIntro();
 		}
@@ -164,6 +166,11 @@ class TitleState extends MusicBeatState {
 		}
 
 		return swagGoodArray;
+	}
+
+	override function onCreate():Dynamic {
+		luaFunctions();
+		return super.onCreate();
 	}
 
 	var pressedEnter:Bool;

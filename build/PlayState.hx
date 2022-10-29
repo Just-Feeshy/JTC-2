@@ -66,6 +66,9 @@ using StringTools;
 
 class PlayState extends MusicBeatState
 {
+	//Cache Stuff
+	public var precacheList:Map<String, String> = new Map<String, String>();
+
 	//Lua Stuff
 	public var modifiableCharacters:Map<String, Character>;
 

@@ -46,6 +46,8 @@ class OptionsSubState extends MusicBeatSubstate {
 				return new GammaMenu();
 			case NOTE_OFFSET:
 				return new OffsetMenu();
+			case MISS_SOUND_VOLUME:
+				return new MissVolumeMenu();
 			default:
 				return new OptionsSubState();
 		}
@@ -502,6 +504,60 @@ class OffsetMenu extends OptionsSubState {
 				FlxG.save.data.noteOffset = Math.round(FlxG.save.data.noteOffset * 10)  / 10;
 				valueTxt.text = "< " + SaveData.getData(SaveType.NOTE_OFFSET) + " >";
 			}
+
+			if(controls.BACK || controls.ACCEPT) {
+				changingKeys = true;
+
+				SaveData.saveClient();
+
+				close();
+			}
+		}
+	}
+}
+
+class MissVolumeMenu extends OptionsSubState {
+	private var valueTxt:FlxText;
+	private var tutorial:FlxText;
+
+	private var changingKeys:Bool = false;
+
+	public function new() {
+		super();
+	}
+
+	override function finishTransition(twn:FlxTween) {
+		valueTxt = new FlxText(0, 0, FlxG.width, "< " + SaveData.getData(SaveType.MISS_SOUND_VOLUME) + " >", 64);
+		valueTxt.setFormat("VCR OSD Mono", 64, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		valueTxt.borderSize = 4;
+		valueTxt.screenCenter();
+		add(valueTxt);
+
+		tutorial = new FlxText(0, 0, FlxG.width, "Use left and right keys", 32);
+		tutorial.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tutorial.borderSize = 2;
+		tutorial.screenCenter(X);
+		tutorial.y = tutorial.getScreenCenter(Y) + (tutorial.height * 2);
+		add(tutorial);
+	}
+
+	override function update(elapsed:Float) {
+		if(!changingKeys) {
+			if(controls.LEFT_P) {
+				FlxG.save.data.missVolume = FlxG.save.data.missVolume - 0.1;
+				FlxG.save.data.missVolume = Math.round(FlxG.save.data.missVolume * 10) / 10;
+			}else if(controls.RIGHT_P) {
+				FlxG.save.data.missVolume = FlxG.save.data.missVolume + 0.1;
+				FlxG.save.data.missVolume = Math.round(FlxG.save.data.missVolume * 10)  / 10;
+			}
+
+			if(SaveData.getData(SaveType.MISS_SOUND_VOLUME) > 1) {
+				FlxG.save.data.missVolume = 1;
+			}else if(SaveData.getData(SaveType.MISS_SOUND_VOLUME) < 0) {
+				FlxG.save.data.missVolume = 0;
+			}
+
+			valueTxt.text = "< " + SaveData.getData(SaveType.MISS_SOUND_VOLUME) + " >";
 
 			if(controls.BACK || controls.ACCEPT) {
 				changingKeys = true;

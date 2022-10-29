@@ -39,6 +39,7 @@ enum SaveType {
     SHOW_MEMORY;
     NOTE_OFFSET;
     PLAY_AS_OPPONENT;
+    MISS_SOUND_VOLUME;
 }
 
 class SaveData {
@@ -84,6 +85,7 @@ class SaveData {
         FlxG.save.data.gamepadBinds = getData(SaveType.CUSTOM_GAMEPAD_BINDS);
         FlxG.save.data.noteOffset = getData(SaveType.NOTE_OFFSET);
         FlxG.save.data.playAsOpponent = getData(SaveType.PLAY_AS_OPPONENT);
+        FlxG.save.data.missVolume = getData(SaveType.MISS_SOUND_VOLUME);
 
         FlxG.save.flush();
 
@@ -307,6 +309,12 @@ class SaveData {
                 }
 
                 return FlxG.save.data.playAsOpponent;
+            case MISS_SOUND_VOLUME:
+                if(FlxG.save.data.missVolume == null) {
+                    FlxG.save.data.missVolume = 1;
+                }
+
+                return FlxG.save.data.missVolume;
             default:
                 return null;
         }
