@@ -962,7 +962,7 @@ class ModLua {
             var controller = FlxG.gamepads.getByID(id);
 
             if (controller == null) {
-                return 0;
+                return 0.0;
             }
 
             return controller.getXAxis(leftStick ? LEFT_ANALOG_STICK : RIGHT_ANALOG_STICK);
@@ -972,7 +972,7 @@ class ModLua {
             var controller = FlxG.gamepads.getByID(id);
 
             if (controller == null) {
-                return 0;
+                return 0.0;
             }
 
             return controller.getYAxis(leftStick ? LEFT_ANALOG_STICK : RIGHT_ANALOG_STICK);
