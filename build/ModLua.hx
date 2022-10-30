@@ -943,27 +943,27 @@ class ModLua {
         });
 
         Lua_helper.add_callback(lua, "keyboardJustPressed", function(name:String) {
-            return Reflect.field(FlxG.keys.justPressed, name);
+            return Reflect.getProperty(FlxG.keys.justPressed, name);
         });
 
         Lua_helper.add_callback(lua, "keyboardPressed", function(name:String) {
-            return Reflect.field(FlxG.keys.pressed, name);
+            return Reflect.getProperty(FlxG.keys.pressed, name);
         });
 
         Lua_helper.add_callback(lua, "keyboardReleased", function(name:String) {
-            return Reflect.field(FlxG.keys.justReleased, name);
+            return Reflect.getProperty(FlxG.keys.justReleased, name);
         });
 
         Lua_helper.add_callback(lua, "keyJustPressed", function(name:String) {
-            return Reflect.field(FlxG.keys.justPressed, name);
+            return Reflect.getProperty(FlxG.keys.justPressed, name);
         });
 
         Lua_helper.add_callback(lua, "keyPressed", function(name:String) {
-            return Reflect.field(FlxG.keys.pressed, name);
+            return Reflect.getProperty(FlxG.keys.pressed, name);
         });
 
         Lua_helper.add_callback(lua, "keyReleased", function(name:String) {
-            return Reflect.field(FlxG.keys.justReleased, name);
+            return Reflect.getProperty(FlxG.keys.justReleased, name);
         });
 
         Lua_helper.add_callback(lua, "anyGamepadJustPressed", function(name:String) {
