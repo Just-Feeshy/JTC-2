@@ -879,9 +879,137 @@ class ModLua {
                 return;
             }
         });
-        #end
+
+        /*
+        * User Inputs
+        */
+        Lua_helper.add_callback(lua, "mouseClicked", function(button:String) {
+            var confirm:Bool = FlxG.mouse.justPressed;
+
+            switch(button.toLowerCase()) {
+				case 'middle':
+					confirm = FlxG.mouse.justPressedMiddle;
+				case 'right':
+					confirm = FlxG.mouse.justPressedRight;
+			}
+
+            return confirm;
+        });
+
+        Lua_helper.add_callback(lua, "mousePressed", function(button:String) {
+            var confirm:Bool = FlxG.mouse.pressed;
+
+            switch(button.toLowerCase()) {
+				case 'middle':
+					confirm = FlxG.mouse.pressedMiddle;
+				case 'right':
+					confirm = FlxG.mouse.pressedRight;
+			}
+
+            return confirm;
+        });
+
+        Lua_helper.add_callback(lua, "mouseReleased", function(button:String) {
+            var confirm:Bool = FlxG.mouse.justReleased;
+
+            switch(button.toLowerCase()) {
+				case 'middle':
+					confirm = FlxG.mouse.justReleasedMiddle;
+				case 'right':
+					confirm = FlxG.mouse.justReleasedRight;
+			}
+
+            return confirm;
+        });
+
+        Lua_helper.add_callback(lua, "keyboardJustPressed", function(name:String) {
+            return Reflect.field(FlxG.keys.justPressed, name);
+        });
+
+        Lua_helper.add_callback(lua, "keyboardPressed", function(name:String) {
+            return Reflect.field(FlxG.keys.pressed, name);
+        });
+
+        Lua_helper.add_callback(lua, "keyboardReleased", function(name:String) {
+            return Reflect.field(FlxG.keys.justReleased, name);
+        });
+
+        Lua_helper.add_callback(lua, "keyJustPressed", function(name:String) {
+            return Reflect.field(FlxG.keys.justPressed, name);
+        });
+
+        Lua_helper.add_callback(lua, "keyPressed", function(name:String) {
+            return Reflect.field(FlxG.keys.pressed, name);
+        });
+
+        Lua_helper.add_callback(lua, "keyReleased", function(name:String) {
+            return Reflect.field(FlxG.keys.justReleased, name);
+        });
+
+        Lua_helper.add_callback(lua, "anyGamepadJustPressed", function(name:String) {
+            return FlxG.gamepads.anyJustPressed(name);
+        });
+
+        Lua_helper.add_callback(lua, "anyGamepadPressed", function(name:String) {
+            return FlxG.gamepads.anyPressed(name);
+        });
+
+        Lua_helper.add_callback(lua, "anyGamepadReleased", function(name:String) {
+            return FlxG.gamepads.anyJustReleased(name);
+        });
+
+        Lua_helper.add_callback(lua, "gamepadAnalogX", function(id:Int, ?leftStick:Bool = true) {
+            var controller = FlxG.gamepads.getByID(id);
+
+            if (controller == null) {
+                return 0;
+            }
+
+            return controller.getXAxis(leftStick ? LEFT_ANALOG_STICK : RIGHT_ANALOG_STICK);
+        });
+
+        Lua_helper.add_callback(lua, "gamepadAnalogY", function(id:Int, ?leftStick:Bool = true) {
+            var controller = FlxG.gamepads.getByID(id);
+
+            if (controller == null) {
+                return 0;
+            }
+
+            return controller.getYAxis(leftStick ? LEFT_ANALOG_STICK : RIGHT_ANALOG_STICK);
+        });
+
+        Lua_helper.add_callback(lua, "gamepadJustPressed", function(id:Int, name:String) {
+            var controller = FlxG.gamepads.getByID(id);
+
+            if (controller == null) {
+                return false;
+            }
+
+            return Reflect.field(controller.justPressed, name) == true;
+        });
+
+        Lua_helper.add_callback(lua, "gamepadPressed", function(id:Int, name:String) {
+            var controller = FlxG.gamepads.getByID(id);
+
+            if (controller == null) {
+                return false;
+            }
+
+            return Reflect.field(controller.pressed, name) == true;
+        });
+
+        Lua_helper.add_callback(lua, "gamepadReleased", function(id:Int, name:String) {
+            var controller = FlxG.gamepads.getByID(id);
+
+            if (controller == null) {
+                return false;
+            }
+
+            return Reflect.field(controller.justReleased, name) == true;
+        });
 
         call("initialized", []);
+        #end
     }
 
     public function getObjectFromMap(name:String):Dynamic {
