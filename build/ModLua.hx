@@ -422,6 +422,26 @@ class ModLua {
             spr.updateHitbox();
         });
 
+        Lua_helper.add_callback(lua, "getSpriteX", function(name:String, x:Float) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                return spr.x;
+            }
+
+            return 0;
+        });
+
+        Lua_helper.add_callback(lua, "getSpriteY", function(name:String, y:Float) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                return spr.y;
+            }
+
+            return 0;
+        });
+
         Lua_helper.add_callback(lua, "getSpriteWidth", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
