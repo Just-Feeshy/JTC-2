@@ -118,11 +118,9 @@ class Alphabet extends FlxSpriteGroup
 
 					letter.createBold(character);
 				}else {
-					if (isNumber) {
+					if(isNumber) {
 						letter.createNumber(character);
-					}else if(isSymbol) {
-						letter.createSymbol(character);
-					}else {
+					}else if(!isSymbol) {
 						letter.createLetter(character);
 					}
 				}
