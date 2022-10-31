@@ -1,6 +1,6 @@
 # Friday Night Funkin' - Feeshmora (JTC Mod)
 
-This is the repository for [Friday Night Funkin': vs. JTC](https://gamebanana.com/mods/46741). 
+This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.com/mods/46741). 
 
 The purpose of making my own engine is to allow for fewer restrictions that come with using someone else's engine and faster development. It also allows for unique features and implementations to be added.
 
