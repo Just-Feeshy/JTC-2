@@ -827,6 +827,7 @@ class ModLua {
                 cancelSound(tag);
 
                 luaSounds.set(tag, FlxG.sound.play(Paths.sound(sound), volume, false, function() {
+                    call('onSoundFinished', [tag]);
                     cancelSound(tag);
                 }));
             }else {
