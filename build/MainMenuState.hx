@@ -134,38 +134,40 @@ class MainMenuState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		if(Paths.modJSON.main_menu.background_image != '') {
-			var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image(Paths.modJSON.main_menu.background_image));
-			bg.setGraphicSize(1280, 720);
-			bg.updateHitbox();
-			bg.screenCenter();
-			bg.scrollFactor.set();
-			add(bg);
-		}else {
-			var bg:FlxSprite = new FlxSprite(-100, -15).loadGraphic(Paths.image('menu/sky2'));
-			bg.scrollFactor.set();
-			add(bg);
+		if(Paths.modJSON.main_menu.has_background_image) {
+			if(Paths.modJSON.main_menu.background_image != '') {
+				var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image(Paths.modJSON.main_menu.background_image));
+				bg.setGraphicSize(1280, 720);
+				bg.updateHitbox();
+				bg.screenCenter();
+				bg.scrollFactor.set();
+				add(bg);
+			}else {
+				var bg:FlxSprite = new FlxSprite(-100, -15).loadGraphic(Paths.image('menu/sky2'));
+				bg.scrollFactor.set();
+				add(bg);
 
-			var city:FlxSprite = new FlxSprite(-10, -15).loadGraphic(Paths.image('menu/city'));
-			city.scrollFactor.set();
-			city.updateHitbox();
-			city.screenCenter();
-			add(city);
+				var city:FlxSprite = new FlxSprite(-10, -15).loadGraphic(Paths.image('menu/city'));
+				city.scrollFactor.set();
+				city.updateHitbox();
+				city.screenCenter();
+				add(city);
 
-			var light:FlxSprite = new FlxSprite(city.x, city.y).loadGraphic(Paths.image('menu/win2'));
-			light.scrollFactor.set();
-			light.updateHitbox();
-			light.screenCenter();
-			add(light);
+				var light:FlxSprite = new FlxSprite(city.x, city.y).loadGraphic(Paths.image('menu/win2'));
+				light.scrollFactor.set();
+				light.updateHitbox();
+				light.screenCenter();
+				add(light);
 
-			var streetBehind:FlxSprite = new FlxSprite(-40, -50).loadGraphic(Paths.image('menu/behindTrain'));
-			streetBehind.scrollFactor.set();
-			add(streetBehind);
+				var streetBehind:FlxSprite = new FlxSprite(-40, -50).loadGraphic(Paths.image('menu/behindTrain'));
+				streetBehind.scrollFactor.set();
+				add(streetBehind);
 
-			var street:FlxSprite = new FlxSprite(-40, streetBehind.y).loadGraphic(Paths.image('menu/street'));
-			street.scrollFactor.set();
-			add(street);
-		}	
+				var street:FlxSprite = new FlxSprite(-40, streetBehind.y).loadGraphic(Paths.image('menu/street'));
+				street.scrollFactor.set();
+				add(street);
+			}
+		}
 
 		camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);

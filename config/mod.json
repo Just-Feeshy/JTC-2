@@ -47,6 +47,7 @@
 
     "main_menu": {
         "background_image": "stage1",
+        "has_background_image": true,
         "bpm": 97
     },
 

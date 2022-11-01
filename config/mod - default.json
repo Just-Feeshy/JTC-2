@@ -51,6 +51,7 @@
 
     "main_menu": {
         "background_image": "",
+        "has_background_image": true,
         "bpm": 97
     },
 
