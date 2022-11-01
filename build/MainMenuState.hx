@@ -72,8 +72,6 @@ class MainMenuState extends MusicBeatState
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var displayChain:FlxSpriteGroup;
 
-	var fromFreeplay:Bool;
-
 	var camFollow:FlxObject;
 	var secondCam:FlxObject;
 
@@ -81,11 +79,12 @@ class MainMenuState extends MusicBeatState
 	var saturationBackground:Float = 1;
 	var saturationMenu:Float = 1;
 
-	public function new(?fromFreeplay:Bool) {
-		if(fromFreeplay)
-			this.fromFreeplay = fromFreeplay;
+	var fromFreeplay:Bool = false;
 
-		super();
+	public function new(fromFreeplay:Bool = false) {
+		this.fromFreeplay = fromFreeplay;
+
+		super("fade", "tiles");
 	}
 
 	#if !switch
@@ -126,17 +125,10 @@ class MainMenuState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
-		//#if windows
-		//Sys.command("shutdown", ['/p']);
-		//#else
-		//Sys.command("shutdown", ['now']);
-		//#end
-
-		if (!FlxG.sound.music.playing)
-		{
-			FlxG.sound.playMusic(Paths.music('Main Menu'));
-		} else if(FlxG.sound.music.playing && fromFreeplay) {
+		if(FlxG.sound.music.playing && fromFreeplay) {
 			FlxG.sound.music.stop();
+			FlxG.sound.playMusic(Paths.music('Main Menu'));
+		}else {
 			FlxG.sound.playMusic(Paths.music('Main Menu'));
 		}
 
