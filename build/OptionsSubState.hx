@@ -440,7 +440,7 @@ class GammaMenu extends OptionsSubState {
 	}
 
 	override function update(elapsed:Float) {
-		if(!changingKeys) {
+		if(!changingKeys && valueTxt != null) {
 			if(controls.LEFT_P) {
 				FlxG.save.data.gamma = FlxG.save.data.gamma - 0.1;
 				FlxG.save.data.gamma = Math.round(FlxG.save.data.gamma * 10) / 10;
@@ -494,14 +494,14 @@ class OffsetMenu extends OptionsSubState {
 	}
 
 	override function update(elapsed:Float) {
-		if(!changingKeys) {
+		if(!changingKeys && valueTxt != null) {
 			if(controls.LEFT_P) {
 				FlxG.save.data.noteOffset = FlxG.save.data.noteOffset - 0.1;
-				FlxG.save.data.noteOffset = Math.round(FlxG.save.data.noteOffset * 10) / 10;
+				FlxG.save.data.noteOffset = Math.round(FlxG.save.data.noteOffset * 10) * 0.1;
 				valueTxt.text = "< " + SaveData.getData(SaveType.NOTE_OFFSET) + " >";
 			}else if(controls.RIGHT_P) {
 				FlxG.save.data.noteOffset = FlxG.save.data.noteOffset + 0.1;
-				FlxG.save.data.noteOffset = Math.round(FlxG.save.data.noteOffset * 10)  / 10;
+				FlxG.save.data.noteOffset = Math.round(FlxG.save.data.noteOffset * 10) * 0.1;
 				valueTxt.text = "< " + SaveData.getData(SaveType.NOTE_OFFSET) + " >";
 			}
 
@@ -542,7 +542,7 @@ class MissVolumeMenu extends OptionsSubState {
 	}
 
 	override function update(elapsed:Float) {
-		if(!changingKeys) {
+		if(!changingKeys && valueTxt != null) {
 			if(controls.LEFT_P) {
 				FlxG.save.data.missVolume = FlxG.save.data.missVolume - 0.1;
 				FlxG.save.data.missVolume = Math.round(FlxG.save.data.missVolume * 10) / 10;

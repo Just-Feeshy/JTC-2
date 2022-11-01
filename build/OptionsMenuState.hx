@@ -440,7 +440,7 @@ class OptionsMenuState extends MusicBeatState {
 								}
 
 								option.description = "Change the gamme value for the game/app.";
-								setting(option, "", option.ID);
+								setting(option, Std.string(FlxG.save.data.gamma), option.ID);
 							})
 						]
 					}

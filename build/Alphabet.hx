@@ -91,14 +91,12 @@ class Alphabet extends FlxSpriteGroup
 			var isSymbol:Bool = AlphaCharacter.symbols.indexOf(character) != -1;
 			var isLetter:Bool = AlphaCharacter.alphabet.indexOf(character.toLowerCase()) != -1;
 
-			if (isNumber || isLetter || isSymbol) {
-				if (lastSprite != null)
-				{
+			if (isNumber || isLetter || (isSymbol && !isBold)) {
+				if (lastSprite != null) {
 					xPos = lastSprite.x + lastSprite.width;
 				}
 
-				if (lastWasSpace)
-				{
+				if (lastWasSpace) {
 					xPos += 40;
 					lastWasSpace = false;
 				}
@@ -115,10 +113,10 @@ class Alphabet extends FlxSpriteGroup
 				}else {
 					if(isNumber) {
 						letter.createNumber(character);
-					}else if(isLetter) {
-						letter.createLetter(character);
-					}else {
+					}else if(isSymbol) {
 						letter.createSymbol(character);
+					}else {
+						letter.createLetter(character);
 					}
 				}
 
