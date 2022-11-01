@@ -307,7 +307,7 @@ class MainMenuState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		if (FlxG.sound.music != null)
-			Conductor.songPosition += FlxG.elapsed * 1000;
+			Conductor.songPosition = FlxG.sound.music.time;
 
 		if (FlxG.sound.music.volume < 0.8)
 		{
@@ -318,13 +318,6 @@ class MainMenuState extends MusicBeatState
 			var lerpTick:Float = Math.min(1, Math.max(0, elapsed * 5.6));
 
 			secondCam.setPosition(FlxMath.lerp(secondCam.x, camFollow.x, lerpTick), FlxMath.lerp(secondCam.y, camFollow.y, lerpTick));
-
-			/*
-			#if debug
-			if(FlxG.keys.justPressed.SEVEN)
-				FlxG.switchState(new CharacterCreatorState());
-			#end
-			*/
 
 			if (controls.UP_P) {
 				FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -419,14 +412,6 @@ class MainMenuState extends MusicBeatState
 		FlxG.camera.zoom = 1.1 + 0.02 * (Math.sin(0.0005 * Conductor.songPosition * Math.PI * (Paths.modJSON.main_menu.bpm/120)));
 
 		super.update(elapsed);
-	}
-
-	override function stepHit() {
-		super.stepHit();
-
-		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20)) {
-			Conductor.songPosition = FlxG.sound.music.time;
-		}
 	}
 
 	function getLuaOptions() {

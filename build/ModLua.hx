@@ -824,7 +824,7 @@ class ModLua {
         Lua_helper.add_callback(lua, "playMusic", function(sound:String, volume:Float = 1, loop:Bool = false) {
 			FlxG.sound.playMusic(Paths.music(sound), volume, loop);
 		});
-        
+
         Lua_helper.add_callback(lua, "playSound", function(sound:String, volume:Float = 1, ?tag:String = "") {
             if(tag != null && tag.trim() != "") {
                 tag = tag.replace('.', '');
@@ -1058,7 +1058,6 @@ class ModLua {
     public function cancelSound(name:String):Void {
         if(luaSounds.exists(name)) {
             luaSounds.get(name).stop();
-            luaSounds.get(name).destroy();
             luaSounds.remove(name);
         }
     }

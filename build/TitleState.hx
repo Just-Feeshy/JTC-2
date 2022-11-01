@@ -31,10 +31,9 @@ using StringTools;
 class TitleState extends MusicBeatState {
 	static var initialized:Bool = false;
 
-	var logoBl:FlxSprite;
-	var gfDance:FlxSprite;
-	var danceLeft:Bool = false;
-	var titleText:FlxSprite;
+	@:isVar var logoBl(get, default):FlxSprite;
+	@:isVar var gfDance(get, default):FlxSprite;
+	@:isVar var titleText(get, default):FlxSprite;
 
 	var blackScreen:FlxSprite;
 	var credGroup:FlxGroup;
@@ -43,6 +42,11 @@ class TitleState extends MusicBeatState {
 	var ngSpr:FlxSprite;
 
 	var credits:Array<String> = Paths.modJSON.title_menu.mod_creators;
+
+	var danceLeft:Bool = false;
+	var pressedEnter:Bool = false;
+	var transitioning:Bool = false;
+	var disableControls:Bool = false;
 
 	override public function create():Void
 	{
@@ -103,7 +107,6 @@ class TitleState extends MusicBeatState {
 		titleText.antialiasing = true;
 		titleText.animation.play('idle');
 		titleText.updateHitbox();
-		// titleText.screenCenter(X);
 		add(titleText);
 
 		var logo:FlxSprite = new FlxSprite().loadGraphic(Paths.image('logo'));
@@ -168,13 +171,13 @@ class TitleState extends MusicBeatState {
 	}
 
 	override function onCreate():Dynamic {
+		addCallback("disableRegularInput", function(value:Bool) {
+			disableControls = value;
+		});
+
 		luaFunctions();
 		return super.onCreate();
 	}
-
-	var pressedEnter:Bool;
-
-	var transitioning:Bool = false;
 
 	override function update(elapsed:Float) {
 		if (FlxG.sound.music != null) {
@@ -210,27 +213,27 @@ class TitleState extends MusicBeatState {
 				pressedEnter = true;
 		}
 
-		if (pressedEnter && !transitioning && skippedIntro)
-		{
-			if(titleText.exists) {
-				titleText.animation.play('press');
+		if(!disableControls) {
+			if (pressedEnter && !transitioning && skippedIntro) {
+				if(titleText != null) {
+					titleText.animation.play('press');
+				}
+
+				FlxG.camera.flash(FlxColor.WHITE, 1);
+				FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
+
+				transitioning = true;
+				// FlxG.sound.music.stop();
+
+				new FlxTimer().start(2, function(tmr:FlxTimer)
+				{
+					FlxG.switchState(new MainMenuState(true));
+				});
 			}
 
-			FlxG.camera.flash(FlxColor.WHITE, 1);
-			FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
-
-			transitioning = true;
-			// FlxG.sound.music.stop();
-
-			new FlxTimer().start(2, function(tmr:FlxTimer)
-			{
-				FlxG.switchState(new MainMenuState(true));
-			});
-		}
-
-		if (pressedEnter && !skippedIntro && initialized)
-		{
-			skipIntro();
+			if (pressedEnter && !skippedIntro && initialized) {
+				skipIntro();
+			}
 		}
 
 		super.update(elapsed);
@@ -285,20 +288,20 @@ class TitleState extends MusicBeatState {
 
 		danceLeft = !danceLeft;
 
-		if(gfDance.exists) {
+		if(gfDance != null) {
 			if (danceLeft)
 				gfDance.animation.play('danceRight');
 			else
 				gfDance.animation.play('danceLeft');
 		}
 
-		if(logoBl.exists) {
+		if(logoBl != null) {
 			logoBl.animation.play('bump');
 		}
 
 		FlxG.log.add(curBeat);
 
-		if(credGroup.exists || textGroup.exists) {
+		if(credGroup != null && textGroup != null) {
 			if(curBeat < Paths.modJSON.title_menu.waky.length) {
 				if(Paths.modJSON.title_menu.waky[curBeat].addon) {
 					addMultipleText(Paths.modJSON.title_menu.waky[curBeat].texts);
@@ -347,5 +350,44 @@ class TitleState extends MusicBeatState {
 
 	inline function sortByShit(str1:String, str2:String):Int {
 		return FlxSort.byValues(FlxSort.ASCENDING, str1.length, str2.length);
-	}	
+	}
+
+	/*
+	* Getters.
+	*/
+	function get_logoBl():FlxSprite {
+		if(logoBl == null) {
+			return null;
+		}
+
+		if(!logoBl.exists) {
+			return null;
+		}
+
+		return logoBl;
+	}
+
+	function get_gfDance():FlxSprite {
+		if(gfDance == null) {
+			return null;
+		}
+
+		if(!gfDance.exists) {
+			return null;
+		}
+
+		return gfDance;
+	}
+
+	function get_titleText():FlxSprite {
+		if(titleText == null) {
+			return null;
+		}
+
+		if(!titleText.exists) {
+			return null;
+		}
+
+		return titleText;
+	}
 }
