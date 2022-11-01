@@ -84,7 +84,7 @@ class MainMenuState extends MusicBeatState
 	public function new(fromFreeplay:Bool = false) {
 		this.fromFreeplay = fromFreeplay;
 
-		super("fade", "tiles");
+		super();
 	}
 
 	#if !switch

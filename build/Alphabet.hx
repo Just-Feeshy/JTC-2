@@ -80,12 +80,7 @@ class Alphabet extends FlxSpriteGroup
 		doSplitWords();
 
 		var xPos:Float = startX;
-		for (character in splitWords)
-		{
-			// if (character.fastCodeAt() == " ")
-			// {
-			// }
-
+		for (character in splitWords) {
 			if (character == " " || character == "-" || character == "_")
 			{
 				lastWasSpace = true;
@@ -120,8 +115,10 @@ class Alphabet extends FlxSpriteGroup
 				}else {
 					if(isNumber) {
 						letter.createNumber(character);
-					}else if(!isSymbol) {
+					}else if(isLetter) {
 						letter.createLetter(character);
+					}else {
+						letter.createSymbol(character);
 					}
 				}
 
@@ -299,6 +296,10 @@ class AlphaCharacter extends FlxSprite
 
 	public function createBold(letter:String)
 	{
+		if(symbols.indexOf(letter) != -1) {
+			return;
+		}
+
 		animation.addByPrefix(letter, letter.toUpperCase() + " bold", 24);
 		animation.play(letter);
 		updateHitbox();
