@@ -56,6 +56,8 @@ class Register {
     @:allow(PlayState) private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
     @:allow(PlayState) private static var stage:Class<StageBuilder> = DefaultStage;
 
+    @:allow(Main) private static var initialState:Class<HelperStates> = TitleState;
+
     @:allow(Preloader)
     private inline static function setup() {
         /**
@@ -71,6 +73,11 @@ class Register {
         implementCustomNote("reverse", ReverseNote);
         implementCustomNote("poison", PoisonNote);
         implementCustomNote("reverse poison", ReversePoisonNote);
+    }
+
+    @:access(Preloader)
+    public inline static function attachInitalState(state:Class<HelperStates>):Void {
+        Preloader._initialState = state;
     }
 
     @:access(HelperStates)

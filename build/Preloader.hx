@@ -36,6 +36,8 @@ import SaveData.SaveType;
 using StringTools;
 
 class Preloader extends HelperStates {
+    private static var _initialState:Class<HelperStates> = TitleState;
+
     var loadingScene:LoadingScene;
 
     public function new() {
@@ -85,7 +87,7 @@ class Preloader extends HelperStates {
 
         loadingScene.callback = function() {
             Register.setup();
-            FlxG.switchState(new TitleState());
+            FlxG.switchState(cast Type.createInstance(_initialState, []));
             Register.compile();
         }
 
@@ -96,7 +98,7 @@ class Preloader extends HelperStates {
 
         #if !sys
         Register.setup();
-        FlxG.switchState(new TitleState());
+        FlxG.switchState(cast Type.createInstance(_initialState, []));
         Register.compile();
         #end
     }

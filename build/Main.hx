@@ -8,8 +8,6 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 import feshixl.FeshGame;
 
-//import Feeshmora;
-
 @:allow(Preloader)
 class Main extends Sprite
 {
