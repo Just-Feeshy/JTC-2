@@ -4,6 +4,7 @@ import template.StageBuilder;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
 import flixel.tweens.FlxEase;
@@ -14,19 +15,49 @@ import haxe.Json;
 using StringTools;
 
 class CheesyStage extends StageBuilder {
-	final doubleIconColors:Array<Int> = [
+	@:final var doubleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d //Girlfriend
 	];
 
-	final tripleIconColors:Array<Int> = [
+	@:final var tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
 		0xffe9ff48 //Joul The Cool
 	];
 
+	@:final var spinSteps:Array<UInt> = [
+		279,
+		//303,
+		//312,
+		336,
+		345,
+		368,
+		401,
+		//409,
+		435,
+		//467,
+		//477,
+		501,
+		509,
+		//533,
+		//542,
+		567,
+		575
+		//602
+	];
+
+	var strumRotate:Array<Bool> = [
+		false,
+		false,
+		false,
+		false
+	];
+
+	var spinIndex:UInt = 0;
+	var tweenIndex:UInt = 0;
+
 	var allTweens:Array<FlxTween>;
-	var tweenIndex:Int = 0;
 
 	var boyfriend:Character;
 	var dad:Character;
@@ -36,10 +67,9 @@ class CheesyStage extends StageBuilder {
 	/*
 	* Variables for lazy modcharts.
 	*/
-	var doBounce:Bool = false;
-	var bounceIndex:Int = 0;
+	var strumSpinning:Bool = false;
+	var bounceIndex:UInt = 0;
 	var bounceHold:Float = 0;
-	var bounceStrength:Int = 2;
 
     public function new(stage:String) {
         super(stage);
@@ -80,6 +110,8 @@ class CheesyStage extends StageBuilder {
 
 				add(stageCurtains);
 			case "funkroad":
+				strumSpinning = true;
+
 				setDefaultCameraZoom(0.50);
 
 				var funkroadSky:FlxSprite = new FlxSprite(-900, -500).loadGraphic(Paths.image('funkroadSky'));
@@ -139,9 +171,21 @@ class CheesyStage extends StageBuilder {
         }
     }
 
+	/*
 	function lazyModchartSpin(index:Int) {
 		FlxTween.tween(PlayState.playerStrums.members[index], {yAngle: PlayState.playerStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / (60 * bounceStrength), {ease: FlxEase.quadOut});
 		FlxTween.tween(PlayState.opponentStrums.members[index], {yAngle: PlayState.opponentStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / (60 * bounceStrength), {ease: FlxEase.quadOut});
+	}
+	*/
+
+	function lazySpin(index:Int) {
+		var strum:Strum = playstate.strumLineNotes.members[index];
+
+		if(strum.yAngle < Math.PI * 2) {
+			strum.yAngle += FlxG.elapsed * Math.PI;
+		}else if(strum.yAngle > Math.PI * 2) {
+			strum.yAngle = Math.PI * 2;
+		}
 	}
 
 	override function configStage():Void {
@@ -204,29 +248,31 @@ class CheesyStage extends StageBuilder {
 			}
 		}
 
-		if(doBounce && bounceHold > Conductor.stepCrochet * 0.0011) {
-			lazyModchartSpin(bounceIndex);
-			bounceHold = 0;
-
-			bounceIndex++;
-
-			if(bounceIndex >= Std.int(playstate.strumLineNotes.length * 0.5)) {
-				doBounce = false;
-				bounceIndex = 0;
+		if(strumSpinning) {
+			for(strum in playstate.strumLineNotes) {
+				strum.yAngle = FlxMath.lerp(0, strum.yAngle, 0.95);
 			}
-		}else if(doBounce) {
-			bounceHold += elapsed;
+		}
+
+		if(strumSpinning) {
+			if(spinSteps[spinIndex] == @:privateAccess playstate.curStep && bounceHold > Conductor.stepCrochet * 0.0011) {
+				//lazySpin(bounceIndex);
+				bounceHold = 0;
+
+				bounceIndex++;
+
+				if(bounceIndex >= Std.int(playstate.strumLineNotes.length * 0.5)) {
+					bounceIndex = 0;
+					spinIndex++;
+				}
+			}
+			
+			if(bounceHold <= Conductor.stepCrochet * 0.0011) {
+				bounceHold += elapsed;
+			}
 		}
 
 		super.update(elapsed);
-	}
-
-	override function curBeat() {
-		if(@:privateAccess playstate.curBeat % 8 == 0) {
-			doBounce = true;
-		}
-
-		super.curBeat();
 	}
 
 	override function destroy():Void {
