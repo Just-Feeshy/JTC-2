@@ -136,7 +136,7 @@ class Character extends feshixl.FeshSprite {
 					playAnim('danceRight');
 		}
 
-		super.update(elapsed / (FlxG.save.data.showAntialiasing ? 1 : 1.5));
+		super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : 0.75));
 	}
 
 	override function destroy() {

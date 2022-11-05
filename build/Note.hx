@@ -142,10 +142,10 @@ class Note extends FeshSprite {
 		}
 
 		if(CustomNoteHandler.lowNotesTick.contains(noteType))
-			tickDivider = 1.5;
+			tickDivider = 0.75;
 
 		if(FlxG.save.data.showAntialiasing)
-			tickDivider = 3;
+			tickDivider = 0.3;
 
 		x += 50;
 		// MAKE SURE ITS DEFINITELY OFF SCREEN?
@@ -665,7 +665,7 @@ class Note extends FeshSprite {
 	}
 
 	override function update(elapsed:Float) {
-		super.update(elapsed / tickDivider);
+		super.update(elapsed * tickDivider);
 
 		if(hasCustomAddon != null)
 			hasCustomAddon.noteUpdate(this);

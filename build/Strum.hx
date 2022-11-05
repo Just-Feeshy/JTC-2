@@ -117,12 +117,14 @@ class Strum extends feshixl.FeshSprite {
 			}
 		}
 
+		yAngle += elapsed * 3;
+
 		#if (debug || USING_MOD_DEBUG)
 		if (FlxG.keys.pressed.TWO) {
 			directionAngle += elapsed;
 		}
 		#end
 
-		super.update(elapsed / (FlxG.save.data.showAntialiasing ? 1 : 1.5));
+		super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : 0.75));
 	}
 }

@@ -179,13 +179,22 @@ class CheesyStage extends StageBuilder {
 	*/
 
 	function lazySpin(index:Int) {
-		var strum:Strum = playstate.strumLineNotes.members[index];
+		var playerStrum:Strum = PlayState.playerStrums.members[index];
+		var opponentStrum:Strum = PlayState.opponentStrums.members[index];
 
-		if(strum.yAngle < Math.PI * 2) {
-			strum.yAngle += FlxG.elapsed * Math.PI;
-		}else if(strum.yAngle > Math.PI * 2) {
-			strum.yAngle = Math.PI * 2;
+		//if(playerStrum.yAngle < Math.PI * 2) {
+	
+		//}else if(playerStrum.yAngle > Math.PI * 2) {
+			//playerStrum.yAngle = Math.PI * 2;
+		//}
+
+		/*
+		if(opponentStrum.yAngle < Math.PI * 2) {
+			opponentStrum.yAngle += FlxG.elapsed * Math.PI;
+		}else if(opponentStrum.yAngle > Math.PI * 2) {
+			opponentStrum.yAngle = Math.PI * 2;
 		}
+		*/
 	}
 
 	override function configStage():Void {
@@ -256,7 +265,8 @@ class CheesyStage extends StageBuilder {
 
 		if(strumSpinning) {
 			if(spinSteps[spinIndex] == @:privateAccess playstate.curStep && bounceHold > Conductor.stepCrochet * 0.0011) {
-				//lazySpin(bounceIndex);
+				strumRotate[bounceIndex] = true;
+
 				bounceHold = 0;
 
 				bounceIndex++;
@@ -271,6 +281,9 @@ class CheesyStage extends StageBuilder {
 				bounceHold += elapsed;
 			}
 		}
+
+		//lazySpin(0);
+		//PlayState.playerStrums.members[0].yAngle += elapsed * 3;
 
 		super.update(elapsed);
 	}
