@@ -6,6 +6,7 @@ import flixel.FlxG;
 import flixel.math.FlxRect;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
+import feshixl.math.FeshMath;
 
 /**
 * A tad bit simpler to understand compared to the others.
@@ -149,7 +150,7 @@ class ReverseNote extends CustomNoteTemplate {
     }
 
     override function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float {
-        var anglePos:Float = 1 - Math.sqrt(Math.min(1, note.getNoteStrumPosition(100)));
+        var anglePos:Float = 1 - FeshMath.cbrt(Math.min(1, note.getNoteStrumPosition(100)));
         var angleLerp:Float = FlxMath.lerp(strums[note.noteData].angle, strums[oppositeID].angle, anglePos);
 
         if(!note.isSustainNote) {
