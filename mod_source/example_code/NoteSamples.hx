@@ -149,12 +149,15 @@ class ReverseNote extends CustomNoteTemplate {
     }
 
     override function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float {
+        var anglePos:Float = 1 - Math.sqrt(Math.min(1, note.getNoteStrumPosition(100)));
+        var angleLerp:Float = FlxMath.lerp(strums[note.noteData].angle, strums[oppositeID].angle, anglePos);
+
         if(!note.isSustainNote) {
             if(note.getNoteStrumPosition(100) < 1) {
-                return FlxMath.lerp(x, strums[oppositeID].x, note.getNoteStrumPosition(100));
+                return angleMeasurements(FlxMath.lerp(x, strums[oppositeID].x, anglePos), note, angleLerp);
             }
 
-            return strums[oppositeID].x;
+            return angleMeasurements(strums[oppositeID].x, note, strums[oppositeID].angle);
         }
 
         return x;
@@ -170,6 +173,10 @@ class ReverseNote extends CustomNoteTemplate {
 
     override function cantHaveHold():Bool {
         return true;
+    }
+
+    function angleMeasurements(x:Float, note:Note, angle:Float):Float {
+        return (x + note.noteOffset.x) + Math.sin(angle) * note.caculatePos;
     }
 }
 

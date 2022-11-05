@@ -282,9 +282,6 @@ class CheesyStage extends StageBuilder {
 			}
 		}
 
-		//lazySpin(0);
-		//PlayState.playerStrums.members[0].yAngle += elapsed * 3;
-
 		super.update(elapsed);
 	}
 

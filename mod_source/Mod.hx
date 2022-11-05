@@ -1,5 +1,7 @@
 import flixel.FlxG;
 
+import feshixl.math.FeshMath;
+
 import template.DialogueBuilder;
 import example_code.DefaultStage;
 
@@ -8,6 +10,8 @@ import NotesJTC;
 
 class Mod {
     static function onInit() {
+        trace(FeshMath.cbrt(27));
+
         Register.setStageForMod(CheesyStage); //Remove unwanted data from the game.
 
         Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));

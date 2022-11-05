@@ -117,8 +117,6 @@ class Strum extends feshixl.FeshSprite {
 			}
 		}
 
-		yAngle += elapsed * 3;
-
 		#if (debug || USING_MOD_DEBUG)
 		if (FlxG.keys.pressed.TWO) {
 			directionAngle += elapsed;

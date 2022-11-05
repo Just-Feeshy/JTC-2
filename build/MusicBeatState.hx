@@ -71,7 +71,7 @@ class MusicBeatState extends HelperStates
 		}
 
 		curStep = lastChange.stepTime + Math.floor((songPos - lastChange.songTime) / Conductor.stepCrochet);
-
+		
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this)))
 			HelperStates.getLua(Type.getClass(this)).call("updateCurStep", []);
