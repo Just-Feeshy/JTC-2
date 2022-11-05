@@ -121,7 +121,7 @@ class ReverseNote extends CustomNoteTemplate {
     override function createSplashSprite(splash:SplashSprite, strumInfo:FlxRect, rating:String):Void {
         if(!anotherSplash) {
             if(splash != null && (rating == "sick" || rating == "good")) {
-                splash.setPosition(strumInfo.x-(splash.width/3), strumInfo.y-(splash.height/3));
+                splash.setPosition(strumInfo.x-(splash.width / 3), strumInfo.y-(splash.height / 3));
                 splash.animation.play('reverse sploosh');
             }
         }
@@ -150,7 +150,7 @@ class ReverseNote extends CustomNoteTemplate {
     }
 
     override function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float {
-        var anglePos:Float = 1 - FeshMath.cbrt(Math.min(1, note.getNoteStrumPosition(100)));
+        var anglePos:Float = FeshMath.cbrt(Math.min(1, note.getNoteStrumPosition(100)));
         var angleLerp:Float = FlxMath.lerp(strums[note.noteData].angle, strums[oppositeID].angle, anglePos);
 
         if(!note.isSustainNote) {
