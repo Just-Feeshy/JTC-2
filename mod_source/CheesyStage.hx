@@ -9,8 +9,11 @@ import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import feshixl.math.FeshMath;
 import lime.utils.Assets;
 import haxe.Json;
+
+import Conductor.BPMChangeEvent;
 
 using StringTools;
 
@@ -28,23 +31,25 @@ class CheesyStage extends StageBuilder {
 
 	@:final var spinSteps:Array<UInt> = [
 		279,
-		//303,
-		//312,
+		303,
+		312,
 		336,
 		345,
 		368,
+		376,
 		401,
-		//409,
+		409,
 		435,
-		//467,
-		//477,
+		467,
+		477,
 		501,
 		509,
-		//533,
-		//542,
+		533,
+		542,
 		567,
-		575
-		//602
+		575,
+		602,
+		602
 	];
 
 	var strumRotate:Array<Bool> = [
@@ -70,6 +75,8 @@ class CheesyStage extends StageBuilder {
 	var strumSpinning:Bool = false;
 	var bounceIndex:UInt = 0;
 	var bounceHold:Float = 0;
+
+	var curStepFloat:Float = 0;
 
     public function new(stage:String) {
         super(stage);
@@ -181,20 +188,29 @@ class CheesyStage extends StageBuilder {
 	function lazySpin(index:Int) {
 		var playerStrum:Strum = PlayState.playerStrums.members[index];
 		var opponentStrum:Strum = PlayState.opponentStrums.members[index];
+	}
 
-		//if(playerStrum.yAngle < Math.PI * 2) {
-	
-		//}else if(playerStrum.yAngle > Math.PI * 2) {
-			//playerStrum.yAngle = Math.PI * 2;
-		//}
-
-		/*
-		if(opponentStrum.yAngle < Math.PI * 2) {
-			opponentStrum.yAngle += FlxG.elapsed * Math.PI;
-		}else if(opponentStrum.yAngle > Math.PI * 2) {
-			opponentStrum.yAngle = Math.PI * 2;
+	function updateCurStep():Void {
+		var lastChange:BPMChangeEvent = {
+			stepTime: 0,
+			songTime: 0,
+			bpm: 0
 		}
-		*/
+
+		for (i in 0...Conductor.bpmChangeMap.length) {
+			if (@:privateAccess playstate.songPos >= Conductor.bpmChangeMap[i].songTime)
+				lastChange = Conductor.bpmChangeMap[i];
+		}
+
+		curStepFloat = lastChange.stepTime + (@:privateAccess playstate.songPos - lastChange.songTime) / Conductor.stepCrochet;
+	}
+
+	function getLastStepIndex(index:UInt):Float {
+		if(spinIndex - index >= 0) {
+			return spinSteps[spinIndex - index];
+		}
+
+		return 0;
 	}
 
 	override function configStage():Void {
@@ -235,6 +251,8 @@ class CheesyStage extends StageBuilder {
 	}
 
 	override function update(elapsed:Float):Void {
+		updateCurStep();
+
 		if(dad.exists) {
 			if(dad.animation.curAnim != null) {
 				if (!dad.animation.curAnim.name.startsWith("sing") && !dad.stunned && dadShouldDance) {
@@ -264,6 +282,22 @@ class CheesyStage extends StageBuilder {
 		}
 
 		if(strumSpinning) {
+			if(getLastStepIndex(0) <= curStepFloat) {
+				spinIndex++;
+			}
+
+			for(i in 0...Std.int(playstate.strumLineNotes.length * 0.5)) {
+				var playerStrum:Strum = PlayState.playerStrums.members[i];
+				var opponentStrum:Strum = PlayState.opponentStrums.members[i];
+
+				if(spinSteps[0] <= curStepFloat) {
+					var time:Float = ((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * i);
+					//trace(((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))));
+
+					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time), 0, 1));
+				}
+			}
+			/*
 			if(spinSteps[spinIndex] == @:privateAccess playstate.curStep && bounceHold > Conductor.stepCrochet * 0.0011) {
 				strumRotate[bounceIndex] = true;
 
@@ -280,6 +314,7 @@ class CheesyStage extends StageBuilder {
 			if(bounceHold <= Conductor.stepCrochet * 0.0011) {
 				bounceHold += elapsed;
 			}
+			*/
 		}
 
 		super.update(elapsed);
