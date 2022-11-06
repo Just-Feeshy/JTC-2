@@ -74,7 +74,7 @@ class CheesyStage extends StageBuilder {
 	* Variables for lazy modcharts.
 	*/
 	var strumSpinning:Bool = false;
-	var curStepFloat:Float = 0;
+	var curStep:Float = 0;
 
     public function new(stage:String) {
         super(stage);
@@ -193,7 +193,7 @@ class CheesyStage extends StageBuilder {
 				lastChange = Conductor.bpmChangeMap[i];
 		}
 
-		curStepFloat = lastChange.stepTime + (@:privateAccess playstate.songPos - lastChange.songTime) / Conductor.stepCrochet;
+		curStep = lastChange.stepTime + (@:privateAccess playstate.songPos - lastChange.songTime) / Conductor.stepCrochet;
 	}
 
 	function getLastStepIndex(index:UInt):Float {
@@ -261,7 +261,7 @@ class CheesyStage extends StageBuilder {
 		}
 
 		if(boyfriend.animation.curAnim != null) {
-			if (!boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned) {
+			if(!boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned) {
 				boyfriend.dance();
 			}
 		}
@@ -273,7 +273,7 @@ class CheesyStage extends StageBuilder {
 		}
 
 		if(strumSpinning) {
-			if(getLastStepIndex(0) <= curStepFloat) {
+			if(getLastStepIndex(0) <= curStep) {
 				spinIndex++;
 			}
 
@@ -281,14 +281,14 @@ class CheesyStage extends StageBuilder {
 				var playerStrum:Strum = PlayState.playerStrums.members[i];
 				var opponentStrum:Strum = PlayState.opponentStrums.members[i];
 
-				if(spinSteps[0] <= curStepFloat) {
+				if(spinSteps[0] <= curStep) {
 					var speed:Float = 1;
 
 					if(getLastStepIndex(0) - getLastStepIndex(1) > 20) {
 						speed = 1.8;
 					}
 
-					var time:Float = ((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * (i / speed));
+					var time:Float = ((curStep - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * (i / speed));
 
 					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
 					opponentStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));

@@ -104,13 +104,14 @@ function onUpdate(elapsed)
     if startedCountdown then
         for i = 0, (totalKeysForStrum * 2) - 1 do
             setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
+            setN
 
             local Xdistance = allStrumsX[i + 1] - defaultNoteMovement(i, a)
             local Ydistance = (windowHeight * 0.5) - allStrumsY[i + 1]
 
             local angle = getOppositeAngle(math.atan(Ydistance / Xdistance))
 
-            setPlayerStrumDirection(i, (math.pi * 0.5) - angle)
+            setNoteDirection(i, (math.pi * 0.5) - angle)
         end
 
         a = a + (elapsed * 0.5) * (curBpm/120)
