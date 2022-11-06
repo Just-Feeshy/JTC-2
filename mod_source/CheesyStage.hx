@@ -49,8 +49,7 @@ class CheesyStage extends StageBuilder {
 		542,
 		567,
 		575,
-		602,
-		603
+		602
 	];
 
 	var strumRotate:Array<Bool> = [
