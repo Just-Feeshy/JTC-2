@@ -10,9 +10,6 @@ local size = 20
 local allStrumsX = {}
 local allStrumsY = {}
 
-local allStrumWidth = {}
-local allStrumHeight = {}
-
 local jtcStrumAnims = {
     "singRIGHT",
     "singUP",
@@ -52,28 +49,6 @@ function generatedStage()
         defaultPlayerStrumY1;
         defaultPlayerStrumY2;
         defaultPlayerStrumY3;
-    }
-
-    allStrumWidth = {
-        defaultOpponentStrumWidth0;
-        defaultOpponentStrumWidth1;
-        defaultOpponentStrumWidth2;
-        defaultOpponentStrumWidth3;
-        defaultPlayerStrumWidth0;
-        defaultPlayerStrumWidth1;
-        defaultPlayerStrumWidth2;
-        defaultPlayerStrumWidth3;
-    }
-
-    allStrumHeight = {
-        defaultOpponentStrumHeight0;
-        defaultOpponentStrumHeight1;
-        defaultOpponentStrumHeight2;
-        defaultOpponentStrumHeight3;
-        defaultPlayerStrumHeight0;
-        defaultPlayerStrumHeight1;
-        defaultPlayerStrumHeight2;
-        defaultPlayerStrumHeight3;
     }
 
     skaterboi = require("mod_assets/scripts/modules/character")
