@@ -73,9 +73,6 @@ class CheesyStage extends StageBuilder {
 	* Variables for lazy modcharts.
 	*/
 	var strumSpinning:Bool = false;
-	var bounceIndex:UInt = 0;
-	var bounceHold:Float = 0;
-
 	var curStepFloat:Float = 0;
 
     public function new(stage:String) {
@@ -177,13 +174,6 @@ class CheesyStage extends StageBuilder {
             }
         }
     }
-
-	/*
-	function lazyModchartSpin(index:Int) {
-		FlxTween.tween(PlayState.playerStrums.members[index], {yAngle: PlayState.playerStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / (60 * bounceStrength), {ease: FlxEase.quadOut});
-		FlxTween.tween(PlayState.opponentStrums.members[index], {yAngle: PlayState.opponentStrums.members[index].yAngle + (Math.PI * 2)}, Conductor.bpm / (60 * bounceStrength), {ease: FlxEase.quadOut});
-	}
-	*/
 
 	function lazySpin(index:Int) {
 		var playerStrum:Strum = PlayState.playerStrums.members[index];
@@ -292,29 +282,10 @@ class CheesyStage extends StageBuilder {
 
 				if(spinSteps[0] <= curStepFloat) {
 					var time:Float = ((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * i);
-					//trace(((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))));
 
 					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time), 0, 1));
 				}
 			}
-			/*
-			if(spinSteps[spinIndex] == @:privateAccess playstate.curStep && bounceHold > Conductor.stepCrochet * 0.0011) {
-				strumRotate[bounceIndex] = true;
-
-				bounceHold = 0;
-
-				bounceIndex++;
-
-				if(bounceIndex >= Std.int(playstate.strumLineNotes.length * 0.5)) {
-					bounceIndex = 0;
-					spinIndex++;
-				}
-			}
-			
-			if(bounceHold <= Conductor.stepCrochet * 0.0011) {
-				bounceHold += elapsed;
-			}
-			*/
 		}
 
 		super.update(elapsed);
