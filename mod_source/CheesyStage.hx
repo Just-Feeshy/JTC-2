@@ -284,6 +284,8 @@ class CheesyStage extends StageBuilder {
 				if(spinSteps[0] <= curStepFloat) {
 					var time:Float = ((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * i);
 
+					trace(getLastStepIndex(0) - getLastStepIndex(1));
+
 					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time), 0, 1));
 				}
 			}

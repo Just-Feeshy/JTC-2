@@ -491,7 +491,7 @@ class DefaultStage extends StageBuilder {
 
 		bumpZooms();
 
-        super.curBeat();
+        super.beatHit();
     }
 
 	@:access(PlayState)

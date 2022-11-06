@@ -3484,7 +3484,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		stage.curStep();
+		stage.stepHit();
 	}
 
 	var lightningStrikeBeat:Int = 0;
@@ -3578,7 +3578,7 @@ class PlayState extends MusicBeatState
 			dad.playNoDanceAnim('cheer', true);
 		}
 
-		stage.curBeat();
+		stage.beatHit();
 	}
 
 	@:access(flixel.FlxGame)
