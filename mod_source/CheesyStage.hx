@@ -285,12 +285,13 @@ class CheesyStage extends StageBuilder {
 					var speed:Float = 1;
 
 					if(getLastStepIndex(0) - getLastStepIndex(1) > 20) {
-						speed = 2;
+						speed = 1.8;
 					}
 
 					var time:Float = ((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * (i / speed));
 
 					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
+					opponentStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
 				}
 			}
 		}
