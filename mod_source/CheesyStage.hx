@@ -50,7 +50,7 @@ class CheesyStage extends StageBuilder {
 		567,
 		575,
 		602,
-		602
+		603
 	];
 
 	var strumRotate:Array<Bool> = [
@@ -270,6 +270,10 @@ class CheesyStage extends StageBuilder {
 			for(strum in playstate.strumLineNotes) {
 				strum.yAngle = FlxMath.lerp(0, strum.yAngle, 0.95);
 			}
+		}
+
+		if(getLastStepIndex(0) < curStep) {
+			strumSpinning = false;
 		}
 
 		if(strumSpinning) {
