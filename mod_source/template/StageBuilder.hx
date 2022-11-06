@@ -59,12 +59,12 @@ abstract class StageBuilder extends FlxGroup {
     }
 
     @:allow(PlayState)
-    private function curBeat():Void {
+    private function beatHit():Void {
         //Empty
     }
 
     @:allow(PlayState)
-    private function curStep():Void {
+    private function stepHit():Void {
         //Empty
     }
 

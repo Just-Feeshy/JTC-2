@@ -447,7 +447,7 @@ class DefaultStage extends StageBuilder {
         });
     }
 
-    override function curBeat():Void {
+    override function beatHit():Void {
         switch (stage) {
 			case 'school':
 				bgGirls.dance();
