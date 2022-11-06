@@ -34,7 +34,7 @@ class CheesyStage extends StageBuilder {
 		303,
 		312,
 		336,
-		345,
+		344,
 		368,
 		376,
 		401,
@@ -282,11 +282,15 @@ class CheesyStage extends StageBuilder {
 				var opponentStrum:Strum = PlayState.opponentStrums.members[i];
 
 				if(spinSteps[0] <= curStepFloat) {
-					var time:Float = ((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * i);
+					var speed:Float = 1;
 
-					trace(getLastStepIndex(0) - getLastStepIndex(1));
+					if(getLastStepIndex(0) - getLastStepIndex(1) > 20) {
+						speed = 2;
+					}
 
-					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time), 0, 1));
+					var time:Float = ((curStepFloat - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * (i / speed));
+
+					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
 				}
 			}
 		}
