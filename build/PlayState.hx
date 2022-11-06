@@ -3198,11 +3198,15 @@ class PlayState extends MusicBeatState
 			for(i in 0...playerStrums.members.length) {
 				setLua('defaultPlayerStrumX' + i, playerStrums.members[i].x);
 				setLua('defaultPlayerStrumY' + i, playerStrums.members[i].y);
+				setLua('defaultPlayerStrumWidth' + i, playerStrums.members[i].scale.x);
+				setLua('defaultPlayerStrumHeight' + i, playerStrums.members[i].scale.y);
 			}
 	
 			for (i in 0...opponentStrums.members.length) {
 				setLua('defaultOpponentStrumX' + i, opponentStrums.members[i].x);
 				setLua('defaultOpponentStrumY' + i, opponentStrums.members[i].y);
+				setLua('defaultOpponentStrumWidth' + i, opponentStrums.members[i].scale.x);
+				setLua('defaultOpponentStrumHeight' + i, opponentStrums.members[i].scale.y);
 			}
 
 			addCallback("setNoteStrumPos", function(id:Int, x:Float, y:Float) {

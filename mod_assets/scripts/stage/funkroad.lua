@@ -10,6 +10,9 @@ local size = 20
 local allStrumsX = {}
 local allStrumsY = {}
 
+local allStrumWidth = {}
+local allStrumHeight = {}
+
 local jtcStrumAnims = {
     "singRIGHT",
     "singUP",
@@ -49,6 +52,10 @@ function generatedStage()
         defaultPlayerStrumY1;
         defaultPlayerStrumY2;
         defaultPlayerStrumY3;
+    }
+
+    allStrumWidth = {
+        
     }
 
     skaterboi = require("mod_assets/scripts/modules/character")
@@ -104,7 +111,7 @@ function onUpdate(elapsed)
     if startedCountdown then
         for i = 0, (totalKeysForStrum * 2) - 1 do
             setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
-            --setN
+            setNoteScale(i, 1, 1, true)
 
             local Xdistance = allStrumsX[i + 1] - defaultNoteMovement(i, a)
             local Ydistance = (windowHeight * 0.5) - allStrumsY[i + 1]
