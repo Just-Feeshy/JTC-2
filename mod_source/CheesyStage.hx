@@ -272,7 +272,7 @@ class CheesyStage extends StageBuilder {
 			}
 		}
 
-		if(getLastStepIndex(0) < curStep) {
+		if(spinSteps[spinSteps.length - 1] < curStep) {
 			strumSpinning = false;
 		}
 
