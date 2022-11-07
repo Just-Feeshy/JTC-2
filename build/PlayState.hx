@@ -466,8 +466,8 @@ class PlayState extends MusicBeatState
 			precacheList.set('missnote3', 'sound');
 		}
 
-		precacheList.set(Paths.voices(PlayState.SONG.song), 'voices');
-		precacheList.set(Paths.inst(PlayState.SONG.song), 'inst');
+		precacheList.set(PlayState.SONG.song, 'voices');
+		precacheList.set(PlayState.SONG.song, 'inst');
 		
 		updateCache();
 		generateSong(SONG.song);
@@ -3715,6 +3715,9 @@ class PlayState extends MusicBeatState
                     spr.destroy();
                 }
             }
+
+			precacheList.clear();
+			precacheList = null;
 
             modifiableCharacters.clear();
             modifiableCharacters = null;
