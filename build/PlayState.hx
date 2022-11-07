@@ -66,6 +66,9 @@ using StringTools;
 
 class PlayState extends MusicBeatState
 {
+	//Cache Stuff
+	var precacheList:Map<String, String> = new Map<String, String>();
+
 	//Lua Stuff
 	public var modifiableCharacters:Map<String, Character>;
 
@@ -457,7 +460,16 @@ class PlayState extends MusicBeatState
 			camGame.engineAlpha = 0;
 		}
 
-		// startCountdown();
+		if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
+			precacheList.set('missnote1', 'sound');
+			precacheList.set('missnote2', 'sound');
+			precacheList.set('missnote3', 'sound');
+		}
+
+		precacheList.set(Paths.voices(PlayState.SONG.song), 'voices');
+		precacheList.set(Paths.inst(PlayState.SONG.song), 'inst');
+		
+		updateCache();
 		generateSong(SONG.song);
 
 		// add(strumLine);
@@ -571,6 +583,23 @@ class PlayState extends MusicBeatState
 		gamepadDetected = (FlxG.gamepads.lastActive != null ? true : false);
 
 		super.create();
+	}
+
+	function updateCache():Void {
+		for (key => type in precacheList) {
+			switch(type) {
+				case 'image':
+					Paths.image(key);
+				case 'sound':
+					Paths.sound(key);
+				case 'music':
+					Paths.music(key);
+				case "voices":
+					Paths.voices(key);
+				case "inst":
+					Paths.inst(key);
+			}
+		}
 	}
 
 	function setupKeyStuff():Void {
@@ -2071,7 +2100,10 @@ class PlayState extends MusicBeatState
 										misses += 1;
 
 									if(daNote.playAnyAnimation) {
-										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+										if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
+											FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+										}
+
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 									}
 								}
@@ -2087,7 +2119,10 @@ class PlayState extends MusicBeatState
 										misses += 1;
 
 									if(daNote.playAnyAnimation) {
-										FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+										if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
+											FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+										}
+
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
 									}
 								}
@@ -2705,7 +2740,10 @@ class PlayState extends MusicBeatState
 			combo = 0;
 
 			if(note == null) {
-				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+				if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
+					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+				}
+
 				songScore -= 10;
 			}else {
 				if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
@@ -2725,11 +2763,17 @@ class PlayState extends MusicBeatState
 			});
 
 			if(note == null) {
-				FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+				if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
+					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+				}
+
 				currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
 			}else {
 				if(note.playAnyAnimation) {
-					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+					if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
+						FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+					}
+
 					currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
 				}
 			}
