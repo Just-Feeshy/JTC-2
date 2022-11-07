@@ -113,7 +113,7 @@ function onUpdate(elapsed)
             setNoteDirection(i, (math.pi * 0.5) - angle)
         end
 
-        a = a + (elapsed * 0.5) * (curBpm/120)
+        a = a + (elapsed * 0.5) * (curBpm / 120)
     end
 end
 
@@ -128,4 +128,18 @@ end
 
 function defaultNoteMovement(i, var)
     return allStrumsX[i + 1] + (math.cos(var) * constant) * size
+end
+
+function swirlerpX(p, q, t)
+    local circleTime = 2 * math.pi - (t * (2 * math.pi))
+    local degrees90 = math.pi * 0.5
+
+    return q + (((1 - math.cos(circleTime - degrees90)) * circleTime * (p - q)) / (math.pi * 2))
+end
+
+function swirlerpY(p, q, t)
+    local circleTime = 2 * math.pi - (t * (2 * math.pi))
+    local degrees90 = math.pi * 0.5
+
+    return q + ((math.sin(circleTime - degrees90) * -circleTime * (p - q)) / (math.pi * 2))
 end
