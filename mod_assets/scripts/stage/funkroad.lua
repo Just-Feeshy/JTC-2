@@ -153,7 +153,7 @@ function onUpdate(elapsed)
     if stepBegin then
 
         --Modchart section 2
-        if not wheelIsHere and (transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep) then
+        if transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep then
             wheelIsHere = true
 
             for i = 0, (totalKeysForStrum * 2) - 1 do
