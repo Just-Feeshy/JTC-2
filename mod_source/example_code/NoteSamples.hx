@@ -146,7 +146,7 @@ class ReverseNote extends CustomNoteTemplate {
     }
 
     override function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float {
-        var anglePos:Float = 1 - FeshMath.cbrt(Math.min(1, note.getNoteStrumPosition(100)));
+        var anglePos:Float = FeshMath.cbrt(Math.min(1, note.getNoteStrumPosition(100)));
         var angleLerp:Float = FlxMath.lerp(strums[note.noteData].angle, strums[oppositeID].angle, anglePos);
 
         if(!note.isSustainNote) {
