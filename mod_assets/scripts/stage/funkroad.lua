@@ -1,3 +1,7 @@
+-- First main game lua test of this "engine" to see how well it can handle lua modchart's and general scripting.
+-- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
+
+
 --variables
 local skaterboi = nil
 
@@ -17,7 +21,13 @@ local jtcStrumAnims = {
     "singLEFT"
 }
 
+local transitionToWheel = { --In steps
+    616,
+    639
+}
+
 local daddyIsHere = false
+local wheelIsHere = false
 
 --functions
 function generatedStage()
@@ -79,12 +89,12 @@ function onStepHit()
         beatSection = beatSection + 1
     end
 
-    if(curStep == 210 and beatSection == 1) then
+    if curStep == 210 and beatSection == 1 then
         callEvent("bump per beat", "1", "1.1")
         beatSection = beatSection + 1
     end
 
-    if(curStep == 475 and beatSection == 2) then
+    if curStep == 475 and beatSection == 2 then
         callEvent("bump per beat", "4", "1")
         beatSection = beatSection + 1
     end
@@ -102,6 +112,8 @@ function onUpdate(elapsed)
     updateCharacter()
 
     if startedCountdown then
+
+        --Modchart section 1
         for i = 0, (totalKeysForStrum * 2) - 1 do
             setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
 
@@ -114,10 +126,27 @@ function onUpdate(elapsed)
         end
 
         a = a + (elapsed * 0.5) * (curBpm / 120)
+
+        --Modchart section 2
+        if not wheelIsHere and (transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep) then
+            wheelIsHere = true
+
+            
+        end
     end
 end
 
 --math functions
+function clamp(value, min, max)
+    if value < min then
+        return min
+    elseif value > max then
+        return max
+    end
+
+    return value
+end
+
 function getOppositeAngle(angle)
     if math.floor(angle) <= -1 then
         return math.pi + angle
