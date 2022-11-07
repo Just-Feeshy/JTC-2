@@ -151,7 +151,6 @@ function onUpdate(elapsed)
     end
 
     if stepBegin then
-        print("hehe")
 
         --Modchart section 2
         if not wheelIsHere and (transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep) then
