@@ -156,15 +156,15 @@ function onUpdate(elapsed)
         if transitionToWheel[1] < curStep and transitionToWheel[2] >= curStep then
             wheelIsHere = true
 
-            for i = 0, (totalKeysForStrum * 2) - 1 do
-                local timeLerp = ((transitionToWheel[2] - curStep) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
+            for i = 0, totalKeysForStrum - 1 do
+                --local timeLerp = ((transitionToWheel[2] - curStepFloat) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
 
-                print("call")
+                print("B: " + (i + 5))
 
-                setNoteStrumPos(i,
-                    swirlerpX(allStrumsX[i + 1], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 1], timeLerp),
-                    swirlerpY(allStrumsY[i + 1], getNoteScreenCenter(i, "Y") + noteWheelOffsetY[i + 1], timeLerp)
-                )
+                --setNoteStrumPos(i + 5,
+                --    swirlerpX(allStrumsX[i + 5], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 5], timeLerp),
+                --    swirlerpY(allStrumsY[i + 5], getNoteScreenCenter(i, "Y") + noteWheelOffsetY[i + 5], timeLerp)
+                --)
             end
         end
     end

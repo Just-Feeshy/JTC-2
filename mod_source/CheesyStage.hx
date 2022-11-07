@@ -193,6 +193,11 @@ class CheesyStage extends StageBuilder {
 		}
 
 		curStep = lastChange.stepTime + (@:privateAccess playstate.songPos - lastChange.songTime) / Conductor.stepCrochet;
+
+		/*
+		* Hell yea, I can cheese my way to making my own methods! Pun intended hehe.
+		*/
+		playstate.setLua("curStepFloat", curStep);
 	}
 
 	function getLastStepIndex(index:UInt):Float {
@@ -271,7 +276,11 @@ class CheesyStage extends StageBuilder {
 			}
 		}
 
-		if(spinSteps[spinSteps.length - 1] < curStep) {
+		if(spinSteps[spinSteps.length - 1] < curStep && strumSpinning) {
+			for(i in 0...playstate.strumLineNotes.length) {
+				playstate.strumLineNotes.members[i].yAngle = 0;
+			}
+
 			strumSpinning = false;
 		}
 
