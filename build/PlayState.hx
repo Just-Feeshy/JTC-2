@@ -2981,7 +2981,6 @@ class PlayState extends MusicBeatState
 		setLua("weekRaw", PlayState.storyWeek);
 		setLua("totalKeysForStrum", PlayState.SONG.fifthKey ? 5 : 4);
 		setLua("hasCutscene", PlayState.SONG.video != null ? true : false);
-		setLua("noteSwagWidth", Note.swagWidth);
 		setLua("inGameOver", false);
 
 		setLua("defaultBoyfriendX", boyfriend.x);

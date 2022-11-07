@@ -31,6 +31,9 @@ local noteWheelOffsetY = {}
 
 local daddyIsHere = false
 local wheelIsHere = false
+local stepBegin = false
+
+local noteSwagWidth = 160 * 0.7;
 
 --functions
 function generatedStage()
@@ -65,17 +68,17 @@ function generatedStage()
     }
 
     noteWheelOffsetX = {
-        -noteSwagWidth,
-        0,
-        0,
-        noteSwagWidth
+        -noteSwagWidth;
+        0;
+        0;
+        noteSwagWidth;
     }
 
     noteWheelOffsetY = {
-        0,
-        noteSwagWidth,
-        -noteSwagWidth,
-        0
+        0;
+        noteSwagWidth;
+        -noteSwagWidth;
+        0;
     }
 
     skaterboi = require("mod_assets/scripts/modules/character")
@@ -143,7 +146,10 @@ function onUpdate(elapsed)
         end
 
         a = a + (elapsed * 0.5) * (curBpm / 120)
+    end
 
+    if stepBegin then
+        
         --Modchart section 2
         if not wheelIsHere and (transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep) then
             wheelIsHere = true
