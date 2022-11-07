@@ -159,10 +159,12 @@ function onUpdate(elapsed)
             for i = 0, (totalKeysForStrum * 2) - 1 do
                 local timeLerp = ((transitionToWheel[2] - curStep) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
 
-                local noteX_Lerp = swirlerpX(allStrumsX[i + 1], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 1], timeLerp)
-                local noteY_Lerp = swirlerpY(allStrumsY[i + 1], getNoteScreenCenter(i, "Y") + noteWheelOffsetY[i + 1], timeLerp)
+                print("call")
 
-                setNoteStrumPos(i, noteX_Lerp, noteY_Lerp)
+                setNoteStrumPos(i,
+                    swirlerpX(allStrumsX[i + 1], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 1], timeLerp),
+                    swirlerpY(allStrumsY[i + 1], getNoteScreenCenter(i, "Y") + noteWheelOffsetY[i + 1], timeLerp)
+                )
             end
         end
     end
