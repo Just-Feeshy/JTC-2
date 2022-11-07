@@ -2981,6 +2981,7 @@ class PlayState extends MusicBeatState
 		setLua("weekRaw", PlayState.storyWeek);
 		setLua("totalKeysForStrum", PlayState.SONG.fifthKey ? 5 : 4);
 		setLua("hasCutscene", PlayState.SONG.video != null ? true : false);
+		setLua("noteSwagWidth", Note.swagWidth);
 		setLua("inGameOver", false);
 
 		setLua("defaultBoyfriendX", boyfriend.x);
@@ -3283,6 +3284,17 @@ class PlayState extends MusicBeatState
 			addCallback("getNoteScaleY", function(id:Int) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 				return strumOBJ.scale.y;
+			});
+
+			addCallback("getNoteScreenCenter", function(id:Int, ?axis:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+
+				switch(axis.toLowerCase()) {
+                    case "x": return strumOBJ.getScreenCenter(X);
+                    case "y": return strumOBJ.getScreenCenter(Y);
+                }
+
+				return 0;
 			});
 
 			addCallback("noteTweenX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {

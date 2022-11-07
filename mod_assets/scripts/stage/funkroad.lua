@@ -26,6 +26,9 @@ local transitionToWheel = { --In steps
     639
 }
 
+local noteWheelOffsetX = {}
+local noteWheelOffsetY = {}
+
 local daddyIsHere = false
 local wheelIsHere = false
 
@@ -59,6 +62,20 @@ function generatedStage()
         defaultPlayerStrumY1;
         defaultPlayerStrumY2;
         defaultPlayerStrumY3;
+    }
+
+    noteWheelOffsetX = {
+        -noteSwagWidth,
+        0,
+        0,
+        noteSwagWidth
+    }
+
+    noteWheelOffsetY = {
+        0,
+        noteSwagWidth,
+        -noteSwagWidth,
+        0
     }
 
     skaterboi = require("mod_assets/scripts/modules/character")
@@ -131,7 +148,14 @@ function onUpdate(elapsed)
         if not wheelIsHere and (transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep) then
             wheelIsHere = true
 
-            
+            for i = 0, (totalKeysForStrum * 2) - 1 do
+                local timeLerp = ((transitionToWheel[2] - curStep) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
+
+                local noteX_Lerp = swirlerpX(allStrumsX[i + 1], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 1], timeLerp)
+                local noteY_Lerp = swirlerpY(allStrumsY[i + 1], getNoteScreenCenter(i, "Y") + noteWheelOffsetY[i + 1], timeLerp)
+
+                setNoteStrumPos(i, noteX_Lerp, noteY_Lerp)
+            end
         end
     end
 end
