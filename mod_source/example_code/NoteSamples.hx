@@ -74,10 +74,6 @@ class PoisonNote extends CustomNoteTemplate {
     override function makeLongNoteLong():Bool {
         return false;
     }
-
-    override function customEndSustainNotePosition():Bool {
-        return true;
-    }
 }
 
 class ReverseNote extends CustomNoteTemplate {
@@ -177,7 +173,7 @@ class ReverseNote extends CustomNoteTemplate {
     }
 
     function angleMeasurements(x:Float, note:Note, angle:Float):Float {
-        return (x + note.noteOffset.x) + Math.sin(angle) * note.caculatePos;
+        return (x + note.noteOffset.x) + Math.sin(angle + note.directionAngle) * note.caculatePos;
     }
 }
 
@@ -245,9 +241,5 @@ class ReversePoisonNote extends ReverseNote {
 
     override function cantHaveHold():Bool {
         return false;
-    }
-
-    override function customEndSustainNotePosition():Bool {
-        return true;
     }
 }

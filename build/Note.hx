@@ -45,6 +45,8 @@ class Note extends FeshSprite {
 	public var strumTime:Float = 0;
 	public var swayTime:Float = 0;
 
+	public var directionAngle:Float = 0; //This is in radians.
+
 	public var mustPress:Bool = false;
 	public var noteData:Int = 0;
 	public var canBeHit:Bool = false;
@@ -479,8 +481,8 @@ class Note extends FeshSprite {
 		return x;
 	}
 
-	public function setInverseAxis(strumPos:Float, strumAngle:Float, customEndSus:Bool):Void {
-		x = (strumPos + noteOffset.x) + Math.sin(strumAngle) * caculatePos;
+	public function setInverseAxis(strumPos:Float, strumAngle:Float):Float {
+		return (strumPos + noteOffset.x) + Math.sin(strumAngle + directionAngle) * caculatePos;
 	}
 
 	public function getNoteAxis():Float {
@@ -488,7 +490,7 @@ class Note extends FeshSprite {
 	}
 
 	public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
-		y = (strumPos + noteOffset.y) + Math.cos(strumAngle) * caculatePos;
+		y = (strumPos + noteOffset.y) + Math.cos(strumAngle + directionAngle) * caculatePos;
 		var yAddon:Float = 0;
 
 		if(height < 50) {
@@ -547,18 +549,21 @@ class Note extends FeshSprite {
 	}
 
 	public function setXaxisSustain(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
+		var actualX:Float = setInverseAxis(alreadyX, strumAngle);
+
 		if(hasCustomAddon != null)
-			setInverseAxis(hasCustomAddon.setSustainXPosition(this, strums, alreadyX), strumAngle, hasCustomAddon.customEndSustainNotePosition());
+			x = hasCustomAddon.setSustainXPosition(this, strums, actualX);
 		else
-			setInverseAxis(alreadyX, strumAngle, false);
+			x = actualX;
 	}
 
 	public function setXaxis(strums:Array<Strum>, strumX:Float, alreadyX:Float, strumAngle:Float) {
+		var actualX:Float = setInverseAxis(alreadyX, strumAngle);
+
 		if(hasCustomAddon != null)
-			setInverseAxis(hasCustomAddon.setXPosition(this, strums, alreadyX), strumAngle, hasCustomAddon.customEndSustainNotePosition());
-		else {
-			setInverseAxis(alreadyX, strumAngle, false);
-		}
+			x = hasCustomAddon.setXPosition(this, strums, actualX);
+		else
+			x = actualX;
 	}
 
 	public function splash(splashThing:SplashSprite, strumNote:Strum, rating:String):Void {

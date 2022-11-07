@@ -13,7 +13,7 @@ class Strum extends feshixl.FeshSprite {
 	public var onlyFans:Float;
 	public var xAxis:Bool;
 
-	public var directionAngle:Float = 0;
+	public var directionAngle:Float = 0; //This is in radians.
 	public var holdTimer:Float = 0;
 
 	public var prevVisible:Bool = true;
