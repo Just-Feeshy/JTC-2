@@ -132,14 +132,14 @@ end
 
 function swirlerpX(p, q, t)
     local circleTime = 2 * math.pi - (t * (2 * math.pi))
-    local degrees90 = math.pi * 0.5
+    local degrees90 = math.pi * 0.5 --In radians
 
     return q + ((1 - math.cos(circleTime - degrees90)) * circleTime * (p - q)) / (math.pi * 2)
 end
 
 function swirlerpY(p, q, t)
     local circleTime = 2 * math.pi - (t * (2 * math.pi))
-    local degrees90 = math.pi * 0.5
+    local degrees90 = math.pi * 0.5 --In radians
 
     return q + (math.sin(circleTime - degrees90) * -circleTime * (p - q)) / (math.pi * 2)
 end
