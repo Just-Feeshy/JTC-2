@@ -153,7 +153,7 @@ function onUpdate(elapsed)
     if stepBegin then
 
         --Modchart section 2
-        if transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep then
+        if transitionToWheel[1] < curStep and transitionToWheel[2] >= curStep then
             wheelIsHere = true
 
             for i = 0, (totalKeysForStrum * 2) - 1 do
@@ -205,4 +205,8 @@ function swirlerpY(p, q, t)
     local degrees90 = math.pi * 0.5 --In radians
 
     return q + (math.sin(circleTime - degrees90) * -circleTime * (p - q)) / (math.pi * 2)
+end
+
+function lerp(value1, value2, ratio)
+    return value1 + ratio * (value2 - value1)
 end
