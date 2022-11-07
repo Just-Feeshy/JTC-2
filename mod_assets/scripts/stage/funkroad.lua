@@ -133,7 +133,7 @@ end
 function onUpdate(elapsed)
     updateCharacter()
 
-    if startedCountdown then
+    if startedCountdown and not wheelIsHere then
 
         --Modchart section 1
         for i = 0, (totalKeysForStrum * 2) - 1 do
@@ -151,6 +151,7 @@ function onUpdate(elapsed)
     end
 
     if stepBegin then
+        print("hehe")
 
         --Modchart section 2
         if not wheelIsHere and (transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep) then
