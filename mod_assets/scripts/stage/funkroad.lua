@@ -93,6 +93,8 @@ function updateCharacter()
 end
 
 function onStepHit()
+    stepBegin = true
+
     if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
         addSpriteToStage("skater-boi-player")
@@ -149,7 +151,7 @@ function onUpdate(elapsed)
     end
 
     if stepBegin then
-        
+
         --Modchart section 2
         if not wheelIsHere and (transitionToWheel[1] > curStep and transitionToWheel[2] <= curStep) then
             wheelIsHere = true
