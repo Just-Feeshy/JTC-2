@@ -38,17 +38,7 @@ class Cache {
 
     static public function cacheAsset(key:String, ?library:String = "", directly:Bool = false):Void {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);
-
-        if(OpenFlAssets.exists(path, IMAGE)) {
-            if(!theseAssets.exists(path)) {
-                var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
-                graphics.persist = true;
-                graphics.destroyOnNoUse = false;
-                theseAssets.set(path, graphics);
-            }
-        }else {
-            trace("Warning: could not locate asset - " + path);
-        }
+        cacheAssetDirectly(path);
     }
 
     static public function cacheRemove(key:String, ?library:String = ""):Void {
@@ -118,7 +108,6 @@ class Cache {
         * Use `@:privateAccess` to get keys cached.
         */
 
-        @:privateAccess
 		for(key in theseAssets.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
 
