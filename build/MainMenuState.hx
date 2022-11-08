@@ -189,12 +189,6 @@ class MainMenuState extends MusicBeatState
 		camNoBump.follow(secondCam, null, 1);
 		camMenu.follow(secondCam, null, 1);
 
-		var versionShit:FlxText = new FlxText(5, FlxG.height - 18, 0, "FNF " + Application.current.meta.get('version') + " | " + Paths.modJSON.mod.version, 12);
-		versionShit.scrollFactor.set();
-		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		versionShit.cameras = [camNoBump];
-		add(versionShit);
-
 		switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
 			case 0:
 				controls.setKeyboardScheme(KeyboardScheme.Duo(true), true);
