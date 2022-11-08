@@ -38,7 +38,7 @@ class HealthIcon extends FlxSprite
 
 		character = char;
 
-		updatePref = (FlxG.save.data.showAntialiasing ? 1 : 1.5);
+		updatePref = (FlxG.save.data.showAntialiasing ? 1 : 0.75);
 
 		loadGraphic(Paths.image('iconGrid'), true, 150, 150);
 
@@ -93,7 +93,7 @@ class HealthIcon extends FlxSprite
 
 	override function update(elapsed:Float):Void
 		{
-			super.update(elapsed / updatePref);
+			super.update(elapsed * updatePref);
 	
 			if (sprTracker != null)
 				setPosition(sprTracker.x + sprTracker.width + 10, sprTracker.y - 30);

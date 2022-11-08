@@ -61,6 +61,7 @@ class CheesyStage extends StageBuilder {
 	var dad:Character;
 
 	var dadShouldDance:Bool = true;
+	var phase2_switch:Bool = false;
 
 	/*
 	* Variables for lazy modcharts.
@@ -198,9 +199,9 @@ class CheesyStage extends StageBuilder {
 	}
 
 	override function whenCreatingScene():Void {
-		if(playstate.iconP1.iconAnimInfo[0] == 28 && playstate.iconP1.iconAnimInfo[1] == 29) {
-			playstate.healthBar.filledColor = tripleIconColors[0];
-			tweenHealthBar(tripleIconColors, "player", playstate);
+		if(playstate.iconP1.iconAnimInfo[0] == 31 && playstate.iconP1.iconAnimInfo[1] == 32) {
+			playstate.healthBar.filledColor = doubleIconColors[0];
+			tweenHealthBar(doubleIconColors, "player", playstate);
 		}
 
 		if(PlayState.SONG.song.toLowerCase() != "funk-off" && PlayState.SONG.song.toLowerCase() != "ping-pong") {
@@ -284,6 +285,16 @@ class CheesyStage extends StageBuilder {
 					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
 					opponentStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
 				}
+			}
+		}
+
+		if(!phase2_switch && Math.floor(curStep) == 630) {
+			phase2_switch = true;
+
+			playstate.iconP1.createAnim("flying BF sings", [28, 29, 28], true);
+			if(playstate.iconP1.iconAnimInfo[0] == 31 && playstate.iconP1.iconAnimInfo[1] == 32) {
+				cleanTween();
+				tweenHealthBar(tripleIconColors, "player", playstate);
 			}
 		}
 
