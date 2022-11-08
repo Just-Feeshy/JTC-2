@@ -18,11 +18,6 @@ import Conductor.BPMChangeEvent;
 using StringTools;
 
 class CheesyStage extends StageBuilder {
-	@:final var doubleIconColors:Array<Int> = [
-		0xff31b0d1, //Boyfriend
-		0xffa5004d //Girlfriend
-	];
-
 	@:final var tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
@@ -68,6 +63,8 @@ class CheesyStage extends StageBuilder {
 	*/
 	var strumSpinning:Bool = false;
 	var curStep:Float = 0;
+
+	var healthBarArrayLength:UInt = 2;
 
     public function new(stage:String) {
         super(stage);
@@ -121,11 +118,11 @@ class CheesyStage extends StageBuilder {
 
 	function tweenHealthBar(info:Array<Int>, direction:String, playstate:PlayState):Void { // I didn't expect this to be a recursive method.
 		if(direction == "right" || direction == "player") {
-			tweenIndex = (tweenIndex + 1) % info.length;
+			tweenIndex = (tweenIndex + 1) % healthBarArrayLength;
 			var prevValue:Int = tweenIndex - 1;
 
 			if(prevValue < 0) {
-				prevValue = info.length - 1;
+				prevValue = healthBarArrayLength - 1;
 			}
 
 			allTweens.push(FlxTween.color(playstate.healthBar.filledBar, Conductor.bpm/60, info[prevValue], info[tweenIndex], {ease: FlxEase.linear,
@@ -200,8 +197,8 @@ class CheesyStage extends StageBuilder {
 
 	override function whenCreatingScene():Void {
 		if(playstate.iconP1.iconAnimInfo[0] == 31 && playstate.iconP1.iconAnimInfo[1] == 32) {
-			playstate.healthBar.filledColor = doubleIconColors[0];
-			tweenHealthBar(doubleIconColors, "player", playstate);
+			playstate.healthBar.filledColor = tripleIconColors[0];
+			tweenHealthBar(tripleIconColors, "player", playstate);
 		}
 
 		if(PlayState.SONG.song.toLowerCase() != "funk-off" && PlayState.SONG.song.toLowerCase() != "ping-pong") {
@@ -288,14 +285,28 @@ class CheesyStage extends StageBuilder {
 			}
 		}
 
-		if(!phase2_switch && Math.floor(curStep) == 630) {
+		@:privateAccess if(!phase2_switch && Math.floor(curStep) == 630) {
 			phase2_switch = true;
 
 			playstate.iconP1.createAnim("flying BF sings", [28, 29, 28], true);
-			if(playstate.iconP1.iconAnimInfo[0] == 31 && playstate.iconP1.iconAnimInfo[1] == 32) {
-				cleanTween();
-				tweenHealthBar(tripleIconColors, "player", playstate);
+			playstate.healthBar.emptyColor = 0xffaf66ce;
+			healthBarArrayLength = 3;
+
+			playstate.avoidHealthIssues = true;
+
+			if(playstate.healthTween != null) {
+				playstate.healthTween.cancel();
+				playstate.healthTween.destroy();
+
+				playstate.healthTween = null;
 			}
+
+			FlxTween.tween(playstate, {health: 1}, (Conductor.stepCrochet * 0.0055), {ease: FlxEase.cubeOut, 
+				onComplete: function(twn:FlxTween) {
+					playstate.prevHealth = playstate.health;
+					playstate.avoidHealthIssues = false;
+				}
+			});
 		}
 
 		super.update(elapsed);

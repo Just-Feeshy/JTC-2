@@ -86,14 +86,13 @@ class PlayState extends MusicBeatState
 	private var prevDadNoteData:Int = -1;
 	private var gamepadDetected:Bool = false;
 
-	private var healthTween:FlxTween;
-
 	public var camPos:FlxPoint;
 	public var flipWiggle:Int = 1;
 	public var timeFreeze:Float = 0;
 	public var health:Float = 1;
 
-	private var prevHealth:Float = 0;
+	public var healthTween(default, null):FlxTween;
+	public var prevHealth(default, null):Float = 0;
 
 	public var opponentAltAnim:String = "";
 	public var playerAltAnim:String = "";
@@ -189,6 +188,11 @@ class PlayState extends MusicBeatState
 
 	public var currentStrums(get, never):FlxTypedSpriteGroup<Strum>;
 	public var oppositeStrums(get, never):FlxTypedSpriteGroup<Strum>;
+
+	/*
+	* When note is missed, player WON'T receive damage.
+	*/
+	public var avoidHealthIssues:Bool = false;
 
 	private var camZooming:Bool = false;
 	private var curSong:String = "";
@@ -2728,9 +2732,11 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (!currentPlayer.stunned)
-		{
-			setHealth(health - 0.04);
+		if (!currentPlayer.stunned) {
+
+			if(!avoidHealthIssues) {
+				setHealth(health - 0.04);
+			}
 
 			if(gf != null) {
 				if (combo > 5 && gf.animOffsets.exists('sad'))
@@ -3513,6 +3519,7 @@ class PlayState extends MusicBeatState
 		value2 = value2.toLowerCase();
 
 		events.whenTriggered(skill, value, value2, this);
+		stage.onEvent(skill, value, value2);
 
 		callLua("whenEventTriggered", [skill, value, value2]);
 	}

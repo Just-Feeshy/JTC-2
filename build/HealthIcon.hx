@@ -77,10 +77,9 @@ class HealthIcon extends FlxSprite
 			animation.remove(character);
 		}
 
-		animation.add(character, iconAnimInfo, 0, false, isPlayer);
-
 		if(this.character == character) {
 			this.iconAnimInfo = iconAnimInfo;
+			animation.add(character, iconAnimInfo, 0, false, isPlayer);
 			animation.play(this.character);
 		}
 	}

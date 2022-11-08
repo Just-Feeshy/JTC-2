@@ -98,6 +98,10 @@ function onStepHit()
     if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
         addSpriteToStage("skater-boi-player")
+
+        removeSpriteFromState("frostbiteCAR")
+        destroySprite("frostbiteCAR")
+
         daddyIsHere = true
     end
 

@@ -53,6 +53,10 @@ abstract class StageBuilder extends FlxGroup {
     public function modifyNotesDirectly(note:Note) {
         //empty
     }
+    
+    public function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {
+        //empty
+    }
 
     public function setCamPos(camPos:FlxPoint):FlxPoint {
         return null;

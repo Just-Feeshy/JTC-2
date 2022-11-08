@@ -164,11 +164,14 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                         }
                     case "bf" | "boyfriend" | "player":
                         if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                            playState.remove(playState.dad);
-                            playState.dad.destroy();
-                            playState.dad = new Character(100, 100, eventValue);
-                            playState.dad.refresh(eventValue, playState.camPos);
-                            playState.add(playState.dad);
+                            playState.remove(playState.boyfriend);
+                            playState.boyfriend.destroy();
+                            playState.boyfriend = new Boyfriend(100, 100, eventValue);
+                            playState.boyfriend.refresh(eventValue, playState.camPos);
+                            playState.add(playState.boyfriend);
+
+                            playState.iconP1.character = eventValue;
+                            playState.iconP1.createAnim(playState.boyfriend.curCharacter, playState.boyfriend._info.icon, true);
                         }
                     default:
                         if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
@@ -177,6 +180,9 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                             playState.dad = new Character(100, 100, eventValue);
                             playState.dad.refresh(eventValue, playState.camPos);
                             playState.add(playState.dad);
+
+                            playState.iconP2.character = eventValue;
+                            playState.iconP2.createAnim(eventValue, playState.dad._info.icon, false);
                         }
                     
                 }
