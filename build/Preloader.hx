@@ -45,6 +45,8 @@ class Preloader extends HelperStates {
     }
 
     override function create():Void {
+        FlxG.fixedTimestep = false;
+
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
         SaveData.globalMEM = new Memory(10, 18, 0xFFFFFF);
 

@@ -493,7 +493,7 @@ class PlayState extends MusicBeatState
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
-		FlxG.fixedTimestep = false;
+		//FlxG.fixedTimestep = false;
 
 		healthBarBG = new FlxSprite(0, FlxG.height * 0.9).loadGraphic(Paths.image('healthBar'));
 
@@ -583,6 +583,8 @@ class PlayState extends MusicBeatState
 		gamepadDetected = (FlxG.gamepads.lastActive != null ? true : false);
 
 		super.create();
+
+		stage.finishedInitGame();
 	}
 
 	function updateCache():Void {
@@ -1635,7 +1637,7 @@ class PlayState extends MusicBeatState
 		noteBeat = curBeat;
 
 		if(playFPS != null && Lib.current.stage.frameRate < playFPS && SONG.modifyFPS) {
-			Lib.current.stage.frameRate = playFPS * SaveData.getData(SaveType.FPS_MULTIPLIER);
+			Register.updateFramerate(playFPS * SaveData.getData(SaveType.FPS_MULTIPLIER));
 			Main.framerate = playFPS;
 		}
 
@@ -2690,7 +2692,7 @@ class PlayState extends MusicBeatState
 				}
 
 				if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-					if(controlArray[index]) {
+					if(controlArray[index] && spr.animation.curAnim.name != "confirm") {
 						spr.playAnim('pressed');
 					}
 				}

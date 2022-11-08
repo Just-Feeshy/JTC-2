@@ -52,13 +52,6 @@ class CheesyStage extends StageBuilder {
 		602
 	];
 
-	var strumRotate:Array<Bool> = [
-		false,
-		false,
-		false,
-		false
-	];
-
 	var spinIndex:UInt = 0;
 	var tweenIndex:UInt = 0;
 
@@ -80,20 +73,6 @@ class CheesyStage extends StageBuilder {
 
 		var cacheList:Array<String> = [];
 		allTweens = new Array<FlxTween>();
-
-		/**
-		* WIP
-		*
-		if(Assets.exists(Paths.getPath('data/frostbeat/cache.json', TEXT, ""))) {
-            cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/frostbeat/cache.json', TEXT, "")));
-
-			for(i in 0...cacheList.length) {
-				if(!Cache.permanentCache.contains(cacheList[i])) {
-					Cache.permanentCache.push(cacheList[i]);
-				}
-			}
-		}
-		*/
 
         switch(stage) {
             case "funkstreet":

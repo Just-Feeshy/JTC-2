@@ -189,7 +189,7 @@ class OptionsMenuState extends MusicBeatState {
 									if(FlxG.save.data.lowFps > 100)
 										FlxG.save.data.lowFps = 60;
 									
-									Lib.current.stage.frameRate = FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER);
+									Register.updateFramerate(Math.ceil(FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER)));
 									Main.framerate = FlxG.save.data.lowFps;
 								}
 
@@ -211,15 +211,14 @@ class OptionsMenuState extends MusicBeatState {
 									if(FlxG.save.data.fpsMulti > 9)
 										FlxG.save.data.fpsMulti = 1;
 
-									Lib.current.stage.frameRate = FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER);
+									isChangingOption = false;
+
+									Register.updateFramerate(Math.ceil(FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER)));
 									Main.framerate = FlxG.save.data.lowFps;
 								}
 
 								option.description = "Multiply the minimal FPS.";
 								setting(option, Std.string(FlxG.save.data.fpsMulti), option.ID);
-
-								if(pressed)
-									isChangingOption = false;
 							}),
 							new Options(0, 50, "Note Offset", SaveType.NOTE_OFFSET, function(option:Options, pressed:Bool) {
 								option.ID = 5;
@@ -304,7 +303,7 @@ class OptionsMenuState extends MusicBeatState {
 							}),
 							#end
 							new Options(0, 70 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
-								option.ID = 7 + Math.ceil(extra / 10);
+								option.ID = 7 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
@@ -323,7 +322,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 80 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-								option.ID = 8 + Math.ceil(extra / 10);
+								option.ID = 8 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.helpme = !FlxG.save.data.helpme;
@@ -342,7 +341,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 90 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-								option.ID = 9 + Math.ceil(extra / 10);
+								option.ID = 9 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
@@ -361,7 +360,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new Options(0, 100 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-								option.ID = 10 + Math.ceil(extra / 10);
+								option.ID = 10 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
@@ -380,7 +379,7 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							new GhostTapping(0, 110 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-								option.ID = 11 + Math.ceil(extra / 10);
+								option.ID = 11 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
@@ -1019,6 +1018,14 @@ class OptionsMenuState extends MusicBeatState {
 		}
 	}
 
+	function pressedAnOption(accepted:Bool):Void {
+		if((accepted || FlxG.mouse.justPressed) && !isChangingOption) {
+			isChangingOption = true;
+
+			updateChanges(true);
+		}
+	}
+
 	override function openSubStateCustom(SubState:FlxSubState):Void {
 		changeBlur = true;
 
@@ -1037,8 +1044,6 @@ class OptionsMenuState extends MusicBeatState {
 	}
 
 	override function update(elapsed:Float):Void {
-		super.update(elapsed);
-
 		var upP = controls.UP_P;
 		var downP = controls.DOWN_P;
 		var accepted = controls.ACCEPT;
@@ -1052,10 +1057,7 @@ class OptionsMenuState extends MusicBeatState {
 		if((downP || FlxG.mouse.wheel < -0.1) && !isChangingOption)
 			changeSelection(1);
 
-		if((accepted || FlxG.mouse.justPressed) && !isChangingOption) {
-			isChangingOption = true;
-			updateChanges(true);
-		}
+		pressedAnOption(accepted);
 
 		if(escaped && !isChangingOption) {
 			switch(catalog) {
@@ -1072,5 +1074,7 @@ class OptionsMenuState extends MusicBeatState {
 				optionSetting.members[option.ID].y = option.optionIcon.y - (optionSetting.members[option.ID].height / 2) + 5;
 			});	
 		}
+
+		super.update(elapsed);
 	}
 }

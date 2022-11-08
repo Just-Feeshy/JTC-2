@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import openfl.display.BitmapData;
+import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
 import openfl.utils.ByteArray;
 import openfl.system.System;
@@ -11,8 +12,6 @@ import lime.utils.Assets;
 
 //Basically a class like Path
 class Cache {
-    public static var permanentCache:Array<String> = new Array<String>();
-
     @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 
     static public function cacheListedFormat(path:String):Void {
@@ -49,6 +48,29 @@ class Cache {
             }
         }else {
             trace("Warning: could not locate asset - " + path);
+        }
+    }
+
+    static public function cacheRemove(key:String, ?library:String = ""):Void {
+        var path:String = Paths.getPath('images/$key.png', IMAGE, library);
+
+        if(OpenFlAssets.exists(path, IMAGE)) {
+
+            /**
+            * Use `@:privateAccess` to get keys cached.
+            */
+
+            @:privateAccess
+            if(theseAssets.exists(path) && openfl.Assets.cache.hasBitmapData(key)) {
+                var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
+                theseAssets.remove(key);
+
+                openfl.Assets.cache.removeBitmapData(key);
+                FlxG.bitmap.removeKey(key);
+                daBitmap.destroy();
+
+                daBitmap = null;
+            }
         }
     }
 
@@ -97,16 +119,16 @@ class Cache {
         */
 
         @:privateAccess
-		for(key in FlxG.bitmap._cache.keys()) {
+		for(key in theseAssets.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
 
-            if (theseAssets.exists(key) && !permanentCache.contains(key)) {
+            @:privateAccess if(openfl.Assets.cache.hasBitmapData(key)) {
                 openfl.Assets.cache.removeBitmapData(key);
                 FlxG.bitmap.removeKey(key);
                 daBitmap.destroy();
-
-                daBitmap = null;
             }
+
+            daBitmap = null;
         }
 
         theseAssets.clear();

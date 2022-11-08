@@ -107,12 +107,12 @@ function onStepHit()
     end
 
     if curStep == 147 and beatSection == 0 then
-        callEvent("bump per beat", "2", "1.05")
+        callEvent("bump per beat", "2", "1.025")
         beatSection = beatSection + 1
     end
 
     if curStep == 210 and beatSection == 1 then
-        callEvent("bump per beat", "1", "1.1")
+        callEvent("bump per beat", "1", "1.05")
         beatSection = beatSection + 1
     end
 

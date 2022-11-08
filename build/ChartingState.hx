@@ -1354,7 +1354,7 @@ class ChartingState extends MusicBeatState
 					nums.value = 60;
 
 				if(_song.modifyFPS)
-					Lib.current.stage.frameRate = Std.int(nums.value) * SaveData.getData(SaveType.FPS_MULTIPLIER);
+					Register.updateFramerate(Std.int(nums.value) * SaveData.getData(SaveType.FPS_MULTIPLIER));
 				_song.fps = Std.int(nums.value);
 			}
 			else if (wname == 'song_mapping') {

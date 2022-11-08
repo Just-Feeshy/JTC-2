@@ -173,6 +173,23 @@ class Register {
         return Type.createInstance(Type.resolveClass(type), args);
     }
 
+    public inline static function updateFramerate(fps:Int):Void {
+        if(FlxG.updateFramerate == fps) {
+            return;
+        }
+
+        if (fps > FlxG.updateFramerate) {
+            FlxG.updateFramerate = fps;
+            FlxG.drawFramerate = fps;
+        }else {
+            FlxG.drawFramerate = fps;
+            FlxG.updateFramerate = fps;
+        }
+
+        FlxG.game.focusLostFramerate = fps;
+        openfl.Lib.current.stage.frameRate = fps;
+    }
+
     public inline static function getFlxEaseByString(ease:String) {
 		switch(ease.toLowerCase().trim()) {
 			case 'backin':

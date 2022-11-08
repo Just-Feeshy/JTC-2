@@ -447,16 +447,9 @@ class Controls extends FlxActionSet
 		for (action in digitalActions)
 			byName[action.name] = action;
 			
-		if (scheme == null)
-			scheme = None;
 		setKeyboardScheme(scheme, false);
 	}
 	#end
-
-	override function update()
-	{
-		super.update();
-	}
 
 	// inline
 	public function checkByName(name:Action):Bool
@@ -614,7 +607,7 @@ class Controls extends FlxActionSet
 			for (input in action.inputs)
 			{
 				if (device == null || isDevice(input, device))
-				byName[name].add(cast input);
+					byName[name].add(cast input);
 			}
 		}
 		#end
@@ -630,7 +623,7 @@ class Controls extends FlxActionSet
 				#else
 				for (gamepad in controls.gamepadsAdded)
 					if (gamepadsAdded.indexOf(gamepad) == -1)
-					  gamepadsAdded.push(gamepad);
+						gamepadsAdded.push(gamepad);
 				#end
 
 				mergeKeyboardScheme(controls.keyboardScheme);
@@ -706,81 +699,76 @@ class Controls extends FlxActionSet
 
 	public function setKeyboardScheme(scheme:KeyboardScheme, reset = true)
 	{
-		if (reset)
-			removeKeyboard();
+		removeKeyboard();
 
 		keyboardScheme = scheme;
 		
 		//Suffer :3
 
 		#if (haxe >= "4.0.0")
-		try {
-			switch (scheme)
-			{
-				case Solo:
-					inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
-					inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
-					inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
-					inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
-					inline bindKeys(Control.GAME_UP, [J, FlxKey.UP]);
-					inline bindKeys(Control.GAME_DOWN, [F, FlxKey.DOWN]);
-					inline bindKeys(Control.GAME_LEFT, [D, FlxKey.LEFT]);
-					inline bindKeys(Control.GAME_RIGHT, [K, FlxKey.RIGHT]);
-					inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
-					inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
-					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
-					inline bindKeys(Control.RESET, [R]);
-					inline bindKeys(Control.CHEAT, []);
-				case Duo(true):
-					inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
-					inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
-					inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
-					inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
-					inline bindKeys(Control.GAME_UP, [W, FlxKey.UP]);
-					inline bindKeys(Control.GAME_DOWN, [S, FlxKey.DOWN]);
-					inline bindKeys(Control.GAME_LEFT, [A, FlxKey.LEFT]);
-					inline bindKeys(Control.GAME_RIGHT, [D, FlxKey.RIGHT]);
-					inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
-					inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
-					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
-					inline bindKeys(Control.RESET, [R]);
-					inline bindKeys(Control.CHEAT, []);
-				case Duo(false):
-					inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
-					inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
-					inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
-					inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
-					inline bindKeys(Control.GAME_UP, [ONE, NUMPADONE, FlxKey.UP]);
-					inline bindKeys(Control.GAME_DOWN, [X, FlxKey.DOWN]);
-					inline bindKeys(Control.GAME_LEFT, [Z, FlxKey.LEFT]);
-					inline bindKeys(Control.GAME_RIGHT, [TWO, NUMPADTWO, FlxKey.RIGHT]);
-					inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
-					inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE, P]);
-					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
-					inline bindKeys(Control.RESET, [R]);
-					inline bindKeys(Control.CHEAT, []);
-				case None: // nothing
-				case Custom:
-					inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
-					inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
-					inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
-					inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
-					inline bindKeys(Control.GAME_LEFT, SaveData.getData(CUSTOM_KEYBINDS)[0]);
-					inline bindKeys(Control.GAME_DOWN, SaveData.getData(CUSTOM_KEYBINDS)[1]);
-					inline bindKeys(Control.GAME_UP, SaveData.getData(CUSTOM_KEYBINDS)[2]);
-					inline bindKeys(Control.GAME_RIGHT, SaveData.getData(CUSTOM_KEYBINDS)[3]);
-					inline bindKeys(Control.ACCEPT, [SaveData.getData(CUSTOM_UI_KEYBINDS)[4][0], SaveData.getData(CUSTOM_UI_KEYBINDS)[5][0]]);
-					inline bindKeys(Control.BACK, [SaveData.getData(CUSTOM_UI_KEYBINDS)[6][0], SaveData.getData(CUSTOM_UI_KEYBINDS)[7][0]]);
-					inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
-					inline bindKeys(Control.RESET, [R]);
-					inline bindKeys(Control.CHEAT, []);
-			}
-
-			inline bindKeys(Control.GAME_SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
-			inline bindKeys(Control.SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
-		}catch(e) {
-			SaveData.createNewBinds(NONE);
+		switch (scheme)
+		{
+			case Solo:
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_UP, [J, FlxKey.UP]);
+				inline bindKeys(Control.GAME_DOWN, [F, FlxKey.DOWN]);
+				inline bindKeys(Control.GAME_LEFT, [D, FlxKey.LEFT]);
+				inline bindKeys(Control.GAME_RIGHT, [K, FlxKey.RIGHT]);
+				inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
+				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
+				inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
+				inline bindKeys(Control.RESET, [R]);
+				inline bindKeys(Control.CHEAT, []);
+			case Duo(true):
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_UP, [W, FlxKey.UP]);
+				inline bindKeys(Control.GAME_DOWN, [S, FlxKey.DOWN]);
+				inline bindKeys(Control.GAME_LEFT, [A, FlxKey.LEFT]);
+				inline bindKeys(Control.GAME_RIGHT, [D, FlxKey.RIGHT]);
+				inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
+				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE]);
+				inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
+				inline bindKeys(Control.RESET, [R]);
+				inline bindKeys(Control.CHEAT, []);
+			case Duo(false):
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_UP, [ONE, NUMPADONE, FlxKey.UP]);
+				inline bindKeys(Control.GAME_DOWN, [X, FlxKey.DOWN]);
+				inline bindKeys(Control.GAME_LEFT, [Z, FlxKey.LEFT]);
+				inline bindKeys(Control.GAME_RIGHT, [TWO, NUMPADTWO, FlxKey.RIGHT]);
+				inline bindKeys(Control.ACCEPT, [FlxKey.SPACE, ENTER]);
+				inline bindKeys(Control.BACK, [ESCAPE, BACKSPACE, P]);
+				inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
+				inline bindKeys(Control.RESET, [R]);
+				inline bindKeys(Control.CHEAT, []);
+			case None: // nothing
+			case Custom:
+				inline bindKeys(Control.LEFT, SaveData.getData(CUSTOM_UI_KEYBINDS)[0]);
+				inline bindKeys(Control.DOWN, SaveData.getData(CUSTOM_UI_KEYBINDS)[1]);
+				inline bindKeys(Control.UP, SaveData.getData(CUSTOM_UI_KEYBINDS)[2]);
+				inline bindKeys(Control.RIGHT, SaveData.getData(CUSTOM_UI_KEYBINDS)[3]);
+				inline bindKeys(Control.GAME_LEFT, SaveData.getData(CUSTOM_KEYBINDS)[0]);
+				inline bindKeys(Control.GAME_DOWN, SaveData.getData(CUSTOM_KEYBINDS)[1]);
+				inline bindKeys(Control.GAME_UP, SaveData.getData(CUSTOM_KEYBINDS)[2]);
+				inline bindKeys(Control.GAME_RIGHT, SaveData.getData(CUSTOM_KEYBINDS)[3]);
+				inline bindKeys(Control.ACCEPT, [SaveData.getData(CUSTOM_UI_KEYBINDS)[4][0], SaveData.getData(CUSTOM_UI_KEYBINDS)[5][0]]);
+				inline bindKeys(Control.BACK, [SaveData.getData(CUSTOM_UI_KEYBINDS)[6][0], SaveData.getData(CUSTOM_UI_KEYBINDS)[7][0]]);
+				inline bindKeys(Control.PAUSE, [ENTER, ESCAPE]);
+				inline bindKeys(Control.RESET, [R]);
+				inline bindKeys(Control.CHEAT, []);
 		}
+
+		inline bindKeys(Control.GAME_SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
+		inline bindKeys(Control.SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
 		#end
 	}
 
