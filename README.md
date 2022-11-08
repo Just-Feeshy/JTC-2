@@ -17,7 +17,7 @@ The purpose of making my own engine is to allow for fewer restrictions that come
 - [Duckint](https://github.com/TPWAGC) - Grammar Corrections
 - Sylvefloat - Note Splash Animation
 - [PolybiusProxy](https://github.com/polybiusproxy) and [Datee](https://github.com/datee) - VLC Extenstion
-- Cracsthor - PhantomMuff Font
+- Cracsthor(https://gamebanana.com/members/1844732) - PhantomMuff Font
 
 ## Installation Guide:
 1. [Install Haxe 4.2.5](https://haxe.org/download/version/4.2.5/), as it's the recommended version.
