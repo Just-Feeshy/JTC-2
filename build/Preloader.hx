@@ -5,10 +5,12 @@ import flixel.FlxState;
 import flixel.input.keyboard.FlxKey;
 
 import openfl.Lib;
+import openfl.Assets;
 import openfl.display.FPS;
 import openfl.filters.ShaderFilter;
 import openfl.events.KeyboardEvent;
 import openfl.events.UncaughtErrorEvent;
+import openfl.text.TextFormat;
 import openfl.errors.Error;
 
 import haxe.CallStack;
@@ -48,7 +50,10 @@ class Preloader extends HelperStates {
         FlxG.fixedTimestep = false;
 
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
-        SaveData.globalMEM = new Memory(10, 18, 0xFFFFFF);
+        SaveData.globalMEM = new Memory(10, 28, 0xFFFFFF);
+
+        SaveData.globalFPS.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("PhantomMuff.ttf")).fontName, 18, 0xFFFFFF);
+        SaveData.globalMEM.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("PhantomMuff.ttf")).fontName, 18, 0xFFFFFF);
 
         var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
 
