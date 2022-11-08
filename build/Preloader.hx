@@ -94,8 +94,9 @@ class Preloader extends HelperStates {
 
         loadingScene.callback = function() {
             Register.setup();
-            FlxG.switchState(cast Type.createInstance(_initialState, []));
             Register.compile();
+            
+            FlxG.switchState(cast Type.createInstance(_initialState, []));
         }
 
         loadingScene.cacheNecessaries();
@@ -105,8 +106,9 @@ class Preloader extends HelperStates {
 
         #if !sys
         Register.setup();
-        FlxG.switchState(cast Type.createInstance(_initialState, []));
         Register.compile();
+
+        FlxG.switchState(cast Type.createInstance(_initialState, []));
         #end
     }
 
