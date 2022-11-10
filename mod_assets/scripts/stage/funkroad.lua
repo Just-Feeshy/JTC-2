@@ -136,9 +136,8 @@ function onUpdate(elapsed)
 
     if startedCountdown then
 
+        --Modchart Section 1
         if not wheelIsHere then
-                
-            --Modchart Section 1
             for i = 0, 7 do
                 setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
 

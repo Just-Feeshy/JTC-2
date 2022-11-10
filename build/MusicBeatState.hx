@@ -22,6 +22,10 @@ class MusicBeatState extends HelperStates
 		return Conductor.songPosition;
 
 	override function create() {
+		super.create();
+	}
+
+	override function onCreate():Dynamic {
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).call("onStepHit", []);
@@ -34,7 +38,7 @@ class MusicBeatState extends HelperStates
 		}
 		#end
 
-		super.create();
+		return super.onCreate();
 	}
 
 	override function update(elapsed:Float)
