@@ -222,6 +222,32 @@ class CheesyStage extends StageBuilder {
 		return true;
 	}
 
+	override function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {
+		trace("hehe");
+
+		if(stage == "funkroad" && (curStep >= 630 && curStep < 632) && eventValue == "dad-car") {
+			playstate.iconP1.createAnim("flying BF sings", [28, 29, 28], true);
+			playstate.healthBar.emptyColor = 0xffaf66ce;
+			healthBarArrayLength = 3;
+
+			playstate.avoidHealthIssues = true;
+
+			if(playstate.healthTween != null) {
+				playstate.healthTween.cancel();
+				playstate.healthTween.destroy();
+
+				playstate.healthTween = null;
+			}
+
+			FlxTween.tween(playstate, {health: 1}, (Conductor.stepCrochet * 0.0055), {ease: FlxEase.cubeOut, 
+				onComplete: function(twn:FlxTween) {
+					playstate.prevHealth = playstate.health;
+					playstate.avoidHealthIssues = false;
+				}
+			});
+		}
+	}
+
 	override function update(elapsed:Float):Void {
 		updateCurStep();
 
@@ -283,30 +309,6 @@ class CheesyStage extends StageBuilder {
 					opponentStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
 				}
 			}
-		}
-
-		@:privateAccess if(!phase2_switch && Math.floor(curStep) == 630) {
-			phase2_switch = true;
-
-			playstate.iconP1.createAnim("flying BF sings", [28, 29, 28], true);
-			playstate.healthBar.emptyColor = 0xffaf66ce;
-			healthBarArrayLength = 3;
-
-			playstate.avoidHealthIssues = true;
-
-			if(playstate.healthTween != null) {
-				playstate.healthTween.cancel();
-				playstate.healthTween.destroy();
-
-				playstate.healthTween = null;
-			}
-
-			FlxTween.tween(playstate, {health: 1}, (Conductor.stepCrochet * 0.0055), {ease: FlxEase.cubeOut, 
-				onComplete: function(twn:FlxTween) {
-					playstate.prevHealth = playstate.health;
-					playstate.avoidHealthIssues = false;
-				}
-			});
 		}
 
 		super.update(elapsed);

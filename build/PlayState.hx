@@ -91,8 +91,8 @@ class PlayState extends MusicBeatState
 	public var timeFreeze:Float = 0;
 	public var health:Float = 1;
 
-	public var healthTween(default, null):FlxTween;
-	public var prevHealth(default, null):Float = 0;
+	public var healthTween:FlxTween;
+	public var prevHealth:Float = 0;
 
 	public var opponentAltAnim:String = "";
 	public var playerAltAnim:String = "";
@@ -3050,6 +3050,7 @@ class PlayState extends MusicBeatState
 
 		addCallback("callEvent", function(skill:String, value:String, value2:String) {
 			events.whenTriggered(skill, value, value2, this);
+			event_Extra(skill, value, value2);
 		});
 
 		addCallback("instaKillPlayer", function() {
@@ -3519,6 +3520,10 @@ class PlayState extends MusicBeatState
 		value2 = value2.toLowerCase();
 
 		events.whenTriggered(skill, value, value2, this);
+		event_Extra(skill, value, value2);
+	}
+
+	function event_Extra(skill:String, value:String, value2:String):Void {
 		stage.onEvent(skill, value, value2);
 
 		callLua("whenEventTriggered", [skill, value, value2]);
