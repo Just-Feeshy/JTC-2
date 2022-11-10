@@ -223,9 +223,9 @@ class CheesyStage extends StageBuilder {
 	}
 
 	override function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {
-		trace("hehe");
+		if(stage == "funkroad" && (curStep >= 630 && curStep < 632) && eventValue == "dad-car" && !phase2_switch) {
+			phase2_switch = true;
 
-		if(stage == "funkroad" && (curStep >= 630 && curStep < 632) && eventValue == "dad-car") {
 			playstate.iconP1.createAnim("flying BF sings", [28, 29, 28], true);
 			playstate.healthBar.emptyColor = 0xffaf66ce;
 			healthBarArrayLength = 3;

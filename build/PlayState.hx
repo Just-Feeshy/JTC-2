@@ -472,11 +472,11 @@ class PlayState extends MusicBeatState
 
 		precacheList.set(PlayState.SONG.song, 'voices');
 		precacheList.set(PlayState.SONG.song, 'inst');
+
+		precacheList.set("iconGrid", 'images');
 		
 		updateCache();
 		generateSong(SONG.song);
-
-		// add(strumLine);
 
 		camFollow = new FlxObject(0, 0, 1, 1);
 
@@ -520,7 +520,6 @@ class PlayState extends MusicBeatState
 		counterTxt.scrollFactor.set();
 
 		iconP1 = new HealthIcon(SONG.player1, true);
-
 		iconP2 = new HealthIcon(SONG.player2, false);
 
 		if(SaveData.getData(PLAY_AS_OPPONENT)) {
@@ -3031,7 +3030,6 @@ class PlayState extends MusicBeatState
 		setLua("difficultyName", CoolUtil.difficultyArray[PlayState.storyDifficulty]);
 		setLua("week", Paths.modJSON.weeks.get("week_" + PlayState.storyWeek).week_name.toUpperCase());
 		setLua("weekRaw", PlayState.storyWeek);
-		setLua("totalKeysForStrum", PlayState.SONG.fifthKey ? 5 : 4);
 		setLua("hasCutscene", PlayState.SONG.video != null ? true : false);
 		setLua("inGameOver", false);
 

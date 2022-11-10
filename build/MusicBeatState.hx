@@ -21,8 +21,19 @@ class MusicBeatState extends HelperStates
 	function get_songPos():Float
 		return Conductor.songPosition;
 
-	override function create()
-	{
+	override function create() {
+		#if (USING_LUA && cpp)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			HelperStates.getLua(Type.getClass(this)).call("onStepHit", []);
+			HelperStates.getLua(Type.getClass(this)).set("curStep", curStep);
+		}
+
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			HelperStates.getLua(Type.getClass(this)).call("onBeatHit", []);
+			HelperStates.getLua(Type.getClass(this)).set("curBeat", curBeat);
+		}
+		#end
+
 		super.create();
 	}
 

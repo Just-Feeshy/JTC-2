@@ -31,7 +31,6 @@ local noteWheelOffsetY = {}
 
 local daddyIsHere = false
 local wheelIsHere = false
-local stepBegin = false
 
 local noteSwagWidth = 160 * 0.7;
 
@@ -93,8 +92,6 @@ function updateCharacter()
 end
 
 function onStepHit()
-    stepBegin = true
-
     if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
         addSpriteToStage("skater-boi-player")
@@ -137,30 +134,32 @@ end
 function onUpdate(elapsed)
     updateCharacter()
 
-    if startedCountdown and not wheelIsHere then
+    if startedCountdown then
 
-        --Modchart section 1
-        for i = 0, (totalKeysForStrum * 2) - 1 do
-            setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
+        if not wheelIsHere then
+                
+            --Modchart Section 1
+            for i = 0, 7 do
+                setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
 
-            local Xdistance = allStrumsX[i + 1] - defaultNoteMovement(i, a)
-            local Ydistance = (windowHeight * 0.5) - allStrumsY[i + 1]
+                local Xdistance = allStrumsX[i + 1] - defaultNoteMovement(i, a)
+                local Ydistance = (windowHeight * 0.5) - allStrumsY[i + 1]
 
-            local angle = getOppositeAngle(math.atan(Ydistance / Xdistance))
+                local angle = getOppositeAngle(math.atan(Ydistance / Xdistance))
 
-            setNoteDirection(i, (math.pi * 0.5) - angle)
+                setNoteDirection(i, (math.pi * 0.5) - angle)
+            end
+
+            a = a + (elapsed * 0.5) * (curBpm / 120)
         end
 
-        a = a + (elapsed * 0.5) * (curBpm / 120)
-    end
-
-    if stepBegin then
-
-        --Modchart section 2
+        --Modchart Section 2
         if transitionToWheel[1] < curStep and transitionToWheel[2] >= curStep then
             wheelIsHere = true
 
-            for i = 0, totalKeysForStrum - 1 do
+            local index = 0
+
+            while index < 4 do
                 --local timeLerp = ((transitionToWheel[2] - curStepFloat) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
 
                 print("A: " + (i + 5))
@@ -169,6 +168,8 @@ function onUpdate(elapsed)
                 --    swirlerpX(allStrumsX[i + 5], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 5], timeLerp),
                 --    swirlerpY(allStrumsY[i + 5], getNoteScreenCenter(i, "Y") + noteWheelOffsetY[i + 5], timeLerp)
                 --)
+
+                index = index + 1
             end
         end
     end
