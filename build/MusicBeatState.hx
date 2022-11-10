@@ -28,12 +28,10 @@ class MusicBeatState extends HelperStates
 	override function onCreate():Dynamic {
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
-			HelperStates.getLua(Type.getClass(this)).call("onStepHit", []);
 			HelperStates.getLua(Type.getClass(this)).set("curStep", curStep);
 		}
 
 		if(HelperStates.luaExist(Type.getClass(this))) {
-			HelperStates.getLua(Type.getClass(this)).call("onBeatHit", []);
 			HelperStates.getLua(Type.getClass(this)).set("curBeat", curBeat);
 		}
 		#end

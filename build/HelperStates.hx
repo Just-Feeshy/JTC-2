@@ -136,7 +136,7 @@ class HelperStates extends FlxUIState {
 
 	public function onCreate():Dynamic {
 		#if (USING_LUA && cpp)
-		setLua("curElapsed", FlxG.elapsed);
+		setLua("curElapsed", 0);
 
 		if(HelperStates.luaExist(Type.getClass(this)))
 			return HelperStates.getLua(Type.getClass(this)).call("onCreate", []);
