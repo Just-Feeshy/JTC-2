@@ -163,7 +163,7 @@ function onUpdate(elapsed)
             for i = 0, totalKeysForStrum - 1 do
                 --local timeLerp = ((transitionToWheel[2] - curStepFloat) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
 
-                print("B: " + (i + 5))
+                print("A: " + (i + 5))
 
                 --setNoteStrumPos(i + 5,
                 --    swirlerpX(allStrumsX[i + 5], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 5], timeLerp),
