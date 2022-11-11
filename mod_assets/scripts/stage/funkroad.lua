@@ -1,9 +1,6 @@
 -- First main game lua test of this "engine" to see how well it can handle lua modchart's and general scripting.
 -- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
 
---imports
-local easingList = require("mod_assets/scripts/libs/easing")
-
 --variables
 local skaterboi = nil
 
