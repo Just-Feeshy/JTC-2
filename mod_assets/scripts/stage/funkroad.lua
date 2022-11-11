@@ -1,6 +1,8 @@
 -- First main game lua test of this "engine" to see how well it can handle lua modchart's and general scripting.
 -- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
 
+--imports
+local easingList = require("mod_assets/scripts/libs/easing")
 
 --variables
 local skaterboi = nil
@@ -157,15 +159,16 @@ function onUpdate(elapsed)
 
             for i = 1, 4 do
                 local timeLerp = ((curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])) + (stepCrochet * 0.0011 * i)
-                local easing = cubeInQuadOut(timeLerp)
+                local easing = smootherStep(timeLerp)
 
                 setNoteStrumPos((i - 1) + 4,
                     swirlerpX(allStrumsX[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
                     swirlerpY(allStrumsY[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
                 )
 
-                if easing > 1 and i == 4 then
-                    easing = 1
+                if timeLerp > 1 and i == 4 then
+                    timeLerp = 1
+                    stopTransition = true;
                 end
             end
         end
@@ -175,12 +178,8 @@ function onUpdate(elapsed)
 end
 
 --math functions
-function cubeInQuadOut(t)
-    if t <= 0.5 then
-        return t * t * t * 4
-    end
-
-    return -t * (t - 2)
+function smootherStep(t)
+    return t * t * t * (t * (t * 6 - 15) + 10);
 end
 
 function clamp(value, min, max)
