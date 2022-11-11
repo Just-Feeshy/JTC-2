@@ -163,8 +163,8 @@ function onUpdate(elapsed)
                     swirlerpY(allStrumsY[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
                 )
 
-                if timeLerp > 1 and i == 4 then
-                    timeLerp = 1
+                if easing > 1 and i == 4 then
+                    easing = 1
                     stopTransition = true;
                 end
             end
