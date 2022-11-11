@@ -19,6 +19,7 @@ import flixel.text.FlxText;
 import flixel.system.FlxSound;
 import feshixl.shaders.FeshShader;
 import lime.ui.Window;
+import lime.utils.Log;
 
 import SaveData.SaveType;
 
@@ -49,6 +50,8 @@ class ModLua {
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
     public var luaTweens(default, null):Map<String, FlxTween> = new Map<String, FlxTween>();
     public var luaSounds(default, null):Map<String, FlxSound> = new Map<String, FlxSound>();
+
+    public var closed:Bool = false;
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
@@ -1033,6 +1036,11 @@ class ModLua {
             return Reflect.field(controller.justReleased, name) == true;
         });
 
+        Lua_helper.add_callback(lua, "close", function() {
+			closed = true;
+			return closed;
+		});
+
         call("initialized", []);
         #end
     }
@@ -1081,33 +1089,54 @@ class ModLua {
 
     public function call(event:String, args:Array<Dynamic>, index:Int = 0):Dynamic {
         #if (USING_LUA && cpp)
-        if(lua == null) {
-            trace("Error: Something went wrong with lua.");
+        if(closed) {
             return 0;
         }
 
-        Lua.getglobal(lua, event);
-
-        if(convertToLua(args, index) == 1) {
-            var luaResults:Null<Int> = Lua.pcall(lua, args.length, 1, 0);
-
-            if(luaResults != null) {
-                if(Lua.type(lua, -1) == Lua.LUA_TSTRING) {
-                    var error:String = Lua.tostring(lua, -1);
-                    Lua.pop(lua, 1);
-
-                    if(error == 'attempt to call a nil value') {
-                        return null;
-                    }
-                }
+        try {
+            if(lua == null) {
+                trace("Error: Something went wrong with lua.");
+                return 0;
             }
 
-            var output:Dynamic = Convert.fromLua(lua, luaResults);
-            return output;
+            Lua.getglobal(lua, event);
+
+            var type:Int = Lua.type(lua, -1);
+
+            if(type != Lua.LUA_TFUNCTION) {
+                if(type > Lua.LUA_TNIL) {
+                    Log.error(event + " - Attempt to call a '" + typeToString(type) + "' value!");
+                }
+
+                Lua.pop(lua, 1);
+                return 0;
+            }
+
+            for (arg in args) {
+                Convert.toLua(lua, arg);
+            }
+
+            var status:Int = Lua.pcall(lua, args.length, 1, 0);
+
+            if (status != Lua.LUA_OK) {
+				Log.error(event + " - " + getErrorMessage(status));
+				return 0;
+			}
+
+            var result:Dynamic = cast Convert.fromLua(lua, -1);
+
+            if (result == null) {
+                return 0;
+            }
+
+            Lua.pop(lua, 1);
+			return result;
+        }catch(e:Dynamic) {
+            trace(e);
         }
         #end
 
-        return null;
+        return 0;
     }
 
     public function getSprite(name:String):FlxSprite {
@@ -1230,15 +1259,48 @@ class ModLua {
         #end
     }
 
+    /*
+    * Most of it copied from psych engine
+    * because I don't wanna make my own.
+    */
     #if (USING_LUA && cpp)
-    public function convertToLua(args:Array<Dynamic>, index:Int = 0):Int {
-        if(index < args.length) {
-            Convert.toLua(lua, args[index]);
-            return convertToLua(args, index + 1);
-        }
+    function getErrorMessage(status:Int):String {
+		#if LUA_ALLOWED
+		var v:String = Lua.tostring(lua, -1);
+		Lua.pop(lua, 1);
 
-        return 1;
-    }
+		if (v != null) v = v.trim();
+		if (v == null || v == "") {
+			switch(status) {
+				case Lua.LUA_ERRRUN: return "Runtime Error";
+				case Lua.LUA_ERRMEM: return "Memory Allocation Error";
+				case Lua.LUA_ERRERR: return "Critical Error";
+			}
+			return "Unknown Error";
+		}
+
+		return v;
+		#end
+		return null;
+	}
+
+    function typeToString(type:Int):String {
+		#if LUA_ALLOWED
+		switch(type) {
+			case Lua.LUA_TBOOLEAN: return "boolean";
+			case Lua.LUA_TNUMBER: return "number";
+			case Lua.LUA_TSTRING: return "string";
+			case Lua.LUA_TTABLE: return "table";
+			case Lua.LUA_TFUNCTION: return "function";
+		}
+
+		if (type <= Lua.LUA_TNIL) {
+            return "nil";
+        }
+		#end
+
+		return "unknown";
+	}
     #end
 }
 

@@ -132,8 +132,6 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
 end
 
 function onUpdate(elapsed)
-    updateCharacter()
-
     if startedCountdown then
 
         --Modchart Section 1
@@ -156,22 +154,23 @@ function onUpdate(elapsed)
         if transitionToWheel[1] < curStep and transitionToWheel[2] >= curStep then
             wheelIsHere = true
 
-            local index = 0
+            for i = 1, 4 do
+                local timeLerp = ((transitionToWheel[2] - curStepFloat) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
 
-            while index < 4 do
-                --local timeLerp = ((transitionToWheel[2] - curStepFloat) / (transitionToWheel[2] - transitionToWheel[1])) - (stepCrochet * 0.0011 * i)
-
-                print("A: " + (i + 5))
-
-                --setNoteStrumPos(i + 5,
-                --    swirlerpX(allStrumsX[i + 5], getNoteScreenCenter(i, "X") + noteWheelOffsetX[i + 5], timeLerp),
-                --    swirlerpY(allStrumsY[i + 5], getNoteScreenCenter(i, "Y") + noteWheelOffsetY[i + 5], timeLerp)
+                --setNoteStrumPos(i + 4,
+                --    swirlerpX(allStrumsX[i + 4], getNoteScreenCenter(i + 4, "X") + noteWheelOffsetX[i], timeLerp),
+                --    swirlerpY(allStrumsY[i + 4], getNoteScreenCenter(i + 4, "Y") + noteWheelOffsetY[i], timeLerp)
                 --)
 
-                index = index + 1
+                setNoteStrumPos((i - 1) + 4,
+                    getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i],
+                    getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i]
+                )
             end
         end
     end
+
+    updateCharacter()
 end
 
 --math functions
