@@ -31,8 +31,9 @@ local noteWheelOffsetY = {}
 
 local daddyIsHere = false
 local wheelIsHere = false
+local stopTransition = false
 
-local noteSwagWidth = 160 * 0.7;
+local noteSwagWidth = 160 * 0.7
 
 --functions
 function generatedStage()
@@ -151,20 +152,21 @@ function onUpdate(elapsed)
         end
 
         --Modchart Section 2
-        if transitionToWheel[1] < curStep and transitionToWheel[2] >= curStep then
+        if transitionToWheel[1] < curStep and transitionToWheel[2] >= curStep and not stopTransition then
             wheelIsHere = true
 
             for i = 1, 4 do
-                local timeLerp = ((transitionToWheel[2] - curStepFloat) / (transitionToWheel[2] - transitionToWheel[1])) + (stepCrochet * 0.0011 * i)
-
-                if timeLerp > 1 then
-                    timeLerp = 1
-                end
+                local timeLerp = ((curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])) + (stepCrochet * 0.0011 * i)
+                local easing = cubeInQuadOut(timeLerp)
 
                 setNoteStrumPos((i - 1) + 4,
-                    swirlerpX(allStrumsX[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], timeLerp),
-                    swirlerpY(allStrumsY[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], timeLerp)
+                    swirlerpX(allStrumsX[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
+                    swirlerpY(allStrumsY[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
                 )
+
+                if easing > 1 and i == 4 then
+                    easing = 1
+                end
             end
         end
     end
@@ -173,6 +175,14 @@ function onUpdate(elapsed)
 end
 
 --math functions
+function cubeInQuadOut(t)
+    if t <= 0.5 then
+        return t * t * t * 4
+    end
+
+    return -t * (t - 2)
+end
+
 function clamp(value, min, max)
     if value < min then
         return min
@@ -199,14 +209,14 @@ function swirlerpX(p, q, t)
     local circleTime = 2 * math.pi - (t * (2 * math.pi))
     local degrees90 = math.pi * 0.5 --In radians
 
-    return q + ((1 - math.cos(circleTime - degrees90)) * circleTime * (p - q)) / (math.pi * 2)
+    return q + ((1 - math.cos(circleTime - degrees90) * (2 * t + 1)) * circleTime * (p - q)) / (math.pi * 2)
 end
 
 function swirlerpY(p, q, t)
     local circleTime = 2 * math.pi - (t * (2 * math.pi))
     local degrees90 = math.pi * 0.5 --In radians
 
-    return q + (math.sin(circleTime - degrees90) * -circleTime * (p - q)) / (math.pi * 2)
+    return q + (math.sin(circleTime - degrees90) * (2 * t + 1) * -circleTime * (p - q)) / (math.pi * 2)
 end
 
 function lerp(value1, value2, ratio)
