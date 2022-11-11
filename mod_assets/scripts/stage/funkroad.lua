@@ -158,11 +158,6 @@ function onUpdate(elapsed)
                 local timeLerp = ((curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])) + (stepCrochet * 0.0011 * i)
                 local easing = smootherStep(timeLerp)
 
-                setNoteStrumPos((i - 1) + 4,
-                    swirlerpX(allStrumsX[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
-                    swirlerpY(allStrumsY[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
-                )
-
                 if easing > 1 then
                     easing = 1
 
@@ -170,6 +165,11 @@ function onUpdate(elapsed)
                         stopTransition = true;
                     end
                 end
+
+                setNoteStrumPos((i - 1) + 4,
+                    swirlerpX(allStrumsX[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
+                    swirlerpY(allStrumsY[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
+                )
             end
         end
     end
