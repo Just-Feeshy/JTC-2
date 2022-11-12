@@ -8,7 +8,6 @@ local beatSection = 0
 
 local a = 0
 local constant = 2
-local wheelAngle = 0
 local size = 20
 
 local allStrumsX = {}
@@ -36,6 +35,10 @@ local daddyIsHere = false
 local wheelIsHere = false
 
 local noteSwagWidth = 160 * 0.7
+
+local wheelAngle = 0
+local AverageSpin = 0
+local megaSpin = 0
 
 --functions
 function generatedStage()
@@ -197,7 +200,8 @@ function onUpdate(elapsed)
                     wheelAngle = lerp(0, math.pi * 2, timeLerp)
                     setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)
                 else
-                    wheelAngle = wheelAngle + (elapsed * elapsed * math.pi * (curBpm / 120))
+                    AverageSpin = AverageSpin + (elapsed * elapsed * math.pi * (curBpm / 120))
+                    wheelAngle = AverageSpin + megaSpin
                 end
             end
         end
