@@ -62,7 +62,9 @@ class CheesyStage extends StageBuilder {
 	* Variables for lazy modcharts.
 	*/
 	var strumSpinning:Bool = false;
+
 	var curStep:Float = 0;
+	var curBeat:Float = 0;
 
 	var healthBarArrayLength:UInt = 2;
 
@@ -177,6 +179,11 @@ class CheesyStage extends StageBuilder {
 		playstate.setLua("curStepFloat", curStep);
 	}
 
+	function updateBeat():Void {
+		curBeat = curStep * 0.25;
+		playstate.setLua("curBeatFloat", curBeat);
+	}
+
 	function getLastStepIndex(index:UInt):Float {
 		if(spinIndex - index >= 0) {
 			return spinSteps[spinIndex - index];
@@ -250,6 +257,7 @@ class CheesyStage extends StageBuilder {
 
 	override function update(elapsed:Float):Void {
 		updateCurStep();
+		updateBeat();
 
 		if(dad.exists) {
 			if(dad.animation.curAnim != null) {

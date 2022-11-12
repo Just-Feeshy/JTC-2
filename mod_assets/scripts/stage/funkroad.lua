@@ -10,6 +10,13 @@ local a = 0
 local constant = 2
 local size = 20
 
+local noteSwagWidth = 160 * 0.7
+
+local wheelAngle = 0
+local AverageSpin = 0
+local megaSpin = 0
+local bounceStrength = 10
+
 local allStrumsX = {}
 local allStrumsY = {}
 
@@ -26,6 +33,13 @@ local transitionToWheel = { --In steps
     652
 }
 
+local bounceWheel = {
+    0,
+    0,
+    0,
+    0
+}
+
 local noteWheelOffsetX = {}
 local noteWheelOffsetY = {}
 
@@ -33,12 +47,7 @@ local noteWheelAngle = {}
 
 local daddyIsHere = false
 local wheelIsHere = false
-
-local noteSwagWidth = 160 * 0.7
-
-local wheelAngle = 0
-local AverageSpin = 0
-local megaSpin = 0
+local wheelFinished = false
 
 --functions
 function generatedStage()
@@ -186,8 +195,8 @@ function onUpdate(elapsed)
 
         if transitionToWheel[2] < curStep then
             for i = 1, 4 do
-                local xNote = getNoteScreenCenter((i - 1) + 4, "X") - noteSwagWidth * math.cos(wheelAngle + noteWheelAngle[i])
-                local yNote = getNoteScreenCenter((i - 1) + 4, "Y") + noteSwagWidth * math.sin(wheelAngle + noteWheelAngle[i])
+                local xNote = getNoteScreenCenter((i - 1) + 4, "X") - (noteSwagWidth + bounceWheel[i]) * math.cos(wheelAngle + noteWheelAngle[i])
+                local yNote = getNoteScreenCenter((i - 1) + 4, "Y") + (noteSwagWidth + bounceWheel[i]) * math.sin(wheelAngle + noteWheelAngle[i])
 
                 setNoteStrumPos((i - 1) + 4, xNote, yNote)
                 setNoteDirection((i - 1) + 4, wheelAngle + noteWheelAngle[i] - (math.pi * 0.5))
@@ -202,12 +211,54 @@ function onUpdate(elapsed)
                 else
                     AverageSpin = AverageSpin + (elapsed * elapsed * math.pi * (curBpm / 120))
                     wheelAngle = AverageSpin + megaSpin
+
+                    if not wheelFinished then
+                        wheelFinished = true
+                    end
                 end
             end
+        end
+
+        if wheelFinished then
+            bounceDaWheel(bounceStrength)
         end
     end
 
     updateCharacter()
+end
+
+function bounceDaWheel(strength)
+    if curBeat % 2 == 0 then
+        local givenTime = (curBeatFloat - curBeat) / ((curBeat + 1) - curBeat)
+
+        if curBeat % 3 == 0 then
+            for i = 0, 3, 3 do
+                local direction = 1
+
+                if i > 1 == 0 then
+                    direction = -1
+                end
+
+                bounceWheel[i + 1] = lerp(0, strength * direction, parabola(givenTime, 2))
+            end
+
+            return;
+        end
+
+        for i = 1, 2 do
+            local direction = 1
+
+            if i > 1 == 0 then
+                direction = -1
+            end
+
+            bounceWheel[i + 1] = lerp(0, strength * direction, parabola(givenTime, 2))
+        end
+    else
+        for i = 0, 3 do
+            bounceWheel[i + 1] = 0
+        end
+    end
 end
 
 --math functions
