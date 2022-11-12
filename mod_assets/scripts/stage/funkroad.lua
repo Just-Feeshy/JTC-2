@@ -187,11 +187,15 @@ function onUpdate(elapsed)
                 local yNote = getNoteScreenCenter((i - 1) + 4, "Y") + noteSwagWidth * math.sin(wheelAngle + noteWheelAngle[i])
 
                 setNoteStrumPos((i - 1) + 4, xNote, yNote)
+                setNoteDirection((i - 1) + 4, wheelAngle + noteWheelAngle[i] - (math.pi * 0.5))
+                setNoteStrumAngle((i - 1) + 4, wheelAngle)
                 
                 if transitionToWheel[3] > curStep then
                     local givenTime = (curStepFloat - transitionToWheel[2]) / (transitionToWheel[3] - transitionToWheel[2])
+                    local timeLerp = quadOut(givenTime)
 
-
+                    wheelAngle = lerp(0, math.pi * 2, timeLerp)
+                    setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.5)
                 end
             end
         end
@@ -201,6 +205,10 @@ function onUpdate(elapsed)
 end
 
 --math functions
+function parabola(t, k)
+    return (4 * t * (1 - t)) ^ k
+end
+
 function quadOut(t)
     return -t * (t - 2)
 end
