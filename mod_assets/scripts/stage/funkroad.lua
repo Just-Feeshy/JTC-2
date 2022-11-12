@@ -8,6 +8,7 @@ local beatSection = 0
 
 local a = 0
 local constant = 2
+local wheelAngle = 0
 local size = 20
 
 local allStrumsX = {}
@@ -21,12 +22,15 @@ local jtcStrumAnims = {
 }
 
 local transitionToWheel = { --In steps
-    607,
-    640
+    614,
+    642,
+    654
 }
 
 local noteWheelOffsetX = {}
 local noteWheelOffsetY = {}
+
+local noteWheelAngle = {}
 
 local daddyIsHere = false
 local wheelIsHere = false
@@ -77,6 +81,13 @@ function generatedStage()
         noteSwagWidth;
         -noteSwagWidth;
         0;
+    }
+
+    noteWheelAngle = {
+        0,
+        math.pi * 0.5,
+        (3 * math.pi) * 0.5,
+        math.pi
     }
 
     skaterboi = require("mod_assets/scripts/modules/character")
@@ -169,12 +180,31 @@ function onUpdate(elapsed)
                 )
             end
         end
+
+        if transitionToWheel[2] < curStep then
+            for i = 1, 4 do
+                local xNote = getNoteScreenCenter((i - 1) + 4, "X") - noteSwagWidth * math.cos(wheelAngle + noteWheelAngle[i])
+                local yNote = getNoteScreenCenter((i - 1) + 4, "Y") + noteSwagWidth * math.sin(wheelAngle + noteWheelAngle[i])
+
+                setNoteStrumPos((i - 1) + 4, xNote, yNote)
+                
+                if transitionToWheel[3] > curStep then
+                    local givenTime = (curStepFloat - transitionToWheel[2]) / (transitionToWheel[3] - transitionToWheel[2])
+
+
+                end
+            end
+        end
     end
 
     updateCharacter()
 end
 
 --math functions
+function quadOut(t)
+    return -t * (t - 2)
+end
+
 function smootherStep(t)
     return t * t * t * (t * (t * 6 - 15) + 10);
 end
