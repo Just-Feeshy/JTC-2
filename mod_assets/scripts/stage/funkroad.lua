@@ -21,8 +21,8 @@ local jtcStrumAnims = {
 }
 
 local transitionToWheel = { --In steps
-    616,
-    639
+    607,
+    640
 }
 
 local noteWheelOffsetX = {}
@@ -30,7 +30,6 @@ local noteWheelOffsetY = {}
 
 local daddyIsHere = false
 local wheelIsHere = false
-local stopTransition = false
 
 local noteSwagWidth = 160 * 0.7
 
@@ -151,20 +150,13 @@ function onUpdate(elapsed)
         end
 
         --Modchart Section 2
-        if transitionToWheel[1] < curStep and transitionToWheel[2] >= curStep and not stopTransition then
+        if transitionToWheel[1] < curStep and transitionToWheel[2] > curStep then
             wheelIsHere = true
 
             for i = 1, 4 do
-                local timeLerp = ((curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])) + (stepCrochet * 0.0011 * i)
-                local easing = smootherStep(timeLerp)
-
-                if easing > 1 then
-                    easing = 1
-
-                    if i == 4 then
-                        stopTransition = true;
-                    end
-                end
+                local givenTime = (curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])
+                local timeLerp = givenTime + (stepCrochet * 0.0044 * i) * math.min(givenTime, 1)
+                local easing = smootherStep(math.min(timeLerp, 1))
 
                 setNoteStrumPos((i - 1) + 4,
                     swirlerpX(allStrumsX[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
@@ -208,14 +200,14 @@ function swirlerpX(p, q, t)
     local circleTime = 2 * math.pi - (t * (2 * math.pi))
     local degrees90 = math.pi * 0.5 --In radians
 
-    return q + ((1 - math.cos(circleTime - degrees90) * (2 * t + 1)) * circleTime * (p - q)) / (math.pi * 2)
+    return q + ((1 - math.cos(circleTime - degrees90) * (1 + t)) * circleTime * (p - q)) / (math.pi * 2)
 end
 
 function swirlerpY(p, q, t)
     local circleTime = 2 * math.pi - (t * (2 * math.pi))
     local degrees90 = math.pi * 0.5 --In radians
 
-    return q + (math.sin(circleTime - degrees90) * (2 * t + 1) * -circleTime * (p - q)) / (math.pi * 2)
+    return q + (math.sin(circleTime - degrees90) * (1 + t) * -circleTime * (p - q)) / (math.pi * 2)
 end
 
 function lerp(value1, value2, ratio)
