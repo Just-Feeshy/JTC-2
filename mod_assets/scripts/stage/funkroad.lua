@@ -24,7 +24,7 @@ local jtcStrumAnims = {
 local transitionToWheel = { --In steps
     614,
     642,
-    654
+    652
 }
 
 local noteWheelOffsetX = {}
@@ -188,14 +188,14 @@ function onUpdate(elapsed)
 
                 setNoteStrumPos((i - 1) + 4, xNote, yNote)
                 setNoteDirection((i - 1) + 4, wheelAngle + noteWheelAngle[i] - (math.pi * 0.5))
-                setNoteStrumAngle((i - 1) + 4, wheelAngle)
+                setNoteStrumAngle((i - 1) + 4, -wheelAngle)
                 
                 if transitionToWheel[3] > curStep then
                     local givenTime = (curStepFloat - transitionToWheel[2]) / (transitionToWheel[3] - transitionToWheel[2])
                     local timeLerp = quadOut(givenTime)
 
                     wheelAngle = lerp(0, math.pi * 2, timeLerp)
-                    setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.5)
+                    setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)
                 end
             end
         end
