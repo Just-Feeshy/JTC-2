@@ -164,8 +164,8 @@ function onUpdate(elapsed)
                 )
 
                 setNoteStrumPos((i - 1) + 4,
-                    swirlerpX(allStrumsX[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
-                    swirlerpY(allStrumsY[(i - 1) + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
+                    swirlerpX(allStrumsX[i + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
+                    swirlerpY(allStrumsY[i + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
                 )
             end
         end
