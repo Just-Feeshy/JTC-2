@@ -228,10 +228,13 @@ function onUpdate(elapsed)
 end
 
 function bounceDaWheel(strength)
-    if curBeat % 2 == 0 then
-        local givenTime = (curBeatFloat - curBeat) / ((curBeat + 1) - curBeat)
+    local curBeatM = curBeat * 2
+    local curBeatFloatM = curBeatFloat * 2
 
-        if curBeat % 3 == 0 then
+    if curBeatM % 2 == 0 then
+        local givenTime = (curBeatFloatM - curBeatM) / ((curBeatM + 1) - curBeatM)
+
+        if curBeatM % 4 == 0 then
             for i = 0, 3, 3 do
                 local direction = 1
 
