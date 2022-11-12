@@ -196,6 +196,8 @@ function onUpdate(elapsed)
 
                     wheelAngle = lerp(0, math.pi * 2, timeLerp)
                     setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)
+                else
+                    wheelAngle = wheelAngle + (elapsed * elapsed * math.pi * (curBpm / 120))
                 end
             end
         end
