@@ -23,7 +23,7 @@ local jtcStrumAnims = {
 
 local transitionToWheel = { --In steps
     614,
-    642,
+    640,
     652
 }
 
