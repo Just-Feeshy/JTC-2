@@ -242,7 +242,7 @@ function bounceDaWheel(strength)
                     direction = -1
                 end
 
-                bounceWheel[i + 1] = lerp(0, strength * direction, parabola(givenTime, 2))
+                bounceWheel[i + 1] = lerp(0, strength * direction, parabola(math.min(givenTime, 1), 3))
             end
 
             return;
@@ -255,7 +255,7 @@ function bounceDaWheel(strength)
                 direction = -1
             end
 
-            bounceWheel[i + 1] = lerp(0, strength * direction, parabola(givenTime, 2))
+            bounceWheel[i + 1] = lerp(0, strength * direction, parabola(math.min(givenTime, 1), 3))
         end
     else
         for i = 0, 3 do
