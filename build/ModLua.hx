@@ -18,6 +18,7 @@ import flixel.math.FlxRect;
 import flixel.text.FlxText;
 import flixel.system.FlxSound;
 import feshixl.shaders.FeshShader;
+import lime.graphics.opengl.GL;
 import lime.ui.Window;
 import lime.utils.Log;
 
@@ -46,10 +47,10 @@ class ModLua {
 
     public var luaTexts(default, null):Map<String, FlxText> = new Map<String, FlxText>();
     public var luaSprites(default, null):Map<String, FlxSprite> = new Map<String, FlxSprite>();
-    public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
     public var luaTweens(default, null):Map<String, FlxTween> = new Map<String, FlxTween>();
     public var luaSounds(default, null):Map<String, FlxSound> = new Map<String, FlxSound>();
+    public var luaShaders(default, null):Map<String, LuaShaderInfo> = new Map<String, LuaShaderInfo>();
 
     public var closed:Bool = false;
 
@@ -79,6 +80,8 @@ class ModLua {
         }
 
         trace("Successfully loaded script: " + this.luaScript);
+
+        set("glslVersion", GL.VERSION);
 
         set("windowWidth", FlxG.width);
         set("windowHeight", FlxG.height);
@@ -882,30 +885,15 @@ class ModLua {
         * shaders (Don't work yet)
         */
         Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, path:String) {
-            if(luaShaders.exists(name)) {
-                return;
-            }
-
-            name = name.replace('.', '');
-
-            luaShaders.set(name, new FeshShader());
+            
         });
 
         Lua_helper.add_callback(lua, "implementShaderFile", function(name:String, path:String) {
-            var shader:FeshShader = luaShaders.get(name);
+            
         });
 
         Lua_helper.add_callback(lua, "attachShaderToObject", function(name:String, spriteName:String) {
-            var shader:FeshShader = luaShaders.get(name);
-            var obj:Dynamic = getObjectFromMap(spriteName);
-
-            if(shader == null) {
-                return;
-            }
-
-            if(obj == null) {
-                return;
-            }
+            
         });
 
         /*
@@ -1043,6 +1031,43 @@ class ModLua {
 
         call("initialized", []);
         #end
+    }
+
+    function storeShaders(name:String, path:String = "/shaders", ?glslVersion:Null<UInt>):Bool {
+        #if sys
+        if(luaShaders.exists(name)) {
+            Log.info('Shader `$name` was already stored!');
+			return true;
+        }
+
+        var fragHeader:String = Paths.getPath(path + "/" + name + ".frag");
+        var vertHeader:String = Paths.getPath(path + "/" + name + ".vert");
+
+        var foundAtLeastOne:Bool = false;
+        
+        if(FileSystem.exists(fragHeader)) {
+            fragHeader = File.getContent(fragHeader);
+            foundAtLeastOne = true;
+        }else {
+            fragHeader = "";
+        }
+
+        if(FileSystem.exists(vertHeader)) {
+            vertHeader = File.getContent(vertHeader);
+            foundAtLeastOne = true;
+        }else {
+            vertHeader = "";
+        }
+
+        if(foundAtLeastOne) {
+            luaShaders.set(name, {frag: fragHeader, vert: vertHeader});
+            return true;
+        }
+
+        Log.error('Missing shader `$name` .frag AND .vert files!');
+        #end
+
+        return false;
     }
 
     public function getObjectFromMap(name:String):Dynamic {
@@ -1372,4 +1397,9 @@ private class LuaFrameCollection {
 
         return height = value;
     }
+}
+
+private typedef LuaShaderInfo = {
+    var frag:String;
+    var vert:String;
 }

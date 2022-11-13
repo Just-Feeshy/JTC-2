@@ -172,6 +172,10 @@ class FeshShader extends FlxGraphicsShader {
         }
 	}
 
+    public function initShader():Void {
+        
+    }
+
     public function processShader(glFragmentSource:String = null, glVertexSource:String = null):Void {
         if(glFragmentSource != null) {
             this.glFragmentSource = glFragmentSource; 
@@ -204,5 +208,7 @@ class FeshShader extends FlxGraphicsShader {
 
         __isGenerated = true;
         super.__initGL();
+
+        bitmap = data.bitmap;
     }
 }
