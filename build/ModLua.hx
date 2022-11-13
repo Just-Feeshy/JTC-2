@@ -22,6 +22,11 @@ import lime.graphics.opengl.GL;
 import lime.ui.Window;
 import lime.utils.Log;
 
+#if sys
+import sys.FileSystem;
+import sys.io.File;
+#end
+
 import SaveData.SaveType;
 
 #if (haxe_ver >= 4.2)
@@ -1040,8 +1045,8 @@ class ModLua {
 			return true;
         }
 
-        var fragHeader:String = Paths.getPath(path + "/" + name + ".frag");
-        var vertHeader:String = Paths.getPath(path + "/" + name + ".vert");
+        var fragHeader:String = Paths.getPreloadPath(path + "/" + name + ".frag");
+        var vertHeader:String = Paths.getPreloadPath(path + "/" + name + ".vert");
 
         var foundAtLeastOne:Bool = false;
         
