@@ -229,7 +229,7 @@ function onUpdate(elapsed)
                     wheelAngle = lerp(0, math.pi * 2, timeLerp)
                     setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)
                 else
-                    AverageSpin = AverageSpin + (elapsed * elapsed * math.pi * (curBpm / 120) * (math.min(bounceStrength * 0.1, 1)))
+                    AverageSpin = AverageSpin + (elapsed * elapsed * math.pi * (curBpm / 120) * (math.max(bounceStrength * 0.1, 1)))
                     wheelAngle = AverageSpin + megaSpin
 
                     if not wheelFinished then
