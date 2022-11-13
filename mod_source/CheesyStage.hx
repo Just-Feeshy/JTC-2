@@ -252,6 +252,8 @@ class CheesyStage extends StageBuilder {
 					playstate.avoidHealthIssues = false;
 				}
 			});
+
+			boyfriend.x += 50;
 		}
 	}
 
