@@ -34,7 +34,8 @@ local transitionToWheel = { --In steps
     760,
     772,
     904,
-    1661
+    1661,
+    1827
 }
 
 local bounceWheel = {
@@ -107,7 +108,7 @@ function generatedStage()
     }
 
     skaterboi = require("mod_assets/scripts/modules/character")
-    skaterboi.create("skater-boi-player", "skater-boi-player", 600, 100, true)
+    skaterboi.create("skater-boi-player", "skater-boi-player", 650, 100, true)
     skaterboi.initSing(jtcStrumAnims)
 end
 
@@ -259,8 +260,8 @@ function onUpdate(elapsed)
             bounceStrength = lerp(18, 10, timeLerp)
         end
 
-        if transitionToWheel[6] < curStep and transitionToWheel[7] > curStep then
-            local givenTime = (curStepFloat - transitionToWheel[6]) / (transitionToWheel[7] - transitionToWheel[6])
+        if transitionToWheel[7] < curStep and transitionToWheel[8] > curStep then
+            local givenTime = (curStepFloat - transitionToWheel[7]) / (transitionToWheel[8] - transitionToWheel[7])
             local timeLerp = quadOut(givenTime)
 
             bounceStrength = lerp(10, 0, timeLerp)
