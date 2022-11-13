@@ -12,7 +12,7 @@ import openfl.display.GraphicsShader;
 @:access(openfl.display3D.Program3D)
 @:access(openfl.display.ShaderInput)
 @:access(openfl.display.ShaderParameter)
-class BackendShader extends GraphicsShader {
+class FeshBackendShader extends GraphicsShader {
     public function new() {
         super();
     }

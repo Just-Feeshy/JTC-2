@@ -1,6 +1,6 @@
 package feshixl.shaders;
 
-class FeshShader extends BackendShader {
+class FeshShader extends FeshBackendShader {
 	var glVertexHeader:String = "
         attribute float openfl_Alpha;
 		attribute vec4 openfl_ColorMultiplier;
