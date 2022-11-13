@@ -146,6 +146,21 @@ function onStepHit()
         callEvent("bump per beat", "4", "1")
         beatSection = beatSection + 1
     end
+
+    if curStep == 652 and beatSection == 3 then
+        callEvent("bump per beat", "2", "1.025")
+        beatSection = beatSection + 1
+    end
+
+    if curStep == 772 and beatSection == 4 then
+        callEvent("bump per beat", "1", "1.05")
+        beatSection = beatSection + 1
+    end
+
+    if curStep == 904 and beatSection == 5 then
+        callEvent("bump per beat", "4", "1")
+        beatSection = beatSection + 1
+    end
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
