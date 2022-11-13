@@ -231,7 +231,7 @@ function onUpdate(elapsed)
             local timeLerp = quadOut(givenTime)
 
             megaSpin = lerp(0, math.pi * 2, timeLerp)
-            bounceStrength = lerp(10, 15, timeLerp)
+            bounceStrength = lerp(10, 18, timeLerp)
 
             setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)
         end
@@ -240,7 +240,7 @@ function onUpdate(elapsed)
             local givenTime = (curStepFloat - transitionToWheel[5]) / (transitionToWheel[6] - transitionToWheel[5])
             local timeLerp = quadOut(givenTime)
 
-            bounceStrength = lerp(15, 10, timeLerp)
+            bounceStrength = lerp(18, 10, timeLerp)
         end
     end
 
