@@ -33,7 +33,8 @@ local transitionToWheel = { --In steps
     652,
     760,
     772,
-    904
+    904,
+    1661
 }
 
 local bounceWheel = {
@@ -227,7 +228,7 @@ function onUpdate(elapsed)
                     wheelAngle = lerp(0, math.pi * 2, timeLerp)
                     setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)
                 else
-                    AverageSpin = AverageSpin + (elapsed * elapsed * math.pi * (curBpm / 120) * (bounceStrength * 0.1))
+                    AverageSpin = AverageSpin + (elapsed * elapsed * math.pi * (curBpm / 120) * (math.min(bounceStrength * 0.1, 1)))
                     wheelAngle = AverageSpin + megaSpin
 
                     if not wheelFinished then
@@ -256,6 +257,13 @@ function onUpdate(elapsed)
             local timeLerp = quadOut(givenTime)
 
             bounceStrength = lerp(18, 10, timeLerp)
+        end
+
+        if transitionToWheel[6] < curStep and transitionToWheel[7] > curStep then
+            local givenTime = (curStepFloat - transitionToWheel[6]) / (transitionToWheel[7] - transitionToWheel[6])
+            local timeLerp = quadOut(givenTime)
+
+            bounceStrength = lerp(10, 0, timeLerp)
         end
     end
 
