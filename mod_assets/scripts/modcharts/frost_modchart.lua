@@ -14,6 +14,9 @@ local bounceStrength = 10
 local allStrumsX = {}
 local allStrumsY = {}
 
+local allStrumsX2 = {}
+local allStrumsY2 = {}
+
 local noteWheelOffsetX = {}
 local noteWheelOffsetY = {}
 local noteWheelAngle = {}
@@ -109,7 +112,39 @@ end
 
 --Modchart Section 2
 function frost_modchart.sectionTwo_REGULAR()
-    if transitionToWheel[1] < curStep and transitionToWheel[7] > curStep then
+    if transitionToWheel[1] < curStep and transitionToWheel[2] > curStep then
+        for i = 4, 1, -1 do
+            local givenTime = (curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])
+            local timeLerp = givenTime + (stepCrochet * 0.0011 * i) * math.min(givenTime, 1)
+            local easing = smootherStep(math.min(timeLerp, 1))
+
+            if not wheelIsHere then
+                allStrumsX2[i] = getNotePosX(i - 1)
+                allStrumsY2[i] = getNotePosY(i - 1)
+                allStrumsX2[i + 4] = getNotePosX((i - 1) + 4)
+                allStrumsY2[i + 4] = getNotePosY((i - 1) + 4)
+            end
+
+            setNoteStrumPos(i - 1,
+                swirlerpX(allStrumsX2[i], allStrumsX[i], easing),
+                swirlerpY(allStrumsY2[i], allStrumsY[i], easing)
+            )
+
+            setNoteStrumPos((i - 1) + 4,
+                swirlerpX(allStrumsX2[i + 4], allStrumsX[i + 4], easing),
+                swirlerpY(allStrumsY2[i + 4], allStrumsY[i + 4], easing)
+            )
+
+            if not wheelIsHere then
+                setNoteDirection(i - 1, 0)
+                setNoteDirection((i - 1) + 4, 0)
+            end
+        end
+
+        wheelIsHere = true
+    end
+
+    if transitionToWheel[2] < curStep and transitionToWheel[7] > curStep then
         for i = 1, 4 do
             setNoteStrumPos(i - 1,
                 allStrumsX[i],
@@ -120,14 +155,7 @@ function frost_modchart.sectionTwo_REGULAR()
                 allStrumsX[i + 4],
                 allStrumsY[i + 4] - bounceWheel[i]
             )
-
-            if not wheelIsHere then
-                setNoteDirection(i - 1, 0)
-                setNoteDirection((i - 1) + 4, 0)
-            end
         end
-
-        wheelIsHere = true
     end
 
     if transitionToWheel[4] < curStep and transitionToWheel[5] > curStep then
@@ -152,29 +180,36 @@ function frost_modchart.sectionTwo_REGULAR()
     end
 
     if wheelIsHere then
-        bounceDaWheel(bounceStrength, 1)
+        bounceDaWheel(bounceStrength, -1)
     end
 end
 
 function frost_modchart.sectionTwo_HELL(elapsed)
     if transitionToWheel[1] < curStep and transitionToWheel[2] > curStep then
-        wheelIsHere = true
-
         for i = 4, 1, -1 do
             local givenTime = (curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])
             local timeLerp = givenTime + (stepCrochet * 0.0011 * i) * math.min(givenTime, 1)
             local easing = smootherStep(math.min(timeLerp, 1))
 
+            if not wheelIsHere then
+                allStrumsX2[i] = getNotePosX(i - 1)
+                allStrumsY2[i] = getNotePosY(i - 1)
+                allStrumsX2[i + 4] = getNotePosX((i - 1) + 4)
+                allStrumsY2[i + 4] = getNotePosY((i - 1) + 4)
+            end
+
             setNoteStrumPos(i - 1,
-                swirlerpX(allStrumsX[i], -noteSwagWidth, easing),
-                swirlerpY(allStrumsY[i], windowHeight + noteSwagWidth, easing)
+                swirlerpX(allStrumsX2[i], -noteSwagWidth, easing),
+                swirlerpY(allStrumsY2[i], windowHeight + noteSwagWidth, easing)
             )
 
             setNoteStrumPos((i - 1) + 4,
-                swirlerpX(allStrumsX[i + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
-                swirlerpY(allStrumsY[i + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
+                swirlerpX(allStrumsX2[i + 4], getNoteScreenCenter((i - 1) + 4, "X") + noteWheelOffsetX[i], easing),
+                swirlerpY(allStrumsY2[i + 4], getNoteScreenCenter((i - 1) + 4, "Y") + noteWheelOffsetY[i], easing)
             )
         end
+
+        wheelIsHere = true
     end
 
     if transitionToWheel[2] < curStep then

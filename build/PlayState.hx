@@ -3336,6 +3336,16 @@ class PlayState extends MusicBeatState
 				return strumOBJ.scale.y;
 			});
 
+			addCallback("getNotePosX", function(id:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				return strumOBJ.x;
+			});
+
+			addCallback("getNotePosY", function(id:Int) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				return strumOBJ.y;
+			});
+
 			addCallback("getNoteScreenCenter", function(id:Int, ?axis:String) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 
