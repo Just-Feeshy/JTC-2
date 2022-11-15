@@ -4,6 +4,7 @@
 --variables
 local frost_modchart = nil
 local skaterboi = nil
+local skaterboi_extra = nil
 
 local beatSection = 0
 
@@ -12,6 +13,13 @@ local jtcStrumAnims = {
     "singUP",
     "singDOWN",
     "singLEFT"
+}
+
+local jtcStrumAnims_miss = {
+    "singRIGHTmiss",
+    "singUPmiss",
+    "singDOWNmiss",
+    "singLEFTmiss"
 }
 
 local daddyIsHere = false

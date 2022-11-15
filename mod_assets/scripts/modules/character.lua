@@ -37,4 +37,8 @@ function character.singByNote(noteData, isSustainNote)
     setCharacterHoldTimer(character.name, 0)
 end
 
+function character.missByNote(noteData)
+    playAnim(character.name, character.sings[noteData + 1] + "miss", true)
+end
+
 return character
