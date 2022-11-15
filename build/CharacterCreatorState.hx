@@ -377,6 +377,12 @@ class CharacterCreatorState extends MusicBeatState {
             }    
         });
 
+        var flipSpriteButton:FlxUIButton = new FlxUIButton(centerCamButton.x, createCharacterButton.y, "Flip Sprite", function() {
+            if(character != null) {
+                character.flipX = !character.flipX;
+            }
+        });
+
         var characterSelectorText:FlxText = new FlxText(characterSelector.x, characterSelector.y - 15, 0, 'Character Selector:');
         var characterNameText:FlxText = new FlxText(characterName.x, characterName.y - 15, 0, 'Character Name:');
 
@@ -441,6 +447,7 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_display.add(centerCamButton);
         tab_group_display.add(characterName);
         tab_group_display.add(createCharacterButton);
+        tab_group_display.add(flipSpriteButton);
         tab_group_display.add(characterSelectorText);
         tab_group_display.add(characterNameText);
         tab_group_display.add(hpTextChange);

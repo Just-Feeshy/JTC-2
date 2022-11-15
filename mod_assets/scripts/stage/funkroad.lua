@@ -17,7 +17,7 @@ local jtcStrumAnims = {
 
 local daddyIsHere = false
 
---functions
+--events
 function generatedStage()
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", 50, 0)
@@ -27,9 +27,14 @@ function generatedStage()
     scaleSprite("frostbiteCAR", 0.7, 0.7)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
 
+    setupPunchHealth(3)
+
     skaterboi = require("mod_assets/scripts/modules/character")
     skaterboi.create("skater-boi-player", "skater-boi-player", 650, 100, true)
     skaterboi.initSing(jtcStrumAnims)
+
+    --skaterboi_extra = require("mod_assets/scripts/modules/character")
+    --skaterboi_extra.create()
 
     frost_modchart = require("mod_assets/scripts/modcharts/frost_modchart")
     frost_modchart.initStrumsAndNotes()
@@ -111,4 +116,25 @@ function onUpdate(elapsed)
     end
 
     updateCharacter()
+end
+
+--functions
+function setupPunchHealth(amount)
+    for i = 1, amount do
+        local iconX = getSpriteX("healthBarBG") + getSpriteWidth("healthBarBG") + 50
+        local iconY = getMidpointY("healthBarBG")
+
+        print("punchIcon" + tostring(i - 1))
+
+        --if spriteExist("punchIcon" + tostring(i - 1)) then
+            --iconX = iconX + (getSpriteWidth("punchIcon" + tostring(i - 1)) * (i - 1))
+            --iconY = iconY - (getSpriteHeight("punchIcon" + tostring(i - 1)) * 0.5)
+        --end
+
+        --createSprite("punchIcon" + i)
+        --setSpritePosition("punchIcon" + i, iconX, iconY - 10)
+        --loadGraphic("punchIcon" + i, "daddy_fist")
+        --setSpriteToCamera("punchIcon" + i, "camHUD")
+        --addSpriteToStage("punchIcon" + i)
+    end
 end

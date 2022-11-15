@@ -1,0 +1,68 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "skater dance IDLE GF  still",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "skater dance DOWN miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-18,
+				-91
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "skater dance RIGHT miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				307,
+				138
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "skater dance UP miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				159,
+				108
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "skater dance LEFT miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				5,
+				23
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": 57,
+		"camPosY": -160,
+		"y": -95,
+		"camPosX": 0
+	},
+	"playAnim": "",
+	"file": "skater extra notes.xml",
+	"icon": [
+		10,
+		11
+	]
+}
