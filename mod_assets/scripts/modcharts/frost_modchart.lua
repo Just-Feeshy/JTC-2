@@ -108,6 +108,54 @@ function frost_modchart.sectionOne(elapsed)
 end
 
 --Modchart Section 2
+function frost_modchart.sectionTwo_REGULAR(elapsed)
+    if wheelIsHere then
+        bounceDaWheel(bounceStrength)
+    end
+
+    if transitionToWheel[1] < curStep and transitionToWheel[7] > curStep then
+        wheelIsHere = true
+
+        for i = 1, 4 do
+            setNoteStrumPos(i - 1,
+                allStrumsX[i],
+                allStrumsY[i] - bounceStrength[i]
+            )
+
+            setNoteStrumPos(i - 1,
+                allStrumsX[i + 4],
+                allStrumsY[i + 4] - bounceStrength[i]
+            )
+
+            if not wheelIsHere then
+                setNoteDirection(i - 1, 0)
+                setNoteDirection((i - 1) + 4, 0)
+            end
+        end
+    end
+
+    if transitionToWheel[4] < curStep and transitionToWheel[5] > curStep then
+        local givenTime = (curStepFloat - transitionToWheel[4]) / (transitionToWheel[5] - transitionToWheel[4])
+        local timeLerp = quadOut(givenTime)
+
+        bounceStrength = lerp(10, 18, timeLerp)
+    end
+
+    if transitionToWheel[5] < curStep and transitionToWheel[6] > curStep then
+        local givenTime = (curStepFloat - transitionToWheel[5]) / (transitionToWheel[6] - transitionToWheel[5])
+        local timeLerp = quadOut(givenTime)
+
+        bounceStrength = lerp(18, 10, timeLerp)
+    end
+
+    if transitionToWheel[7] < curStep and transitionToWheel[8] > curStep then
+        local givenTime = (curStepFloat - transitionToWheel[7]) / (transitionToWheel[8] - transitionToWheel[7])
+        local timeLerp = quadOut(givenTime)
+
+        bounceStrength = lerp(10, 0, timeLerp)
+    end
+end
+
 function frost_modchart.sectionTwo_HELL(elapsed)
     if transitionToWheel[1] < curStep and transitionToWheel[2] > curStep then
         wheelIsHere = true

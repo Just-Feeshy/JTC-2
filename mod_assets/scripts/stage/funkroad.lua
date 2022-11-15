@@ -102,7 +102,11 @@ function onUpdate(elapsed)
         frost_modchart.sectionOne(elapsed)
 
         --Modchart Section 2
-        frost_modchart.sectionTwo_HELL(elapsed)
+        if difficulty == 2 then
+            frost_modchart.sectionTwo_HELL(elapsed)
+        else
+            frost_modchart.sectionTwo_REGULAR(elapsed)
+        end
     end
 
     updateCharacter()
