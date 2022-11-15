@@ -144,7 +144,7 @@ function frost_modchart.sectionTwo_REGULAR()
         wheelIsHere = true
     end
 
-    if transitionToWheel[2] < curStep and transitionToWheel[7] > curStep then
+    if transitionToWheel[2] < curStep and transitionToWheel[8] > curStep then
         for i = 1, 4 do
             setNoteStrumPos(i - 1,
                 allStrumsX[i],
