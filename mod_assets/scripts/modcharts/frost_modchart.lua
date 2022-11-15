@@ -1,7 +1,7 @@
---Modchart for the frostbite song.
+--Modchart for the Frostbeat song in lua.
+--Jesus the modchart took almost 400 lines of code.
 --Author Feeshy
 
-local wheelIsHere = false
 local a = 0
 local constant = 2
 local size = 20

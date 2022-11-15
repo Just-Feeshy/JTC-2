@@ -60,39 +60,47 @@ class FeshShader extends FeshBackendShader {
 			gl_FragColor = color * openfl_Alphav;
 		}";
 
-	public function new(initialize:Bool = true) {
+	public function new(glVertexSource:String = "", glFragmentSource:String = "", initialize:Bool = true) {
 		super();
 
-        this.glFragmentSource = "
-            #pragma header
-			
-            void main(void)
-            {
-                gl_FragColor = flixel_texture2D(bitmap, openfl_TextureCoordv);
-            }
-        ";
-
-        this.glVertexSource = "
-            #pragma header
-			
-			attribute float alpha;
-			attribute vec4 colorMultiplier;
-			attribute vec4 colorOffset;
-			uniform bool hasColorTransform;
-			
-			void main(void)
-			{
-				#pragma body
+		if(glFragmentSource != "" && glFragmentSource != null) {
+			this.glFragmentSource = glFragmentSource;
+		}else {
+			this.glFragmentSource = "
+				#pragma header
 				
-				openfl_Alphav = openfl_Alpha * alpha;
-				
-				if (hasColorTransform)
+				void main(void)
 				{
-					openfl_ColorOffsetv = colorOffset / 255.0;
-					openfl_ColorMultiplierv = colorMultiplier;
+					gl_FragColor = flixel_texture2D(bitmap, openfl_TextureCoordv);
 				}
-			}
-        ";
+			";
+		}
+
+		if(glVertexSource != "" && glVertexSource != null) {
+			this.glVertexSource = glVertexSource;
+		}else {
+			this.glVertexSource = "
+				#pragma header
+				
+				attribute float alpha;
+				attribute vec4 colorMultiplier;
+				attribute vec4 colorOffset;
+				uniform bool hasColorTransform;
+				
+				void main(void)
+				{
+					#pragma body
+					
+					openfl_Alphav = openfl_Alpha * alpha;
+					
+					if (hasColorTransform)
+					{
+						openfl_ColorOffsetv = colorOffset / 255.0;
+						openfl_ColorMultiplierv = colorMultiplier;
+					}
+				}
+			";
+		}
 
         if(initialize) {
             __initGL();

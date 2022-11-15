@@ -55,7 +55,7 @@ class ModLua {
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
     public var luaTweens(default, null):Map<String, FlxTween> = new Map<String, FlxTween>();
     public var luaSounds(default, null):Map<String, FlxSound> = new Map<String, FlxSound>();
-    public var luaShaders(default, null):Map<String, LuaShaderInfo> = new Map<String, LuaShaderInfo>();
+    public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
 
     public var closed:Bool = false;
 
@@ -889,11 +889,11 @@ class ModLua {
         /**
         * shaders (Don't work yet)
         */
-        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, path:String = "shaders") {
-            storeShaders(name, path);
+        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, shader:String, path:String = "shaders") {
+            storeShaders(name, shader, path);
         });
 
-        Lua_helper.add_callback(lua, "implementShaderFile", function(name:String, path:String) {
+        Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, path:String) {
             
         });
 
@@ -1038,15 +1038,15 @@ class ModLua {
         #end
     }
 
-    function storeShaders(name:String, path:String = "shaders", ?glslVersion:Null<UInt>):Bool {
+    function storeShaders(name:String, shader:String, path:String = "shaders", ?glslVersion:Null<UInt>):Bool {
         #if sys
         if(luaShaders.exists(name)) {
             Log.info('Shader `$name` was already stored!');
 			return true;
         }
 
-        var fragHeader:String = Paths.getPreloadPath(path + "/" + name + ".frag");
-        var vertHeader:String = Paths.getPreloadPath(path + "/" + name + ".vert");
+        var fragHeader:String = Paths.getPreloadPath(path + "/" + shader + ".frag");
+        var vertHeader:String = Paths.getPreloadPath(path + "/" + shader + ".vert");
 
         var foundAtLeastOne:Bool = false;
         
@@ -1065,7 +1065,7 @@ class ModLua {
         }
 
         if(foundAtLeastOne) {
-            luaShaders.set(name, {frag: fragHeader, vert: vertHeader});
+            luaShaders.set(name, new FeshShader());
             return true;
         }
 
@@ -1402,9 +1402,4 @@ private class LuaFrameCollection {
 
         return height = value;
     }
-}
-
-private typedef LuaShaderInfo = {
-    var frag:String;
-    var vert:String;
 }

@@ -76,8 +76,6 @@ class PlayState extends MusicBeatState
 	private var stage:StageBuilder;
 
 	private var createdCharacters:Bool;
-	private var trippyFog:FlxSprite;
-	private var waterFog:FlxSprite;
 	private var testSprite:FlxSprite;
 	private var warningSprState:WarningSubGroup;
 	private var debugText:FlxText;
@@ -121,7 +119,6 @@ class PlayState extends MusicBeatState
 	public static var camNOTE:CameraNote;
 
 	//Note Stuff Funk U
-	private var waterBlur:Array<BlurFilter> = [];
 	private var trippyWiggle:WiggleEffect = new WiggleEffect();
 	private var triggerGroup:FlxTypedGroup<FlxSprite>;
 	private var grpSplash:FlxTypedGroup<SplashSprite>;
@@ -365,11 +362,6 @@ class PlayState extends MusicBeatState
 			events.add(cast Type.createInstance(Register.events[i], []));
 		}
 
-		if(waterBlur[0] == null)
-			waterBlur.push(new BlurFilter(defaultBlur, defaultBlur, BitmapFilterQuality.HIGH));
-
-		waterBlur.push(new BlurFilter(1, 1, BitmapFilterQuality.HIGH));
-
 		var gfVersion:String = 'gf';
 
 		if(SONG.girlfriend == null) {
@@ -539,7 +531,6 @@ class PlayState extends MusicBeatState
 		healthBar.createFilledBar(opponentIconColor, playerIconColor);
 
 		createScene();
-		createFogs();
 
 		getLuaScript();
 
@@ -888,23 +879,6 @@ class PlayState extends MusicBeatState
 		} else {
 			return;
 		}
-	}
-
-	function createFogs() {
-		waterFog = new FlxSprite(0, 0).makeGraphic(1280, 720, FlxColor.BLUE);
-		waterFog.screenCenter();
-		waterFog.alpha = 0;
-		add(waterFog);
-
-		waterFog.cameras = [camNOTE];
-
-		trippyFog = new FlxSprite(0, 0).makeGraphic(1480, 920, FlxColor.PURPLE);
-		trippyFog.screenCenter();
-		trippyFog.alpha = 0;
-		trippyFog.scrollFactor.set();
-		add(trippyFog);
-
-		trippyFog.cameras = [camNOTE];
 	}
 
 	var startTimer:FlxTimer;
@@ -1950,13 +1924,6 @@ class PlayState extends MusicBeatState
 		{
 			defaultGameStuff();
 
-			if(trippyFog.alpha == 0.5) {
-				var curBet:Float = CustomNoteHandler.yourNoteData.get("trippy")*(Conductor.bpm/120);
-				CustomNoteHandler.yourNoteData.set("trippy", CustomNoteHandler.yourNoteData.get("trippy")+0.004);
-
-				trippyWiggle.waveAmplitude = Math.sin(curBet * Math.PI * 6)/30;
-			}
-
 			//Nothing here!
 			notes.forEachAlive(function(daNote:Note)
 			{	
@@ -2819,75 +2786,6 @@ class PlayState extends MusicBeatState
 				} else {
 					setHealth(health + 0.069);
 				}	
-			}
-
-			if(note.noteAbstract == "trippy") {
-
-				if(waterBlur[1] != null) {
-						
-					if(waterBlur[1].blurX <= 0) {
-						waterBlur[1].blurX -= 1;
-						waterBlur[1].blurY -= 1;
-						camNOTE.setTrashFilters([waterBlur[1]]);
-					}else {
-						waterBlur[1] = new BlurFilter(1, 1, BitmapFilterQuality.LOW);
-						camNOTE.setTrashFilters([]);
-
-						if(waterFog.alpha == 0.25)
-							waterFog.alpha = 0;
-					}
-
-					camGame.setTrashFilters([]);
-				}
-
-				if(trippyFog.alpha == 0) {
-					trippyFog.alpha = 0.5;
-					FlxG.sound.play(Paths.sound("drugsl"));
-					camGame.setTrashFilters([waterBlur[0], trippyShader]);
-					camNOTE.setTrashFilters([trippyShader]);
-
-					if(waterBlur[0].blurX <= defaultBlur+2) {
-						waterBlur[0].blurX = defaultBlur+3;
-						waterBlur[0].blurY = defaultBlur+3;
-					}
-				}
-			}else {
-				if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
-					
-					if(waterBlur[1] != null) {
-						
-						if(waterBlur[1].blurX <= 0) {
-							waterBlur[1].blurX -= 1;
-							waterBlur[1].blurY -= 1;
-							camNOTE.setTrashFilters([waterBlur[1]]);
-						}else {
-							waterBlur[1] = new BlurFilter(1, 1, BitmapFilterQuality.LOW);
-							camNOTE.setTrashFilters([]);
-
-							if(waterFog.alpha == 0.25) {
-								waterFog.alpha = 0;
-								FlxG.sound.play(Paths.sound("splashlol"));
-		
-								if(waterBlur[0].blurX >= defaultBlur+3) {
-									waterBlur[0].blurX = defaultBlur;
-									waterBlur[0].blurY = defaultBlur;
-									camGame.setTrashFilters([waterBlur[0]]);
-								}
-							}
-						}
-					}
-				}
-
-				if(trippyFog.alpha == 0.5) {
-					trippyFog.alpha = 0;
-					FlxG.sound.play(Paths.sound("drugsl"));
-
-					if(waterBlur[0].blurX >= defaultBlur+3) {
-						waterBlur[0].blurX = defaultBlur;
-						waterBlur[0].blurY = defaultBlur;
-						camGame.setFilters([waterBlur[0]]);
-					}
-				}
 			}
 
 			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
