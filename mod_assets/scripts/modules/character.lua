@@ -1,7 +1,7 @@
 --Character template to make initialzing characters through lua a little easier.
 --NOTE: Using a metadata table would cause issues, and I'm too lazy to figure out a solution.
 
-character = {
+local character = {
     name = "";
 
     sings = {};

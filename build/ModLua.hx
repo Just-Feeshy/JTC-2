@@ -889,8 +889,8 @@ class ModLua {
         /**
         * shaders (Don't work yet)
         */
-        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, path:String) {
-            
+        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, path:String = "shaders") {
+            storeShaders(name, path);
         });
 
         Lua_helper.add_callback(lua, "implementShaderFile", function(name:String, path:String) {
@@ -1038,7 +1038,7 @@ class ModLua {
         #end
     }
 
-    function storeShaders(name:String, path:String = "/shaders", ?glslVersion:Null<UInt>):Bool {
+    function storeShaders(name:String, path:String = "shaders", ?glslVersion:Null<UInt>):Bool {
         #if sys
         if(luaShaders.exists(name)) {
             Log.info('Shader `$name` was already stored!');
