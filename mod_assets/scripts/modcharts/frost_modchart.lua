@@ -156,6 +156,10 @@ function frost_modchart.sectionTwo_REGULAR()
                 allStrumsY[i + 4] - bounceWheel[i]
             )
         end
+
+        if not wheelFinished then
+            wheelFinished = true
+        end
     end
 
     if transitionToWheel[4] < curStep and transitionToWheel[5] > curStep then
@@ -179,8 +183,8 @@ function frost_modchart.sectionTwo_REGULAR()
         bounceStrength = lerp(10, 0, timeLerp)
     end
 
-    if wheelIsHere then
-        bounceDaWheel(bounceStrength, -1)
+    if wheelFinished then
+        bounceNormal(bounceStrength, -1)
     end
 end
 
@@ -296,6 +300,31 @@ function bounceDaWheel(strength, d)
                 direction = d
             end
 
+            bounceWheel[i + 1] = lerp(0, strength * direction, parabola(math.min(givenTime, 1), 3))
+        end
+    else
+        for i = 0, 3 do
+            bounceWheel[i + 1] = 0
+        end
+    end
+end
+
+function bounceNormal(strength, direction)
+    local curBeatM = curBeat * 2
+    local curBeatFloatM = curBeatFloat * 2
+
+    if curBeatM % 2 == 0 then
+        local givenTime = (curBeatFloatM - curBeatM) / ((curBeatM + 1) - curBeatM)
+
+        if curBeatM % 4 == 0 then
+            for i = 0, 2, 2 do
+                bounceWheel[i + 1] = lerp(0, strength * direction, parabola(math.min(givenTime, 1), 3))
+            end
+
+            return;
+        end
+
+        for i = 1, 3, 2 do
             bounceWheel[i + 1] = lerp(0, strength * direction, parabola(math.min(givenTime, 1), 3))
         end
     else
