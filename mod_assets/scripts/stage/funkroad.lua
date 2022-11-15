@@ -15,13 +15,6 @@ local jtcStrumAnims = {
     "singLEFT"
 }
 
-local jtcStrumAnims_miss = {
-    "singRIGHTmiss",
-    "singUPmiss",
-    "singDOWNmiss",
-    "singLEFTmiss"
-}
-
 local daddyIsHere = false
 
 --functions
