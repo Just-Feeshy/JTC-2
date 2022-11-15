@@ -1065,7 +1065,7 @@ class ModLua {
         }
 
         if(foundAtLeastOne) {
-            luaShaders.set(name, new FeshShader());
+            luaShaders.set(name, new FeshShader(vertHeader, fragHeader));
             return true;
         }
 
