@@ -152,7 +152,7 @@ function frost_modchart.sectionTwo_REGULAR()
     end
 
     if wheelIsHere then
-        bounceDaWheel(bounceStrength)
+        bounceDaWheel(bounceStrength, 1)
     end
 end
 
@@ -204,7 +204,7 @@ function frost_modchart.sectionTwo_HELL(elapsed)
     end
 
     if wheelFinished then
-        bounceDaWheel(bounceStrength)
+        bounceDaWheel(bounceStrength, -1)
     end
 
     if transitionToWheel[4] < curStep and transitionToWheel[5] > curStep then
@@ -233,7 +233,7 @@ function frost_modchart.sectionTwo_HELL(elapsed)
 end
 
 --Helper Functions
-function bounceDaWheel(strength)
+function bounceDaWheel(strength, d)
     local curBeatM = curBeat * 2
     local curBeatFloatM = curBeatFloat * 2
 
@@ -245,7 +245,7 @@ function bounceDaWheel(strength)
                 local direction = 1
 
                 if i > 1 == 0 then
-                    direction = -1
+                    direction = d
                 end
 
                 bounceWheel[i + 1] = lerp(0, strength * direction, parabola(math.min(givenTime, 1), 3))
@@ -258,7 +258,7 @@ function bounceDaWheel(strength)
             local direction = 1
 
             if i > 1 == 0 then
-                direction = -1
+                direction = d
             end
 
             bounceWheel[i + 1] = lerp(0, strength * direction, parabola(math.min(givenTime, 1), 3))
