@@ -184,7 +184,7 @@ function frost_modchart.sectionTwo_REGULAR()
     end
 
     if wheelFinished then
-        bounceNormal(bounceStrength, -1)
+        bounceNormal(bounceStrength, 1)
     end
 end
 
