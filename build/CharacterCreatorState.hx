@@ -150,12 +150,14 @@ class CharacterCreatorState extends MusicBeatState {
             characterJSONs.push(FileSystem.readDirectory("assets/characters")[i].split(".")[0]);
             characterAutosave.set(FileSystem.readDirectory("assets/characters")[i].split(".")[0],
             Character.loadInfo("characters/"+FileSystem.readDirectory("assets/characters")[i].split(".")[0]));
+            DefaultHandler.setupUpdateInfo(characterAutosave.get(FileSystem.readDirectory("assets/characters")[i].split(".")[0]));
         }
 
         for(i in 0...FileSystem.readDirectory("mod_assets/characters").length) {
             characterJSONs.push(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
             characterAutosave.set(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0],
             Character.loadInfo("characters/"+FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]));
+            DefaultHandler.setupUpdateInfo(characterAutosave.get(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]));
         }
 
         addDisplayUI();
@@ -367,7 +369,10 @@ class CharacterCreatorState extends MusicBeatState {
                         icon: [10, 11],
                         playAnim: "",
                         isPlayer: false,
-                        pixel: false
+                        pixel: false,
+
+                        iconFile: "iconGrid",
+				        clippingAdjustment: []
                     });
                 }
 

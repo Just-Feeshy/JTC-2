@@ -27,7 +27,7 @@ function generatedStage()
     scaleSprite("frostbiteCAR", 0.7, 0.7)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
 
-    setupPunchHealth(3)
+    --setupPunchHealth(3)
 
     skaterboi = require("mod_assets/scripts/modules/character")
     skaterboi.create("skater-boi-player", "skater-boi-player", 650, 100, true)

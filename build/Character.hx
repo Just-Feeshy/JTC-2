@@ -155,22 +155,6 @@ class Character extends feshixl.FeshSprite {
 
 	private var danced:Bool = false;
 
-	function get__info():ConfigCharacters {
-		if(_info == null) {
-			 return {
-				file: "",
-				animations: [],
-				position: [],
-				icon: [],
-				playAnim: "",
-				isPlayer: false,
-				pixel: false
-			};
-		}else {
-			return _info;
-		}
-	}
-
 	/**
 	 * FOR GF DANCING SHIT
 	 */
@@ -354,6 +338,25 @@ class Character extends feshixl.FeshSprite {
 
 				animation.addByIndices('danceLeft', 'spooky dance idle', [0, 2, 6], "", 12, false);
 				animation.addByIndices('danceRight', 'spooky dance idle', [8, 10, 12, 14], "", 12, false);
+		}
+	}
+
+	function get__info():ConfigCharacters {
+		if(_info == null) {
+			 return {
+				file: "",
+				animations: [],
+				position: [],
+				icon: [],
+				playAnim: "",
+				isPlayer: false,
+				pixel: false,
+
+				iconFile: "iconGrid",
+				clippingAdjustment: []
+			};
+		}else {
+			return DefaultHandler.setupUpdateInfo(_info);
 		}
 	}
 }

@@ -8,8 +8,9 @@ import flixel.FlxG;
 import feshixl.FeshCamera;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import openfl.events.Event;
+
+import ModInitialize.ConfigCharacters;
 import SaveData.SaveType;
-import Note;
 
 /**
 * New modifier algorithm WIP.
@@ -122,7 +123,19 @@ class DefaultHandler {
         FlxG.stage.removeEventListener(Event.ENTER_FRAME, update);
     }
 
-    static function update(e:Event) {
+    static public function setupUpdateInfo(_info:ConfigCharacters):ConfigCharacters {
+        if(_info.iconFile == "" || _info.iconFile == null) {
+            _info.iconFile = "iconGrid";
+        }
+
+        if(_info.clippingAdjustment == null) {
+            _info.clippingAdjustment = [];
+        }
+
+        return _info;
+    }
+
+    static private function update(e:Event) {
         var mainCam:FeshCamera = cast FlxG.camera;
         var camHUD:FeshCamera = cast PlayState.camHUD;
         var noteCam:FeshCamera = cast PlayState.camNOTE;

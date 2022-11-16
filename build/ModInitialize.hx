@@ -36,6 +36,9 @@ typedef ConfigCharacters = {
     var playAnim:String;
     var isPlayer:Bool;
     var pixel:Bool;
+
+    var iconFile:String;
+    var clippingAdjustment:Map<String, Array<Int>>;
 }
 
 typedef SongUtils = {
