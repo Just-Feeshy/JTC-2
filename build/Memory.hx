@@ -26,9 +26,9 @@ class Memory extends TextField {
     }
 
     function onEnter(_) {
-        memory = Math.round(System.totalMemory / 1024 / 1024 * 100) / 100;
+        memory = Math.round(System.totalMemory * 0.00098 * 0.00098 * 100) * 0.01;
 
-		if (memory > memPeak) {
+		if (memory > Math.abs(memPeak)) {
             memPeak = memory;
         }
 
