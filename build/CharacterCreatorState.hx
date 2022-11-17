@@ -231,13 +231,13 @@ class CharacterCreatorState extends MusicBeatState {
         add(healthBar);
 
         iconP1 = new HealthIcon("bf", true);
-        iconP1.y = healthBar.y - (iconP1.height / 2);
+        iconP1.y = healthBar.y - (iconP1.height * 0.5);
         iconP1.setGraphicSize(Std.int(FlxMath.lerp(150, iconP1.width, 0.50)));
         iconP1.updateHitbox();
 		add(iconP1);
 
         iconP2 = new HealthIcon("dad", false);
-        iconP2.y = healthBar.y - (iconP2.height / 2);
+        iconP2.y = healthBar.y - (iconP2.height * 0.5);
         iconP2.setGraphicSize(Std.int(FlxMath.lerp(150, iconP1.width, 0.50)));
         iconP2.updateHitbox();
 		add(iconP2);
@@ -296,6 +296,7 @@ class CharacterCreatorState extends MusicBeatState {
     var characterSelector:FlxUIDropDownMenu;
 
     var fileName:FinderUIInputText;
+    var iconFileName:FinderUIInputText;
 
     function addDisplayUI():Void {
         var tab_group_display = new FlxUI(null, UI_thingy);
@@ -312,12 +313,27 @@ class CharacterCreatorState extends MusicBeatState {
             return false;
         }
 
-        var updateFileButton:FlxUIButton = new FlxUIButton(10, 50 + fileName.height + 5, "Update", function() {
+        var updateFileButton:FlxUIButton = new FlxUIButton(10, 50 + fileName.height + 5, "Update\nCharacter", function() {
             characterAutosave.get(character.curCharacter).file = fileName.text;
             changeCharacter = true;
         });
+        updateFileButton.resize(updateFileButton.width, updateFileButton.height * 1.5);
+
+        iconFileName = new FinderUIInputText(10, updateFileButton.y + updateFileButton.height + 40, 80, "", 8);
+        iconFileName.text = characterAutosave.get(character.curCharacter).iconFile;
+
+        iconFileName.textUpdateCallback = function(text:String) {
+            if(Paths.image(text) != null) {
+                return true;
+            }
+
+            return false;
+        }
 
         var fileText:FlxText = new FlxText(fileName.width + 15, 50, 0, "XML File");
+        var iconFileText:FlxText = new FlxText(fileName.width + 15, iconFileName.y - 5, 0, "PNG File");
+
+        var iconTextColor:FlxText = new FlxUIText(10, updateFileButton.y + updateFileButton.height + 20, 0, "Icon Stuff");
 
         var bfTextColor:FlxText = new FlxUIText(10, 30, 0, "Character Stuff");
         redMulti = new FlxUINumericStepper(10, 60, 0.1, 1, 0, 255, 1);
@@ -389,7 +405,7 @@ class CharacterCreatorState extends MusicBeatState {
         });
 
         var characterSelectorText:FlxText = new FlxText(characterSelector.x, characterSelector.y - 15, 0, 'Character Selector:');
-        var characterNameText:FlxText = new FlxText(characterName.x, characterName.y - 15, 0, 'Character Name:');
+        var characterNameText:FlxText = new FlxText(characterName.x - 2, characterName.y - 15, 0, 'Character Name:');
 
         xInput = new FlxUINumericStepper(10, 280, 1, 0, -999, 999, 0);
         xInput.value = characterAutosave.get(character.curCharacter).position.get('x');
@@ -434,7 +450,7 @@ class CharacterCreatorState extends MusicBeatState {
 
         healthBar.percent = 50;
 
-        var hpTextChange:FlxText = new FlxUIText(210, 30, 0, "Health Bar Settings");
+        var hpTextChange:FlxText = new FlxUIText(208, 30, 0, "Health Bar Settings");
 
         redMulti.name = "redMulti";
         greenMulti.name = "greenMulti";
@@ -475,6 +491,9 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_display.add(characterSelector);
         tab_group_display.add(fileName);
         tab_group_display.add(fileText);
+        tab_group_display.add(iconFileName);
+        tab_group_display.add(iconFileText);
+        tab_group_display.add(iconTextColor);
         tab_group_display.add(updateFileButton);
 
         UI_thingy.addGroup(tab_group_display);
