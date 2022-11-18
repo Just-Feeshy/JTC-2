@@ -646,7 +646,7 @@ class OptionsMenuState extends MusicBeatState {
 				];
 			}
 			#end
-			#if (debug || USING_MOD_DEBUG)
+			#if ((debug || USING_MOD_DEBUG) && sys)
 			case "editors": {
 				optionList = [
 					{
@@ -747,7 +747,7 @@ class OptionsMenuState extends MusicBeatState {
 
 								setting(option, "", option.ID);
 							})
-							#if (debug || USING_MOD_DEBUG),
+							#if ((debug || USING_MOD_DEBUG) && sys),
 							new Options(0, 40, "Dev Tools Stuff", SaveType.NONE, function(option:Options, pressed:Bool) {
 								option.ID = 4;
 

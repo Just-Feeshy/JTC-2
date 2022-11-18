@@ -37,8 +37,6 @@ import flixel.math.FlxPoint;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
-import openfl.events.IOErrorEvent;
-import openfl.events.IOErrorEvent;
 import openfl.net.FileFilter;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
@@ -329,6 +327,24 @@ class CharacterCreatorState extends MusicBeatState {
 
             return false;
         }
+
+        var updateIconFileButton:FlxUIButton = new FlxUIButton(10, 50 + iconFileName.height + 5, "Update Icon", function() {
+            characterAutosave.get(character.curCharacter).iconFile = iconFileName.text;
+
+            if(normalIxon != null) {
+                normalIxon.value = 0;
+            }
+
+            if(dedIxon != null) {
+                dedIxon.value = 0;
+            }
+
+            if(hapeyIxon != null) {
+                hapeyIxon.value = 0;
+            }
+
+
+        });
 
         var fileText:FlxText = new FlxText(fileName.width + 15, 50, 0, "XML File");
         var iconFileText:FlxText = new FlxText(fileName.width + 15, iconFileName.y - 5, 0, "PNG File");
@@ -873,9 +889,8 @@ class CharacterCreatorState extends MusicBeatState {
                 remove(iconP1);
                 iconP1.destroy();
                 iconP1 = null;
-                iconP1 = new HealthIcon(character.curCharacter, true, 0, false);
+                iconP1 = new HealthIcon(character.curCharacter, true);
                 iconP1.createAnim(character.curCharacter, characterAutosave.get(character.curCharacter).icon, true);
-                iconP1.loadAllAnims(true);
 
                 iconP1.animation.play(character.curCharacter);
 

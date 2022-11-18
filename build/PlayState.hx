@@ -514,6 +514,9 @@ class PlayState extends MusicBeatState
 		iconP1 = new HealthIcon(SONG.player1, true);
 		iconP2 = new HealthIcon(SONG.player2, false);
 
+		iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
+		iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
+
 		if(SaveData.getData(PLAY_AS_OPPONENT)) {
 			iconP2.bpm = SONG.bpm;
 		}else {

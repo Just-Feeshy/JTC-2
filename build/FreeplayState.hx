@@ -143,7 +143,10 @@ class FreeplayState extends MusicBeatState
 
 			grpSongs.add(songText);
 
-			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
+			var iconCharacter:String = songs[i].songCharacter;
+
+			var icon:HealthIcon = new HealthIcon(iconCharacter);
+			icon.createAnim(iconCharacter, icon.getIconJSON(iconCharacter));
 			icon.cameras = [camFreeplay];
 			icon.sprTracker = songText;
 
