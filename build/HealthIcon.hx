@@ -22,7 +22,7 @@ class HealthIcon extends FlxSprite
 	public var sprTracker:FlxSprite;
 
 	public var iconCharacters:Array<String>;
-	public var iconAnimInfo:Array<Int>;
+	public var iconAnimInfo:Array<UInt>;
 
 	public var character:String = "";
 	public var bpm(default, set):UInt = 0;
@@ -54,18 +54,16 @@ class HealthIcon extends FlxSprite
 		loadGraphic(Paths.image(file), true, 150, 150);
 	}
 
-	public function createAnim(character:String, iconAnimInfo:Array<Int>, isPlayer:Bool = false):Void {
+	public function createAnim(character:String, iconAnimInfo:Array<UInt>, isPlayer:Bool = false):Void {
 		if(!iconCharacters.contains(character)) {
 			iconCharacters.push(character);
 		}else {
 			animation.remove(character);
 		}
 
-		if(this.character == character) {
-			this.iconAnimInfo = iconAnimInfo;
-			animation.add(character, iconAnimInfo, 0, false, isPlayer);
-			animation.play(this.character);
-		}
+		this.iconAnimInfo = iconAnimInfo;
+		animation.add(character, iconAnimInfo, 0, false, isPlayer);
+		animation.play(this.character);
 	}
 
 	public function getIconJSON(character:String):Array<Int> {

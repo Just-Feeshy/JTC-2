@@ -7,6 +7,7 @@ import sys.FileSystem;
 import flixel.FlxG;
 import feshixl.FeshCamera;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import openfl.utils.Assets;
 import openfl.events.Event;
 
 import ModInitialize.ConfigCharacters;
@@ -56,6 +57,7 @@ class DefaultHandler {
 	}
 
     inline static public function getcharacterJSON():Array<String> {
+        #if sys
         var arrayer:Array<String> = new Array<String>();
 
         for(i in 0...FileSystem.readDirectory("assets/characters").length)
@@ -63,6 +65,13 @@ class DefaultHandler {
 
         for(i in 0...FileSystem.readDirectory("mod_assets/characters").length)
             arrayer.push(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
+        #else
+        var arrayer:Array<String> = CoolUtil.coolTextFile("assets/data/characterList.txt");
+
+        if(Assets.exists("mod_assets/data/characterList.txt")) {
+            arrayer.concat(CoolUtil.coolTextFile("mod_assets/data/characterList.txt"));
+        }
+        #end
 
         return arrayer;
     }

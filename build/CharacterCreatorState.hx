@@ -240,6 +240,9 @@ class CharacterCreatorState extends MusicBeatState {
         iconP2.updateHitbox();
 		add(iconP2);
 
+        cacheIconAnimation(iconP1, true);
+        cacheIconAnimation(iconP2, false);
+
         var camCursorGraphic:FlxGraphic = FlxGraphic.fromClass(GraphicCursorCross);
         camCursor = new FlxSprite().loadGraphic(camCursorGraphic);
         camCursor.setGraphicSize(40, 40);
@@ -886,11 +889,11 @@ class CharacterCreatorState extends MusicBeatState {
             }
 
             if(wname.endsWith('icon')) {
+                /*
                 remove(iconP1);
                 iconP1.destroy();
                 iconP1 = null;
                 iconP1 = new HealthIcon(character.curCharacter, true);
-                iconP1.createAnim(character.curCharacter, characterAutosave.get(character.curCharacter).icon, true);
 
                 iconP1.animation.play(character.curCharacter);
 
@@ -900,7 +903,18 @@ class CharacterCreatorState extends MusicBeatState {
                 add(iconP1);
 
                 iconP1.cameras = [camHUD];
+                */
+
+                iconP1.createAnim(character.curCharacter, [character._info.icon[0], character._info.icon[1], character._info.icon[2]], true);
             }
+        }
+    }
+
+    function cacheIconAnimation(icon:HealthIcon, player:Bool = false):Void {
+        var characterList:Array<String> = DefaultHandler.getcharacterJSON();
+
+        for(character in characterList) {
+            icon.createAnim(character, icon.getIconJSON(character), player);
         }
     }
 
@@ -1191,6 +1205,13 @@ class CharacterCreatorState extends MusicBeatState {
                 Std.int(mapEditor.get("character")[chooseSkin][7])
             );
         }
+    }
+
+    override function destroy():Void {
+        super.destroy();
+
+        iconP1 = FlxDestroyUtil.destroy(iconP1);
+        iconP2 = FlxDestroyUtil.destroy(iconP2);
     }
 
     function setColorOptions(getColor:Int) {

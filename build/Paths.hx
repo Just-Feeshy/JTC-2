@@ -69,7 +69,7 @@ class Paths
 
 	inline static function getLibraryPathForce(file:String, library:String)
 	{
-		if(FileSystem.exists('mod_assets/$file'))
+		if(OpenFlAssets.exists('mod_assets/$file'))
 			return 'mod_assets/$file';
 		else
 			return '$library:assets/$library/$file';
@@ -77,7 +77,7 @@ class Paths
 
 	inline static public function getPreloadPath(file:String)
 	{
-		if(FileSystem.exists('mod_assets/$file'))
+		if(OpenFlAssets.exists('mod_assets/$file'))
 			return 'mod_assets/$file';
 		else
 			return 'assets/$file';
@@ -100,7 +100,7 @@ class Paths
 
 	inline static public function font(key:String)
 	{
-		if(Assets.exists(getPreloadPath('fonts/$key'))) {
+		if(OpenFlAssets.exists(getPreloadPath('fonts/$key'))) {
 			return getPreloadPath('fonts/$key');
 		}else {
 			return "";
@@ -109,7 +109,7 @@ class Paths
 
 	inline static public function mora(key:String, type:String,?library:String)
 	{
-		if(Assets.exists(getPath('feeshdata/$key.$type', TEXT, library)))
+		if(OpenFlAssets.exists(getPath('feeshdata/$key.$type', TEXT, library)))
 			return getPath('feeshdata/$key.$type', TEXT, library);
 		else {
 			trace("Error: could not locate file - " + '$key.$type');
@@ -119,7 +119,7 @@ class Paths
 
 	inline static public function txt(key:String, ?library:String)
 	{
-		if(Assets.exists(getPath('data/$key.txt', TEXT, library)))
+		if(OpenFlAssets.exists(getPath('data/$key.txt', TEXT, library)))
 			return getPath('data/$key.txt', TEXT, library);
 		else {
 			trace("Warning: could not locate text file - " + key);
@@ -129,7 +129,7 @@ class Paths
 
 	inline static public function pak(key:String,?library:String)
 	{
-		if(Assets.exists(getPath('pakdata/$key.pak', TEXT, library)))
+		if(OpenFlAssets.exists(getPath('pakdata/$key.pak', TEXT, library)))
 			return getPath('pakdata/$key.pak', TEXT, library);
 		else {
 			trace("Error: could not locate pak file - " + key);
@@ -139,7 +139,7 @@ class Paths
 
 	inline static public function json(key:String, ?library:String)
 	{
-		if(Assets.exists(getPath('data/$key.json', TEXT, library)))
+		if(OpenFlAssets.exists(getPath('data/$key.json', TEXT, library)))
 			return getPath('data/$key.json', TEXT, library);
 		else {
 			trace("Error: could not locate json file - " + getPath('data/$key.json', TEXT, library));
@@ -148,7 +148,7 @@ class Paths
 	}
 
 	inline static public function shader(key:String, ?library:String) {
-		if(Assets.exists(getPath('shaders/$key', TEXT, library)))
+		if(OpenFlAssets.exists(getPath('shaders/$key', TEXT, library)))
 			return getPath('shaders/$key', TEXT, library);
 		else {
 			trace("Error: could not locate glsl file - " + getPath('shaders/$key', TEXT, library));
@@ -163,15 +163,15 @@ class Paths
 		if(cache)
 			cacheFile = "cache/";
 
-		if(FileSystem.exists('mod_assets/images/$key.png')
-		&& FileSystem.exists('mod_assets/images/$key.xml')) {
+		if(OpenFlAssets.exists('mod_assets/images/$key.png')
+		&& OpenFlAssets.exists('mod_assets/images/$key.xml')) {
 			cacheFile = "";
 			library = "";
 		}
 
 		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key);
 
-		if(Assets.exists(file('images/' + cacheFile + key + '.txt', library))) {
+		if(OpenFlAssets.exists(file('images/' + cacheFile + key + '.txt', library))) {
 			return FlxAtlasFrames.fromSpriteSheetPacker(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.txt', library));
 		}else {
 			trace("Error: could not locate asset - " + file('images/' + cacheFile + key + '.txt', library));
@@ -192,7 +192,7 @@ class Paths
 	{
 		var getPath:String = getPath('sounds/$key.$SOUND_EXT', SOUND, library);
 
-		if(Assets.exists(getPath)) {
+		if(OpenFlAssets.exists(getPath)) {
 			return OpenFlAssets.getSound(getPath, true);
 		}else {
 			trace("Error: could not locate sound - " + key);
@@ -204,7 +204,7 @@ class Paths
 	{
 		var getPath:String = getPath('music/$key.$SOUND_EXT', MUSIC, library);
 
-		if(Assets.exists(getPath)) {
+		if(OpenFlAssets.exists(getPath)) {
 			return OpenFlAssets.getSound(getPath, true);
 		}else {
 			trace("Error: could not locate music - " + key);
@@ -216,7 +216,7 @@ class Paths
 	{
 		var getPath:String = "songs:" + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
 
-		if(Assets.exists(getPath)) {
+		if(OpenFlAssets.exists(getPath)) {
 			return OpenFlAssets.getSound(getPath, true);
 		}else {
 			trace("Error: could not locate voices - " + song + "." + SOUND_EXT);
@@ -228,7 +228,7 @@ class Paths
 	{
 		var getPath:String = "songs:" + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT');
 
-		if(Assets.exists(getPath)) {
+		if(OpenFlAssets.exists(getPath)) {
 			return OpenFlAssets.getSound(getPath, true);
 		}else {
 			trace("Error: could not locate instrumental - " + song + "." + SOUND_EXT);
@@ -244,15 +244,15 @@ class Paths
 			cacheFile = "cache/";
 		}
 
-		if(FileSystem.exists('mod_assets/images/$key.png') 
-		&& FileSystem.exists('mod_assets/images/$key.xml')) {
+		if(OpenFlAssets.exists('mod_assets/images/$key.png') 
+		&& OpenFlAssets.exists('mod_assets/images/$key.xml')) {
 			cacheFile = "";
 			library = "";
 		}
 
 		var cachedImage:FlxGraphic = ifImageCached(key, "");
 
-		if(Assets.exists(file('images/' + cacheFile + key + '.xml', library))) {
+		if(OpenFlAssets.exists(file('images/' + cacheFile + key + '.xml', library))) {
 			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
 		}else {
 			trace("Error: could not locate asset - " + file('images/' + cacheFile + key + '.xml', library));
@@ -271,7 +271,7 @@ class Paths
 			return cachedImage;
 		}
 
-		if(Assets.exists(getPath('images/$key.png', IMAGE, library))) {
+		if(OpenFlAssets.exists(getPath('images/$key.png', IMAGE, library))) {
 			var path:String = getPath('images/$key.png', IMAGE, library);
 
 			var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
@@ -284,7 +284,7 @@ class Paths
 	}
 
 	static public function lua(key:String) {
-		if(Assets.exists(getPath('scripts/$key.lua', TEXT, null))) {
+		if(OpenFlAssets.exists(getPath('scripts/$key.lua', TEXT, null))) {
 			return getPath('scripts/$key.lua', TEXT, null);
 		}else {
 			trace("Error: could not locate asset - " + getPath('scripts/$key.lua', TEXT, null));
