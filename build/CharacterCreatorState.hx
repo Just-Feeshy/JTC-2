@@ -889,22 +889,6 @@ class CharacterCreatorState extends MusicBeatState {
             }
 
             if(wname.endsWith('icon')) {
-                /*
-                remove(iconP1);
-                iconP1.destroy();
-                iconP1 = null;
-                iconP1 = new HealthIcon(character.curCharacter, true);
-
-                iconP1.animation.play(character.curCharacter);
-
-                iconP1.y = healthBar.y - (iconP1.height / 2);
-                iconP1.setGraphicSize(Std.int(FlxMath.lerp(150, iconP1.width, 0.50)));
-                iconP1.updateHitbox();
-                add(iconP1);
-
-                iconP1.cameras = [camHUD];
-                */
-
                 iconP1.createAnim(character.curCharacter, [character._info.icon[0], character._info.icon[1], character._info.icon[2]], true);
             }
         }
