@@ -52,6 +52,10 @@ class HealthIcon extends FlxSprite
 	}
 
 	public function loadNewIcons(file:String) {
+		if(iconFile == file) {
+			return;
+		}
+
 		iconFile = file;
 		loadGraphic(Paths.image(file), true, 150, 150);
 	}
