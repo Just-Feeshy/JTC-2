@@ -241,7 +241,7 @@ class CharacterCreatorState extends MusicBeatState {
 		add(iconP2);
 
         cacheIconAnimation(iconP1, true);
-        cacheIconAnimation(iconP2, false);
+        cacheIconAnimation(iconP2, false); //I'm lazy
 
         var camCursorGraphic:FlxGraphic = FlxGraphic.fromClass(GraphicCursorCross);
         camCursor = new FlxSprite().loadGraphic(camCursorGraphic);
@@ -346,7 +346,7 @@ class CharacterCreatorState extends MusicBeatState {
                 hapeyIxon.value = 0;
             }
 
-
+            changeCharacter = true;
         });
 
         var fileText:FlxText = new FlxText(fileName.width + 15, 50, 0, "XML File");
@@ -783,6 +783,10 @@ class CharacterCreatorState extends MusicBeatState {
                 Std.int(mapEditor.get("character")[chooseSkin][6]),
                 Std.int(mapEditor.get("character")[chooseSkin][7])
             );
+
+            if(iconP1.iconFile != characterAutosave.get(character.curCharacter).iconFile) {
+                iconP1.loadNewIcons(characterAutosave.get(character.curCharacter).iconFile);
+            }
 
             if(iconP1.iconCharacters.contains(characterJSONs[Std.parseInt(data)]))
                 iconP1.animation.play(characterJSONs[Std.parseInt(data)]);
