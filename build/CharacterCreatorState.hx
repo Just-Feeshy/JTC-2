@@ -350,7 +350,7 @@ class CharacterCreatorState extends MusicBeatState {
         });
 
         var fileText:FlxText = new FlxText(fileName.width + 15, 50, 0, "XML File");
-        var iconFileText:FlxText = new FlxText(fileName.width + 15, iconFileName.y - 5, 0, "PNG File");
+        var iconFileText:FlxText = new FlxText(fileName.width + 15, iconFileName.y + 5, 0, "PNG File");
 
         var iconTextColor:FlxText = new FlxUIText(10, updateFileButton.y + updateFileButton.height + 20, 0, "Icon Stuff");
 
