@@ -699,10 +699,11 @@ class CharacterCreatorState extends MusicBeatState {
 
         var clippingYInputTxt:FlxText = new FlxText(clippingYInput.x + clippingYInput.width + 5, clippingYInput.y, "Clipping Offset Y");
 
-        var applyClippingButton:FlxUIButton = new FlxUIButton(clippingYInput.x, offsetXInput.y, "Apply Clipping Offsets", function() {
+        var applyClippingButton:FlxUIButton = new FlxUIButton(clippingYInput.x, offsetXInput.y, "Apply Clipping\nOffsets", function() {
 
         });
-        applyClippingButton.resize(applyClippingButton.x, clippingYInput.height * 2);
+        applyClippingButton.resize(applyClippingButton.x * 0.75, clippingYInput.height * 2);
+        applyClippingButton.label.color = FlxColor.WHITE;
         applyClippingButton.color = FlxColor.LIME;
 
         checkPlayable = new FlxUICheckBox(140, shadowMan.y + 50, null, null, "Is Flipped");
