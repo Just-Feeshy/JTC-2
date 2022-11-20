@@ -526,6 +526,9 @@ class CharacterCreatorState extends MusicBeatState {
 
     var offsetXInput:FlxUINumericStepper;
     var offsetYInput:FlxUINumericStepper;
+    
+    var clippingXInput:FlxUINumericStepper;
+    var clippingYInput:FlxUINumericStepper;
 
     var checkPlayable:FlxUICheckBox;
     var canBePixel:FlxUICheckBox;
@@ -666,13 +669,41 @@ class CharacterCreatorState extends MusicBeatState {
         offsetXInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[0];
         offsetXInput.name = "x_offset";
 
-        var offsetXInputTxt:FlxText = new FlxText(70, offsetXInput.y, "offset X");
+        var offsetXInputTxt:FlxText = new FlxText(70, offsetXInput.y, "Offset X");
 
         offsetYInput = new FlxUINumericStepper(10, 295, 1, 0, -999, 999, 0);
         offsetYInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[1];
         offsetYInput.name = "y_offset";        
 
-        var offsetYInputTxt:FlxText = new FlxText(70, offsetYInput.y, "offset Y");
+        var offsetYInputTxt:FlxText = new FlxText(70, offsetYInput.y, "Offset Y");
+
+        clippingXInput = new FlxUINumericStepper(prefixInputTxt.x + prefixInputTxt.width + 5, prefixInputTxt.y, 1, 0, -999, 999, 0);
+        clippingXInput.name = "x_clipping";
+
+        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
+            clippingXInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[0];
+        }else {
+            clippingXInput.value = 0;
+        }
+
+        var clippingXInputTxt:FlxText = new FlxText(clippingXInput.x + clippingXInput.width + 5, clippingXInput.y, "Clipping Offset X");
+
+        clippingYInput = new FlxUINumericStepper(clippingXInput.x, clippingXInput.y + clippingXInput.height, 1, 0, -999, 999, 0);
+        clippingYInput.name = "y_clipping";
+
+        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
+            clippingYInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[1];
+        }else {
+            clippingYInput.value = 0;
+        }
+
+        var clippingYInputTxt:FlxText = new FlxText(clippingYInput.x + clippingYInput.width + 5, clippingYInput.y, "Clipping Offset Y");
+
+        var applyClippingButton:FlxUIButton = new FlxUIButton(clippingYInput.x, offsetXInput.y, "Apply Clipping Offsets", function() {
+
+        });
+        applyClippingButton.resize(applyClippingButton.x, clippingYInput.height * 2);
+        applyClippingButton.color = FlxColor.LIME;
 
         checkPlayable = new FlxUICheckBox(140, shadowMan.y + 50, null, null, "Is Flipped");
         checkPlayable.checked = characterAutosave.get(character.curCharacter).isPlayer;
@@ -698,6 +729,11 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_animations.add(offsetXInputTxt);
         tab_group_animations.add(offsetYInput);
         tab_group_animations.add(offsetYInputTxt);
+        tab_group_animations.add(clippingXInput);
+        tab_group_animations.add(clippingXInputTxt);
+        tab_group_animations.add(clippingYInput);
+        tab_group_animations.add(clippingYInputTxt);
+        tab_group_animations.add(applyClippingButton);
         tab_group_animations.add(checkPlayable);
         tab_group_animations.add(canBePixel);
         tab_group_animations.add(shadowMan);
