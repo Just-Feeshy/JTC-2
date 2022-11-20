@@ -74,13 +74,13 @@ class FeshSprite extends FlxSprite {
     var graphics:FlxGraphic;
     var xmlData:Xml;
 
-    @:noCompletion var clippingPointAtlas:Map<String, FlxPoint>;
+    @:noCompletion private var __clippingPointAtlas:Map<String, FlxPoint>;
 
     public function new(?X:Float = 0, ?Y:Float = 0, ?SimpleGraphic:FlxGraphicAsset) {
         super(X, Y, SimpleGraphic);
 
         antialiasing = SaveData.getData(SaveType.GRAPHICS);
-        clippingPointAtlas = new Map<String, FlxPoint>();
+        __clippingPointAtlas = new Map<String, FlxPoint>();
     }
 
     public function implementBitmap(image:Bytes):Void {
@@ -188,7 +188,7 @@ class FeshSprite extends FlxSprite {
     }
     
     public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
-        clippingPointAtlas.set(name, new FlxPoint(width, height));
+        __clippingPointAtlas.set(name, new FlxPoint(width, height));
     }
 
     public function getSourceAnimationName():Array<String> {
@@ -375,14 +375,14 @@ class FeshSprite extends FlxSprite {
     function getAClipRect(frameName:String):FlxRect {
         var completeRect:FlxRect = null;
 
-        var foundMapping:Bool = clippingPointAtlas.exists(frameName); //Cache to speed things up.
+        var foundMapping:Bool = __clippingPointAtlas.exists(frameName); //Cache to speed things up.
 
         if(foundMapping || clipRect != null) {
             var tempAtlasClipRect:FlxRect = null;
             var tempClipRect:FlxRect = null;
 
             if(foundMapping) {
-                var tempAtlasPoint:FlxPoint = clippingPointAtlas.get(frameName);
+                var tempAtlasPoint:FlxPoint = __clippingPointAtlas.get(frameName);
                 tempAtlasClipRect = new FlxRect(0, 0, frameWidth + tempAtlasPoint.x, frameHeight + tempAtlasPoint.y);
             }else {
                 tempAtlasClipRect = new FlxRect(0, 0, 0, 0);
@@ -414,20 +414,20 @@ class FeshSprite extends FlxSprite {
 
         super.destroy();
 
-        if(clippingPointAtlas != null) {
-            for(k in clippingPointAtlas.keys()) {
-                var rect:FlxPoint = clippingPointAtlas.get(k);
+        if(__clippingPointAtlas != null) {
+            for(k in __clippingPointAtlas.keys()) {
+                var rect:FlxPoint = __clippingPointAtlas.get(k);
 
                 if(rect != null) {
                     rect.destroy();
                     rect = null;
-                    clippingPointAtlas.remove(k);
+                    __clippingPointAtlas.remove(k);
                 }
             }
 
-            clippingPointAtlas.clear();
+            __clippingPointAtlas.clear();
         }
 
-        clippingPointAtlas = null;
+        __clippingPointAtlas = null;
     }
 }
