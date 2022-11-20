@@ -226,8 +226,13 @@ class Character extends feshixl.FeshSprite {
 			return;
 		}
 
-		if(AnimName.startsWith('sing'))
+		if(AnimName.startsWith('sing')) {
 			animation.reset();
+		}
+
+		if(!__clippingPointAtlas.exists(AnimName) && _info.clippingAdjustment.exists(AnimName)) {
+			updateFrameSizeOffset(_info.clippingAdjustment.get(AnimName)[0], _info.clippingAdjustment.get(AnimName)[1], AnimName);
+		}
 
 		super.playAnim(AnimName, Force, Reversed, Frame);
 
