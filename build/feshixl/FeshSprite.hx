@@ -406,6 +406,8 @@ class FeshSprite extends FlxSprite {
                 tempAtlasClipRect.width + tempClipRect.width,
                 tempAtlasClipRect.height + tempClipRect.height
             );
+
+            tempAtlasClipRect = FlxDestroyUtil.put(tempAtlasClipRect);
         }
 
         return completeRect;
