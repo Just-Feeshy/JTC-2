@@ -188,7 +188,7 @@ class FeshSprite extends FlxSprite {
     }
     
     public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
-        __clippingPointAtlas.set(name, new FlxPoint(width, height));
+        __clippingPointAtlas.set(name, FlxPoint.get(width, height));
     }
 
     public function getSourceAnimationName():Array<String> {
@@ -382,19 +382,21 @@ class FeshSprite extends FlxSprite {
             var tempClipRect:FlxRect = null;
 
             if(foundMapping) {
+               // var positioningX:Int = 
+
                 var tempAtlasPoint:FlxPoint = __clippingPointAtlas.get(frameName);
-                tempAtlasClipRect = new FlxRect(0, 0, frameWidth + tempAtlasPoint.x, frameHeight + tempAtlasPoint.y);
+                tempAtlasClipRect = FlxRect.get(0, 0, frameWidth + tempAtlasPoint.x, frameHeight + tempAtlasPoint.y);
             }else {
-                tempAtlasClipRect = new FlxRect(0, 0, 0, 0);
+                tempAtlasClipRect = FlxRect.get(0, 0, 0, 0);
             }
 
             if(clipRect != null) {
                 tempClipRect = clipRect;
             }else {
-                tempClipRect = new FlxRect(0, 0, 0, 0);
+                tempClipRect = FlxRect.get(0, 0, 0, 0);
             }
 
-            completeRect = new FlxRect(
+            completeRect = FlxRect.get(
                 tempAtlasClipRect.x + tempClipRect.x,
                 tempAtlasClipRect.y + tempClipRect.y,
                 tempAtlasClipRect.width + tempClipRect.width,
@@ -419,7 +421,7 @@ class FeshSprite extends FlxSprite {
                 var rect:FlxPoint = __clippingPointAtlas.get(k);
 
                 if(rect != null) {
-                    rect.destroy();
+                    rect.put();
                     rect = null;
                     __clippingPointAtlas.remove(k);
                 }
