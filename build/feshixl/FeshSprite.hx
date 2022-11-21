@@ -382,10 +382,14 @@ class FeshSprite extends FlxSprite {
             var tempClipRect:FlxRect = null;
 
             if(foundMapping) {
-               // var positioningX:Int = 
-
                 var tempAtlasPoint:FlxPoint = __clippingPointAtlas.get(frameName);
-                tempAtlasClipRect = FlxRect.get(0, 0, frameWidth + tempAtlasPoint.x, frameHeight + tempAtlasPoint.y);
+                
+                tempAtlasClipRect = FlxRect.get(
+                    Math.min(tempAtlasPoint.x, 0),
+                    Math.min(tempAtlasPoint.x, 0),
+                    frameWidth + Math.max(tempAtlasPoint.x, 0),
+                    frameHeight + Math.max(tempAtlasPoint.y, 0)
+                );
             }else {
                 tempAtlasClipRect = FlxRect.get(0, 0, 0, 0);
             }
