@@ -6,6 +6,7 @@ import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
 import flixel.animation.FlxBaseAnimation;
 import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFilterFrames;
 import feshixl.ui.FeshFramesHelper;
 import openfl.filters.BitmapFilter;
@@ -23,6 +24,8 @@ class Character extends feshixl.FeshSprite {
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
 	public var debugMode:Bool = false;
+
+	public var ogFrames(default, null):FlxFramesCollection;
 
 	public var dancing(default, null):Bool = false;
 	public var singMultiplier:Float = 4;
@@ -74,6 +77,8 @@ class Character extends feshixl.FeshSprite {
 				else if(_info.file.split(".")[1] == "json")
 					frames = Paths.getPackerAtlas(_info.file.split(".")[0], "shared", true);
 
+				ogFrames = frames;
+
 				setIndexis(curCharacter);
 
 				for(anim in _info.animations.keys()) {
@@ -84,7 +89,7 @@ class Character extends feshixl.FeshSprite {
 					if(_info.clippingAdjustment.exists(anim)) {
 						var coolClipBro:Array<Int> = _info.clippingAdjustment.get(anim);
 
-						frames = FeshFramesHelper.addOffsetRect(frames, FlxRect.get(0, 0, coolClipBro[0], coolClipBro[1]));
+						frames = FeshFramesHelper.addOffsetRect(ogFrames, FlxRect.get(0, 0, coolClipBro[0], coolClipBro[1]), false);
 					}
 
 					if(anim.endsWith("player") && isPlayer) {

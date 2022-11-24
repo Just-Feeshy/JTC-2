@@ -705,7 +705,7 @@ class CharacterCreatorState extends MusicBeatState {
             character._info.clippingAdjustment.set(animationDrop.selectedLabel, [Std.int(clippingXInput.value), Std.int(clippingYInput.value)]);
             
             var clippingStuff:Array<Int> = character._info.clippingAdjustment.get(animationDrop.selectedLabel);
-            character.frames = FeshFramesHelper.addOffsetRect(character.frames, FlxRect.get(0, 0, clippingStuff[0], clippingStuff[1]));
+            character.frames = FeshFramesHelper.addOffsetRect(character.ogFrames, FlxRect.get(0, 0, clippingStuff[0], clippingStuff[1]), false);
 
             character.playAnim(animationDrop.selectedLabel);
         });
