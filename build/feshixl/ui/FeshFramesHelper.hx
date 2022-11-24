@@ -1,15 +1,5 @@
 package feshixl.ui;
 
-/*
-import flixel.FlxG;
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
-import flixel.system.FlxAssets.FlxGraphicAsset;
-import flixel.math.FlxRect;
-import openfl.geom.Rectangle;
-import haxe.xml.Access;
-*/
-
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.graphics.frames.FlxFrame;
