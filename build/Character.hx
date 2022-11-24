@@ -1,6 +1,7 @@
 package;
 
 import flixel.FlxG;
+import flixel.math.FlxRect;
 import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
 import flixel.animation.FlxBaseAnimation;
@@ -73,10 +74,6 @@ class Character extends feshixl.FeshSprite {
 				else if(_info.file.split(".")[1] == "json")
 					frames = Paths.getPackerAtlas(_info.file.split(".")[0], "shared", true);
 
-				//if() {
-
-				//}
-
 				setIndexis(curCharacter);
 
 				for(anim in _info.animations.keys()) {
@@ -84,8 +81,15 @@ class Character extends feshixl.FeshSprite {
 					animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
 					addOffset(anim, _info.animations.get(anim).offset[0], _info.animations.get(anim).offset[1]);
 
-					if(anim.endsWith("player") && isPlayer)
+					if(_info.clippingAdjustment.exists(anim)) {
+						var coolClipBro:Array<Int> = _info.clippingAdjustment.get(anim);
+
+						frames = FeshFramesHelper.addOffsetRect(frames, FlxRect.get(0, 0, coolClipBro[0], coolClipBro[1]));
+					}
+
+					if(anim.endsWith("player") && isPlayer) {
 						hasBePlayer = "player";
+					}
 				}
 
 				finalizedWidth = width;
@@ -232,10 +236,6 @@ class Character extends feshixl.FeshSprite {
 
 		if(AnimName.startsWith('sing')) {
 			animation.reset();
-		}
-
-		if(!__clippingPointAtlas.exists(AnimName) && _info.clippingAdjustment.exists(AnimName)) {
-			updateFrameSizeOffset(_info.clippingAdjustment.get(AnimName)[0], _info.clippingAdjustment.get(AnimName)[1], AnimName);
 		}
 
 		super.playAnim(AnimName, Force, Reversed, Frame);

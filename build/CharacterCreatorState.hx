@@ -34,6 +34,8 @@ import flixel.util.FlxTimer;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
+import feshixl.ui.FeshFramesHelper;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.IOErrorEvent;
@@ -703,15 +705,9 @@ class CharacterCreatorState extends MusicBeatState {
             character._info.clippingAdjustment.set(animationDrop.selectedLabel, [Std.int(clippingXInput.value), Std.int(clippingYInput.value)]);
             
             var clippingStuff:Array<Int> = character._info.clippingAdjustment.get(animationDrop.selectedLabel);
-            character.updateFrameSizeOffset(clippingStuff[0], clippingStuff[1], character.animation.curAnim.name);
+            character.frames = FeshFramesHelper.addOffsetRect(character.frames, FlxRect.get(0, 0, clippingStuff[0], clippingStuff[1]));
 
-            if(character.animation.curAnim == null) {
-                return;
-            }
-
-            if(lockAnimCheck.checked) {
-                character.frame = character.frame;
-            }
+            character.playAnim(animationDrop.selectedLabel);
         });
         applyClippingButton.resize(applyClippingButton.x * 0.75, clippingYInput.height * 2);
         applyClippingButton.label.color = FlxColor.WHITE;
@@ -1008,10 +1004,11 @@ class CharacterCreatorState extends MusicBeatState {
 			controls.RIGHT
 		];
 
-        if(playCustomAnim && character.animation.finished && !lockAnimCheck.checked)
+        if(playCustomAnim && character.animation.finished && !lockAnimCheck.checked) {
             playCustomAnim = false;
+        }
 
-        if(!playCustomAnim) {
+        if(!playCustomAnim && character.animation.curAnim != null) {
             if (controlArray[0] && character.animations.contains('singLEFT'))
                 character.playAnim('singLEFT');
             if (controlArray[1] && character.animations.contains('singDOWN'))
