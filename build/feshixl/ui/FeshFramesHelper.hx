@@ -44,10 +44,8 @@ class FeshFramesHelper {
             newFrames.addAtlasFrame(rect, sourceSize, offset, name, flipX, flipY);
         }
 
-        if(destroyStuff) {
-            frames = FlxDestroyUtil.destroy(frames);
-            offsetRect = FlxDestroyUtil.put(offsetRect);
-        }
+        frames = destroyStuff ? FlxDestroyUtil.destroy(frames) : frames;
+        offsetRect = FlxDestroyUtil.put(offsetRect);
 
         return newFrames;
     }
