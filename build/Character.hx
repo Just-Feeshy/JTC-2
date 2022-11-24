@@ -6,9 +6,9 @@ import flixel.util.FlxAxes;
 import flixel.animation.FlxBaseAnimation;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFilterFrames;
+import feshixl.ui.FeshFramesHelper;
 import openfl.filters.BitmapFilter;
 import openfl.utils.Assets;
-
 import json2object.JsonParser;
 
 import ModInitialize;
@@ -70,8 +70,12 @@ class Character extends feshixl.FeshSprite {
 
 				if(_info.file.split(".")[1] == "xml")
 					frames = Paths.getSparrowAtlas(_info.file.split(".")[0], "shared", true);
-				else if(_info.file.split(".")[1] == "txt")
+				else if(_info.file.split(".")[1] == "json")
 					frames = Paths.getPackerAtlas(_info.file.split(".")[0], "shared", true);
+
+				//if() {
+
+				//}
 
 				setIndexis(curCharacter);
 

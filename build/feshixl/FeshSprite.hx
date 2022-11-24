@@ -39,6 +39,7 @@ import Std.is as isOfType;
 * @author Feeshy
 */
 class FeshSprite extends FlxSprite {
+    
     /**
     * This is something that is going to be HEAVILY in WIP.
     * I'm mostly likely going to get mod(s) out way before I find a complete algorithm.
@@ -75,12 +76,15 @@ class FeshSprite extends FlxSprite {
     var xmlData:Xml;
 
     @:noCompletion private var __clippingPointAtlas:Map<String, FlxPoint>;
+    @:noCompletion private var __animationRectangle:Map<String, FlxRect>;
 
     public function new(?X:Float = 0, ?Y:Float = 0, ?SimpleGraphic:FlxGraphicAsset) {
         super(X, Y, SimpleGraphic);
 
         antialiasing = SaveData.getData(SaveType.GRAPHICS);
+        
         __clippingPointAtlas = new Map<String, FlxPoint>();
+        __animationRectangle = new Map<String, FlxRect>();
     }
 
     public function implementBitmap(image:Bytes):Void {
@@ -336,6 +340,7 @@ class FeshSprite extends FlxSprite {
 			_frame = frame.copyTo(_frame);
 		}
 
+        betterClipRect = FlxDestroyUtil.put(betterClipRect);
 		return frame;
 	}
 
@@ -436,6 +441,21 @@ class FeshSprite extends FlxSprite {
             __clippingPointAtlas.clear();
         }
 
+        if(__animationRectangle != null) {
+            for(k in __animationRectangle.keys()) {
+                var rect:FlxRect = __animationRectangle.get(k);
+
+                if(rect != null) {
+                    rect.put();
+                    rect = null;
+                    __animationRectangle.remove(k);
+                }
+            }
+
+            __animationRectangle.clear();
+        }
+
         __clippingPointAtlas = null;
+        __animationRectangle = null;
     }
 }
