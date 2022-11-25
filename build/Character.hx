@@ -235,6 +235,10 @@ class Character extends feshixl.FeshSprite {
 		for(anim in _info.animations.keys()) {
 			animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
 		}
+
+		if(animation.curAnim != null) {
+			playAnim(animation.curAnim.name);
+		}
 	}
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
