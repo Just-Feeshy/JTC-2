@@ -32,7 +32,7 @@ class FeshFramesHelper {
             var flipY:Bool = texture.flipY;
 
             if(!offsetInfo.exists(name)) {
-                newFrames.addAtlasFrame(rect, sourceSize, offset, name, flipX, flipY);
+                newFrames.addAtlasFrame(texture.frame, sourceSize, offset, name, flipX, flipY);
                 continue;
             }
 
