@@ -32,6 +32,10 @@ class FeshFramesHelper {
             var flipX:Bool = texture.flipX;
             var flipY:Bool = texture.flipY;
 
+            if(!offsetInfo.exists(name)) {
+                continue;
+            }
+
             var rect:FlxRect = if(offsetInfo.get(name).length > 2) {
                 FlxRect.get( 
                     texture.frame.x + offsetInfo.get(name)[0],
