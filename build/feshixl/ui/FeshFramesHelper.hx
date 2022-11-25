@@ -18,7 +18,7 @@ class FeshFramesHelper {
      * @param destroyStuff Destroy the original frames.
      */
     public static function addOffsetInfo(frames:FlxFramesCollection, offsetInfo:Map<String, Array<Int>>, destroyStuff:Bool = true):FlxFramesCollection {
-        if(offsetInfo == null || offsetInfo == null) {
+        if(frames == null || offsetInfo == null || offsetInfo == null) {
             return frames;
         }
 
@@ -28,11 +28,11 @@ class FeshFramesHelper {
             var name:String = texture.name;
             var sourceSize:FlxPoint = texture.sourceSize;
             var offset:FlxPoint = texture.offset;
-            var angle:FlxFrameAngle = texture.angle;
             var flipX:Bool = texture.flipX;
             var flipY:Bool = texture.flipY;
 
             if(!offsetInfo.exists(name)) {
+                newFrames.addAtlasFrame(rect, sourceSize, offset, name, flipX, flipY);
                 continue;
             }
 
@@ -56,6 +56,32 @@ class FeshFramesHelper {
         }
 
         frames = destroyStuff ? FlxDestroyUtil.destroy(frames) : frames;
+        return newFrames;
+    }
+
+    /*
+    * Make a replica of @param frames
+    * 
+    * @param frames The original frames required. 
+    */
+    public static function copyFrames(frames:FlxFramesCollection):FlxFramesCollection {
+        if(frames == null) {
+            return frames;
+        }
+
+        var newFrames:FlxFramesCollection = new FlxFramesCollection(frames.parent, frames.type, frames.border);
+
+        for(texture in frames.frames) {
+            var name:String = texture.name;
+            var sourceSize:FlxPoint = texture.sourceSize;
+            var offset:FlxPoint = texture.offset;
+            var flipX:Bool = texture.flipX;
+            var flipY:Bool = texture.flipY;
+            var frame:FlxRect = texture.frame;
+
+            newFrames.addAtlasFrame(frame, sourceSize, offset, name, flipX, flipY);
+        }
+
         return newFrames;
     }
 }

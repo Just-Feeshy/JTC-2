@@ -77,11 +77,10 @@ class Character extends feshixl.FeshSprite {
 				else if(_info.file.split(".")[1] == "json")
 					frames = Paths.getPackerAtlas(_info.file.split(".")[0], "shared", true);
 
-				ogFrames = frames;
+				ogFrames = FeshFramesHelper.copyFrames(frames);
+				frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
 
 				setIndexis(curCharacter);
-
-				frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
 
 				for(anim in _info.animations.keys()) {
 					animations.push(anim);
