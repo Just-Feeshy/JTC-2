@@ -232,12 +232,10 @@ class Character extends feshixl.FeshSprite {
 	public function refreshAnims():Void {
 		frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
 
+		@:privateAccess animation.destroyAnimations();
+
 		for(anim in _info.animations.keys()) {
 			animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
-		}
-
-		if(animation.curAnim != null) {
-			playAnim(animation.curAnim.name);
 		}
 	}
 
