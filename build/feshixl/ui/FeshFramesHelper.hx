@@ -9,8 +9,16 @@ import flixel.util.FlxDestroyUtil;
 import flash.geom.Rectangle;
 
 class FeshFramesHelper {
-    public static function addOffsetRect(frames:FlxFramesCollection, offsetRect:FlxRect, destroyStuff:Bool = true):FlxFramesCollection {
-        if(offsetRect == null) {
+
+    /**
+     * `FlxRect` wouldn't work so I used `Array<Int>`.
+     * 
+     * @param frames The original frames required. 
+     * @param offsetInfo The info needed to caculate the original size and position to the offset.
+     * @param destroyStuff Destroy the original frames.
+     */
+    public static function addOffsetInfo(frames:FlxFramesCollection, offsetInfo:Map<String, Array<Int>>, destroyStuff:Bool = true):FlxFramesCollection {
+        if(offsetInfo == null || offsetInfo == null) {
             return frames;
         }
 
@@ -24,19 +32,26 @@ class FeshFramesHelper {
             var flipX:Bool = texture.flipX;
             var flipY:Bool = texture.flipY;
 
-            var rect:FlxRect = FlxRect.get( 
-                texture.frame.x + offsetRect.x,
-                texture.frame.y + offsetRect.y,
-                texture.frame.width + offsetRect.width,
-                texture.frame.height + offsetRect.height
-            );
+            var rect:FlxRect = if(offsetInfo.get(name).length > 2) {
+                FlxRect.get( 
+                    texture.frame.x + offsetInfo.get(name)[0],
+                    texture.frame.y + offsetInfo.get(name)[1],
+                    texture.frame.width + offsetInfo.get(name)[2],
+                    texture.frame.height + offsetInfo.get(name)[3]
+                );
+            }else {
+                FlxRect.get( 
+                    texture.frame.x,
+                    texture.frame.y,
+                    texture.frame.width + offsetInfo.get(name)[0],
+                    texture.frame.height + offsetInfo.get(name)[1]
+                );
+            }
 
             newFrames.addAtlasFrame(rect, sourceSize, offset, name, flipX, flipY);
         }
 
         frames = destroyStuff ? FlxDestroyUtil.destroy(frames) : frames;
-        offsetRect = FlxDestroyUtil.put(offsetRect);
-
         return newFrames;
     }
 }

@@ -81,16 +81,12 @@ class Character extends feshixl.FeshSprite {
 
 				setIndexis(curCharacter);
 
+				frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
+
 				for(anim in _info.animations.keys()) {
 					animations.push(anim);
 					animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
 					addOffset(anim, _info.animations.get(anim).offset[0], _info.animations.get(anim).offset[1]);
-
-					if(_info.clippingAdjustment.exists(anim)) {
-						var coolClipBro:Array<Int> = _info.clippingAdjustment.get(anim);
-
-						frames = FeshFramesHelper.addOffsetRect(ogFrames, FlxRect.get(0, 0, coolClipBro[0], coolClipBro[1]), false);
-					}
 
 					if(anim.endsWith("player") && isPlayer) {
 						hasBePlayer = "player";
@@ -232,6 +228,14 @@ class Character extends feshixl.FeshSprite {
 	public function playNoDanceAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		dancing = false;
 		playAnim(AnimName, Force, Reversed, Frame);
+	}
+
+	public function refreshAnims():Void {
+		frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
+
+		for(anim in _info.animations.keys()) {
+			animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
+		}
 	}
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
