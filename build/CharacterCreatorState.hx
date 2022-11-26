@@ -531,6 +531,8 @@ class CharacterCreatorState extends MusicBeatState {
     
     var clippingXInput:FlxUINumericStepper;
     var clippingYInput:FlxUINumericStepper;
+    var clippingWidthInput:FlxUINumericStepper;
+    var clippingHeightInput:FlxUINumericStepper;
 
     var checkPlayable:FlxUICheckBox;
     var canBePixel:FlxUICheckBox;
@@ -701,20 +703,38 @@ class CharacterCreatorState extends MusicBeatState {
 
         var clippingYInputTxt:FlxText = new FlxText(clippingYInput.x + clippingYInput.width + 5, clippingYInput.y, "Clipping Offset Y");
 
+        clippingWidthInput = new FlxUINumericStepper(clippingXInput.x, clippingYInput.y + clippingYInput.height, 1, 0, -999, 999, 0);
+        clippingWidthInput.name = "width_clipping";
+
+        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
+            clippingWidthInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[2];
+        }else {
+            clippingWidthInput.value = 0;
+        }
+
+        var clippingWidthInputTxt:FlxText = new FlxText(clippingWidthInput.x + clippingWidthInput.width + 5, clippingWidthInput.y, "Clipping Offset Width");
+
+        clippingHeightInput = new FlxUINumericStepper(clippingWidthInput.x, clippingWidthInput.y + clippingWidthInput.height, 1, 0, -999, 999, 0);
+        clippingHeightInput.name = "height_clipping";
+
+        var clippingHeightInputTxt:FlxText = new FlxText(clippingHeightInput.x + clippingHeightInput.width + 5, clippingHeightInput.y, "Clipping Offset Height");
+
+        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
+            clippingHeightInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[3];
+        }else {
+            clippingHeightInput.value = 0;
+        }
+
         var applyClippingButton:FlxUIButton = new FlxUIButton(clippingYInput.x, offsetXInput.y, "Apply Clipping\nOffsets", function() {
             changeCharacter = true;
 
-            if(clippingXInput.value == 0 && clippingYInput.value == 0) {
+            if(clippingXInput.value == 0 && clippingYInput.value == 0 && clippingWidthInput.value == 0 && clippingHeightInput.value == 0) {
                 character._info.clippingAdjustment.remove(character._info.animations.get(animationDrop.selectedLabel).prefix);
-                return;
             }else {
                 character._info.clippingAdjustment.set(character._info.animations.get(animationDrop.selectedLabel).prefix, 
-                    [Std.int(clippingXInput.value), Std.int(clippingYInput.value)]
+                    [Std.int(clippingXInput.value), Std.int(clippingYInput.value), Std.int(clippingWidthInput.value), Std.int(clippingHeightInput.value)]
                 );
             }
-
-            //character.refreshAnims();
-            //character.playAnim(animationDrop.selectedLabel);
 
             getEvent("click_button", this, Std.string(characterJSONs.indexOf(character.curCharacter)));
         });
@@ -750,6 +770,10 @@ class CharacterCreatorState extends MusicBeatState {
         tab_group_animations.add(clippingXInputTxt);
         tab_group_animations.add(clippingYInput);
         tab_group_animations.add(clippingYInputTxt);
+        tab_group_animations.add(clippingWidthInput);
+        tab_group_animations.add(clippingWidthInputTxt);
+        tab_group_animations.add(clippingHeightInput);
+        tab_group_animations.add(clippingHeightInputTxt);
         tab_group_animations.add(applyClippingButton);
         tab_group_animations.add(checkPlayable);
         tab_group_animations.add(canBePixel);
