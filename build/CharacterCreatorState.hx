@@ -702,8 +702,17 @@ class CharacterCreatorState extends MusicBeatState {
         var clippingYInputTxt:FlxText = new FlxText(clippingYInput.x + clippingYInput.width + 5, clippingYInput.y, "Clipping Offset Y");
 
         var applyClippingButton:FlxUIButton = new FlxUIButton(clippingYInput.x, offsetXInput.y, "Apply Clipping\nOffsets", function() {
-            character._info.clippingAdjustment.set(animationDrop.selectedLabel, [Std.int(clippingXInput.value), Std.int(clippingYInput.value)]);
+            if(clippingXInput.value == 0 && clippingYInput.value == 0) {
+                character._info.clippingAdjustment.remove(character._info.animations.get(animationDrop.selectedLabel).prefix);
+                return;
+            }
+
+            character._info.clippingAdjustment.set(character._info.animations.get(animationDrop.selectedLabel).prefix, 
+                [Std.int(clippingXInput.value), Std.int(clippingYInput.value)]
+            );
+
             character.refreshAnims();
+            character.playAnim(animationDrop.selectedLabel);
         });
         applyClippingButton.resize(applyClippingButton.x * 0.75, clippingYInput.height * 2);
         applyClippingButton.label.color = FlxColor.WHITE;

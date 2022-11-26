@@ -48,6 +48,8 @@ class Character extends feshixl.FeshSprite {
 
 	public var danceBeatTimer:Int = 1;
 
+	private var testClip:Map<String, Array<Int>> = ["idle" => [-600, 100]];
+
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters)
 	{
 		super(x, y);
@@ -77,9 +79,6 @@ class Character extends feshixl.FeshSprite {
 				else if(_info.file.split(".")[1] == "json")
 					frames = Paths.getPackerAtlas(_info.file.split(".")[0], "shared", true);
 
-				ogFrames = FeshFramesHelper.copyFrames(frames);
-				frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
-
 				setIndexis(curCharacter);
 
 				for(anim in _info.animations.keys()) {
@@ -91,6 +90,10 @@ class Character extends feshixl.FeshSprite {
 						hasBePlayer = "player";
 					}
 				}
+
+				ogFrames = FeshFramesHelper.copyFrames(frames);
+
+				refreshAnims();
 
 				finalizedWidth = width;
 				finalizedHeight = height;

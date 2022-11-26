@@ -6,6 +6,7 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.util.FlxDestroyUtil;
+import feshixl.Feshixl;
 import flash.geom.Rectangle;
 
 class FeshFramesHelper {
@@ -31,24 +32,26 @@ class FeshFramesHelper {
             var flipX:Bool = texture.flipX;
             var flipY:Bool = texture.flipY;
 
-            if(!offsetInfo.exists(name)) {
+            var cleanedAnimName:String = Feshixl.removeNumbersFromString(name);
+
+            if(!offsetInfo.exists(cleanedAnimName)) {
                 newFrames.addAtlasFrame(texture.frame, sourceSize, offset, name, flipX, flipY);
                 continue;
             }
 
-            var rect:FlxRect = if(offsetInfo.get(name).length > 2) {
+            var rect:FlxRect = if(offsetInfo.get(cleanedAnimName).length > 2) {
                 FlxRect.get( 
-                    texture.frame.x + offsetInfo.get(name)[0],
-                    texture.frame.y + offsetInfo.get(name)[1],
-                    texture.frame.width + offsetInfo.get(name)[2],
-                    texture.frame.height + offsetInfo.get(name)[3]
+                    texture.frame.x + offsetInfo.get(cleanedAnimName)[0],
+                    texture.frame.y + offsetInfo.get(cleanedAnimName)[1],
+                    texture.frame.width + offsetInfo.get(cleanedAnimName)[2],
+                    texture.frame.height + offsetInfo.get(cleanedAnimName)[3]
                 );
             }else {
                 FlxRect.get( 
                     texture.frame.x,
                     texture.frame.y,
-                    texture.frame.width + offsetInfo.get(name)[0],
-                    texture.frame.height + offsetInfo.get(name)[1]
+                    texture.frame.width + offsetInfo.get(cleanedAnimName)[0],
+                    texture.frame.height + offsetInfo.get(cleanedAnimName)[1]
                 );
             }
 
