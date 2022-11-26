@@ -702,17 +702,21 @@ class CharacterCreatorState extends MusicBeatState {
         var clippingYInputTxt:FlxText = new FlxText(clippingYInput.x + clippingYInput.width + 5, clippingYInput.y, "Clipping Offset Y");
 
         var applyClippingButton:FlxUIButton = new FlxUIButton(clippingYInput.x, offsetXInput.y, "Apply Clipping\nOffsets", function() {
+            changeCharacter = true;
+
             if(clippingXInput.value == 0 && clippingYInput.value == 0) {
                 character._info.clippingAdjustment.remove(character._info.animations.get(animationDrop.selectedLabel).prefix);
                 return;
+            }else {
+                character._info.clippingAdjustment.set(character._info.animations.get(animationDrop.selectedLabel).prefix, 
+                    [Std.int(clippingXInput.value), Std.int(clippingYInput.value)]
+                );
             }
 
-            character._info.clippingAdjustment.set(character._info.animations.get(animationDrop.selectedLabel).prefix, 
-                [Std.int(clippingXInput.value), Std.int(clippingYInput.value)]
-            );
+            //character.refreshAnims();
+            //character.playAnim(animationDrop.selectedLabel);
 
-            character.refreshAnims();
-            character.playAnim(animationDrop.selectedLabel);
+            getEvent("click_button", this, Std.string(characterJSONs.indexOf(character.curCharacter)));
         });
         applyClippingButton.resize(applyClippingButton.x * 0.75, clippingYInput.height * 2);
         applyClippingButton.label.color = FlxColor.WHITE;
@@ -803,6 +807,8 @@ class CharacterCreatorState extends MusicBeatState {
     override function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
         if((id == FlxUIDropDownMenu.CLICK_EVENT || id == "click_button") && changeCharacter) {
             changeCharacter = false;
+
+            trace(characterJSONs[Std.parseInt(data)]);
 
             characterStorage.remove(character, true);
             character.destroy();

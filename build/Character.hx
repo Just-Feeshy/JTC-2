@@ -237,6 +237,8 @@ class Character extends feshixl.FeshSprite {
 
 		@:privateAccess animation.destroyAnimations();
 
+		setIndexis(curCharacter);
+
 		for(anim in _info.animations.keys()) {
 			animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
 		}
