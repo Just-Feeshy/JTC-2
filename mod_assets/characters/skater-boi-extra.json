@@ -49,6 +49,16 @@
 				23
 			],
 			"looped": false
+		},
+		"punch": {
+			"prefix": "skater dance punchd",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
 		}
 	},
 	"isPlayer": false,
@@ -59,10 +69,25 @@
 		"y": -95,
 		"camPosX": 0
 	},
+	"clippingAdjustment": {
+		"skater dance IDLE GF  still": [
+			-40,
+			0,
+			40,
+			0
+		],
+		"skater dance punchd": [
+			-45,
+			0,
+			45,
+			0
+		]
+	},
 	"playAnim": "",
 	"file": "skater extra notes.xml",
 	"icon": [
 		10,
 		11
-	]
+	],
+	"iconFile": "iconGrid"
 }
