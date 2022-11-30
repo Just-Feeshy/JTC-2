@@ -340,7 +340,6 @@ class FeshSprite extends FlxSprite {
 			_frame = frame.copyTo(_frame);
 		}
 
-        betterClipRect = FlxDestroyUtil.put(betterClipRect);
 		return frame;
 	}
 
