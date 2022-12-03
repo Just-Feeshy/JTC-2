@@ -30,11 +30,12 @@ function generatedStage()
     --setupPunchHealth(3)
 
     skaterboi = require("mod_assets/scripts/modules/character")
-    skaterboi.create("skater-boi-player", "skater-boi-player", 650, 100, true)
+    skaterboi.create("skater-boi-player", "skater-boi-player", 650, 100, true, false)
     skaterboi.initSing(jtcStrumAnims)
 
     --skaterboi_extra = require("mod_assets/scripts/modules/character")
-    --skaterboi_extra.create()
+    --skaterboi_extra.create("skater-boi-extra", "skater-boi-extra", 650, 100, true)
+    --skaterboi_extra.initSing(jtcStrumAnims)
 
     frost_modchart = require("mod_assets/scripts/modcharts/frost_modchart")
     frost_modchart.initStrumsAndNotes()

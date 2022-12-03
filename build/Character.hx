@@ -50,9 +50,11 @@ class Character extends feshixl.FeshSprite {
 
 	private var testClip:Map<String, Array<Int>> = ["idle" => [-600, 100]];
 
-	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters)
+	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters, frameOffsetApply:Bool = true)
 	{
 		super(x, y);
+
+		useAdvanceClipping = false;
 
 		finalizedX = x;
 		finalizedY = y;
@@ -91,9 +93,10 @@ class Character extends feshixl.FeshSprite {
 					}
 				}
 
-				ogFrames = FeshFramesHelper.copyFrames(frames);
-
-				refreshAnims();
+				if(frameOffsetApply) {
+					ogFrames = FeshFramesHelper.copyFrames(frames);
+					refreshAnims();
+				}
 
 				finalizedWidth = width;
 				finalizedHeight = height;
