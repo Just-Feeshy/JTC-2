@@ -30,7 +30,7 @@ function generatedStage()
     --setupPunchHealth(3)
 
     skaterboi = require("mod_assets/scripts/modules/character")
-    skaterboi.create("skater-boi-player", "skater-boi-player", 650, 100, true, false)
+    skaterboi.create("skater-boi-player", "skater-boi-player", 650, 100, true)
     skaterboi.initSing(jtcStrumAnims)
 
     --skaterboi_extra = require("mod_assets/scripts/modules/character")

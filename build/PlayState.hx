@@ -2956,19 +2956,12 @@ class PlayState extends MusicBeatState
 			gameOverScreen();
 		});
 
-		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool, frameOffsetApply:Bool = true) {
+		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = true) {
 			if(modifiableCharacters.exists(name)) {
                 return;
             }
 
-			var characterSprite:Character;
-
-			if(isPlayer) {
-				characterSprite = new Boyfriend(x, y, characterName, frameOffsetApply);
-			}else {
-				characterSprite = new Character(x, y, characterName, frameOffsetApply);
-			}
-
+			var characterSprite:Character = new Character(x, y, characterName, clipAdj);
 			characterSprite.refresh(characterName, camPos);
 			characterSprite.active = true;
 

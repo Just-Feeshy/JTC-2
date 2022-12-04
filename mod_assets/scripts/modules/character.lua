@@ -7,8 +7,8 @@ local character = {
     sings = {};
 }
 
-function character.create(name, characterName, x, y, isPlayer, frameOffsetApply)
-    createCharacterSprite(name, characterName, x, y, isPlayer, frameOffsetApply)
+function character.create(name, characterName, x, y, isPlayer)
+    createCharacterSprite(name, characterName, x, y, isPlayer)
     character.name = name
 end
 
