@@ -2956,7 +2956,7 @@ class PlayState extends MusicBeatState
 			gameOverScreen();
 		});
 
-		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = true) {
+		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = false) {
 			if(modifiableCharacters.exists(name)) {
                 return;
             }
