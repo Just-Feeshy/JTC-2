@@ -2961,7 +2961,22 @@ class PlayState extends MusicBeatState
                 return;
             }
 
-			var characterSprite:Character = new Character(x, y, characterName, clipAdj);
+			var characterSprite:Character = new Character(x, y, characterName, isPlayer);
+			characterSprite.refresh(characterName, camPos);
+			characterSprite.active = true;
+
+            modifiableCharacters.set(name, characterSprite);
+		});
+
+		/**
+		 * NFA - No Frame Adjustment.
+		 */
+		addCallback("createCharacterSpriteNFA", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = false) {
+			if(modifiableCharacters.exists(name)) {
+                return;
+            }
+
+			var characterSprite:Character = new Character(x, y, characterName, isPlayer, null, false);
 			characterSprite.refresh(characterName, camPos);
 			characterSprite.active = true;
 
