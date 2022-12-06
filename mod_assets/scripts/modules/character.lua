@@ -12,6 +12,11 @@ function character.create(name, characterName, x, y, isPlayer)
     character.name = name
 end
 
+function character.createNFA(name, characterName, x, y, isPlayer)
+    createCharacterSpriteNFA(name, characterName, x, y, isPlayer)
+    character.name = name
+end
+
 function character.initSing(args)
     character.sings = args
 end
