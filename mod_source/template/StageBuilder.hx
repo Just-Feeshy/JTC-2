@@ -50,7 +50,11 @@ abstract class StageBuilder extends FlxGroup {
         }
     }
 
-    public function modifyNotesDirectly(note:Note) {
+    public function modifyNotesDirectly(note:Note):Void {
+        //empty
+    }
+
+    public function whenNoteIsPressed(note:Note):Void {
         //empty
     }
     

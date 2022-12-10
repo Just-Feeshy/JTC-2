@@ -1909,6 +1909,7 @@ class PlayState extends MusicBeatState
 				spawnTime /= Math.min(1, unspawnNotes[0].howSpeed);
 
 				var dunceNote:Note = unspawnNotes[0];
+				stage.modifyNotesDirectly(dunceNote);
 				notes.add(dunceNote);
 
 				if(dunceNote.hasCustomAddon != null)
@@ -2141,6 +2142,7 @@ class PlayState extends MusicBeatState
 		}
 
 		events.whenNoteIsPressed(note, this);
+		stage.whenNoteIsPressed(note);
 		cameraMovement(note.noteData, note.isSustainNote);
 
 		if(modifierCheckList('sing drain') && health > 0.2) {
@@ -2799,6 +2801,7 @@ class PlayState extends MusicBeatState
 				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + currentPlayer.hasBePlayer;
 
 				events.whenNoteIsPressed(note, this);
+				stage.whenNoteIsPressed(note);
 				cameraMovement(note.noteData, note.isSustainNote);
 
 				currentPlayer.customAnimation = false;
