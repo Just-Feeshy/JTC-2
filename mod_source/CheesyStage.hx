@@ -15,6 +15,7 @@ import Conductor.BPMChangeEvent;
 
 using StringTools;
 
+@:access(MusicBeatState)
 class CheesyStage extends StorageStage {
 	@:final var tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
@@ -52,6 +53,7 @@ class CheesyStage extends StorageStage {
 
 	var boyfriend:Character;
 	var dad:Character;
+	var secondPlayer:Character;
 
 	var dadShouldDance:Bool = true;
 	var phase2_switch:Bool = false;
@@ -71,9 +73,6 @@ class CheesyStage extends StorageStage {
 
 		var cacheList:Array<String> = [];
 		allTweens = new Array<FlxTween>();
-
-		characterAnims = ["singRIGHT", "singUP", "singDOWN", "singLEFT"];
-		characterStorage.add(new Character(650, 100, "skater-boi-player"));
 
         switch(stage) {
             case "funkstreet":
@@ -116,6 +115,11 @@ class CheesyStage extends StorageStage {
 				frostbiteBG.scale.set(1.2,1.2);
 				frostbiteBG.updateHitbox();
 				add(frostbiteBG);
+
+				secondPlayer = new Character(650, 100, "skater-boi-player", true);
+
+				characterAnims = ["singRIGHT", "singUP", "singDOWN", "singLEFT"];
+				characterStorage.add(secondPlayer);
         }
     }
 
@@ -168,11 +172,11 @@ class CheesyStage extends StorageStage {
 		}
 
 		for (i in 0...Conductor.bpmChangeMap.length) {
-			if (@:privateAccess playstate.songPos >= Conductor.bpmChangeMap[i].songTime)
+			if (playstate.songPos >= Conductor.bpmChangeMap[i].songTime)
 				lastChange = Conductor.bpmChangeMap[i];
 		}
 
-		curStep = lastChange.stepTime + (@:privateAccess playstate.songPos - lastChange.songTime) / Conductor.stepCrochet;
+		curStep = lastChange.stepTime + (playstate.songPos - lastChange.songTime) / Conductor.stepCrochet;
 
 		/*
 		* Hell yea, I can cheese my way to making my own methods! Pun intended hehe.
@@ -191,6 +195,12 @@ class CheesyStage extends StorageStage {
 		}
 
 		return 0;
+	}
+
+	override function stepHit():Void {
+		if(playstate.curStep == 1) {
+			add(characterStorage);
+		}
 	}
 
 	override function configStage():Void {
@@ -325,10 +335,11 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function destroy():Void {
+		super.destroy();
+
 		boyfriend = null;
 		dad = null;
 
-		super.destroy();
 		cleanTween();
 	}
 }
