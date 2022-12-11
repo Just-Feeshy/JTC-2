@@ -2,16 +2,16 @@ package;
 
 import flixel.FlxState;
 import flixel.FlxG;
+import flixel.FlxGame;
 import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
-import feshixl.FeshGame;
 
 @:allow(Preloader)
 class Main extends Sprite
 {
-	var feeshmora:FeshGame; // The actual game!
+	var feeshmora:FlxGame; // The actual game!
 
 	var gameWidth:Int = 1280; // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
 	var gameHeight:Int = 720; // Height of the game in pixels (might be less / more in actual pixels depending on your zoom).
@@ -73,7 +73,7 @@ class Main extends Sprite
 		initialState = Preloader;
 		#end
 
-		feeshmora = new FeshGame(gameWidth, gameHeight, initialState, zoom, framerate, framerate, skipSplash, startFullscreen);
+		feeshmora = new FlxGame(gameWidth, gameHeight, initialState, #if (flixel < "5.0.0") zoom, #end framerate, framerate, skipSplash, startFullscreen);
 
 		FlxG.save.bind('funkin', 'ninjamuffin99');
 

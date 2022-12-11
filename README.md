@@ -24,7 +24,7 @@ The purpose of making my own engine is to allow for fewer restrictions that come
 2. Make sure to install these libraries next:
 
 ```
-flixel
+flixel 4.11.0 (NOT 5.0.0 or above!)
 flixel-addons
 flixel-ui
 hscript

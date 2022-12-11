@@ -116,7 +116,7 @@ class CheesyStage extends StorageStage {
 				frostbiteBG.updateHitbox();
 				add(frostbiteBG);
 
-				secondPlayer = new Character(650, 100, "skater-boi-player", true);
+				secondPlayer = new Character(650, 100, "skater-boi-player", true, null, false);
 
 				characterAnims = ["singRIGHT", "singUP", "singDOWN", "singLEFT"];
 				characterStorage.add(secondPlayer);

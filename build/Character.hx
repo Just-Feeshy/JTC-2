@@ -93,11 +93,6 @@ class Character extends feshixl.FeshSprite {
 					}
 				}
 
-				if(frameOffsetApply) {
-					ogFrames = FeshFramesHelper.copyFrames(frames);
-					refreshAnims();
-				}
-
 				finalizedWidth = width;
 				finalizedHeight = height;
 
@@ -110,6 +105,11 @@ class Character extends feshixl.FeshSprite {
 					antialiasing = !_info.pixel;
 				else
 					antialiasing = false;
+
+				if(frameOffsetApply) {
+					//ogFrames = FeshFramesHelper.copyFrames(frames);
+					//refreshAnims();
+				}
 
 				playAnim(_info.playAnim);
 
@@ -263,7 +263,7 @@ class Character extends feshixl.FeshSprite {
 		if (animOffsets.exists(AnimName)) {
 			offset.set(daOffset[0], daOffset[1]);
 		}else {
-			//offset.set(0, 0);
+			offset.set(0, 0);
 		}
 
 		if (curCharacter.startsWith('gf') || curCharacter == "fesh")
