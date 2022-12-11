@@ -1,7 +1,5 @@
 package;
 
-import template.StageBuilder;
-
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
@@ -17,7 +15,7 @@ import Conductor.BPMChangeEvent;
 
 using StringTools;
 
-class CheesyStage extends StageBuilder {
+class CheesyStage extends StorageStage {
 	@:final var tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
@@ -73,6 +71,9 @@ class CheesyStage extends StageBuilder {
 
 		var cacheList:Array<String> = [];
 		allTweens = new Array<FlxTween>();
+
+		characterAnims = ["singRIGHT", "singUP", "singDOWN", "singLEFT"];
+		characterStorage.add(new Character(650, 100, "skater-boi-player"));
 
         switch(stage) {
             case "funkstreet":
