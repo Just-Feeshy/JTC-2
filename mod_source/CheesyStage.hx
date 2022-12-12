@@ -198,8 +198,8 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function stepHit():Void {
-		if(playstate.curStep == 1) {
-			add(characterStorage);
+		if(playstate.curStep == 631) {
+			insert(FlxG.state.members.indexOf(boyfriend) + 1, characterStorage);
 		}
 	}
 

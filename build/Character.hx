@@ -106,9 +106,9 @@ class Character extends feshixl.FeshSprite {
 				else
 					antialiasing = false;
 
-				if(frameOffsetApply) {
-					//ogFrames = FeshFramesHelper.copyFrames(frames);
-					//refreshAnims();
+				if(frameOffsetApply && _info.clippingAdjustment.toString() != "{}") {
+					ogFrames = FeshFramesHelper.copyFrames(frames);
+					refreshAnims();
 				}
 
 				playAnim(_info.playAnim);
