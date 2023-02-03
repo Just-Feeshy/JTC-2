@@ -28,7 +28,7 @@ flixel 4.11.0 (NOT 5.0.0 or above!)
 flixel-addons
 flixel-ui
 hscript
-openfl 9.0.2
+openfl
 json2object 3.10.0
 ```
 3. Run these commands:
