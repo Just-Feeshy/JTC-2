@@ -70,7 +70,10 @@ class StorageStage extends StageBuilder {
 
         characterStorage = FlxDestroyUtil.destroy(characterStorage);
 
-        noteTagData.clear();
+        if(noteTagData != null) {
+            noteTagData.clear();
+        }
+
         noteTagData = null;
     }
 }

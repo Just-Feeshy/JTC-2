@@ -37,6 +37,7 @@ import SaveData.SaveType;
 
 using StringTools;
 
+@:access(openfl.events.Event)
 class Preloader extends HelperStates {
     private static var _initialState:Class<HelperStates> = TitleState;
 
@@ -131,6 +132,8 @@ class Preloader extends HelperStates {
 
     #if (sys && !debug)
     static function createLogReport(event:UncaughtErrorEvent):Void {
+        event.__preventDefault = true;
+
         var error:Error = null;
 
         if(event.error != null && isOfType(event.error, String)) {
