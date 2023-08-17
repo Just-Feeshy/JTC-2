@@ -25,7 +25,9 @@ function generatedStage()
     scaleSprite("frostbiteCAR", 0.7, 0.7)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
 
-    --setupPunchHealth(3)
+    setupPunchHealth(3)
+
+    --createSprite("")
 
     frost_modchart = require("mod_assets/scripts/modcharts/frost_modchart")
     frost_modchart.initStrumsAndNotes()
@@ -99,19 +101,20 @@ end
 function setupPunchHealth(amount)
     for i = 1, amount do
         local iconX = getSpriteX("healthBarBG") + getSpriteWidth("healthBarBG") + 50
-        local iconY = getMidpointY("healthBarBG")
+        local iconY = getMidpointY("healthBarBG") - 50
 
-        print("punchIcon" + tostring(i - 1))
+        if spriteExist("punchIcon" .. tostring(i - 1)) then
+            local iconHeight = getSpriteHeight("punchIcon0");
 
-        --if spriteExist("punchIcon" + tostring(i - 1)) then
-            --iconX = iconX + (getSpriteWidth("punchIcon" + tostring(i - 1)) * (i - 1))
-            --iconY = iconY - (getSpriteHeight("punchIcon" + tostring(i - 1)) * 0.5)
-        --end
+            iconX = iconX + (getSpriteWidth("punchIcon" .. tostring(i - 1)) * (i - 1))
+            iconY = iconY - (iconHeight * 0.5)
+        end
 
-        --createSprite("punchIcon" + i)
-        --setSpritePosition("punchIcon" + i, iconX, iconY - 10)
-        --loadGraphic("punchIcon" + i, "daddy_fist")
-        --setSpriteToCamera("punchIcon" + i, "camHUD")
-        --addSpriteToStage("punchIcon" + i)
+        createSprite("punchIcon" .. i)
+        setSpritePosition("punchIcon" .. i, iconX, iconY - 10)
+        loadGraphic("punchIcon" .. i, "daddy_fist")
+        setSpriteToCamera("punchIcon" .. i, "camHUD")
+        scaleSprite("punchIcon" .. i, 0.7, 0.7)
+        addSpriteToStage("punchIcon" .. i)
     end
 end

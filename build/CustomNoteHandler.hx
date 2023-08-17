@@ -29,7 +29,7 @@ class CustomNoteHandler {
         ];
     }
 
-    /**
+    /*
     static public function configAddons() {
         if(!funni) {
             for (i in 0...customNoteAddon.length) {
@@ -56,5 +56,5 @@ class CustomNoteHandler {
             funni = true;
         }
     }
-    **/
+    */
 }
