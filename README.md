@@ -7,7 +7,7 @@ This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.co
 - [Suki](https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w) - Main Playtester
 - [FrogTreat](https://oliwiadeyna.wixsite.com/frogtreat) - Director, Animator, Artist and Charter
 - [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Artist and Charter
-- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer and Engine Developer
+- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer (Sorry for the crap code)
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
 - [JDST](https://twitter.com/JDSTtwt) - Song Composer and Joul's Soundfont
 
@@ -38,7 +38,7 @@ json2object 3.10.0
 ```
 haxelib install hmm
 ```
-3. Go to the your mod's directory ib the terminal and setup `hmm` with:
+3. Go to your mod's directory in the terminal and setup `hmm` with:
 ```
 haxelib run hmm install
 ```
