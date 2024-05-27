@@ -2,8 +2,6 @@
 
 This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.com/mods/46741). 
 
-The purpose of making my own engine is to allow for fewer restrictions that come with using someone else's engine and faster development. It also allows for unique features and implementations to be added.
-
 ## Main Developers:
 ![jtc_dev_team](https://user-images.githubusercontent.com/58647349/173499193-ae4abb15-6879-40b1-b87a-d34a324a28ad.png)
 - [Suki](https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w) - Main Playtester
