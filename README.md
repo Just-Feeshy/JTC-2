@@ -31,14 +31,3 @@ json2object 3.10.0
 ```
 3. Run these commands:
 * `haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc` to install Discord RPC.
-
-## Installation Guide (with Hmm Instead):
-1. [Install Haxe 4.2.5](https://haxe.org/download/version/4.2.5/), as it's the recommended version.
-2. Make sure to install `hmm` next:
-```
-haxelib install hmm
-```
-3. Go to your mod's directory in the terminal and setup `hmm` with:
-```
-haxelib run hmm install
-```
