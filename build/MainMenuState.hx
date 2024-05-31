@@ -41,7 +41,6 @@ import SaveData.SaveType;
 using StringTools;
 
 private class StupidVibeShader extends FlxShader {
-	
     @:glFragmentSource('
         #pragma header
 
@@ -294,7 +293,7 @@ class MainMenuState extends MusicBeatState
 	}
 
 	//To call from different segment in code.
-	override public function onCreate() {
+	override public function onCreate():Dynamic {
 		return null;
 	}
 

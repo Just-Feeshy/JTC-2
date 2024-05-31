@@ -2,7 +2,7 @@
 <project>
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin': JTC" file="Joul The Cool" packageName="com.feeshypoo.feeshx" package="com.feeshypoo.feeshx" main="Main" version="0.2.7.1" company="feeshy" />
+	<app title="Friday Night Funkin': JTC" file="Joul The Cool" packageName="com.jtcteam.mod" package="com.jtcteam.mod" main="Main" version="0.2.7.1" company="JTC_Dev_Team" />
 
 	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
@@ -52,13 +52,10 @@
 	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
 	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
 
-	<assets path="plugins/"       rename=''       if="USING_DLLS" />
-	<assets path="dlls/"          rename=''       if="USING_DLLS" />
-	
 	<!-- <define name="PRELOAD_ALL" /> -->
 	<define name="PRELOAD_ALL" unless="web" />
 	<define name="NO_PRELOAD_ALL" unless="PRELOAD_ALL"/>
-	
+
 	<section if="PRELOAD_ALL">
 		<library name="songs"    preload="true" />
 		<library name="shared"   preload="true" />
@@ -70,7 +67,7 @@
 		<library name="week5"    preload="true" />
 		<library name="week6"    preload="true" />
 	</section>
-	
+
 	<section if="NO_PRELOAD_ALL">
 		<library name="songs"    preload="false" />
 		<library name="shared"   preload="false" />
@@ -134,6 +131,7 @@
 	<haxelib name="faxe" if='switch'/>
 
 	<haxelib name="discord_rpc" if="desktop"/>
+	<haxelib name="hxCodec" if="desktop" unless="hl" />
 	<!-- <haxelib name="hxcpp-debug-server" if="desktop"/> -->
 
 	<!-- <haxelib name="markdown" /> -->

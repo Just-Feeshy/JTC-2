@@ -17,13 +17,13 @@ using StringTools;
 
 @:access(MusicBeatState)
 class CheesyStage extends StorageStage {
-	@:final var tripleIconColors:Array<Int> = [
+	final tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
 		0xffe9ff48 //Joul The Cool
 	];
 
-	@:final var spinSteps:Array<UInt> = [
+	final spinSteps:Array<UInt> = [
 		279,
 		303,
 		312,
