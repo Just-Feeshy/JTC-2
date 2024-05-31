@@ -7,7 +7,7 @@ This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.co
 - [Suki](https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w) - Main Playtester
 - [FrogTreat](https://oliwiadeyna.wixsite.com/frogtreat) - Director, Animator, Artist and Charter
 - [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Artist and Charter
-- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer (Sorry for the crap code)
+- [Feeshy](https://replit.com/@DaFeesh) - Lead Programmer (Sorry for the crappy outdated code)
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
 - [JDST](https://twitter.com/JDSTtwt) - Song Composer and Joul's Soundfont
 
