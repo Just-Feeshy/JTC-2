@@ -6,6 +6,8 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import feshixl.group.FeshEventGroup.IFeshEvent;
+import lime.graphics.opengl.GLSync;
+import lime.graphics.opengl.GL;
 import SaveData.SaveType;
 
 using StringTools;
@@ -128,13 +130,13 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing) {
                     playState.resyncVocals();
                 }
-    
+
                 storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.crochet/500) * Std.parseFloat(eventValue2), {
                     onComplete: function(tween:FlxTween) {
                         if(Std.parseInt(eventValue) == 1) {
                             playState.pauseMusic();
                         }
-    
+
                         cancelTween(eventName);
                     }
                 }));
@@ -153,6 +155,10 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     }
                 }));
             case "character change":
+				var sync = GL.fenceSync(GL.SYNC_GPU_COMMANDS_COMPLETE, 0);
+				GL.flush();
+				GL.waitSync(sync, 0, GL.TIMEOUT_IGNORED);
+
                 switch(eventValue2.toLowerCase()) {
                     case "gf" | "girlfriend":
                         if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
@@ -184,8 +190,9 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                             playState.iconP2.character = eventValue;
                             playState.iconP2.createAnim(eventValue, playState.dad._info.icon, false);
                         }
-                    
                 }
+
+				GL.deleteSync(sync);
             case "bump per beat":
                 playState.bumpPerBeat = Std.parseInt(eventValue);
                 playState.bumpForce = Std.parseInt(eventValue2);
