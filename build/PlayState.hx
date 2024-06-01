@@ -2636,10 +2636,10 @@ class PlayState extends MusicBeatState
 				    takeDamage(index, true);
 				    songScore -= 10;
 				    setHealth(health - 0.04);
+				    missClicks++;
 				}
 		    }
 
-			missClicks++;
 		    var spr:Strum = currentStrums.members[index];
 
 			if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
@@ -2833,7 +2833,7 @@ class PlayState extends MusicBeatState
 		strumNote.holdTimer = Conductor.stepCrochet * 1.25 / 1000;
 	}
 
-	private function cameraMovement(noteCData:Int, isSus:Bool) {
+	private function cameraMovement(noteCData:Int, isSus:Bool):Void {
 		if(modifierCheckList('camera move') && Main.feeshmoraModifiers && !isSus) {
 			if(noteCData == 0) {
 				camMovementPos.x = (-SONG.bpm / 45) * 5 * cameraMovementInsensity;

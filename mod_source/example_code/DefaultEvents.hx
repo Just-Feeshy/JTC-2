@@ -42,7 +42,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
         eventTweens = new Map<String, FlxTween>();
     }
 
-    public function whenTriggered(eventName:String, eventValue:String, eventValue2:String, playState:PlayState) {
+    public function whenTriggered(eventName:String, eventValue:String, eventValue2:String, playState:PlayState):Void {
         switch(eventName) {
             case "mirror chart":
                 if(!flipped && eventValue == "0") {
