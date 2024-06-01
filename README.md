@@ -18,7 +18,7 @@ This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.co
 - [Cracsthor](https://gamebanana.com/members/1844732) - PhantomMuff Font
 
 ## Installation Guide:
-1. [Install Haxe 4.2.5](https://haxe.org/download/version/4.2.5/), as it's the recommended version.
+1. [Install Haxe 4](https://haxe.org/download/version), as it's the recommended version.
 2. Make sure to install these libraries next:
 
 ```
@@ -28,6 +28,7 @@ flixel-ui
 hscript
 openfl
 json2object 3.10.0
+hxvlc
 ```
 3. Run these commands:
 * `haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc` to install Discord RPC.

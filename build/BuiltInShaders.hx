@@ -44,7 +44,7 @@ class BuiltInShaders extends FlxShader {
         }
 
         void robloxIntro() {
-            gl_FragColor = vec4((vec3(color().r+color().g+color().b)/3.0) * (1 - shaderValue) + color().rgb * shaderValue, color().a);
+            gl_FragColor = vec4((vec3(color().r+color().g+color().b)/3.0) * (1.0 - shaderValue) + color().rgb * shaderValue, color().a);
         }
 
         void objSelect() {

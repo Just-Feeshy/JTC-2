@@ -10,7 +10,7 @@ function onCreate()
 
     disableRegularInput(true) --Disable regular input so I can make my own
     setSpritePosition("grpWeekText", 0, windowHeight / 2)
-    
+
     setDisplayScoreText("")
     setTextFont("scoreText", "PhantomMuff.ttf")
     setSpriteColor("scoreText", "0x302650")
@@ -54,6 +54,7 @@ function onUpdate(elapsed)
             selectedWeek = true
 
             setTransitionOut("void")
+		    doTweenAngle("lightningShake", "lightningIcon", 12, 0.1, "quadOut")
             doTweenX("finishX", "betterDifficulty", windowWidth / 2, 0.3, "backIn")
             doTweenY("finishY", "grpWeekText", windowHeight / 2, 0.3, "backIn")
             playSound("confirmMenu", 1, "confirm")

@@ -78,7 +78,7 @@ class Preloader extends HelperStates {
         trace("FPS: " + Lib.current.stage.frameRate);
 
         //FlxG.autoPause = false;
-        
+
         //Initalize events
         FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, saveVolumeChanges);
 
@@ -96,7 +96,7 @@ class Preloader extends HelperStates {
         loadingScene.callback = function() {
             Register.setup();
             Register.compile();
-            
+
             FlxG.switchState(cast Type.createInstance(_initialState, []));
         }
 

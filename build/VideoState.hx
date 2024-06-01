@@ -15,16 +15,16 @@ import openfl.events.NetStatusEvent;
 import openfl.media.Video;
 #end
 
-#if desktop
-import vlc.VlcBitmap;
+#if cpp
+import hxvlc.externs.Types;
+import hxvlc.openfl.Video;
+import sys.FileSystem;
 #end
 
-/*
-* Ducky was here :D
-**/
-@:access(vlc.VlcBitmap)
+import SaveData.SaveType;
+
+@:access(hxvlc.openfl.Video)
 class VideoState extends HelperStates {
-    public var repeat:Bool = false;
     public var isFullscreen:Bool = false;
     public var inWindow:Bool = false;
 
@@ -35,8 +35,8 @@ class VideoState extends HelperStates {
 
     var skip:Bool = false;
 
-    #if desktop
-	var bitmap:VlcBitmap;
+    #if cpp
+	var bitmap:Video;
 	#end
 
     #if web
@@ -47,7 +47,7 @@ class VideoState extends HelperStates {
     public function new(state:FlxState, path:String) {
         this.state = state;
         this.path = path;
-        
+
         super("void", "void");
     }
 
@@ -79,9 +79,9 @@ class VideoState extends HelperStates {
     }
 
     public function playVideo() {
-        #if desktop
-        bitmap = new VlcBitmap();
-
+        #if cpp
+        bitmap = new Video(SaveData.getData(SaveType.GRAPHICS));
+/*
         if(FlxG.stage.stageHeight / 9 < FlxG.stage.stageWidth / 16) {
             bitmap.set_width(FlxG.stage.stageHeight * (16 / 9));
             bitmap.set_height(FlxG.stage.stageHeight);
@@ -89,31 +89,21 @@ class VideoState extends HelperStates {
             bitmap.set_width(FlxG.stage.stageWidth);
             bitmap.set_height(FlxG.stage.stageWidth / (16 / 9));
         }
-
-        /**
-        * Just incase.
-        */
-        if (FlxG.sound.volume < 0.1) {
-            bitmap.volume = 0;
-        }else {
-            bitmap.volume = FlxG.sound.volume + 0.3;
-        }
-
-        bitmap.onComplete = finishedVideo;
-        bitmap.onError = onVLCError;
-
-        if(repeat) {
-            bitmap.repeat = -1;
-        }else {
-            bitmap.repeat = 0;
-        }
-
-        /**precaution*/
-        bitmap.fullscreen = this.isFullscreen;
-        bitmap.inWindow = this.inWindow;
+*/
+        bitmap.onEndReached.add(finishedVideo);
+        bitmap.onEncounteredError.add(onVLCError);
 
         FlxG.game.addChildAt(bitmap, 0);
-        bitmap.play(checkFile(path));
+		bitmap.load(checkFile(path), []);
+        bitmap.play();
+
+		bitmap.onOpening.add(function():Void {
+		    bitmap.role = LibVLC_Role_Game;
+
+		    if(!FlxG.signals.postUpdate.has(postUpdate)) {
+				FlxG.signals.postUpdate.add(postUpdate);
+			}
+		});
         #end
 
         #if web
@@ -142,36 +132,26 @@ class VideoState extends HelperStates {
 				FlxG.switchState(state);
 			}
 		});
+
 		netStream.play(name);
         #end
     }
 
     override function update(elapsed:Float) {
+		#if cpp
+		if(bitmap.isPlaying && controls.ACCEPT) {
+		     FlxG.switchState(state);
+		}
+		#end
+
         super.update(elapsed);
-
-        #if desktop
-        //Just incase
-        if(bitmap != null) {
-            if(controls.ACCEPT) {
-                if (bitmap.isPlaying) {
-                    FlxG.switchState(state);
-                }
-            }
-
-            if (FlxG.sound.volume < 0.1) {
-                bitmap.volume = 0;
-            }else {
-                bitmap.volume = FlxG.sound.volume + 0.3;
-            }
-        }
-        #end
     }
 
     override function finishedTransition() {
         SPACE.destroy();
         SPACE = null;
 
-        #if desktop
+        #if cpp
         onVLCComplete();
         #end
 
@@ -182,34 +162,47 @@ class VideoState extends HelperStates {
         FlxG.switchState(state);
     }
 
-    #if desktop
-    function onVLCComplete() {
+    #if cpp
+    @:noCompletion function onVLCComplete() {
+		bitmap.onEndReached.remove(finishedVideo);
+		bitmap.onEncounteredError.remove(onVLCError);
+
+		FlxG.signals.postUpdate.remove(postUpdate);
+        FlxG.game.removeChild(bitmap);
+
         bitmap.stop();
         bitmap.dispose();
-
-        if (FlxG.game.contains(bitmap)) {
-            FlxG.game.removeChild(bitmap);
-        }
 
         bitmap = null;
 
         FlxG.switchState(state);
     }
 
-    function onVLCError() {
-        trace("Error: could not locate video.");
-        FlxG.switchState(state);
+    @:noCompletion function onVLCError(message:String) {
+        trace("Error: could not locate video because of [" + message + "]");
+        // FlxG.switchState(state);
     }
 
-    function checkFile(fileName:String):String {
-        var pDir = "";
-        var appDir = "file:///" + Sys.getCwd() + "/";
-        if (fileName.indexOf(":") == -1) // Not a path
-            pDir = appDir;
-        else if (fileName.indexOf("file://") == -1 || fileName.indexOf("http") == -1) // C:, D: etc? ..missing "file:///" ?
-            pDir = "file:///";
+    @:noCompletion function checkFile(fileName:String):String {
+		return FileSystem.absolutePath(Paths.getCoreAssets() + fileName);
+	}
 
-        return pDir + fileName;
-    }
+	@:noCompletion function postUpdate() {
+		{
+			bitmap.width = FlxG.scaleMode.gameSize.x;
+			bitmap.height = FlxG.scaleMode.gameSize.y;
+		}
+
+		#if FLX_SOUND_SYSTEM
+		{
+
+			final curVolume:Int = Math.floor((FlxG.sound.muted ? 0 : 1) * FlxG.sound.volume * 200);
+
+			if (bitmap.volume != curVolume)
+				bitmap.volume = curVolume;
+		}
+		#end
+
+	}
     #end
 }

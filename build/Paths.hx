@@ -29,13 +29,22 @@ class Paths
 	static var currentLevel:String;
 
 	static function get_modJSON():ConfigDef {
-		if(modJSON == null) { 
-			var parser:JsonParser<ConfigDef> = new JsonParser<ConfigDef>();
+		if(modJSON == null) {
+			var parser = new JsonParser<ConfigDef>();
+			var content = File.getContent(getCoreAssets() + "config/mod.json");
 
-			return parser.fromJson(File.getContent("config/mod.json"), "mod.json");
+			return parser.fromJson(content, "mod.json");
 		}else {
 			return modJSON;
 		}
+	}
+
+	static public function getCoreAssets():String {
+		#if macos
+		return "../Resources/";
+		#else
+		return "";
+		#end
 	}
 
 	static public function setCurrentLevel(name:String)
