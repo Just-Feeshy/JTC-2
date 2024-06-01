@@ -201,7 +201,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     playState.eventStorage.remove(eventValue);
                     setModifierToDefault(eventValue);
                 }
-    
+
                 if(playState.eventStorage.contains(eventValue2)) {
                     playState.eventStorage.remove(eventValue2);
                     setModifierToDefault(eventValue2);

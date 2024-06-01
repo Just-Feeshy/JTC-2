@@ -2656,6 +2656,7 @@ class PlayState extends MusicBeatState
 					if(controlArray[index]) {
 						takeDamage(index, true);
 						songScore -= 10;
+						setHealth(health - 0.04);
 					}
 				}
 
