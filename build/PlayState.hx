@@ -1804,7 +1804,7 @@ class PlayState extends MusicBeatState
 					tweenCamIn();
 				}
 			}
-			
+
 			if(SONG.notes[Std.int(curStep / 16)].mustHitSection)
 			{
 				var camFollowX:Float = boyfriend.getMidpoint().x - 100;
@@ -1930,7 +1930,7 @@ class PlayState extends MusicBeatState
 
 			//Nothing here!
 			notes.forEachAlive(function(daNote:Note)
-			{	
+			{
 				var strumAngle:Float = 0;
 				var strumPos:Float = 0;
 
@@ -1981,7 +1981,7 @@ class PlayState extends MusicBeatState
 						addToNoteX(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote),
 						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
-					
+
 					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
 					daNote.setNoteAlpha(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
@@ -2031,14 +2031,14 @@ class PlayState extends MusicBeatState
 					if(daNote.isSustainNote) {
 						if(camNOTE.camNoteWOBBLE == null) {
 							camNOTE.createNoteCam(daNote.noteAbstract);
-			
+
 							FlxG.cameras.remove(camNOTE, false);
 							FlxG.cameras.add(camNOTE);
 							FlxG.cameras.add(camNOTE.camNoteWOBBLE);
 							FlxG.cameras.remove(camHUD, false);
 							FlxG.cameras.add(camHUD);
 						}
-			
+
 						if(!daNote.cameras.contains(camNOTE.camNoteWOBBLE)) {
 							daNote.cameras = [camNOTE.camNoteWOBBLE];
 						}
@@ -2064,7 +2064,7 @@ class PlayState extends MusicBeatState
 
 							vocals.volume = 0;
 						}
-	
+
 						if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
 							if(daNote.tooLate || !daNote.wasGoodHit) {
 								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
@@ -2088,7 +2088,7 @@ class PlayState extends MusicBeatState
 							if(daNote.tooLate || !daNote.wasGoodHit) {
 								if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
 									combo = 0;
-									
+
 									if(daNote.isSustainNote)
 										missesHold += 1;
 									else
@@ -2105,10 +2105,10 @@ class PlayState extends MusicBeatState
 							}
 						}
 					}
-	
+
 					daNote.active = false;
 					daNote.visible = false;
-	
+
 					removeNote(daNote);
 				}
 			});
@@ -2637,7 +2637,7 @@ class PlayState extends MusicBeatState
 
 					for(n in 0...noteSections.length) {
 						var note:Note = noteSections[n].getNoteHittable(pressedNotes);
-			
+
 						if(note != null) {
 							removeNote(note);
 						}else {
@@ -2654,7 +2654,8 @@ class PlayState extends MusicBeatState
 			if(counter == noteList.length) {
 				if(!GhostTapping.ghostTap) {
 					if(controlArray[index]) {
-						noteMiss(index);
+						takeDamage(index, true);
+						songScore -= 10;
 					}
 				}
 
@@ -2733,6 +2734,11 @@ class PlayState extends MusicBeatState
 				}
 			}
 
+			takeDamage(direction, note.playAnyAnimation);
+		}
+	}
+
+	function takeDamage(direction:Int, playAnim:Bool):Void {
 			currentPlayer.stunned = true;
 
 			// get stunned for 5 seconds
@@ -2741,22 +2747,13 @@ class PlayState extends MusicBeatState
 				currentPlayer.stunned = false;
 			});
 
-			if(note == null) {
+			if(playAnim) {
 				if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
-					FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
+				    FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
 				}
 
 				currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
-			}else {
-				if(note.playAnyAnimation) {
-					if(SaveData.getData(MISS_SOUND_VOLUME) > 0) {
-						FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), SaveData.getData(MISS_SOUND_VOLUME) * FlxG.random.float(0.1, 0.2));
-					}
-
-					currentPlayer.playNoDanceAnim(singAnims[direction] + "miss", true);
-				}
 			}
-		}
 	}
 
 	function goodNoteHit(note:Note):Void
