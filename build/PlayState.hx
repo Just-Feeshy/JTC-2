@@ -2578,15 +2578,18 @@ class PlayState extends MusicBeatState
 
 	function getPressed(event:Event):Void
 	{
-		if(paused || inCutscene)
+		if(paused || inCutscene) {
 			return;
+		}
 
 		var getEvent = cast event;
 		var index:Int = 0;
 
-		index = getKeyOrButton(getEvent.keyCode);
+		if(!FlxG.keys.checkStatus(getEvent.keyCode, JUST_PRESSED)) {
+			return;
+		}
 
-		var checkControlStatus:Bool = false;
+		index = getKeyOrButton(getEvent.keyCode);
 
 		var controlArray = [
 			controls.GAME_LEFT_P,
@@ -2620,12 +2623,23 @@ class PlayState extends MusicBeatState
 			if(inputNotes.length != 0) {
 				var front = inputNotes[0];
 
+				final frontTime = DefaultHandler.getNoteTime(front.strumTime);
+
 				if(inputNotes.length > 1) {
 					var back = inputNotes[1];
 
-					if(front.getNoteHittable(back)) {
+					final backTime = DefaultHandler.getNoteTime(back.strumTime);
+
+				    if(frontTime == backTime) {
+						if(front.getNoteHittable(back)) {
+							removeNote(back);
+						}else if(back.getNoteHittable(front)) {
+							removeNote(front);
+							front = back;
+						}
+				    }else if(front.getNoteHittable(back)) {
 						removeNote(back);
-					}else if(back.strumTime < front.strumTime) {
+					}else if(frontTime < backTime) {
 						front = back;
 					}
 				}
