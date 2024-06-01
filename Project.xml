@@ -115,9 +115,6 @@
 	<assets path="assets/fonts" embed='true'/>
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="openfl" />
-	<lime version="" />
-
 	<haxelib name="flixel" />
 	<haxedev set='webgl' />
 

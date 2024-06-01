@@ -1,7 +1,7 @@
 package;
 
 import flixel.FlxG;
-import flixel.util.FlxGradient;
+import feshixl.utils.FeshGradient;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
@@ -27,9 +27,9 @@ class CrewState extends MusicBeatState {
 
         allTweens = new Array<FlxTween>();
 
-        var background:FlxSprite = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height,
+        var background:FlxSprite = FeshGradient.createGradientFlxSprite(FlxG.width, FlxG.height,
             [FlxColor.fromRGB(85, 0, 150), FlxColor.fromRGB(43, 8, 180, 75), FlxColor.fromRGB(43, 8, 180, 75), FlxColor.fromRGB(43, 8, 180, 75), FlxColor.fromRGB(85, 0, 150)
-        ], 1);
+		]);
         background.screenCenter();
         background.scrollFactor.set();
         add(background);
@@ -64,7 +64,7 @@ class CrewState extends MusicBeatState {
             if(controls.RIGHT_P) {
                 changeDev(1);
             }
-            
+
             if(controls.LEFT_P) {
                 changeDev(-1);
             }
