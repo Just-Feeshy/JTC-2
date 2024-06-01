@@ -593,7 +593,7 @@ class Note extends FeshSprite {
 		}
 	}
 
-	public function hit(strumNote:Strum):Void {
+	public function hit():Void {
 		if(hasCustomAddon != null) {
 			var soundName:String = hasCustomAddon.playSoundWhenNoteIsHit(mustPress, isSustainNote);
 
@@ -601,20 +601,12 @@ class Note extends FeshSprite {
 				if(sound == null)sound = new FlxSound();
 
 				sound.loadEmbedded(Paths.sound(soundName));
-				
+
 				if(sound.name != soundName && !sound.playing) {
 					FlxG.sound.list.add(sound);
 					sound.play();
 				}
 			}
-
-			if(hasCustomAddon.whenNoteIsHit(strumNote)) {
-				strumNote.setColorTransform(1,1,1,1,0,0,0,0);
-				strumNote.playAnim('confirm', true);
-			}
-		}else {
-			strumNote.setColorTransform(1,1,1,1,0,0,0,0);
-			strumNote.playAnim('confirm', true);
 		}
 	}
 
@@ -709,20 +701,18 @@ class Note extends FeshSprite {
 		}
 	}
 
-	public function getNoteHittable(list:Array<Note>):Note {
-		for(i in 0...list.length) {
-			if(SaveData.getData(PRESET_INPUTS) == true) {
-				if(Math.abs(DefaultHandler.getNoteTime(list[i].strumTime) - DefaultHandler.getNoteTime(strumTime)) < 10) {
-					return this;
+	public function getNoteHittable(second:Note):Bool {
+		if(SaveData.getData(PRESET_INPUTS)) {
+				if(Math.abs(DefaultHandler.getNoteTime(second.strumTime) - DefaultHandler.getNoteTime(strumTime)) < 1.0) {
+					return true;
 				}
-			}else {
-				if((Math.abs(list[i].getNoteY()) < Note.swagWidth || Math.abs(getNoteY()) < Note.swagWidth)) {
-					return this;
+		}else {
+				if((Math.abs(second.getNoteY()) < Note.swagWidth || Math.abs(getNoteY()) < Note.swagWidth)) {
+					return true;
 				}
-			}
 		}
 
-		return null;
+		return false;
 	}
 
 	public function giveHealth():Float {

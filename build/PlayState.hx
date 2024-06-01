@@ -2151,8 +2151,8 @@ class PlayState extends MusicBeatState
 
 		oppositeStrums.forEach(function(spr:Strum) {
 			if(Math.abs(note.noteData) == spr.ID) {
-				note.hit(spr);
-				spr.holdTimer = Conductor.stepCrochet * 0.0011;
+				note.hit();
+				playStrumConfirm(spr);
 			}
 		});
 
@@ -2239,7 +2239,7 @@ class PlayState extends MusicBeatState
 		var getEvent = cast event;
 		var index:Int = 0;
 
-		
+
 		index = getKeyOrButton(getEvent.keyCode);
 
 		var controlArray = [
@@ -2608,74 +2608,46 @@ class PlayState extends MusicBeatState
 		if (generatedMusic && controlArray.contains(true)) {
 			var noteCaculation:Bool = false;
 
-			var noteList:Array<Array<Note>> = [];
-			var pressedNotes:Array<Note> = [];
-
 			setSongPosition(FlxG.sound.music.time);
 
-			notes.forEachAlive(function(daNote:Note) {
-				if(daNote.canBeHit && daNote.mustPress && !daNote.tooLate
-				&& !daNote.wasGoodHit && !daNote.isSustainNote) {
-					if(controlArray[index] && daNote.noteData == index) {
-						if(noteList[index] == null) {
-							noteList[index] = [];
-						}
+			var inputNotes = notes.members.filter(function(note:Note):Bool {
+				if(note == null) return false;
 
-						noteList[index].push(daNote);
-					}
-				}
+				return note.canBeHit && note.mustPress && !note.tooLate && !note.wasGoodHit && !note.isSustainNote && note.noteData == index;
 			});
+			inputNotes.sort((a, b) -> Std.int(DefaultHandler.getNoteTime(a.strumTime) - DefaultHandler.getNoteTime(b.strumTime)));
 
-			var counter:Int = 0;
+			if(inputNotes.length != 0) {
+				var front = inputNotes[0];
 
-			/**
-			* Better Jack detection.
-			*/
-			for(noteSections in noteList) {
-				if(noteSections != null) {
-					noteSections.sort((a, b) -> Std.int(DefaultHandler.getNoteTime(a.strumTime) - DefaultHandler.getNoteTime(b.strumTime)));
+				if(inputNotes.length > 1) {
+					var back = inputNotes[1];
 
-					for(n in 0...noteSections.length) {
-						var note:Note = noteSections[n].getNoteHittable(pressedNotes);
-
-						if(note != null) {
-							removeNote(note);
-						}else {
-							goodNoteHit(noteSections[n]);
-							pressedNotes.push(noteSections[n]);
-							break;
-						}
-					}
-				}else {
-					counter++;
-				}
-			}
-
-			if(counter == noteList.length) {
-				if(!GhostTapping.ghostTap) {
-					if(controlArray[index]) {
-						takeDamage(index, true);
-						songScore -= 10;
-						setHealth(health - 0.04);
+					if(front.getNoteHittable(back)) {
+						removeNote(back);
+					}else if(back.strumTime < front.strumTime) {
+						front = back;
 					}
 				}
 
-				missClicks++;
-
-				var spr:Strum = currentStrums.members[index];
-
-				if(index >= controlArray.length) {
-					return;
+				goodNoteHit(front);
+			}else if(!GhostTapping.ghostTap) {
+				if(controlArray[index]) {
+				    takeDamage(index, true);
+				    songScore -= 10;
+				    setHealth(health - 0.04);
 				}
+		    }
 
-				if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-					if(controlArray[index] && spr.animation.curAnim.name != "confirm") {
-						spr.playAnim('pressed');
-					}
+			missClicks++;
+		    var spr:Strum = currentStrums.members[index];
+
+			if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+				if(controlArray[index] && spr.animation.curAnim.name != "confirm") {
+				    spr.playAnim('pressed');
+					spr.holdTimer = 0;
 				}
-
-				counter = 0;
-			}
+		    }
 
 			callLua('onKeyPress', [getEvent.keyCode]);
 		}
@@ -2820,7 +2792,7 @@ class PlayState extends MusicBeatState
 			else
 				spr.ifCustom = "regular";
 
-			note.hit(spr);
+			note.hit();
 
 			if(!isPixel) {
 				note.splash(grpSplash.members[spr.ID], spr, daRating);
@@ -2832,6 +2804,11 @@ class PlayState extends MusicBeatState
 				if(noteSprite != null) {
 					customNoteSprites.add(noteSprite);
 				}
+			    if(note.hasCustomAddon.whenNoteIsHit(spr)) {
+					playStrumConfirm(spr);
+			    }
+			}else {
+				playStrumConfirm(spr);
 			}
 
 			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
@@ -2849,6 +2826,11 @@ class PlayState extends MusicBeatState
 				note.shouldBeDead = true;
 			}
 		}
+	}
+
+	private function playStrumConfirm(strumNote:Strum):Void {
+		strumNote.playAnim("confirm", true);
+		strumNote.holdTimer = Conductor.stepCrochet * 1.25 / 1000;
 	}
 
 	private function cameraMovement(noteCData:Int, isSus:Bool) {
@@ -2880,7 +2862,7 @@ class PlayState extends MusicBeatState
 
 		note.kill();
 
-		if(note.trail != null)						
+		if(note.trail != null)
 			remove(note.trail);
 
 		notes.remove(note, true);
@@ -3453,8 +3435,9 @@ class PlayState extends MusicBeatState
 	}
 
 	//Getter Functions
-	override function get_songPos():Float
+	override function get_songPos():Float {
 		return Conductor.trackPosition;
+	}
 
 	function get_currentStrums():FlxTypedSpriteGroup<Strum> {
 		if(SaveData.getData(PLAY_AS_OPPONENT))

@@ -23,7 +23,7 @@ class Strum extends feshixl.FeshSprite {
 
 	override public function new(x:Float, y:Float) {
 		super(x, y);
-		
+
 		onlyFans = 1;
 
 		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.blindEffect.enabled) {
@@ -38,12 +38,9 @@ class Strum extends feshixl.FeshSprite {
 		}
 
 		super.playAnim(AnimName, Force, Reversed, Frame);
-		
+
 		centerOffsets();
 		centerOrigin();
-
-		if(AnimName == "pressed")
-			indevRenderer();
 	}
 
 	public function setupAnimations():Void {
@@ -102,7 +99,13 @@ class Strum extends feshixl.FeshSprite {
 			holdTimer -= elapsed;
 
 			if(holdTimer <= 0) {
-				playAnim('static');
+
+				if(ifOpponent) {
+					playAnim('static');
+				}else {
+					playAnim('pressed');
+				}
+
 				holdTimer = 0;
 			}
 		}
@@ -111,7 +114,7 @@ class Strum extends feshixl.FeshSprite {
 			if((animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && DefaultHandler.modifiers.blindEffect.enabled) {
 				visible = false;
 			}
-			
+
 			if(!(animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && DefaultHandler.modifiers.blindEffect.enabled && visible == false) {
 				visible = true;
 			}
@@ -123,6 +126,6 @@ class Strum extends feshixl.FeshSprite {
 		}
 		#end
 
-		super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : 0.75));
+		super.update(elapsed);
 	}
 }
