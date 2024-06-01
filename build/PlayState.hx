@@ -3550,7 +3550,7 @@ class PlayState extends MusicBeatState
 
 		if(dad.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier) {
 			var dadAnim:String = dad.animation.curAnim.name.replace("miss", "");
-			
+
 			if(dadAnim.startsWith("sing")) {
 				dad.playNoDanceAnim(dadAnim, true);
 			}
@@ -3558,7 +3558,7 @@ class PlayState extends MusicBeatState
 
 		if(boyfriend.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier) {
 			var boyfriendAnim:String = boyfriend.animation.curAnim.name.replace("miss", "");
-			
+
 			if(boyfriendAnim.startsWith("sing")) {
 				boyfriend.playNoDanceAnim(boyfriendAnim, true);
 			}
@@ -3579,11 +3579,11 @@ class PlayState extends MusicBeatState
 
 		if(curBeat % bumpPerBeat == 0) {
 			if (camZooming && FlxG.camera.zoom < 1.35) {
-				FlxG.camera.zoom += 15 * bumpForce * FlxG.elapsed;
-				camHUD.zoom += 6 * bumpForce * FlxG.elapsed;
-				camNOTE.zoom += 6 * bumpForce * FlxG.elapsed;
+				FlxG.camera.zoom += 7 * bumpForce * FlxG.elapsed;
+				camHUD.zoom += 3 * bumpForce * FlxG.elapsed;
+				camNOTE.zoom += 3 * bumpForce * FlxG.elapsed;
 			}
-	
+
 			#if (USING_LUA && cpp)
 			if(HelperStates.luaExist(Type.getClass(this))) {
 				updatePerSectionLuaVars();
