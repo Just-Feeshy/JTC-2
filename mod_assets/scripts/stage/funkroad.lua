@@ -44,32 +44,32 @@ function onStepHit()
     end
 
     if curStep == 147 and beatSection == 0 then
-        callEvent("bump per beat", "2", "1.025")
+        callEvent("bump per beat", "1", "0.5125")
         beatSection = beatSection + 1
     end
 
     if curStep == 210 and beatSection == 1 then
-        callEvent("bump per beat", "1", "1.05")
+        callEvent("bump per beat", "0.5", "0.525")
         beatSection = beatSection + 1
     end
 
     if curStep == 475 and beatSection == 2 then
-        callEvent("bump per beat", "4", "1")
+        callEvent("bump per beat", "2", "0.5")
         beatSection = beatSection + 1
     end
 
     if curStep == 652 and beatSection == 3 then
-        callEvent("bump per beat", "2", "1.025")
+        callEvent("bump per beat", "1", "0.5125")
         beatSection = beatSection + 1
     end
 
     if curStep == 772 and beatSection == 4 then
-        callEvent("bump per beat", "1", "1.05")
+        callEvent("bump per beat", "0.5", "0.525")
         beatSection = beatSection + 1
     end
 
     if curStep == 904 and beatSection == 5 then
-        callEvent("bump per beat", "4", "1")
+        callEvent("bump per beat", "2", "0.5")
         beatSection = beatSection + 1
     end
 end
