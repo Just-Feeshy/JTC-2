@@ -97,4 +97,19 @@ class CacheState extends HelperStates {
             FlxG.switchState(new PlayState());
         }
     }
+
+
+    static public function loadAndSwitchStateF(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
+        Paths.setCurrentLevel("week" + PlayState.storyWeek);
+
+		if (stopMusic && FlxG.sound.music != null) {
+			FlxG.sound.music.stop();
+        }
+
+        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")) && !exception) {
+            FlxG.switchState(new CacheState(new PlayState(), true));
+        }else {
+            FlxG.switchState(new PlayState());
+        }
+    }
 }
