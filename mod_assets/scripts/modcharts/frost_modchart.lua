@@ -224,7 +224,7 @@ function frost_modchart.sectionTwo_HELL(elapsed)
             setNoteStrumPos((i - 1) + 4, xNote, yNote)
             setNoteDirection((i - 1) + 4, wheelAngle + noteWheelAngle[i] - (math.pi * 0.5))
             setNoteStrumAngle((i - 1) + 4, -wheelAngle)
-            
+
             if transitionToWheel[3] > curStep then
                 local givenTime = (curStepFloat - transitionToWheel[2]) / (transitionToWheel[3] - transitionToWheel[2])
                 local timeLerp = quadOut(givenTime)
