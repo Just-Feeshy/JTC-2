@@ -12,7 +12,7 @@ This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.co
 - [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Artist and Charter
 - [Feeshy](https://twitter.com/JustFeeshy) - Lead Programmer (Sorry for the crappy outdated code)
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
-- [JDST](https://twitter.com/JDSTtwt) - Song Composer and Joul's Soundfont
+- [JDST](https://www.youtube.com/@JDST) - Song Composer and Joul's Soundfont
 
 ## Special Thanks:
 - [Duckint](https://github.com/Duckint) - Grammar Corrections
