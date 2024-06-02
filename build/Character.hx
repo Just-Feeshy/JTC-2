@@ -24,6 +24,7 @@ class Character extends feshixl.FeshSprite {
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
 	public var debugMode:Bool = false;
+	public var specialAnim:Bool = false;
 
 	public var ogFrames(default, null):FlxFramesCollection;
 
@@ -122,6 +123,19 @@ class Character extends feshixl.FeshSprite {
 			flipX = !flipX;
 	}
 
+	public function isAnimationFinished():Bool {
+		if(animation.curAnim == null) {
+			return false;
+		}
+
+		return animation.curAnim.finished;
+	}
+
+	public function finishAnimation():Void {
+		if(animation.curAnim == null) return;
+		animation.curAnim.finish();
+	}
+
 	override function update(elapsed:Float) {
 		if (!isPlayer) {
 			if (animation.curAnim.name.startsWith('sing')) {
@@ -136,6 +150,12 @@ class Character extends feshixl.FeshSprite {
 				dance();
 				holdTimer = 0;
 			}
+		}
+
+
+		if(animation.curAnim.name.endsWith('miss') && isAnimationFinished()) {
+		     dance();
+			 finishAnimation();
 		}
 
 		switch (curCharacter) {
@@ -230,6 +250,14 @@ class Character extends feshixl.FeshSprite {
 		}
 	}
 
+	public function getAnimName():String {
+		if(animation.curAnim == null) {
+			return "";
+		}
+
+		return animation.curAnim.name;
+	}
+
 	public function playNoDanceAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		dancing = false;
 		playAnim(AnimName, Force, Reversed, Frame);
@@ -248,6 +276,8 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+		specialAnim = false;
+
 		if(animations.length == 0) {
 			return;
 		}

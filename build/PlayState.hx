@@ -2571,7 +2571,7 @@ class PlayState extends MusicBeatState
 			}
 		});
 
-		if(boyfriend.holdTimer > Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
+		if(boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end) * boyfriend.singMultiplier && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
 			boyfriend.dance();
 		}
 	}
@@ -2747,15 +2747,6 @@ class PlayState extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
-			if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)){
-
-				if(note.noteAbstract == "trippy")	{
-					setHealth(health - 0.3);
-				}else if(note.noteAbstract == "planet notes") {
-					setHealth(health - 0.4);
-				}
-			}
-
 			if (!note.isSustainNote && !CustomNoteHandler.dontHitNotes.contains(note.noteAbstract))
 			{
 				popUpScore(DefaultHandler.getNoteTime(note.strumTime), note.noteData, note.noteAbstract);
@@ -2763,19 +2754,6 @@ class PlayState extends MusicBeatState
 			}
 
 			setHealth(health + note.giveHealth());
-
-			if(note.noteAbstract == "spiritual star")
-				setHealth(health - 0.054);
-			
-			if(note.noteAbstract == "cherry") {
-
-				if(SONG.fifthKey && note.noteData == 2) {
-					setHealth(health + 1);
-					FlxG.sound.play(Paths.sound("confirmMenu"));
-				} else {
-					setHealth(health + 0.069);
-				}	
-			}
 
 			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
@@ -2827,7 +2805,10 @@ class PlayState extends MusicBeatState
 
 			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 				note.wasGoodHit = true;
-				vocals.volume = 1;
+
+				if(SONG.needsVoices && !currentPlayer.stunned) {
+					vocals.volume = 1;
+				}
 
 				hits++;
 			}
@@ -3543,6 +3524,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		/*
 		if(dad.holdTimer < Conductor.stepCrochet * 0.0011 * boyfriend.singMultiplier) {
 			var dadAnim:String = dad.animation.curAnim.name;
 
@@ -3559,6 +3541,7 @@ class PlayState extends MusicBeatState
 				boyfriend.playNoDanceAnim(boyfriendAnim, true);
 			}
 		}
+		*/
 
 		if (SONG.notes[Math.floor(curStep / 16)] != null)
 		{
