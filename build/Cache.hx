@@ -33,6 +33,7 @@ class Cache {
 				if(SaveData.getData(SaveType.GPU_CACHE)) {
 				    var texture:RectangleTexture = FlxG.stage.context3D.createRectangleTexture(bitmap.width, bitmap.height, BGRA, true);
 					texture.uploadFromBitmapData(bitmap);
+					bitmap.image.data = null;
 					bitmap.dispose();
 					bitmap.disposeImage();
 					bitmap = BitmapData.fromTexture(texture);
@@ -42,9 +43,7 @@ class Cache {
 				graphics.persist = true;
 				graphics.destroyOnNoUse = false;
 				theseAssets.set(path, graphics);
-
-				trace("Cached file: " + path);
-        }else {
+        }else if(!OpenFlAssets.exists(path, IMAGE)) {
             trace("Warning: could not locate asset - " + path);
         }
     }

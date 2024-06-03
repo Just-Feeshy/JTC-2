@@ -17,7 +17,7 @@ import ModInitialize;
 
 using StringTools;
 
-class Character extends feshixl.FeshSprite {
+class Character extends flixel.FlxSprite {
 	private var finalizedX:Float;
 	private var finalizedY:Float;
 
@@ -54,8 +54,6 @@ class Character extends feshixl.FeshSprite {
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters, frameOffsetApply:Bool = true)
 	{
 		super(x, y);
-
-		useAdvanceClipping = false;
 
 		finalizedX = x;
 		finalizedY = y;
@@ -107,10 +105,12 @@ class Character extends feshixl.FeshSprite {
 				else
 					antialiasing = false;
 
+				/*
 				if(frameOffsetApply && _info.clippingAdjustment.toString() != "{}") {
 					ogFrames = FeshFramesHelper.copyFrames(frames);
 					refreshAnims();
 				}
+				*/
 
 				playAnim(_info.playAnim);
 
@@ -275,7 +275,7 @@ class Character extends feshixl.FeshSprite {
 		}
 	}
 
-	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+	/*override*/ public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		specialAnim = false;
 
 		if(animations.length == 0) {
@@ -286,7 +286,8 @@ class Character extends feshixl.FeshSprite {
 			animation.reset();
 		}
 
-		super.playAnim(AnimName, Force, Reversed, Frame);
+		//super.playAnim(AnimName, Force, Reversed, Frame);
+		animation.play(AnimName, Force, Reversed, Frame);
 
 		var daOffset = animOffsets.get(AnimName);
 
