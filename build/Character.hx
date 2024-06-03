@@ -105,6 +105,13 @@ class Character extends flixel.FlxSprite {
 				else
 					antialiasing = false;
 
+				#if windows
+				if(frameOffsetApply && _info.clippingAdjustment.toString() != "{}") {
+					ogFrames = FeshFramesHelper.copyFrames(frames);
+					refreshAnims();
+				}
+				#end
+
 				playAnim(_info.playAnim);
 
 				flipX = _info.isPlayer;
