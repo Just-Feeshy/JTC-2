@@ -60,15 +60,6 @@ class Strum extends feshixl.FeshSprite {
 		return visible;
 	}
 
-	function indevRenderer():Void {
-		/*
-		if(rendered)return;
-		rendered = true;
-
-		@:privateAccess trace(_frame.matrix);
-		*/
-	}
-
 	function get_noteData():Int {
 		return ID;
 	}
@@ -94,13 +85,21 @@ class Strum extends feshixl.FeshSprite {
 		return "";
 	}
 
+	public function getAnimName():String {
+		if(animation.curAnim == null) {
+			return "";
+		}
+
+		return animation.curAnim.name;
+	}
+
 	override function update(elapsed:Float):Void {
 		if(holdTimer > 0) {
 			holdTimer -= elapsed;
 
 			if(holdTimer <= 0) {
 
-				if(ifOpponent) {
+				if(ifOpponent || getAnimName() != 'confirm') {
 					playAnim('static');
 				}else {
 					playAnim('pressed');

@@ -2267,9 +2267,8 @@ class PlayState extends MusicBeatState
 			var spr:Strum = currentStrums.members[index];
 
 			if(spr != null) {
-				spr.setColorTransform(1,1,1,1,0,0,0,0);
-				spr.playAnim('static');
 				spr.holdTimer = 0;
+				spr.playAnim('static');
 			}
 
 			callLua('onKeyRelease', [getEvent.keyCode]);
