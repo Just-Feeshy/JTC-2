@@ -7,8 +7,11 @@ import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
 import openfl.utils.ByteArray;
 import openfl.system.System;
+import openfl.display3D.textures.RectangleTexture;
 import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
+
+import SaveData.SaveType;
 
 //Basically a class like Path
 class Cache {
@@ -23,14 +26,24 @@ class Cache {
         }
     }
 
-    static public function cacheAssetDirectly(path:String):Void {
-        if(OpenFlAssets.exists(path, IMAGE)) {
-            if(!theseAssets.exists(path)) {
-                var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
-                graphics.persist = true;
-                graphics.destroyOnNoUse = false;
-                theseAssets.set(path, graphics);
-            }
+    static function cacheAssetDirectly(path:String):Void {
+        if(getAssetDirectly(path) == null) {
+				var bitmap = OpenFlAssets.getBitmapData(path);
+
+				if(SaveData.getData(SaveType.GPU_CACHE)) {
+				    var texture:RectangleTexture = FlxG.stage.context3D.createRectangleTexture(bitmap.width, bitmap.height, BGRA, true);
+					texture.uploadFromBitmapData(bitmap);
+					bitmap.dispose();
+					bitmap.disposeImage();
+					bitmap = BitmapData.fromTexture(texture);
+				}
+
+				var graphics:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, path);
+				graphics.persist = true;
+				graphics.destroyOnNoUse = false;
+				theseAssets.set(path, graphics);
+
+				trace("Cached file: " + path);
         }else {
             trace("Warning: could not locate asset - " + path);
         }
@@ -109,19 +122,19 @@ class Cache {
         */
 
 		for(key in theseAssets.keys()) {
-            var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
+		    var graphic = theseAssets.get(key);
 
-            @:privateAccess if(openfl.Assets.cache.hasBitmapData(key)) {
-                openfl.Assets.cache.removeBitmapData(key);
-                FlxG.bitmap.removeKey(key);
-                daBitmap.destroy();
-            }
+			@:privateAccess if(graphic != null) {
+				FlxG.bitmap._cache.remove(key);
+				openfl.Assets.cache.removeBitmapData(key);
+				theseAssets.remove(key);
 
-            daBitmap = null;
-        }
+				graphic.persist = false;
+				graphic.destroyOnNoUse = true;
+				graphic.destroy();
+			}
+		}
 
-        theseAssets.clear();
-        openfl.Assets.cache.clear();
         System.gc();
     }
 
@@ -133,7 +146,7 @@ class Cache {
         @:privateAccess
 		for(key in FlxG.bitmap._cache.keys()) {
             var daBitmap:FlxGraphic = FlxG.bitmap.get(key);
-            
+
             if(daBitmap != null && !theseAssets.exists(key)) {
                 openfl.Assets.cache.removeBitmapData(key);
                 FlxG.bitmap.removeKey(key);

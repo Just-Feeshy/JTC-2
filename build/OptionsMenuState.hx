@@ -130,7 +130,7 @@ class OptionsMenuState extends MusicBeatState {
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
-								
+
 								if(pressed) {
 									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
 									option.optionSubState = OptionsSubState.newSubState(SaveType.CUSTOM_KEYBINDS);
@@ -440,7 +440,26 @@ class OptionsMenuState extends MusicBeatState {
 
 								option.description = "Change the gamme value for the game/app.";
 								setting(option, Std.string(FlxG.save.data.gamma), option.ID);
-							})
+							}),
+							new Options(0, 20, "GPU Caching", SaveType.GPU_CACHE, function(option:Options, pressed:Bool) {
+								option.ID = 2;
+
+								if(pressed)
+									FlxG.save.data.gpuCache = !FlxG.save.data.gpuCache;
+
+								option.description = "Toggle whether to cache assets on the GPU.";
+
+								if(!SaveData.getData(SaveType.GPU_CACHE)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
+
+								if(pressed)
+									isChangingOption = false;
+							}),
 						]
 					}
 				];

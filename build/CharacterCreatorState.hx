@@ -69,9 +69,9 @@ class CharacterCreatorState extends MusicBeatState {
     private var UI_thingy:FlxUITabMenu;
     private var startTimer:FlxTimer;
     private var keyPress:Bool;
-    private var shadowEntity:Character;
-    private var character:Character;
-    private var characterStorage:FlxTypedGroup<Character>;
+    private var shadowEntity:CreatorCharacter;
+    private var character:CreatorCharacter;
+    private var characterStorage:FlxTypedGroup<CreatorCharacter>;
     private var characterAutosave:Map<String, ConfigCharacters>;
     private var mapEditor:Map<String, Dynamic>;
     private var characterJSONs:Array<String> = new Array<String>();
@@ -195,10 +195,10 @@ class CharacterCreatorState extends MusicBeatState {
 		stageCurtains.antialiasing = true;
 		stageCurtains.active = false;
 
-        characterStorage = new FlxTypedGroup<Character>();
+        characterStorage = new FlxTypedGroup<CreatorCharacter>();
         add(characterStorage);
 
-        character = new Character(440, 100, "bf", true);
+        character = new CreatorCharacter(440, 100, "bf", true);
         character.updateFinalized(character.getScreenCenter(X), 100);
         characterStorage.add(character);
         
@@ -639,7 +639,7 @@ class CharacterCreatorState extends MusicBeatState {
                 shadowEntity = null;
             }
 
-            shadowEntity = new Character(character.x, character.y, character.curCharacter, true, character._info);
+            shadowEntity = new CreatorCharacter(character.x, character.y, character.curCharacter, true, character._info);
             shadowEntity.flipX = character.flipX;
             shadowEntity.isPlayer = true;
             shadowEntity.alpha = 0.5;
@@ -837,7 +837,7 @@ class CharacterCreatorState extends MusicBeatState {
             characterStorage.remove(character, true);
             character.destroy();
             character = null;
-            character = new Character(440, 100, characterJSONs[Std.parseInt(data)], true, characterAutosave.get(characterJSONs[Std.parseInt(data)]));
+            character = new CreatorCharacter(440, 100, characterJSONs[Std.parseInt(data)], true, characterAutosave.get(characterJSONs[Std.parseInt(data)]));
 
             character.flipX = false;
 

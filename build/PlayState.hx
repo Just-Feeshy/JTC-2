@@ -2769,7 +2769,7 @@ class PlayState extends MusicBeatState
 				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					if(!note.isSustainNote || (note.isSustainNote && currentPlayer.dancing)) {
+					if((!note.isSustainNote || currentPlayer.isAnimationFinished()) || (note.isSustainNote && currentPlayer.dancing)) {
 						currentPlayer.playNoDanceAnim(animPlay, true);
 					}
 
@@ -3592,6 +3592,10 @@ class PlayState extends MusicBeatState
 	@:access(flixel.FlxGame)
 	function clearCache():Void {
 		if(!(cast FlxG.game._requestedState is PlayState)) {
+		    #if debug
+		    trace("Clearing Cache");
+		    #end
+
 			Cache.clear();
 		}
 	}

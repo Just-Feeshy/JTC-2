@@ -33,8 +33,7 @@ import IDialogue;
 
 using StringTools;
 
-@:enum
-abstract FileStatus(String) {
+enum abstract FileStatus(String) {
     var NONE = "none";
     var OVERRIDE = "override";
     var DOCUMENT = "document";

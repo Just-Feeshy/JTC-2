@@ -214,45 +214,8 @@ class FeshSprite extends FlxSprite {
     }
 
     public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
-        /**
-        * Just to be safe.
-        * Basically, if it can't find the animation it's looking for to play, then it'll execute a random one.
-        */
-        @:privateAccess
-        if(!animation._animations.exists(AnimName)) {
-            var getRandom:Int = FlxG.random.int(0, Lambda.count(animation._animations) - 1);
-            var index = 0;
-
-            var tempAnimName:String = "";
-
-            for(k in animation._animations.keys()) {
-                if(index >= getRandom) {
-                    tempAnimName = animation._animations.get(k).name;
-                    break;
-                }
-
-                index++;
-            }
-
-            animation.play(tempAnimName, Force, Reversed, Frame);
-            
-            AnimName = tempAnimName;
-        }else {
-            animation.play(AnimName, Force, Reversed, Frame);
-        }
-    }
-
-    public function animationsExist():Bool {
-        var doesExist:Bool = false;
-
-        @:privateAccess
-        for(k in animation._animations.keys()) {
-            doesExist = true;
-            break;
-        }
-
-        return doesExist;
-    }
+		animation.play(AnimName, Force, Reversed, Frame);
+	}
 
     @:noCompletion
     function set_xAngle(Value:Float):Float {

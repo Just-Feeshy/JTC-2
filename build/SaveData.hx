@@ -40,6 +40,7 @@ enum SaveType {
     NOTE_OFFSET;
     PLAY_AS_OPPONENT;
     MISS_SOUND_VOLUME;
+	GPU_CACHE;
 }
 
 class SaveData {
@@ -86,6 +87,7 @@ class SaveData {
         FlxG.save.data.noteOffset = getData(SaveType.NOTE_OFFSET);
         FlxG.save.data.playAsOpponent = getData(SaveType.PLAY_AS_OPPONENT);
         FlxG.save.data.missVolume = getData(SaveType.MISS_SOUND_VOLUME);
+		FlxG.save.data.gpuCache = getData(SaveType.GPU_CACHE);
 
         FlxG.save.flush();
 
@@ -97,7 +99,7 @@ class SaveData {
             case DOWNSCROLL:
                 if (FlxG.save.data.helpme == null)
                     FlxG.save.data.helpme = false;
-                
+
                 return FlxG.save.data.helpme;
             case PRESET_KEYBINDS:
                 #if (haxe >= "4.2.1")
@@ -315,6 +317,12 @@ class SaveData {
                 }
 
                 return FlxG.save.data.missVolume;
+		    case GPU_CACHE:
+				if(FlxG.save.data.gpuCache == null) {
+					FlxG.save.data.gpuCache = false;
+				}
+
+				return FlxG.save.data.gpuCache;
             default:
                 return null;
         }
