@@ -36,7 +36,7 @@ private typedef OptionSystem = {
 }
 
 private class StupidVibeShader extends FlxShader {
-	
+
     @:glFragmentSource('
         #pragma header
 
@@ -147,7 +147,7 @@ class OptionsMenuState extends MusicBeatState {
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
-								
+
 								if(pressed) {
 									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
 									option.optionSubState = OptionsSubState.newSubState(SaveType.CUSTOM_UI_KEYBINDS);

@@ -234,9 +234,9 @@ class ModLua {
                 return;
             }
 
-            switch(type.toLowerCase().trim()) {	
+            switch(type.toLowerCase().trim()) {
                 case "packer" | "packeratlas" | "pac":
-                    spr.frames = Paths.getPackerAtlas(spritesheet);              
+                    spr.frames = Paths.getPackerAtlas(spritesheet);
                 default:
                     spr.frames = Paths.getSparrowAtlas(spritesheet);
             }
@@ -1049,7 +1049,7 @@ class ModLua {
         var vertHeader:String = Paths.getPreloadPath(path + "/" + shader + ".vert");
 
         var foundAtLeastOne:Bool = false;
-        
+
         if(FileSystem.exists(fragHeader)) {
             fragHeader = File.getContent(fragHeader);
             foundAtLeastOne = true;
