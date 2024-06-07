@@ -33,6 +33,10 @@ class CacheState extends HelperStates {
         loadingScene = new LoadingScene();
         add(loadingScene);
 
+		addCallback("cacheBitmapData", function(name:String) {
+		    Cache.cacheAsset(name, "");
+		});
+
 		Thread.create(() -> {
 			cacheStuff();
 		});
@@ -45,7 +49,7 @@ class CacheState extends HelperStates {
 
         var cacheList:Array<String> = [];
         var dialogueList:Array<DialogueData>;
-        
+
         if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/dialogue.json', TEXT, ""))) {
             dialogueList = loadDialogue("dialogue");
         }
@@ -61,18 +65,18 @@ class CacheState extends HelperStates {
             loadingScene.setCacheValue(1);
         }
 
+		callLua("cache", []);
+
         loadingScene.callback = function() {
             CacheState.loadAndSwitchState(target, stopMusic, true);
         }
 	}
 
-    #if json2object
     function loadDialogue(name:String):Array<DialogueData> {
         var parser:JsonParser<Array<DialogueData>> = new JsonParser<Array<DialogueData>>();
 
 		return parser.fromJson(File.getContent(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/$name.json', TEXT, "")), '${name}.json');
     }
-    #end
 
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
         Paths.setCurrentLevel("week" + PlayState.storyWeek);

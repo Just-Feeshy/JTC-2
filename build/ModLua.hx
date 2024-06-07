@@ -18,7 +18,12 @@ import flixel.math.FlxRect;
 import flixel.text.FlxText;
 import flixel.system.FlxSound;
 import feshixl.shaders.FeshShader;
+import openfl.display.BitmapData;
+import openfl.utils.Assets as OpenFlAssets;
+import openfl.geom.Rectangle as OpenFlRectangle;
 import lime.graphics.opengl.GL;
+import lime.graphics.Image;
+import lime.math.Rectangle;
 import lime.ui.Window;
 import lime.utils.Log;
 
@@ -56,6 +61,7 @@ class ModLua {
     public var luaTweens(default, null):Map<String, FlxTween> = new Map<String, FlxTween>();
     public var luaSounds(default, null):Map<String, FlxSound> = new Map<String, FlxSound>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
+	public var luaBitmaps(default, null):Map<String, BitmapData> = new Map<String, BitmapData>();
 
     public var closed:Bool = false;
 
@@ -105,6 +111,30 @@ class ModLua {
         #else
         set("debug", false);
         #end
+
+		Lua_helper.add_callback(lua, "createBitmapData", function(name:String, width:Int, height:Int) {
+		    if(luaBitmaps.exists(name)) {
+		        return;
+		    }
+
+		    var bmp:BitmapData = new BitmapData(width, height, true, 0x00000000);
+		    luaBitmaps.set(name, bmp);
+		});
+
+		Lua_helper.add_callback(lua, "loadBitmapData", function(name:String, path:String, x:Int, y:Int) {
+		    var bmp:BitmapData = luaBitmaps.get(name);
+
+		    if(bmp == null) {
+		        return;
+		    }
+
+		    var image = Image.fromFile(Paths.getPath('images/$path.png', IMAGE, ""));
+
+			{ // I want to make this confusing as possible lmao.
+				var imgBytes = image.getPixels(new Rectangle(0, 0, image.width, image.height));
+				bmp.setPixels(new OpenFlRectangle(x, y, x|image.width, y|image.height), imgBytes);
+			}
+		});
 
         Lua_helper.add_callback(lua, "createSprite", function(name:String) {
             if(luaSprites.exists(name)) {
@@ -754,7 +784,7 @@ class ModLua {
                 if(!colorStr.startsWith('0x')) {
                     color = Std.parseInt('0xff' + colorStr);
                 }
-                
+
                 cancelTween(name);
                 luaTweens.set(name, FlxTween.color(obj, duration, curColor, color, {ease: Register.getFlxEaseByString(ease),
                     onComplete: function(twn:FlxTween) {
@@ -894,11 +924,11 @@ class ModLua {
         });
 
         Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, path:String) {
-            
+
         });
 
         Lua_helper.add_callback(lua, "attachShaderToObject", function(name:String, spriteName:String) {
-            
+
         });
 
         /*
@@ -1283,6 +1313,20 @@ class ModLua {
             luaTexts.clear();
             luaTexts = null;
         }
+
+		if(luaBitmaps != null) {
+				for(k in luaBitmaps.keys()) {
+						var bmp:BitmapData = luaBitmaps.get(k);
+
+						if(bmp != null) {
+						    bmp.disposeImage();
+							bmp.dispose();
+						}
+				}
+
+				luaBitmaps.clear();
+				luaBitmaps = null;
+		}
 
         Lua.close(lua);
         lua = null;

@@ -4,6 +4,8 @@ import flixel.FlxSprite;
 import flixel.util.FlxColor;
 
 class CreditSprites extends FlxSprite {
+    public var linkTree:String;
+
     public var redFloat(get, set):Float;
 	public var blueFloat(get, set):Float;
 	public var greenFloat(get, set):Float;

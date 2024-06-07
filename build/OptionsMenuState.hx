@@ -365,7 +365,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
 
-								option.description = "Toggle whether to display the splash effect.";
+								option.description = "Toggle whether to display the accuracy bar";
 
 								if(!SaveData.getData(SaveType.SHOW_BOTTOM_BAR)) {
 									setting(option, "Off", option.ID);

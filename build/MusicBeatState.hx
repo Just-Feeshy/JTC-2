@@ -21,10 +21,6 @@ class MusicBeatState extends HelperStates
 	function get_songPos():Float
 		return Conductor.songPosition;
 
-	override function create() {
-		super.create();
-	}
-
 	override function onCreate():Dynamic {
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {

@@ -28,7 +28,7 @@ import ModInitialize;
 using StringTools;
 
 private class StupidVibeShader extends FlxShader {
-	
+
     @:glFragmentSource('
         #pragma header
 
@@ -59,7 +59,7 @@ class FreeplayState extends MusicBeatState
 	var scoreText:FlxText;
 	var diffText:FlxText;
 	var lerpScore:Int = 0;
-	var intendedScore:Int = 0;	
+	var intendedScore:Int = 0;
 	var grpSongs:FlxTypedGroup<Alphabet>;
 	var curPlaying:Bool = false;
 
@@ -67,7 +67,7 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	private var menuBG:MenuBackground;
-	
+
 	var camFreeplay:FeshCamera;
 	var camBackground:FeshCamera;
 
@@ -92,7 +92,7 @@ class FreeplayState extends MusicBeatState
 					Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase(),
 					Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase()
 				);
-				
+
 				if(Paths.modJSON.weeks.get("week_" + index).week_unlocked)
 					addSong(Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase(), index, peepeepoopoo.player2);
 			}
@@ -211,7 +211,7 @@ class FreeplayState extends MusicBeatState
 
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, FeshMath.clamp(elapsed * 25, 0, 1)));
 		scoreText.text = "PERSONAL BEST:" + lerpScore;
-		
+
 		var upP = controls.UP_P;
 		var downP = controls.DOWN_P;
 		var accepted = controls.ACCEPT;
@@ -254,7 +254,6 @@ class FreeplayState extends MusicBeatState
 			PlayState.storyDifficulty = curDifficulty;
 
 			PlayState.storyWeek = songs[curSelected].week;
-			
 			//FlxG.switchState(new InGameOptions("StoryMenuState", PlayState.SONG));
 
 			var peepeepoopoo:SwagSong = Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase());

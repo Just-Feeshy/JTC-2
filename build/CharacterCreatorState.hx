@@ -201,7 +201,7 @@ class CharacterCreatorState extends MusicBeatState {
         character = new CreatorCharacter(440, 100, "bf", true);
         character.updateFinalized(character.getScreenCenter(X), 100);
         characterStorage.add(character);
-        
+
 		add(stageCurtains);
         camGame.zoom = 0.9;
 
@@ -416,7 +416,7 @@ class CharacterCreatorState extends MusicBeatState {
                 characterSelector.selectedLabel = characterName.text;
                 getEvent("click_button", this, Std.string(characterJSONs.indexOf(characterName.text)));
                 characterName.text = "";
-            }    
+            }
         });
 
         var flipSpriteButton:FlxUIButton = new FlxUIButton(centerCamButton.x, createCharacterButton.y, "Flip Sprite", function() {
@@ -528,7 +528,7 @@ class CharacterCreatorState extends MusicBeatState {
 
     var offsetXInput:FlxUINumericStepper;
     var offsetYInput:FlxUINumericStepper;
-    
+
     var clippingXInput:FlxUINumericStepper;
     var clippingYInput:FlxUINumericStepper;
     var clippingWidthInput:FlxUINumericStepper;
@@ -538,7 +538,7 @@ class CharacterCreatorState extends MusicBeatState {
     var canBePixel:FlxUICheckBox;
 
     var playCustomAnim:Bool = false;
-    
+
     function addAnimationsUI():Void {
         var tab_group_animations = new FlxUI(null, UI_thingy);
         tab_group_animations.name = 'E Animations';
@@ -958,7 +958,7 @@ class CharacterCreatorState extends MusicBeatState {
             }else if(wname == 'health') {
                 health = plrHealth.value / 50;
             }
-            
+
             if(wname == 'redColor' || wname == 'blueColor' || wname == 'greenColor') {
                 var color:Int = FlxColor.fromRGB(
                     Std.int(redColor.value),
