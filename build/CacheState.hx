@@ -33,10 +33,6 @@ class CacheState extends HelperStates {
         loadingScene = new LoadingScene();
         add(loadingScene);
 
-		addCallback("cacheBitmapData", function(name:String) {
-		    Cache.cacheAsset(name, "");
-		});
-
 		Thread.create(() -> {
 			cacheStuff();
 		});
@@ -64,8 +60,6 @@ class CacheState extends HelperStates {
 
             loadingScene.setCacheValue(1);
         }
-
-		callLua("cache", []);
 
         loadingScene.callback = function() {
             CacheState.loadAndSwitchState(target, stopMusic, true);

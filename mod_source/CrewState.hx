@@ -144,7 +144,7 @@ class CrewState extends MusicBeatState {
         officalDevTeam.add(feeshy);
 
         var varsavi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/VarVar"));
-		varsavi.linkTree = "https://www.instagram.com/varsavi_official";
+		varsavi.linkTree = "https://mariawasak.wixsite.com/mariawasak";
         varsavi.scrollFactor.set(0, 1);
         varsavi.ID = 4;
         officalDevTeam.add(varsavi);
