@@ -39,12 +39,6 @@ import Std.is as isOfType;
 * @author Feeshy
 */
 class FeshSprite extends FlxSprite {
-    
-    /**
-    * This is something that is going to be HEAVILY in WIP.
-    * I'm mostly likely going to get mod(s) out way before I find a complete algorithm.
-    */
-    public var z:Float = 0;
 
     /**
     * Rotate angle's pitch axis.
@@ -82,7 +76,7 @@ class FeshSprite extends FlxSprite {
         super(X, Y, SimpleGraphic);
 
         antialiasing = SaveData.getData(SaveType.GRAPHICS);
-        
+
         __clippingPointAtlas = new Map<String, FlxPoint>();
         __animationRectangle = new Map<String, FlxRect>();
     }

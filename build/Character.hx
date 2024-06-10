@@ -17,7 +17,7 @@ import ModInitialize;
 
 using StringTools;
 
-class Character extends flixel.FlxSprite {
+class Character extends feshixl.FeshSprite {
 	private var finalizedX:Float;
 	private var finalizedY:Float;
 
@@ -54,6 +54,8 @@ class Character extends flixel.FlxSprite {
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters, frameOffsetApply:Bool = true)
 	{
 		super(x, y);
+
+		useAdvanceClipping = false;
 
 		finalizedX = x;
 		finalizedY = y;
@@ -108,12 +110,13 @@ class Character extends flixel.FlxSprite {
 				#if windows // mac has a high DPI which does the fix for me
 				if(frameOffsetApply && _info.clippingAdjustment.toString() != "{}") {
 					ogFrames = FeshFramesHelper.copyFrames(frames);
+				    frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
+				    @:privateAccess animation.destroyAnimations();
 					refreshAnims();
 				}
 				#end
 
 				playAnim(_info.playAnim);
-
 				flipX = _info.isPlayer;
 		}
 
@@ -137,6 +140,10 @@ class Character extends flixel.FlxSprite {
 	}
 
 	override function update(elapsed:Float) {
+		if(animation.curAnim == null) {
+			return;
+		}
+
 		if (!isPlayer) {
 			if (animation.curAnim.name.startsWith('sing')) {
 				holdTimer += elapsed;
@@ -264,10 +271,6 @@ class Character extends flixel.FlxSprite {
 	}
 
 	public function refreshAnims():Void {
-		frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
-
-		@:privateAccess animation.destroyAnimations();
-
 		setIndexis(curCharacter);
 
 		for(anim in _info.animations.keys()) {
@@ -275,7 +278,7 @@ class Character extends flixel.FlxSprite {
 		}
 	}
 
-	/*override*/ public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		specialAnim = false;
 
 		if(animations.length == 0) {
@@ -286,8 +289,8 @@ class Character extends flixel.FlxSprite {
 			animation.reset();
 		}
 
-		//super.playAnim(AnimName, Force, Reversed, Frame);
-		animation.play(AnimName, Force, Reversed, Frame);
+		super.playAnim(AnimName, Force, Reversed, Frame);
+		//animation.play(AnimName, Force, Reversed, Frame);
 
 		var daOffset = animOffsets.get(AnimName);
 

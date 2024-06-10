@@ -29,9 +29,13 @@ class Paths
 	static var currentLevel:String;
 
 	static function get_modJSON():ConfigDef {
+		if(!OpenFlAssets.exists("config/mod.json")) {
+		    return null;
+		}
+
 		if(modJSON == null) {
 			var parser = new JsonParser<ConfigDef>();
-			var content = File.getContent(getCoreAssets() + "config/mod.json");
+			var content = OpenFlAssets.getText("config/mod.json");
 
 			return parser.fromJson(content, "mod.json");
 		}else {
@@ -116,7 +120,7 @@ class Paths
 		}
 	}
 
-	inline static public function mora(key:String, type:String,?library:String)
+	inline static public function mora(key:String, type:String, ?library:String)
 	{
 		if(OpenFlAssets.exists(getPath('feeshdata/$key.$type', TEXT, library)))
 			return getPath('feeshdata/$key.$type', TEXT, library);

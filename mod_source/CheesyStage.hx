@@ -117,6 +117,13 @@ class CheesyStage extends StorageStage {
 				add(frostbiteBG);
 
 				secondPlayer = new Character(650, 100, "skater-boi-player", true, null, false);
+				secondPlayer.animation.destroyAnimations();
+				secondPlayer.twoInOneFrames(secondPlayer.frames, Paths.getSparrowAtlas("skater_miss_notes"));
+				secondPlayer.animation.addByPrefix("singDOWN miss", "skater dance DOWN miss", 24, false);
+				secondPlayer.animation.addByPrefix("singUP miss", "skater dance UP miss", 24, false);
+				secondPlayer.animation.addByPrefix("singLEFT miss", "skater dance LEFT miss", 24, false);
+				secondPlayer.animation.addByPrefix("singRIGHT miss", "skater dance RIGHT miss", 24, false);
+				secondPlayer.refreshAnims();
 
 				characterAnims = ["singRIGHT", "singUP", "singDOWN", "singLEFT"];
 				characterStorage.add(secondPlayer);
@@ -257,7 +264,7 @@ class CheesyStage extends StorageStage {
 				playstate.healthTween = null;
 			}
 
-			FlxTween.tween(playstate, {health: 1}, (Conductor.stepCrochet * 0.0055), {ease: FlxEase.cubeOut, 
+			FlxTween.tween(playstate, {health: 1}, (Conductor.stepCrochet * 0.0055), {ease: FlxEase.cubeOut,
 				onComplete: function(twn:FlxTween) {
 					playstate.prevHealth = playstate.health;
 					playstate.avoidHealthIssues = false;

@@ -30,11 +30,11 @@ class CreatorCharacter extends Character {
                 index++;
             }
 
-		    playAnim(tempAnimName, Force, Reversed, Frame);
+		    super.playAnim(tempAnimName, Force, Reversed, Frame);
 
             AnimName = tempAnimName;
         }else {
-            playAnim(AnimName, Force, Reversed, Frame);
+            super.playAnim(AnimName, Force, Reversed, Frame);
         }
     }
 }

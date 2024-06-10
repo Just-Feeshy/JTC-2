@@ -42,8 +42,8 @@ import openfl.events.IOErrorEvent;
 import openfl.net.FileFilter;
 import openfl.net.FileReference;
 import openfl.utils.ByteArray;
-import sys.FileSystem;
-import sys.io.File;
+import openfl.utils.Assets as OpenFLAssets;
+import openfl.utils.AssetType;
 import haxe.Json;
 
 import Character;
@@ -143,21 +143,33 @@ class CharacterCreatorState extends MusicBeatState {
 
 		add(UI_thingy);
 
-        if(File.getContent(Paths.mora("skins", "json")).length > 48)
-            mapEditor = cast parser.fromJson(File.getContent(Paths.mora("skins", "json")), "skins.json");
+        if(OpenFLAssets.getText(Paths.mora("skins", "json")).length > 48) {
+            mapEditor = cast parser.fromJson(OpenFLAssets.getText(Paths.mora("skins", "json")), "skins.json");
+		}
 
-        for(i in 0...FileSystem.readDirectory("assets/characters").length) {
-            characterJSONs.push(FileSystem.readDirectory("assets/characters")[i].split(".")[0]);
-            characterAutosave.set(FileSystem.readDirectory("assets/characters")[i].split(".")[0],
-            Character.loadInfo("characters/"+FileSystem.readDirectory("assets/characters")[i].split(".")[0]));
-            DefaultHandler.setupUpdateInfo(characterAutosave.get(FileSystem.readDirectory("assets/characters")[i].split(".")[0]));
-        }
+		var characterList:Array<String> = [];
 
-        for(i in 0...FileSystem.readDirectory("mod_assets/characters").length) {
-            characterJSONs.push(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
-            characterAutosave.set(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0],
-            Character.loadInfo("characters/"+FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]));
-            DefaultHandler.setupUpdateInfo(characterAutosave.get(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]));
+		{
+				var characterListRaw:Array<String> = OpenFLAssets.list(TEXT);
+
+				for(character in characterListRaw) {
+					if(character == null) {
+						continue;
+					}
+
+					if(character.startsWith("mod_assets/characters/")
+				    || character.startsWith("assets/characters/")) {
+						character = character.split("/")[2];
+						characterList.push(character);
+					}
+				}
+		}
+
+        for(i in 0...characterList.length) {
+            characterJSONs.push(characterList[i].split(".")[0]);
+            characterAutosave.set(characterList[i].split(".")[0],
+            Character.loadInfo("characters/"+characterList[i].split(".")[0]));
+            DefaultHandler.setupUpdateInfo(characterAutosave.get(characterList[i].split(".")[0]));
         }
 
         addDisplayUI();
@@ -201,6 +213,7 @@ class CharacterCreatorState extends MusicBeatState {
         character = new CreatorCharacter(440, 100, "bf", true);
         character.updateFinalized(character.getScreenCenter(X), 100);
         characterStorage.add(character);
+		trace("Creating character");
 
 		add(stageCurtains);
         camGame.zoom = 0.9;
@@ -306,10 +319,12 @@ class CharacterCreatorState extends MusicBeatState {
 		tab_group_display.name = 'Display';
 
         fileName = new FinderUIInputText(10, 50, 80, "", 8);
+
+		trace(character.curCharacter);
         fileName.text = characterAutosave.get(character.curCharacter).file;
 
         fileName.textUpdateCallback = function(text:String) {
-            if(FileSystem.exists(Paths.getPreloadPath("images/" + text))) {
+            if(OpenFLAssets.exists(Paths.getPreloadPath("images/" + text))) {
                 return true;
             }
 
@@ -1198,7 +1213,7 @@ class CharacterCreatorState extends MusicBeatState {
         }
         if(mapEditor.get("character")[chooseSkin][5] != greenOffset.value) {
             mapEditor.get("character")[chooseSkin][5] = greenOffset.value;
-            
+
             iconP1.setColorTransform(
                 mapEditor.get("character")[chooseSkin][0],
                 mapEditor.get("character")[chooseSkin][1],
@@ -1223,7 +1238,7 @@ class CharacterCreatorState extends MusicBeatState {
         }
         if(mapEditor.get("character")[chooseSkin][6] != blueOffset.value) {
             mapEditor.get("character")[chooseSkin][6] = blueOffset.value;
-            
+
             iconP1.setColorTransform(
                 mapEditor.get("character")[chooseSkin][0],
                 mapEditor.get("character")[chooseSkin][1],

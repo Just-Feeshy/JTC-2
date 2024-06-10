@@ -12,7 +12,7 @@ using StringTools;
 
 class CoolUtil
 {
-	public static var difficultyArray:Array<String> = Paths.modJSON.song_util.difficulties;
+	public static var difficultyArray(get, never):Array<String>;
 
 	public static function difficultyString():String
 	{
@@ -69,6 +69,15 @@ class CoolUtil
 			return FlxColor.fromRGBFloat(red / alpha, green / alpha, blue / alpha);
 		}
     }
+
+	inline static function get_difficultyArray():Array<String>
+	{
+		if(Paths.modJSON == null) {
+			return ["Easy", "Normal", "Hard"];
+		}else {
+			return Paths.modJSON.song_util.difficulties;
+		}
+	}
 
 	#if sys
 	/**
