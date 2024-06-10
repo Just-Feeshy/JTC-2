@@ -1,0 +1,70 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				107,
+				105
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "skater dance DOWN miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-72,
+				-90
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "skater dance RIGHT miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				252,
+				142
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "skater dance UP miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				106,
+				107
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "skater dance LEFT miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-51,
+				24
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": -192,
+		"camPosY": 0,
+		"y": -92,
+		"camPosX": 0
+	},
+	"clippingAdjustment": {},
+	"playAnim": "",
+	"file": "skater_miss_notes.xml",
+	"icon": [
+		10,
+		11
+	],
+	"iconFile": "iconGrid"
+}
