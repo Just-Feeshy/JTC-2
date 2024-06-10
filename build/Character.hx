@@ -107,7 +107,8 @@ class Character extends feshixl.FeshSprite {
 				else
 					antialiasing = false;
 
-				#if windows // mac has a high DPI which does the fix for me
+				//#if windows // mac has a high DPI which does the fix for me
+				#if (windows)
 				if(frameOffsetApply && _info.clippingAdjustment.toString() != "{}") {
 					ogFrames = FeshFramesHelper.copyFrames(frames);
 				    frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);

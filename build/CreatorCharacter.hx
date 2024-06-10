@@ -1,6 +1,7 @@
 package;
 
 import flixel.FlxG;
+import feshixl.ui.FeshFramesHelper;
 
 import ModInitialize;
 

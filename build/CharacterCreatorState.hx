@@ -604,7 +604,9 @@ class CharacterCreatorState extends MusicBeatState {
                 character.animations.remove(animationDrop.selectedLabel);
 
                 animationDrop.selectedLabel = character.animations[character.animations.length - 1];
+            }
 
+			if(character.animations.length > 0) {
                 prefixInput.text = character._info.animations.get(character.animations[character.animations.length - 1]).prefix;
                 framerateChange.value = character._info.animations.get(character.animations[character.animations.length - 1]).framerate;
                 loopAnim.checked = character._info.animations.get(character.animations[character.animations.length - 1]).looped;
@@ -612,7 +614,7 @@ class CharacterCreatorState extends MusicBeatState {
                 offsetYInput.value = character._info.animations.get(character.animations[character.animations.length - 1]).offset[1];
 
                 getEvent("click_button", this, Std.string(characterJSONs.indexOf(character.curCharacter)));
-            }
+			}
         });
 
         deleteAnimButton.color = 0xFFFF4444;
@@ -660,7 +662,7 @@ class CharacterCreatorState extends MusicBeatState {
             shadowEntity.alpha = 0.5;
             characterStorage.add(shadowEntity);
 
-            shadowEntity.animation.play(character.animation.curAnim.name);
+			shadowEntity.playAnim(character.animation.curAnim.name);
             shadowEntity.animation.stop();
             shadowEntity.animation.curAnim.curFrame = shadowEntity.animation.curAnim.numFrames;
 
