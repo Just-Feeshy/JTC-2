@@ -12,9 +12,11 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
+import flixel.math.FlxMath;
 import feshixl.math.FeshMath3D;
 import feshixl.math.FeshMatrix4x4;
 import openfl.geom.Rectangle;
+import openfl.geom.Matrix;
 import openfl.utils.ByteArray;
 import openfl.display.BitmapData;
 import openfl.geom.Point;
@@ -160,36 +162,31 @@ class FeshSprite extends FlxSprite {
     }
 
     public function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):Void {
-			if (firstF == null || secondF == null) {
-				trace("Error: One of the frame collections is null.");
-				return;
-		    }
+        var firstBitmap:BitmapData = firstF.parent.bitmap;
+        var secondBitmap:BitmapData = secondF.parent.bitmap;
 
-		    if (firstF.parent == null || secondF.parent == null) {
-				trace("Error: One of the frame parents is null.");
-				return;
-		    }
+		final combinedBitmapWidth:Int = firstBitmap.width + secondBitmap.width;
+        final combinedBitmapHeight:Int = FlxMath.maxInt(firstBitmap.height, secondBitmap.height);
+        var combinedBitmap:BitmapData = new BitmapData(combinedBitmapWidth, combinedBitmapHeight, true, 0x00000000);
 
-            var bitmapClone:BitmapData = new BitmapData(firstF.parent.width, firstF.parent.height + secondF.parent.height, FlxColor.TRANSPARENT);
+        combinedBitmap.draw(firstBitmap, new Matrix());
 
-            bitmapClone.copyPixels(firstF.parent.bitmap, firstF.parent.bitmap.rect, new Point(0, 0));
-            bitmapClone.copyPixels(secondF.parent.bitmap, secondF.parent.bitmap.rect, new Point(0, firstF.parent.height));
+		var matrix:Matrix = new Matrix();
+        matrix.translate(firstBitmap.width, 0);
+        combinedBitmap.draw(secondBitmap, matrix);
 
-            var tempFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxG.bitmap.add(bitmapClone));
-            var frameIndex:Int = 0;
+		var combinedFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxGraphic.fromBitmapData(combinedBitmap));
 
-            while(frameIndex < firstF.frames.length + secondF.frames.length) {
-                if(frameIndex >= firstF.frames.length) {
-                    tempFrames.pushFrame(secondF.frames[frameIndex - firstF.frames.length]);
-                }else {
-                    tempFrames.pushFrame(firstF.frames[frameIndex]);
-                }
+		for (frame in firstF.frames) {
+            combinedFrames.pushFrame(frame);
+		}
 
-                frameIndex++;
-            }
+		for (frame in secondF.frames) {
+            combinedFrames.pushFrame(frame);
+		}
 
-            frames = tempFrames;
-    }
+		this.frames = combinedFrames;
+	}
 
     public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
         __clippingPointAtlas.set(name, FlxPoint.get(width, height));

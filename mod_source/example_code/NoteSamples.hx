@@ -93,27 +93,6 @@ class ReverseNote extends CustomNoteTemplate {
         note.playAnim(Note.getColorFacing(oppositeID) + "Scroll");
     }
 
-    override function whenNoteIsHit(strumNote:Strum):Bool {
-        if(!customStrum) {
-
-            /**
-            * Basically add a second sprite sheet to the strum.
-            */
-            @:privateAccess
-            if(!strumNote.animation._animations.exists("confirm reverse")) {
-                strumNote.animation.destroyAnimations();
-                strumNote.twoInOneFrames(strumNote.frames, Paths.getSparrowAtlas('notes/reverse/CONFIRM_assets'));
-                strumNote.animation.addByPrefix("confirm reverse", strumNote.direction + " confirm reverse", 24, false);
-                strumNote.setupAnimations();
-            }
-
-            strumNote.setColorTransform(1,1,1,1,0,0,0,0);
-            strumNote.playAnim('confirm reverse', true);
-        }
-
-        return false;
-    }
-
     override function createSplashSprite(splash:SplashSprite, strumInfo:FlxRect, rating:String):Void {
         if(!anotherSplash) {
             if(splash != null && (rating == "sick" || rating == "good")) {
