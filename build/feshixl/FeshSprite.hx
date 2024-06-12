@@ -160,7 +160,16 @@ class FeshSprite extends FlxSprite {
     }
 
     public function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):Void {
-        try {
+			if (firstF == null || secondF == null) {
+				trace("Error: One of the frame collections is null.");
+				return;
+		    }
+
+		    if (firstF.parent == null || secondF.parent == null) {
+				trace("Error: One of the frame parents is null.");
+				return;
+		    }
+
             var bitmapClone:BitmapData = new BitmapData(firstF.parent.width, firstF.parent.height + secondF.parent.height, FlxColor.TRANSPARENT);
 
             bitmapClone.copyPixels(firstF.parent.bitmap, firstF.parent.bitmap.rect, new Point(0, 0));
@@ -180,11 +189,8 @@ class FeshSprite extends FlxSprite {
             }
 
             frames = tempFrames;
-        }catch(e:haxe.Exception) { //Just in case.
-            trace("Warning - Can no longer implement a second frame.");
-        }
     }
-    
+
     public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
         __clippingPointAtlas.set(name, FlxPoint.get(width, height));
     }
