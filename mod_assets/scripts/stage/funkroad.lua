@@ -53,6 +53,8 @@ end
 
 --events
 function generatedStage()
+    setEndVideo("post.mp4")
+
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", 50, 0)
     compileSpriteSheet("frostbiteCAR", 'daddycar', "sparrow")

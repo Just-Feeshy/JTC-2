@@ -84,6 +84,7 @@ class PlayState extends MusicBeatState
 	private var camMovementPos:FlxPoint;
 	private var prevDadNoteData:Int = -1;
 	private var gamepadDetected:Bool = false;
+	private var videoSwitchState:String = "";
 
 	public var camPos:FlxPoint;
 	public var flipWiggle:Int = 1;
@@ -2333,8 +2334,14 @@ class PlayState extends MusicBeatState
 			storyPlaylist.remove(storyPlaylist[0]);
 
 			if (storyPlaylist.length <= 0) {
-				FlxG.sound.playMusic(Paths.music('Main Menu'));
-				FlxG.switchState(new StoryMenuState());
+
+				if(videoSwitchState == "" || videoSwitchState == null) {
+				    FlxG.sound.playMusic(Paths.music('Main Menu'));
+				    FlxG.switchState(new StoryMenuState());
+				}else {
+				    FlxG.sound.music.stop();
+				    FlxG.switchState(new VideoState(new StoryMenuState(), videoSwitchState));
+				}
 
 				if (SONG.validScore && !modifierCheckList('blue balls')) { //Make sure to not override.
 					#if !switch
@@ -2366,7 +2373,11 @@ class PlayState extends MusicBeatState
 				PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + "-hard", PlayState.storyPlaylist[0]);
 				FlxG.sound.music.stop();
 
-				CacheState.loadAndSwitchState(new PlayState());
+				if(videoSwitchState == "" || videoSwitchState == null) {
+				    CacheState.loadAndSwitchState(new PlayState());
+				}else {
+				    CacheState.loadAndSwitchState(new VideoState(new PlayState(), videoSwitchState));
+				}
 			}
 		}
 		else
@@ -2935,6 +2946,10 @@ class PlayState extends MusicBeatState
 			setLua("defaultGirlfriendX", 0);
 			setLua("defaultGirlfriendY", 0);
 		}
+
+		addCallback("setEndVideo", function(path:String) {
+			videoSwitchState = Paths.video(path);
+		});
 
 		addCallback("callEvent", function(skill:String, value:String, value2:String) {
 			events.whenTriggered(skill, value, value2, this);
