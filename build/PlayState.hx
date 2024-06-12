@@ -54,6 +54,7 @@ import feshixl.group.FeshEventGroup;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
 import lime.utils.Assets;
+import lime.system.ThreadPool;
 
 import example_code.DefaultEvents;
 import example_code.DefaultStage;
@@ -174,6 +175,11 @@ class PlayState extends MusicBeatState
 
 	private var strumLine:FlxSprite;
 
+    #if sys
+	private var strumThreadPool:ThreadPool;
+	private var strumDirty:Int = 0;
+    #end
+
 	public var camFollow:FlxObject;
 
 	private static var prevCamFollow:FlxObject;
@@ -259,6 +265,17 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function create() {
+		#if sys
+		strumThreadPool = new ThreadPool(1);
+
+		strumThreadPool.onComplete.add((bit:Int) -> {
+		    if(strumDirty & bit == 0) return;
+
+			strumDirty ^= bit;
+			// trace("Strum Bit: " + bit);
+		});
+		#end
+
 		modifiableCharacters = new Map<String, Character>();
 
 		Cache.clearNoneCachedAssets();
@@ -271,7 +288,7 @@ class PlayState extends MusicBeatState
 			FlxG.sound.music.stop();
 
 		SaveData.saveClient();
-		
+
 		camGame = new FeshCamera();
 		camNOTE = new CameraNote();
 		camHUD = new FeshCamera();
@@ -2269,6 +2286,29 @@ class PlayState extends MusicBeatState
 			if(spr != null) {
 				spr.holdTimer = 0;
 				spr.playAnim('static');
+
+				// This fixes the issue where the strum would get stuck in the hold animation
+				if((1 << index) & ~strumDirty != 0) {
+						strumDirty |= (1 << index);
+
+						#if sys
+						var strumLock:sys.thread.Mutex = new sys.thread.Mutex();
+
+						strumThreadPool.queue((state, output) -> {
+							Sys.sleep(0.02);
+
+							strumLock.acquire();
+
+							if(spr.getAnimName() == 'pressed') {
+								spr.playAnim('static');
+							}
+
+							strumLock.release();
+
+							output.sendComplete(1 << index);
+						});
+						#end
+				}
 			}
 
 			callLua('onKeyRelease', [getEvent.keyCode]);

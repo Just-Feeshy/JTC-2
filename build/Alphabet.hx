@@ -266,11 +266,11 @@ class Alphabet extends FlxSpriteGroup
 
 class AlphaCharacter extends FlxSprite
 {
-	@:final public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
+	public static final alphabet:String = "abcdefghijklmnopqrstuvwxyz";
 
-	@:final public static var numbers:String = "1234567890";
+	public static final numbers:String = "1234567890";
 
-	@:final public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
+	public static final symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
 
 	public var spaceLocation:Int = 0;
 

@@ -51,6 +51,14 @@ class Strum extends feshixl.FeshSprite {
 		updateHitbox();
 	}
 
+	public function getAnimName():String {
+		if(animation.curAnim == null) {
+			return "";
+		}
+
+		return animation.curAnim.name;
+	}
+
 	/**
 	*Use this function instead of the visible value.
 	*/
@@ -83,14 +91,6 @@ class Strum extends feshixl.FeshSprite {
 		}
 
 		return "";
-	}
-
-	public function getAnimName():String {
-		if(animation.curAnim == null) {
-			return "";
-		}
-
-		return animation.curAnim.name;
 	}
 
 	override function update(elapsed:Float):Void {
