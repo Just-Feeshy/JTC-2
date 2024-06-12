@@ -17,6 +17,7 @@ import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.text.FlxText;
 import flixel.system.FlxSound;
+import flixel.graphics.frames.FlxFramesCollection;
 import feshixl.shaders.FeshShader;
 import openfl.display.BitmapData;
 import openfl.utils.Assets as OpenFlAssets;
@@ -158,6 +159,15 @@ class ModLua {
             luaSprites.set(name, sprite);
         });
 
+		Lua_helper.add_callback(lua, "createCharacterSprite", function(name:String, character:String, x:Float, y:Float) {
+				if(luaSprites.exists(name)) {
+				    return;
+				}
+
+				var sprite:Character = new Character(x, y, character);
+				luaSprites.set(name, sprite);
+		});
+
         Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
             if(luaSprites.exists(name)) {
                 return;
@@ -282,6 +292,66 @@ class ModLua {
             }
         });
 
+		Lua_helper.add_callback(lua, "compileAnotherCharacterSheet", function(name:String, spritesheet:String, type:String) {
+				var spr:FlxSprite = getSprite(name);
+
+				if(spr == null) {
+				    return;
+				}
+
+				if(!Std.isOfType(spr, Character)) {
+				    trace("Sprite is not a Character type!");
+				    return;
+				}
+
+				var sprite:Character = cast(spr, Character);
+				var frames:FlxFramesCollection;
+
+				switch(type.toLowerCase().trim()) {
+						case "packer" | "packeratlas" | "pac":
+							frames = Paths.getPackerAtlas(spritesheet);
+						default:
+							frames = Paths.getSparrowAtlas(spritesheet);
+				}
+
+				sprite.animation.destroyAnimations();
+				sprite.twoInOneFrames(sprite.frames, frames);
+		});
+
+		Lua_helper.add_callback(lua, "refreshCharacterAnimations", function(name:String) {
+		    var spr:FlxSprite = getSprite(name);
+
+			if(spr == null) {
+			    return;
+			}
+
+			if(!Std.isOfType(spr, Character)) {
+			    trace("Sprite is not a Character type!");
+			    return;
+			}
+
+			var sprite:Character = cast(spr, Character);
+			sprite.refreshAnims();
+		});
+
+		Lua_helper.add_callback(lua, "addAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            /**
+            * While making this, I was using an older version of `HaxeFlixel`.
+            */
+            @:privateAccess
+            if(spr.animation._animations.exists(animation)) {
+                spr.animation.remove(animation);
+            }
+
+            spr.animation.addByPrefix(animation, prefix, framerate, loop);
+		});
+
         Lua_helper.add_callback(lua, "playAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
@@ -300,6 +370,43 @@ class ModLua {
             spr.animation.addByPrefix(animation, prefix, framerate, loop);
             spr.animation.play(animation);
         });
+
+		Lua_helper.add_callback(lua, "addAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            /**
+            * While making this, I was using an older version of `HaxeFlixel`.
+            */
+            @:privateAccess
+            if(spr.animation._animations.exists(animation)) {
+                spr.animation.remove(animation);
+            }
+
+            indices = indices.trim();
+
+            if(indices.substring(0, 1) == "[") {
+                indices = indices.substring(1, indices.length);
+            }
+
+            if(indices.substring(indices.length - 1, indices.length) == "]") {
+                indices = indices.substring(0, indices.length - 1);
+            }
+
+            var stringIndices:Array<String> = indices.split(',');
+			var indices:Array<Int> = [];
+
+            var index:Int = 0;
+
+			while(index < stringIndices.length) {
+				indices.push(Std.parseInt(stringIndices[index++]));
+			}
+
+            spr.animation.addByIndices(animation, prefix, indices, "", framerate, false);
+		});
 
         Lua_helper.add_callback(lua, "playAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
             var spr:FlxSprite = getSprite(name);
