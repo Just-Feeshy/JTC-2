@@ -161,7 +161,7 @@ class FeshSprite extends FlxSprite {
         }
     }
 
-    public function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):Void {
+    public static function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):FlxFramesCollection {
         var firstBitmap:BitmapData = firstF.parent.bitmap;
         var secondBitmap:BitmapData = secondF.parent.bitmap;
 
@@ -185,7 +185,7 @@ class FeshSprite extends FlxSprite {
             combinedFrames.pushFrame(frame);
 		}
 
-		this.frames = combinedFrames;
+		return combinedFrames;
 	}
 
     public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {

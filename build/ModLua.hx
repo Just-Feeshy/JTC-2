@@ -63,6 +63,7 @@ class ModLua {
     public var luaSounds(default, null):Map<String, FlxSound> = new Map<String, FlxSound>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
 	public var luaBitmaps(default, null):Map<String, BitmapData> = new Map<String, BitmapData>();
+	public var luaFrameCollections(default, null):Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
 
     public var closed:Bool = false;
 
@@ -282,48 +283,6 @@ class ModLua {
                     spr.frames = Paths.getSparrowAtlas(spritesheet);
             }
         });
-
-		Lua_helper.add_callback(lua, "compileAnotherCharacterSheet", function(name:String, spritesheet:String, type:String) {
-				var spr:FlxSprite = getSprite(name);
-
-				if(spr == null) {
-				    return;
-				}
-
-				if(!Std.isOfType(spr, Character)) {
-				    trace("Sprite is not a Character type!");
-				    return;
-				}
-
-				var sprite:Character = cast(spr, Character);
-				var frames:FlxFramesCollection;
-
-				switch(type.toLowerCase().trim()) {
-						case "packer" | "packeratlas" | "pac":
-							frames = Paths.getPackerAtlas(spritesheet);
-						default:
-							frames = Paths.getSparrowAtlas(spritesheet);
-				}
-
-				sprite.animation.destroyAnimations();
-				sprite.twoInOneFrames(sprite.frames, frames);
-		});
-
-		Lua_helper.add_callback(lua, "refreshCharacterAnimations", function(name:String) {
-		    var spr:FlxSprite = getSprite(name);
-
-			if(spr == null) {
-			    return;
-			}
-
-			if(!Std.isOfType(spr, Character)) {
-			    trace("Sprite is not a Character type!");
-			    return;
-			}
-
-			var sprite:Character = cast(spr, Character);
-			sprite.refreshAnims();
-		});
 
 		Lua_helper.add_callback(lua, "addAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
@@ -1434,6 +1393,20 @@ class ModLua {
 
 				luaBitmaps.clear();
 				luaBitmaps = null;
+		}
+
+		if(luaFrameCollections != null) {
+				for(k in luaFrameCollections.keys()) {
+						var frame:LuaFrameCollection = luaFrameCollections.get(k);
+
+						if(frame != null) {
+							frame.sprite = null;
+							frame.destroy();
+						}
+				}
+
+		    luaFrameCollections.clear();
+			luaFrameCollections = null;
 		}
 
         Lua.close(lua);
