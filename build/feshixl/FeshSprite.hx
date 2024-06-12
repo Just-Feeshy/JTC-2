@@ -161,12 +161,12 @@ class FeshSprite extends FlxSprite {
 
     public function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):Void {
         try {
-            var bitmapCum:BitmapData = new BitmapData(firstF.parent.width, firstF.parent.height + secondF.parent.height, FlxColor.TRANSPARENT);
+            var bitmapClone:BitmapData = new BitmapData(firstF.parent.width, firstF.parent.height + secondF.parent.height, FlxColor.TRANSPARENT);
 
-            bitmapCum.copyPixels(firstF.parent.bitmap, firstF.parent.bitmap.rect, new Point(0, 0));
-            bitmapCum.copyPixels(secondF.parent.bitmap, secondF.parent.bitmap.rect, new Point(0, firstF.parent.height));
+            bitmapClone.copyPixels(firstF.parent.bitmap, firstF.parent.bitmap.rect, new Point(0, 0));
+            bitmapClone.copyPixels(secondF.parent.bitmap, secondF.parent.bitmap.rect, new Point(0, firstF.parent.height));
 
-            var tempFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxG.bitmap.add(bitmapCum));
+            var tempFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxG.bitmap.add(bitmapClone));
             var frameIndex:Int = 0;
 
             while(frameIndex < firstF.frames.length + secondF.frames.length) {
