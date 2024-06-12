@@ -159,15 +159,6 @@ class ModLua {
             luaSprites.set(name, sprite);
         });
 
-		Lua_helper.add_callback(lua, "createCharacterSprite", function(name:String, character:String, x:Float, y:Float) {
-				if(luaSprites.exists(name)) {
-				    return;
-				}
-
-				var sprite:Character = new Character(x, y, character);
-				luaSprites.set(name, sprite);
-		});
-
         Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
             if(luaSprites.exists(name)) {
                 return;
