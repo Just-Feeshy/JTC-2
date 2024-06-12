@@ -184,6 +184,8 @@ class FeshSprite extends FlxSprite {
 
 		for (frame in secondF.frames) {
 		    frame.parent = combinedFrames.parent;
+			final rect = new FlxRect(frame.frame.x + firstBitmap.width, frame.frame.y, frame.frame.width, frame.frame.height);
+			frame.frame = rect;
             combinedFrames.pushFrame(frame);
 		}
 
