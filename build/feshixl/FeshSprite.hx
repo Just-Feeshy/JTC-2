@@ -178,10 +178,12 @@ class FeshSprite extends FlxSprite {
 		var combinedFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxGraphic.fromBitmapData(combinedBitmap));
 
 		for (frame in firstF.frames) {
+		    frame.parent = combinedFrames.parent;
             combinedFrames.pushFrame(frame);
 		}
 
 		for (frame in secondF.frames) {
+		    frame.parent = combinedFrames.parent;
             combinedFrames.pushFrame(frame);
 		}
 

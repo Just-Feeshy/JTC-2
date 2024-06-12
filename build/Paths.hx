@@ -257,7 +257,7 @@ class Paths
 			cacheFile = "cache/";
 		}
 
-		if(OpenFlAssets.exists('mod_assets/images/$key.png') 
+		if(OpenFlAssets.exists('mod_assets/images/$key.png')
 		&& OpenFlAssets.exists('mod_assets/images/$key.xml')) {
 			cacheFile = "";
 			library = "";

@@ -3,8 +3,18 @@
 
 --variables
 local frost_modchart = nil
+local skater_boi = nil
+local string_utils = nil
+
 
 local beatSection = 0
+
+-- Character stuff
+local curAnimName = ""
+local holdTimer = 0
+local multipler = 6.1
+local stunned = false
+local notDancing = false
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -13,7 +23,33 @@ local jtcStrumAnims = {
     "singLEFT"
 }
 
+local jtcOffsets = {
+
+    -- Regular
+    {191, -44},
+	{-61, 61},
+	{-75, -229},
+	{-68, -15},
+
+    -- Miss
+	{307, 138},
+	{159, 108},
+	{-18, -91},
+	{5, 23}
+}
+
 local daddyIsHere = false
+
+-- local functions
+local function playAnimation(spriteName, animName)
+    if animName == "idle" and notDancing then
+		setSpritePosition("second", 650, 100)
+		notDancing = false
+    end
+
+    playAnimRaw(spriteName, animName)
+	curAnimName = animName
+end
 
 --events
 function generatedStage()
@@ -25,12 +61,28 @@ function generatedStage()
     scaleSprite("frostbiteCAR", 0.7, 0.7)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
 
+	createSprite("second")
+	setSpritePosition("second", 650, 100)
+	createCombinedFrames("second-frames", "skater_assets", "skater_miss_notes", "sparrow", "sparrow")
+	--compileSpriteSheet("second", "skater_assets", "sparrow")
+	addFramesToSprite("second", "second-frames")
+	addAnimationByPrefix("second", "idle", "skater dance IDLE0", 24, false)
+	addAnimationByPrefix("second", "singDOWN", "skater dance DOWN0", 24, false)
+	addAnimationByPrefix("second", "singUP", "skater dance UP0", 24, false)
+	addAnimationByPrefix("second", "singLEFT", "skater dance LEFT0", 24, false)
+	addAnimationByPrefix("second", "singRIGHT", "skater dance RIGHT0", 24, false)
+	addAnimationByPrefix("second", "singDOWN miss", "skater dance DOWN miss", 24, false)
+	addAnimationByPrefix("second", "singUP miss", "skater dance UP miss", 24, false)
+	addAnimationByPrefix("second", "singLEFT miss", "skater dance LEFT miss", 24, false)
+	addAnimationByPrefix("second", "singRIGHT miss", "skater dance RIGHT miss", 24, false)
+	spriteFlip("second", true, false)
+	playAnimation("second", "idle")
+
     setupPunchHealth(3)
-
-    --createSprite("")
-
     frost_modchart = require("mod_assets/scripts/modcharts/frost_modchart")
     frost_modchart.initStrumsAndNotes()
+
+	string_utils = require("mod_assets/scripts/utils/stringTools")
 end
 
 function onStepHit()
@@ -42,6 +94,10 @@ function onStepHit()
 
         daddyIsHere = true
     end
+
+	if curStep == 631 then
+		addSpriteToStage("second")
+	end
 
     if curStep == 147 and beatSection == 0 then
         callEvent("bump per beat", "2", "1.025")
@@ -74,16 +130,52 @@ function onStepHit()
     end
 end
 
+function onBeatHit()
+end
+
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
-    if skaterboi ~= nil and daddyIsHere then
+    if daddyIsHere then
         if tag == "joul" or tag == "t" then
-            skaterboi.singByNote(noteData, isSustainNote)
+		    playAnimation("second", jtcStrumAnims[noteData + 1])
+			setSpritePosition("second", 650 - jtcOffsets[noteData + 1][1], 100 - jtcOffsets[noteData + 1][2])
+			notDancing = true
         end
+    end
+end
+
+function noteMiss(noteData, tag)
+    print("Missed note")
+
+    if daddyIsHere then
+		if tag == "joul" or tag == "t" then
+		    playAnimation("second", jtcStrumAnims[noteData + 1] .. " miss")
+			setSpritePosition("second", 650 - jtcOffsets[noteData + 5][1], 100 - jtcOffsets[noteData + 5][2])
+			notDancing = true
+		end
     end
 end
 
 function onUpdate(elapsed)
     if startedCountdown then
+
+		-- Character update
+		do
+				if string_utils.starts_with(curAnimName, "sing") then
+				    holdTimer = holdTimer + elapsed
+				end
+
+				if holdTimer > stepCrochet * crochetPitch * multipler then
+				    playAnimation("second", "idle")
+					holdTimer = 0
+				end
+
+				if not stunned
+				and not string_utils.starts_with(curAnimName, "sing")
+				and sprAnimFinished("second") then
+					playAnimation("second", "idle")
+		  	    end
+		end
+
 
         --Modchart Section 1
         frost_modchart.sectionOne(elapsed)

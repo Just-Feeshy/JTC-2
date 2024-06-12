@@ -105,6 +105,7 @@ class ModLua {
 
         set('crochet', Conductor.crochet);
         set('stepCrochet', Conductor.stepCrochet);
+		set('crochetPitch', 0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end);
 
         set('getCwd', Sys.getCwd());
 
@@ -131,6 +132,43 @@ class ModLua {
 
 		    var bmp:BitmapData = new BitmapData(width, height, true, 0x00000000);
 		    luaBitmaps.set(name, bmp);
+		});
+
+		Lua_helper.add_callback(lua, "createCombinedFrames", function(name:String, first:String, second:String, type1:String, type2:String) {
+		    var firstFrames:FlxFramesCollection;
+			var secondFrames:FlxFramesCollection;
+
+            switch(type1.toLowerCase().trim()) {
+                case "packer" | "packeratlas" | "pac":
+                    firstFrames = Paths.getPackerAtlas(first);
+                default:
+                    firstFrames = Paths.getSparrowAtlas(first);
+            }
+
+			switch(type2.toLowerCase().trim()) {
+				case "packer" | "packeratlas" | "pac":
+					secondFrames = Paths.getPackerAtlas(second);
+				default:
+					secondFrames = Paths.getSparrowAtlas(second);
+		    }
+
+			var combinedFrames = feshixl.FeshSprite.twoInOneFrames(firstFrames, secondFrames);
+
+			//firstFrames.destroy();
+			//secondFrames.destroy();
+
+			luaFrameCollections.set(name, combinedFrames);
+		});
+
+		Lua_helper.add_callback(lua, "addFramesToSprite", function(name:String, frameName:String) {
+		    var spr:FlxSprite = getSprite(name);
+			var frames:FlxFramesCollection = luaFrameCollections.get(frameName);
+
+			if(spr == null || frames == null) {
+				return;
+			}
+
+			spr.frames = frames;
 		});
 
 		Lua_helper.add_callback(lua, "loadBitmapData", function(name:String, path:String, x:Int, y:Int) {
@@ -421,6 +459,21 @@ class ModLua {
             return true;
         });
 
+		Lua_helper.add_callback(lua, "playAnimRaw", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
+				var spr:FlxSprite = getSprite(name);
+
+				if(spr == null) {
+				    return false;
+				}
+
+				@:privateAccess
+				if(spr.animation._animations.exists(animation)) {
+				    spr.animation.play(animation, forced, reverse, startFrame);
+				}
+
+				return true;
+		});
+
         Lua_helper.add_callback(lua, "sprAnimFinished", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
@@ -434,6 +487,17 @@ class ModLua {
 
             return spr.animation.curAnim.finished;
         });
+
+		Lua_helper.add_callback(lua, "spriteFlip", function(name:String, flipX:Bool, flipY:Bool) {
+		    var spr:FlxSprite = getSprite(name);
+
+			if(spr == null) {
+				return;
+			}
+
+			spr.flipX = flipX;
+			spr.flipY = flipY;
+		});
 
         Lua_helper.add_callback(lua, "setCustomFieldToSprite", function(name:String, prop:String, value:Dynamic) {
             var spr:FlxSprite = getSprite(name);
@@ -1397,10 +1461,9 @@ class ModLua {
 
 		if(luaFrameCollections != null) {
 				for(k in luaFrameCollections.keys()) {
-						var frame:LuaFrameCollection = luaFrameCollections.get(k);
+						var frame = luaFrameCollections.get(k);
 
 						if(frame != null) {
-							frame.sprite = null;
 							frame.destroy();
 						}
 				}

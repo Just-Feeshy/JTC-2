@@ -2082,6 +2082,7 @@ class PlayState extends MusicBeatState
 										}
 
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+										callLua("noteMiss", [daNote.noteData, daNote.tag]);
 									}
 								}
 							}
@@ -2101,6 +2102,7 @@ class PlayState extends MusicBeatState
 										}
 
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
+										callLua("noteMiss", [daNote.noteData, daNote.tag]);
 									}
 								}
 							}
@@ -2690,6 +2692,7 @@ class PlayState extends MusicBeatState
 		return -1;
 	}
 
+	/*
 	function noteMiss(direction:Int = 1, ?note:Note, ?evenTho:Bool = false):Void
 	{
 		if(note != null) {
@@ -2731,6 +2734,7 @@ class PlayState extends MusicBeatState
 			takeDamage(direction, note.playAnyAnimation);
 		}
 	}
+	*/
 
 	function takeDamage(direction:Int, playAnim:Bool):Void {
 			currentPlayer.stunned = true;

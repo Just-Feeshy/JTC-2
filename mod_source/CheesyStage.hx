@@ -53,7 +53,6 @@ class CheesyStage extends StorageStage {
 
 	var boyfriend:Character;
 	var dad:Character;
-	var secondPlayer:Character;
 
 	var dadShouldDance:Bool = true;
 	var phase2_switch:Bool = false;
@@ -115,18 +114,6 @@ class CheesyStage extends StorageStage {
 				frostbiteBG.scale.set(1.2,1.2);
 				frostbiteBG.updateHitbox();
 				add(frostbiteBG);
-
-				secondPlayer = new Character(650, 100, "skater-boi-player", true, null, false);
-				secondPlayer.animation.destroyAnimations();
-				secondPlayer.twoInOneFrames(secondPlayer.frames, Paths.getSparrowAtlas("skater_miss_notes"));
-				secondPlayer.animation.addByPrefix("singDOWN miss", "skater dance DOWN miss", 24, false);
-				secondPlayer.animation.addByPrefix("singUP miss", "skater dance UP miss", 24, false);
-				secondPlayer.animation.addByPrefix("singLEFT miss", "skater dance LEFT miss", 24, false);
-				secondPlayer.animation.addByPrefix("singRIGHT miss", "skater dance RIGHT miss", 24, false);
-				secondPlayer.refreshAnims();
-
-				characterAnims = ["singRIGHT", "singUP", "singDOWN", "singLEFT"];
-				characterStorage.add(secondPlayer);
         }
     }
 
@@ -202,12 +189,6 @@ class CheesyStage extends StorageStage {
 		}
 
 		return 0;
-	}
-
-	override function stepHit():Void {
-		if(playstate.curStep == 631) {
-			insert(FlxG.state.members.indexOf(boyfriend) + 1, characterStorage);
-		}
 	}
 
 	override function configStage():Void {
