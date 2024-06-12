@@ -174,12 +174,6 @@ class PlayState extends MusicBeatState
 	public var bumpForce:Float = 1;
 
 	private var strumLine:FlxSprite;
-
-    #if sys
-	private var strumThreadPool:ThreadPool;
-	private var strumDirty:Int = 0;
-    #end
-
 	public var camFollow:FlxObject;
 
 	private static var prevCamFollow:FlxObject;
@@ -265,16 +259,6 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function create() {
-		#if sys
-		strumThreadPool = new ThreadPool(1);
-
-		strumThreadPool.onComplete.add((bit:Int) -> {
-		    if(strumDirty & bit == 0) return;
-
-			strumDirty ^= bit;
-			// trace("Strum Bit: " + bit);
-		});
-		#end
 
 		modifiableCharacters = new Map<String, Character>();
 
@@ -2286,29 +2270,6 @@ class PlayState extends MusicBeatState
 			if(spr != null) {
 				spr.holdTimer = 0;
 				spr.playAnim('static');
-
-				// This fixes the issue where the strum would get stuck in the hold animation
-				if((1 << index) & ~strumDirty != 0) {
-						strumDirty |= (1 << index);
-
-						#if sys
-						var strumLock:sys.thread.Mutex = new sys.thread.Mutex();
-
-						strumThreadPool.queue((state, output) -> {
-							Sys.sleep(0.1);
-
-							strumLock.acquire();
-
-							if(spr.getAnimName() == 'pressed') {
-								spr.playAnim('static');
-							}
-
-							strumLock.release();
-
-							output.sendComplete(1 << index);
-						});
-						#end
-				}
 			}
 
 			callLua('onKeyRelease', [getEvent.keyCode]);
@@ -2602,6 +2563,13 @@ class PlayState extends MusicBeatState
 				controls.GAME_RIGHT
 			];
 		}
+
+		currentStrums.forEachAlive(function(spr:Strum) {
+		    if(!controlHoldArray[spr.ID] && spr.animation.curAnim.name == "pressed") {
+				spr.playAnim('static');
+				spr.holdTimer = 0;
+			}
+		});
 
 		notes.forEachAlive(function(daNote:Note) {
 			if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate

@@ -97,7 +97,7 @@ class Strum extends feshixl.FeshSprite {
 		if(holdTimer > 0) {
 			holdTimer -= elapsed;
 
-			if(holdTimer <= 0) {
+			if(holdTimer < 0) {
 
 				if(ifOpponent || getAnimName() != 'confirm') {
 					playAnim('static');
