@@ -2295,7 +2295,7 @@ class PlayState extends MusicBeatState
 						var strumLock:sys.thread.Mutex = new sys.thread.Mutex();
 
 						strumThreadPool.queue((state, output) -> {
-							Sys.sleep(0.02);
+							Sys.sleep(0.1);
 
 							strumLock.acquire();
 
