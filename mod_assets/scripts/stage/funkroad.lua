@@ -126,6 +126,20 @@ function onStepHit()
         beatSection = beatSection + 1
     end
 
+	if curStep == 903 then
+		removeAnimationPrefix("boyfriend", "idle")
+		removeAnimationPrefix("boyfriend", "singDOWN")
+		removeAnimationPrefix("boyfriend", "singUP")
+		removeAnimationPrefix("boyfriend", "singLEFT")
+		removeAnimationPrefix("boyfriend", "singRIGHT")
+
+		addAnimationByPrefix("boyfriend", "idle", "flying dance IDLE GF", 24, false)
+		addAnimationByPrefix("boyfriend", "singDOWN", "flying dance DOWN GF", 24, false)
+		addAnimationByPrefix("boyfriend", "singUP", "flying dance UP GF", 24, false)
+		addAnimationByPrefix("boyfriend", "singLEFT", "flying dance LEFT GF", 24, false)
+		addAnimationByPrefix("boyfriend", "singRIGHT", "flying dance RIGHT GF", 24, false)
+    end
+
     if curStep == 904 and beatSection == 5 then
         callEvent("bump per beat", "4", "1")
         beatSection = beatSection + 1

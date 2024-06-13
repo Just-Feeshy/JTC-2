@@ -340,6 +340,22 @@ class ModLua {
             spr.animation.addByPrefix(animation, prefix, framerate, loop);
 		});
 
+		Lua_helper.add_callback(lua, "removeAnimationPrefix", function(name:String, animation:String) {
+				var spr:FlxSprite = getSprite(name);
+
+				if(spr == null) {
+				    return;
+				}
+
+				/**
+				* While making this, I was using an older version of `HaxeFlixel`.
+				*/
+				@:privateAccess
+				if(spr.animation._animations.exists(animation)) {
+				    spr.animation.remove(animation);
+				}
+		});
+
         Lua_helper.add_callback(lua, "playAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
