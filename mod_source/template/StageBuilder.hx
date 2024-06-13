@@ -30,6 +30,10 @@ abstract class StageBuilder extends FlxGroup {
         //empty method
     }
 
+	public function configIcons(iconP1:HealthIcon, iconP2:HealthIcon):Void {
+	    //empty method
+    }
+
     public function whenCreatingScene():Void {
         //empty method
     }
@@ -57,7 +61,7 @@ abstract class StageBuilder extends FlxGroup {
     public function whenNoteIsPressed(note:Note):Void {
         //empty
     }
-    
+
     public function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {
         //empty
     }

@@ -196,7 +196,7 @@ class VideoState extends HelperStates {
 		#if FLX_SOUND_SYSTEM
 		{
 
-			final curVolume:Int = Math.floor((FlxG.sound.muted ? 0 : 1) * FlxG.sound.volume * 200);
+			final curVolume:Int = Math.floor((FlxG.sound.muted ? 0 : 1) * FlxG.sound.volume * 300);
 
 			if (bitmap.volume != curVolume)
 				bitmap.volume = curVolume;

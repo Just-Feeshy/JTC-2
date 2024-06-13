@@ -70,7 +70,7 @@ class Character extends feshixl.FeshSprite {
 			/**
 			add a case if you want to hard code it
 			**/
-
+		    case "none":
 			default:
 				if(hardInfo == null)
 					_info = cast loadInfo('characters/${curCharacter}');

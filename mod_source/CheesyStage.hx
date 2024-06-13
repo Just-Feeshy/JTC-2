@@ -46,6 +46,19 @@ class CheesyStage extends StorageStage {
 		602
 	];
 
+	final flyingOffset:Map<String, Array<Float>> = [
+		"idle" => [0, 0],
+		"singDOWN" => [21, -11],
+		"singUP" => [-4, 5],
+		"singLEFT" => [10, 53],
+		"singRIGHT" => [-21, 14],
+
+		"singDOWNmiss" => [-6, -18],
+		"singUPmiss" => [-10, -27],
+		"singRIGHTmiss" => [11, -23],
+		"singLEFTmiss" => [-27, -15]
+	];
+
 	var spinIndex:UInt = 0;
 	var tweenIndex:UInt = 0;
 
@@ -191,13 +204,40 @@ class CheesyStage extends StorageStage {
 		return 0;
 	}
 
+	function addAnimation(anim:String, prefix:String):Void {
+		boyfriend.animations.push(anim);
+		boyfriend.animation.addByPrefix(anim, prefix, 24, false);
+	}
+
 	override function configStage():Void {
 		boyfriend = Register.getInGameCharacter(BOYFRIEND);
 		dad = Register.getInGameCharacter(OPPONENT);
 
 		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
+		    boyfriend.frames = feshixl.FeshSprite.twoInOneFrames(
+				Paths.getSparrowAtlas("flying notes BF SINGS"),
+				Paths.getSparrowAtlas("flying notes GF SINGS")
+			);
+			boyfriend.animOffsets = flyingOffset;
+
+			addAnimation("idle", "flying dance IDLE0");
+			addAnimation("singDOWN", "flying dance DOWN0");
+			addAnimation("singUP", "flying dance UP0");
+			addAnimation("singLEFT", "flying dance LEFT0");
+			addAnimation("singRIGHT", "flying dance RIGHT0");
+			addAnimation("singDOWNmiss", "flying miss DOWN0");
+			addAnimation("singUPmiss", "flying miss UP0");
+			addAnimation("singRIGHTmiss", "flying miss RIGHT0");
+			addAnimation("singLEFTmiss", "flying miss LEFT0");
+
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
+		}
+	}
+
+	override function configIcons(iconP1:HealthIcon, iconP2:HealthIcon):Void {
+		if(stage == "funkroad") {
+			iconP1.createAnim("flying BF sings", [31, 32, 31], true);
 		}
 	}
 
@@ -331,3 +371,5 @@ class CheesyStage extends StorageStage {
 		cleanTween();
 	}
 }
+
+private typedef BasicPoint = { x:Float, y:Float };

@@ -516,8 +516,10 @@ class PlayState extends MusicBeatState
 		iconP1 = new HealthIcon(SONG.player1, true);
 		iconP2 = new HealthIcon(SONG.player2, false);
 
-		iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
-		iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
+		if(boyfriend.curCharacter != "none") iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
+		if(dad.curCharacter != "none") iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
+
+		stage.configIcons(iconP1, iconP2);
 
 		if(SaveData.getData(PLAY_AS_OPPONENT)) {
 			iconP2.bpm = SONG.bpm;
@@ -2915,7 +2917,7 @@ class PlayState extends MusicBeatState
 		modifiableSprites.set("iconP2", iconP2);
 		modifiableSprites.set("healthBarBG", healthBarBG);
 		modifiableSprites.set("healthBar", healthBar);
-		
+
 		modifiableCharacters.set("boyfriend", boyfriend);
 		modifiableCharacters.set("gf", gf);
 		modifiableCharacters.set("dad", dad);
