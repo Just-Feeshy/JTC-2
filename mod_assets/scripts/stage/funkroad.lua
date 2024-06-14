@@ -8,6 +8,7 @@ local string_utils = nil
 
 
 local beatSection = 0
+local transition = 0
 
 -- Character stuff
 local curAnimName = ""
@@ -51,14 +52,40 @@ local function playAnimation(spriteName, animName)
 	curAnimName = animName
 end
 
+local function init()
+
+    -- Frostbite Car stuff
+    frost_modchart = nil
+	skater_boi = nil
+	string_utils = nil
+
+	-- Frostbite Car stuff
+	beatSection = 0
+	transition = 0
+
+	-- Character stuff
+	curAnimName = ""
+	holdTimer = 0
+	multipler = 6.1
+	stunned = false
+	notDancing = false
+
+	-- Character stuff
+    daddyIsHere = false
+end
+
 --events
 function generatedStage()
+    init()
     setEndVideo("post.mp4")
 
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", 50, 0)
-    compileSpriteSheet("frostbiteCAR", 'daddycar', "sparrow")
-    playAnimationByPrefix("frostbiteCAR", 'drive', "daddycar", 24, true)
+	--compileSpriteSheet("frostbiteCAR", "daddycar")
+	createCombinedFrames("frostbiteCAR-frames", "daddycar", "daddycar2", "sparrow", "sparrow")
+	addFramesToSprite("frostbiteCAR", "frostbiteCAR-frames")
+	addAnimationByPrefix("frostbiteCAR", "transition", "car drive and dust0", 24, false)
+    playAnimationByPrefix("frostbiteCAR", 'drive', "daddycar", 24, false)
     setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
     scaleSprite("frostbiteCAR", 0.7, 0.7)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
@@ -66,7 +93,6 @@ function generatedStage()
 	createSprite("second")
 	setSpritePosition("second", 650, 100)
 	createCombinedFrames("second-frames", "skater_assets", "skater_miss_notes", "sparrow", "sparrow")
-	--compileSpriteSheet("second", "skater_assets", "sparrow")
 	addFramesToSprite("second", "second-frames")
 	addAnimationByPrefix("second", "idle", "skater dance IDLE0", 24, false)
 	addAnimationByPrefix("second", "singDOWN", "skater dance DOWN0", 24, false)
@@ -91,8 +117,8 @@ function onStepHit()
     if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
 
-        removeSpriteFromState("frostbiteCAR")
-        destroySprite("frostbiteCAR")
+        --removeSpriteFromState("frostbiteCAR")
+        --destroySprite("frostbiteCAR")
 
         daddyIsHere = true
     end
@@ -140,13 +166,18 @@ function onStepHit()
 		addAnimationByPrefix("boyfriend", "singRIGHT", "flying dance RIGHT GF", 24, false)
     end
 
+	if curStep == 606 and sprAnimFinsihed("frostbiteCAR") then
+		stopAnim("frostbiteCAR")
+		--setSpritePosition("frostbiteCAR", -795, -107)
+		--setSpritePosition("frostbiteCAR", -745, -107)
+		setSpritePosition("frostbiteCAR", 24, 116)
+		playAnimRaw("frostbiteCAR", "transition")
+    end
+
     if curStep == 904 and beatSection == 5 then
         callEvent("bump per beat", "4", "1")
         beatSection = beatSection + 1
     end
-end
-
-function onBeatHit()
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
@@ -190,6 +221,16 @@ function onUpdate(elapsed)
 				and sprAnimFinished("second") then
 					playAnimation("second", "idle")
 		  	    end
+		end
+
+		-- Frostbite Car update
+		if sprAnimFinished("frostbiteCAR") then
+		    if curStep < 607 then
+				playAnimRaw("frostbiteCAR", "drive")
+		    elseif transition == 0 then
+				playAnimRaw("frostbiteCAR", "transition")
+				transition = 1
+		    end
 		end
 
 

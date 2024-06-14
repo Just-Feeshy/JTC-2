@@ -3081,7 +3081,7 @@ class PlayState extends MusicBeatState
 			stage.add(spr);
 		});
 
-		addCallback("removeSpriteToStage", function(name:String) {
+		addCallback("removeSpriteFromStage", function(name:String) {
 			var spr:FlxSprite = getModLua().getSprite(name);
 
             if(spr == null) {

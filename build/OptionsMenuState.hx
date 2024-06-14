@@ -188,7 +188,7 @@ class OptionsMenuState extends MusicBeatState {
 
 									if(FlxG.save.data.lowFps > 100)
 										FlxG.save.data.lowFps = 60;
-									
+
 									Register.updateFramerate(Math.ceil(FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER)));
 									Main.framerate = FlxG.save.data.lowFps;
 								}
@@ -302,8 +302,27 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							#end
-							new Options(0, 70 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
+							new Options(0, 70 + extra, "Practice Mode", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
 								option.ID = 7 + Math.ceil(extra * 0.1);
+
+								if(pressed)
+									FlxG.save.data.safeballs = !FlxG.save.data.safeballs;
+
+								option.description = "Toggle practice mode.";
+
+								if(!SaveData.getData(SaveType.NO_BLUE_BALLS_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
+
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 80 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
+								option.ID = 8 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
@@ -321,8 +340,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 80 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-								option.ID = 8 + Math.ceil(extra * 0.1);
+							new Options(0, 90 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
+								option.ID = 9 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.helpme = !FlxG.save.data.helpme;
@@ -340,8 +359,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 90 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-								option.ID = 9 + Math.ceil(extra * 0.1);
+							new Options(0, 100 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
+								option.ID = 10 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
@@ -359,8 +378,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 100 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-								option.ID = 10 + Math.ceil(extra * 0.1);
+							new Options(0, 110 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
+								option.ID = 11 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
@@ -378,8 +397,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new GhostTapping(0, 110 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-								option.ID = 11 + Math.ceil(extra * 0.1);
+							new GhostTapping(0, 120 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
+								option.ID = 12 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
@@ -561,25 +580,6 @@ class OptionsMenuState extends MusicBeatState {
 								}
 
 								option.description = "Toggle whether notes should have a fade-in effect.";
-
-								if(pressed)
-									isChangingOption = false;
-							}),
-							new Options(0, ((imNotSure + 5) * 10) + 120, "No Blue Balls", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
-								option.ID = imNotSure + 5;
-
-								if(pressed)
-									FlxG.save.data.safeballs = !FlxG.save.data.safeballs;
-
-								option.description = "Toggle immortality";
-
-								if(!SaveData.getData(SaveType.NO_BLUE_BALLS_MOD)) {
-									setting(option, "Off", option.ID);
-									option.optionIcon.animation.play("off");
-								}else {
-									setting(option, "On", option.ID);
-									option.optionIcon.animation.play("modifier");
-								}
 
 								if(pressed)
 									isChangingOption = false;

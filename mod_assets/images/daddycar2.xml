@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="daddycar2.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="car drive and dust0000" x="20" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0001" x="824" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0002" x="1628" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0003" x="2432" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0004" x="3236" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0005" x="4040" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0006" x="4844" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0007" x="5648" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0008" x="6452" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0009" x="7256" y="20" width="784" height="428"/>
+	<SubTexture name="car drive and dust0010" x="20" y="468" width="784" height="428"/>
+	<SubTexture name="car drive and dust0011" x="824" y="468" width="784" height="428"/>
+	<SubTexture name="car drive and dust transition0000" x="1628" y="468" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0001" x="3969" y="468" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0002" x="20" y="1671" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0003" x="2361" y="1671" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0004" x="4702" y="1671" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0005" x="20" y="2874" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0006" x="2361" y="2874" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0007" x="4702" y="2874" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0008" x="20" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0009" x="2361" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0010" x="4702" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0011" x="20" y="5280" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0012" x="2361" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0013" x="4702" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0014" x="20" y="5280" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0015" x="2361" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0016" x="4702" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0017" x="20" y="5280" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0018" x="2361" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0019" x="4702" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0020" x="20" y="5280" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0021" x="2361" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0022" x="4702" y="4077" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0023" x="20" y="5280" width="2321" height="1183"/>
+	<SubTexture name="car drive and dust transition0024" x="2361" y="4077" width="2321" height="1183"/>
+</TextureAtlas>

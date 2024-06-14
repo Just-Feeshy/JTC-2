@@ -1,0 +1,40 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "car drive and dust0",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "car drive and dust t",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				768,
+				222
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": 24,
+		"camPosY": 0,
+		"y": 116,
+		"camPosX": 0
+	},
+	"clippingAdjustment": {},
+	"playAnim": "",
+	"file": "daddycar2.xml",
+	"icon": [
+		10,
+		11
+	],
+	"iconFile": "iconGrid"
+}

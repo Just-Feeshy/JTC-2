@@ -490,6 +490,26 @@ class ModLua {
 				return true;
 		});
 
+		Lua_helper.add_callback(lua, "stopAnim", function(name:String) {
+				var spr:FlxSprite = getSprite(name);
+
+				if(spr == null) {
+				    return;
+				}
+
+				spr.animation.stop();
+		});
+
+		Lua_helper.add_callback(lua, "setAnimFrame", function(name:String, frame:Int) {
+				var spr:FlxSprite = getSprite(name);
+
+				if(spr == null) {
+				    return;
+				}
+
+				spr.animation.frameIndex = frame;
+		});
+
         Lua_helper.add_callback(lua, "sprAnimFinished", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
@@ -1480,7 +1500,11 @@ class ModLua {
 						var frame = luaFrameCollections.get(k);
 
 						if(frame != null) {
-							frame.destroy();
+						    if(frame.parent != null) {
+								frame.destroy();
+							}
+
+						    frame.parent = null;
 						}
 				}
 
