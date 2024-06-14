@@ -116,8 +116,8 @@ function onStepHit()
     if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
 
-        --removeSpriteFromState("frostbiteCAR")
-        --destroySprite("frostbiteCAR")
+        removeSpriteFromState("frostbiteCAR")
+        destroySprite("frostbiteCAR")
 
         daddyIsHere = true
     end
@@ -166,11 +166,11 @@ function onStepHit()
     end
 
 	if curStep == 606 and sprAnimFinsihed("frostbiteCAR") then
-		stopAnim("frostbiteCAR")
+		--stopAnim("frostbiteCAR")
 		--setSpritePosition("frostbiteCAR", -795, -107)
 		--setSpritePosition("frostbiteCAR", -745, -107)
-		setSpritePosition("frostbiteCAR", 24, 116)
-		playAnimRaw("frostbiteCAR", "transition")
+		--setSpritePosition("frostbiteCAR", 24, 116)
+		--playAnimRaw("frostbiteCAR", "transition")
     end
 
     if curStep == 904 and beatSection == 5 then
