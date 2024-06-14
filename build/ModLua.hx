@@ -1496,18 +1496,6 @@ class ModLua {
 		}
 
 		if(luaFrameCollections != null) {
-				for(k in luaFrameCollections.keys()) {
-						var frame = luaFrameCollections.get(k);
-
-						if(frame != null) {
-						    if(frame.parent != null) {
-								frame.destroy();
-							}
-
-						    frame.parent = null;
-						}
-				}
-
 		    luaFrameCollections.clear();
 			luaFrameCollections = null;
 		}

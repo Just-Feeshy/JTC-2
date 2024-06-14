@@ -87,7 +87,7 @@ function generatedStage()
 	addAnimationByPrefix("frostbiteCAR", "transition", "car drive and dust0", 24, false)
     playAnimationByPrefix("frostbiteCAR", 'drive', "daddycar", 24, false)
     setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
-    scaleSprite("frostbiteCAR", 0.7, 0.7)
+    --scaleSprite("frostbiteCAR", 0.7, 0.7)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
 
 	createSprite("second")
