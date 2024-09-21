@@ -40,6 +40,7 @@
 
 	<classpath name="build" />
 	<classpath path="mod_source" />
+    <classpath path="linc_luajit" />
 
 	<!-- Engine Customization -->
 	<define name="USING_LUA" />
