@@ -29,7 +29,7 @@ flixel 4.11.0 (NOT 5.0.0 or above!)
 flixel-addons 2.11.0 (Nothing above!)
 flixel-ui
 hscript
-openfl
+openfl 7.2.0
 json2object 3.10.0
 hxvlc
 ```
