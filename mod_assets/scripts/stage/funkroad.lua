@@ -165,13 +165,13 @@ function onStepHit()
 		addAnimationByPrefix("boyfriend", "singRIGHT", "flying dance RIGHT GF", 24, false)
     end
 
-	if curStep == 606 and sprAnimFinsihed("frostbiteCAR") then
+	-- if curStep == 606 and sprAnimFinsihed("frostbiteCAR") then
 		--stopAnim("frostbiteCAR")
 		--setSpritePosition("frostbiteCAR", -795, -107)
 		--setSpritePosition("frostbiteCAR", -745, -107)
 		--setSpritePosition("frostbiteCAR", 24, 116)
 		--playAnimRaw("frostbiteCAR", "transition")
-    end
+    -- end
 
     if curStep == 904 and beatSection == 5 then
         callEvent("bump per beat", "4", "1")

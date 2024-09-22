@@ -1323,11 +1323,10 @@ class ModLua {
         try {
             if(lua == null) {
                 trace("Error: Something went wrong with lua.");
-                return 0;
+                return LuaUtils.Function_Continue;
             }
 
             Lua.getglobal(lua, event);
-
             var type:Int = Lua.type(lua, -1);
 
             if(type != Lua.LUA_TFUNCTION) {
@@ -1336,7 +1335,7 @@ class ModLua {
                 }
 
                 Lua.pop(lua, 1);
-                return 0;
+                return LuaUtils.Function_Continue;
             }
 
             for (arg in args) {
@@ -1346,8 +1345,9 @@ class ModLua {
             var status:Int = Lua.pcall(lua, args.length, 1, 0);
 
             if (status != Lua.LUA_OK) {
-				Log.error(event + " - " + getErrorMessage(status));
-				return 0;
+                var error:String = getErrorMessage(status);
+				Log.error("Error (" + event + ") - " + error);
+				return LuaUtils.Function_Continue;
 			}
 
             var result:Dynamic = cast Convert.fromLua(lua, -1);
@@ -1511,7 +1511,7 @@ class ModLua {
     */
     #if (USING_LUA && cpp)
     function getErrorMessage(status:Int):String {
-		#if LUA_ALLOWED
+		#if USING_LUA
 		var v:String = Lua.tostring(lua, -1);
 		Lua.pop(lua, 1);
 
@@ -1526,12 +1526,15 @@ class ModLua {
 		}
 
 		return v;
-		#end
+        #else
+
+        Log.warn("Lua is not allowed");
 		return null;
+		#end
 	}
 
     function typeToString(type:Int):String {
-		#if LUA_ALLOWED
+		#if USING_LUA
 		switch(type) {
 			case Lua.LUA_TBOOLEAN: return "boolean";
 			case Lua.LUA_TNUMBER: return "number";

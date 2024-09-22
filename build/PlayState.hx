@@ -2181,18 +2181,15 @@ class PlayState extends MusicBeatState
 
 		pauseMusic();
 
-		var pauseLua:Dynamic = callLua('onPause', []);
+        // 1 / 1000 chance for Gitaroo Man easter egg
+        if (FlxG.random.bool(0.1)) {
+            // gitaroo man easter egg
+            FlxG.switchState(new GitarooPause());
+        } else {
+            final screenPos = currentPlayer.getScreenPosition();
+            openSubState(new PauseSubState(screenPos.x, screenPos.y));
+        }
 
-		if(pauseLua != 1 && pauseLua != true) {
-			// 1 / 1000 chance for Gitaroo Man easter egg
-			if (FlxG.random.bool(0.1)) {
-				// gitaroo man easter egg
-				FlxG.switchState(new GitarooPause());
-			} else {
-				openSubState(new PauseSubState(currentPlayer.getScreenPosition().x, currentPlayer.getScreenPosition().y));
-			}
-		}	
-	
 		#if windows
 		DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
 		#end

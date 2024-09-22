@@ -199,29 +199,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 40, "Multiply FPS", SaveType.FPS_MULTIPLIER, function(option:Options, pressed:Bool) {
+							new Options(0, 40, "Note Offset", SaveType.NOTE_OFFSET, function(option:Options, pressed:Bool) {
 								option.ID = 4;
-
-								if(option.optionIcon.animation.curAnim.name != "other")
-									option.optionIcon.animation.play("other");
-
-								if(pressed) {
-									FlxG.save.data.fpsMulti += 1;
-
-									if(FlxG.save.data.fpsMulti > 9)
-										FlxG.save.data.fpsMulti = 1;
-
-									isChangingOption = false;
-
-									Register.updateFramerate(Math.ceil(FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER)));
-									Main.framerate = FlxG.save.data.lowFps;
-								}
-
-								option.description = "Multiply the minimal FPS.";
-								setting(option, Std.string(FlxG.save.data.fpsMulti), option.ID);
-							}),
-							new Options(0, 50, "Note Offset", SaveType.NOTE_OFFSET, function(option:Options, pressed:Bool) {
-								option.ID = 5;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -237,8 +216,8 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Set note offset.";
 								setting(option, Std.string(FlxG.save.data.noteOffset), option.ID);
 							}),
-							new Options(0, 60, "Miss Note Volume", SaveType.MISS_SOUND_VOLUME, function(option:Options, pressed:Bool) {
-								option.ID = 6;
+							new Options(0, 50, "Miss Note Volume", SaveType.MISS_SOUND_VOLUME, function(option:Options, pressed:Bool) {
+								option.ID = 5;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -255,8 +234,8 @@ class OptionsMenuState extends MusicBeatState {
 								setting(option, Std.string(FlxG.save.data.missVolume), option.ID);
 							}),
 							#if !mobile
-							new Options(0, 70, "FPS Counter", SaveType.SHOW_FPS, function(option:Options, pressed:Bool) {
-								option.ID = 7;
+							new Options(0, 60, "FPS Counter", SaveType.SHOW_FPS, function(option:Options, pressed:Bool) {
+								option.ID = 6;
 
 								if(pressed)
 									FlxG.save.data.showFPS = !FlxG.save.data.showFPS;
@@ -278,8 +257,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 80, "Memory Counter", SaveType.SHOW_MEMORY, function(option:Options, pressed:Bool) {
-								option.ID = 8;
+							new Options(0, 70, "Memory Counter", SaveType.SHOW_MEMORY, function(option:Options, pressed:Bool) {
+								option.ID = 7;
 
 								if(pressed)
 									FlxG.save.data.showMEM = !FlxG.save.data.showMEM;
@@ -302,8 +281,8 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							#end
-							new Options(0, 70 + extra, "Practice Mode", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
-								option.ID = 7 + Math.ceil(extra * 0.1);
+							new Options(0, 80 + extra, "Practice Mode", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
+								option.ID = 8 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.safeballs = !FlxG.save.data.safeballs;
@@ -321,8 +300,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 80 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
-								option.ID = 8 + Math.ceil(extra * 0.1);
+							new Options(0, 90 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
+								option.ID = 9 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
@@ -340,8 +319,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 90 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-								option.ID = 9 + Math.ceil(extra * 0.1);
+							new Options(0, 100 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
+								option.ID = 10 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.helpme = !FlxG.save.data.helpme;
@@ -359,8 +338,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 100 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-								option.ID = 10 + Math.ceil(extra * 0.1);
+							new Options(0, 110 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
+								option.ID = 11 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
@@ -378,8 +357,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 110 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-								option.ID = 11 + Math.ceil(extra * 0.1);
+							new Options(0, 120 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
+								option.ID = 12 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
@@ -397,8 +376,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new GhostTapping(0, 120 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-								option.ID = 12 + Math.ceil(extra * 0.1);
+							new GhostTapping(0, 130 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
+								option.ID = 13 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
@@ -791,7 +770,7 @@ class OptionsMenuState extends MusicBeatState {
 				];
 			}
 		}
-		
+
 		super.create();
 
 		#if (USING_LUA && cpp)
@@ -876,7 +855,7 @@ class OptionsMenuState extends MusicBeatState {
 		}
 
 		allTweens = new Array<FlxTween>();
-		
+
 		if(this.catalog != "none") {
 			bar = new FlxSprite().makeGraphic(Std.int(FlxG.width * 1.25), 45, FlxColor.BLACK);
 			bar.y = FlxG.height + bar.height + 10;
@@ -1091,7 +1070,7 @@ class OptionsMenuState extends MusicBeatState {
 			curOptionSection.forEach(function(option:Options) {
 				optionSetting.members[option.ID].x = option.x;
 				optionSetting.members[option.ID].y = option.optionIcon.y - (optionSetting.members[option.ID].height / 2) + 5;
-			});	
+			});
 		}
 
 		super.update(elapsed);
