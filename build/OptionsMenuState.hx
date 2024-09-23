@@ -281,8 +281,8 @@ class OptionsMenuState extends MusicBeatState {
 									isChangingOption = false;
 							}),
 							#end
-							new Options(0, 80 + extra, "Practice Mode", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
-								option.ID = 8 + Math.ceil(extra * 0.1);
+							new Options(0, 60 + extra, "Practice Mode", SaveType.NO_BLUE_BALLS_MOD, function(option:Options, pressed:Bool) {
+								option.ID = 6 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.safeballs = !FlxG.save.data.safeballs;
@@ -300,8 +300,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 90 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
-								option.ID = 9 + Math.ceil(extra * 0.1);
+							new Options(0, 70 + extra, "Complex Inputs", SaveType.PRESET_INPUTS, function(option:Options, pressed:Bool) {
+								option.ID = 7 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.simpInputs = !FlxG.save.data.simpInputs;
@@ -319,8 +319,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 100 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
-								option.ID = 10 + Math.ceil(extra * 0.1);
+							new Options(0, 80 + extra, "Downscroll", SaveType.DOWNSCROLL, function(option:Options, pressed:Bool) {
+								option.ID = 8 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.helpme = !FlxG.save.data.helpme;
@@ -338,8 +338,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 110 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
-								option.ID = 11 + Math.ceil(extra * 0.1);
+							new Options(0, 90 + extra, "Note Splash", SaveType.SHOW_NOTE_SPLASH, function(option:Options, pressed:Bool) {
+								option.ID = 9 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showEffect = !FlxG.save.data.showEffect;
@@ -357,8 +357,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, 120 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
-								option.ID = 12 + Math.ceil(extra * 0.1);
+							new Options(0, 100 + extra, "Show Accuracy", SaveType.SHOW_BOTTOM_BAR, function(option:Options, pressed:Bool) {
+								option.ID = 10 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.showstuff = !FlxG.save.data.showstuff;
@@ -376,8 +376,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new GhostTapping(0, 130 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
-								option.ID = 13 + Math.ceil(extra * 0.1);
+							new GhostTapping(0, 110 + extra, "Ghost Tapping", SaveType.GHOST_TAPPING, function(option:Options, pressed:Bool) {
+								option.ID = 11 + Math.ceil(extra * 0.1);
 
 								if(pressed)
 									FlxG.save.data.ghostTapping = !FlxG.save.data.ghostTapping;
@@ -468,7 +468,7 @@ class OptionsMenuState extends MusicBeatState {
 					{
 						catagory: this.catalog,
 						options: [
-							new Options(0, ((imNotSure + 0) * 10) + 120, "Custom Hell", SaveType.CUSTOM_HELL_MOD, function(option:Options, pressed:Bool) {
+							new Options(0, ((imNotSure + 0) * 10), "Custom Hell", SaveType.CUSTOM_HELL_MOD, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure;
 
 								if(pressed)
@@ -487,7 +487,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 1) * 10) + 120, "Get Good Scrub", SaveType.PERFECT_MODE_MOD, function(option:Options, pressed:Bool) {
+							new Options(0, ((imNotSure + 1) * 10), "Get Good Scrub", SaveType.PERFECT_MODE_MOD, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure + 1;
 
 								if(pressed)
@@ -506,7 +506,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 2) * 10) + 120, "Mirror Chart", SaveType.FLIP_CHART_MOD, function(option:Options, pressed:Bool) {
+							new Options(0, ((imNotSure + 2) * 10), "Mirror Chart", SaveType.FLIP_CHART_MOD, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure + 2;
 
 								if(pressed)
@@ -525,7 +525,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 3) * 10) + 120, "Sing Health Drain", SaveType.FAIR_BATTLE_MOD, function(option:Options, pressed:Bool) {
+							new Options(0, ((imNotSure + 3) * 10), "Sing Health Drain", SaveType.FAIR_BATTLE_MOD, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure + 3;
 
 								if(pressed)
@@ -544,7 +544,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 4) * 10) + 120, "Fade In Notes", SaveType.FADE_BATTLE_MOD, function(option:Options, pressed:Bool) {
+							new Options(0, ((imNotSure + 4) * 10), "Fade In Notes", SaveType.FADE_BATTLE_MOD, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure + 4;
 
 								if(pressed)
@@ -563,8 +563,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 6) * 10) + 120, "Simon Says", SaveType.BLIND_MOD, function(option:Options, pressed:Bool) {
-								option.ID = imNotSure + 6;
+							new Options(0, ((imNotSure + 5) * 10), "Simon Says", SaveType.BLIND_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 5;
 
 								if(pressed)
 									FlxG.save.data.blind = !FlxG.save.data.blind;
@@ -582,8 +582,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 7) * 10) + 120, "Wobbly Notes", SaveType.X_WOBBLE_MOD, function(option:Options, pressed:Bool) {
-								option.ID = imNotSure + 7;
+							new Options(0, ((imNotSure + 6) * 10), "Wobbly Notes", SaveType.X_WOBBLE_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 6;
 
 								if(pressed)
 									FlxG.save.data.xWobble = !FlxG.save.data.xWobble;
@@ -601,8 +601,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 8) * 10) + 120, "Camera Movement", SaveType.CAMERA_MOVEMENT_MOD, function(option:Options, pressed:Bool) {
-								option.ID = imNotSure + 8;
+							new Options(0, ((imNotSure + 7) * 10), "Camera Movement", SaveType.CAMERA_MOVEMENT_MOD, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 7;
 
 								if(pressed)
 									FlxG.save.data.camMove = !FlxG.save.data.camMove;
@@ -620,8 +620,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new GhostTapping(0, ((imNotSure + 9) * 10) + 120, "Play As Opponent", SaveType.PLAY_AS_OPPONENT, function(option:Options, pressed:Bool) {
-								option.ID = imNotSure + 9;
+							new GhostTapping(0, ((imNotSure + 8) * 10), "Play As Opponent", SaveType.PLAY_AS_OPPONENT, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 8;
 
 								if(pressed)
 									FlxG.save.data.playAsOpponent = !FlxG.save.data.playAsOpponent;
@@ -1067,9 +1067,11 @@ class OptionsMenuState extends MusicBeatState {
 		}
 
 		if(optionSetting != null) {
-			curOptionSection.forEach(function(option:Options) {
-				optionSetting.members[option.ID].x = option.x;
-				optionSetting.members[option.ID].y = option.optionIcon.y - (optionSetting.members[option.ID].height / 2) + 5;
+			curOptionSection.forEachAlive(function(option:Options) {
+                if(optionSetting.members[option.ID] != null) {
+                    optionSetting.members[option.ID].x = option.x;
+                    optionSetting.members[option.ID].y = option.optionIcon.y - (optionSetting.members[option.ID].height / 2) + 5;
+                }
 			});
 		}
 
