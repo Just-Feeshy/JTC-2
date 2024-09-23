@@ -45,6 +45,7 @@ import openfl.utils.ByteArray;
 import openfl.utils.Assets as OpenFLAssets;
 import openfl.utils.AssetType;
 import haxe.Json;
+import funkin.input.Cursor;
 
 import Character;
 import ModInitialize;
@@ -100,8 +101,6 @@ class CharacterCreatorState extends MusicBeatState {
     private var _file:FileReference;
 
     override function create() {
-        FlxG.mouse.visible = true;
-
         camHUD = new FlxCamera();
         camGame = new FlxCamera();
         camHUD.bgColor.alpha = 0;
@@ -644,7 +643,7 @@ class CharacterCreatorState extends MusicBeatState {
                 loopAnim.checked = character._info.animations.get(animNameInput.text).looped;
                 offsetXInput.value = character._info.animations.get(animNameInput.text).offset[0];
                 offsetYInput.value = character._info.animations.get(animNameInput.text).offset[1];
-            }    
+            }
         });
 
         var shadowMan:FlxUIButton = new FlxUIButton(140, newAnimButton.y + 30, "Create Shadow", function() {
@@ -1010,13 +1009,13 @@ class CharacterCreatorState extends MusicBeatState {
         if(FlxG.keys.pressed.Q && camGame.zoom <= 2)
             camGame.zoom += elapsed;
         if(FlxG.keys.pressed.E && camGame.zoom >= 0.1)
-            camGame.zoom -= elapsed;          
+            camGame.zoom -= elapsed;
 
         if(camGame.zoom > 2)
             camGame.zoom = 2;
         if(camGame.zoom < 0.1)
             camGame.zoom = 0.1;
-     
+
 		iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - 26);
         iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - 26);
 

@@ -6,6 +6,7 @@ import Discord.DiscordClient;
 
 import Song.SwagSong;
 import Controls.KeyboardScheme;
+import funkin.input.Cursor;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -93,7 +94,7 @@ class MainMenuState extends MusicBeatState
 	#end
 
 	override function create() {
-		FlxG.mouse.visible = false;
+        Cursor.hide();
 
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;

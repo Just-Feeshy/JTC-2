@@ -2,6 +2,7 @@ package;
 
 import Controls.Control;
 import Controls.KeyboardScheme;
+import funkin.input.Cursor;
 import flixel.input.keyboard.FlxKey;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -92,7 +93,11 @@ class OptionsMenuState extends MusicBeatState {
 	}
 
     override public function create():Void {
-		FlxG.mouse.visible = true;
+        #if debug
+        Cursor.show();
+        #else
+        Cursor.hide();
+        #end
 
 		SaveData.saveClient();
 
