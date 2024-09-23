@@ -117,13 +117,13 @@
 	<assets path="assets/fonts" embed='true'/>
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="flixel" />
+	<haxelib name="flixel" version="4.11.0" />
 	<haxedev set='webgl' />
 
 	<!--In case you want to use the addons package-->
     <haxelib name="haxeui-core" />
     <haxelib name="haxeui-flixel" />
-	<haxelib name="flixel-addons" />
+	<haxelib name="flixel-addons" version="2.11.0" />
 	<haxelib name="hscript" />
 
 	<!-- Custom Libraries -->
