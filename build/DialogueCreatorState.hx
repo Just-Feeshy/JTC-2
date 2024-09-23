@@ -1077,6 +1077,7 @@ class DialogueCreatorState extends MusicBeatState {
     }
 
     override function destroy():Void {
+        clearEvent();
         FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
 
         super.destroy();

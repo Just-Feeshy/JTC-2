@@ -186,7 +186,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed) {
 									FlxG.save.data.lowFps += 10;
 
-									if(FlxG.save.data.lowFps > 100)
+									if(FlxG.save.data.lowFps > 120)
 										FlxG.save.data.lowFps = 60;
 
 									Register.updateFramerate(Math.ceil(FlxG.save.data.lowFps * SaveData.getData(SaveType.FPS_MULTIPLIER)));
@@ -684,6 +684,18 @@ class OptionsMenuState extends MusicBeatState {
 									FlxG.switchState(new CharacterCreatorState());
 
 								option.description = "Character Creator.";
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 30, "Stage Designer", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 3;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									FlxG.switchState(new StageDesignState());
+
+								option.description = "Stage Designer.";
 								setting(option, "", option.ID);
 							}),
 						]
