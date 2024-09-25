@@ -27,7 +27,7 @@ import Std.is as isOfType;
 * Basically another extendy that should clean up the game more.
 * Also extend on the main game/mod.
 */
-class HelperStates extends FlxUIState {
+class HelperStates extends FlxState {
 	public var modifiableTexts:Map<String, FlxText>;
 	public var modifiableSprites:Map<String, FlxSprite>;
 	public var modifiableCameras:Map<String, FlxCamera>;
@@ -40,6 +40,7 @@ class HelperStates extends FlxUIState {
 	private var controls(get, never):Controls;
 
 	var transOutFinished:Bool = false;
+    var initOnCreate:Bool = true;
 
 	var transInType:String;
 	var transOutType:String;
@@ -47,7 +48,11 @@ class HelperStates extends FlxUIState {
 	inline function get_controls():Controls
 		return PlayerSettings.player1.controls;
 
-	public function new(?transInType:String, ?transOutType:String) {
+	public function new(?transInType:String, ?transOutType:String, ?initOnCreate:Bool = true) {
+		super();
+
+        this.initOnCreate = initOnCreate;
+
 		modifiableTexts = new Map<String, FlxText>();
 		modifiableSprites = new Map<String, FlxSprite>();
 		modifiableCameras = new Map<String, FlxCamera>();
@@ -63,13 +68,11 @@ class HelperStates extends FlxUIState {
 		}else {
 			this.transOutType = "tile";
 		}
-
-		super();
 	}
 
-	override function create() {
+	function whenCreate() {
 		/**
-		* Interesting, I know.
+		* Interesting, I know. Not in a good way.
 		*/
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
@@ -124,15 +127,21 @@ class HelperStates extends FlxUIState {
 			});
 		}
 		#end
+	}
 
-		onCreate();
+    override function create():Void {
+        whenCreate();
 
 		super.create();
+
+        if(initOnCreate) {
+            onCreate();
+        }
 
 		if(!transitionSkip) {
 			transitionIn();
 		}
-	}
+    }
 
 	public function onCreate():Dynamic {
 		#if (USING_LUA && cpp)

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dialog width="400" height="250" title="Stage Design Editor - New Stage">
+    <hbox width="100%" height="100%">
+        <card id="splashSectionLeft" width="100%" height="100%" text="Browse For Stage">
+            <button id="splashCreateNew" text="Create New Stage" />
+            <button id="splashImport" text="Import Stage" />
+        </card>
+    </hbox>
+</dialog>

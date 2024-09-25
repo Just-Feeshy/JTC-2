@@ -844,7 +844,7 @@ class CharacterCreatorState extends MusicBeatState {
         checkPlayable.checked = characterAutosave.get(character.curCharacter).isPlayer;
     }
 
-    override function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
+    function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
         if((id == FlxUIDropDownMenu.CLICK_EVENT || id == "click_button") && changeCharacter) {
             changeCharacter = false;
 

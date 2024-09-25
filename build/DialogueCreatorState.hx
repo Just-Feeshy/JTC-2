@@ -887,7 +887,7 @@ class DialogueCreatorState extends MusicBeatState {
         }
     }
 
-    override function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
+    function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
         if((id == FlxUIDropDownMenu.CLICK_EVENT || id == "click_button") && changeSprite) {
             changeSprite = false;
             refreshDisplay();

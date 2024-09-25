@@ -73,6 +73,8 @@ class FreeplayState extends MusicBeatState
 
 	override function create()
 	{
+		super.create();
+
 		#if windows
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
@@ -190,8 +192,6 @@ class FreeplayState extends MusicBeatState
 			modifiableSprites.set("menuBG", menuBG);
 		}
 		#end
-
-		super.create();
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String)

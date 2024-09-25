@@ -58,7 +58,9 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
+        #if debug
         initHaxeUI();
+        #end
 
 		var stageWidth:Int = Lib.current.stage.stageWidth;
 		var stageHeight:Int = Lib.current.stage.stageHeight;
