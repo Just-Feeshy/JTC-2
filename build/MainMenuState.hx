@@ -88,10 +88,7 @@ class MainMenuState extends MusicBeatState
 	}
 
 	#if !(switch || debug)
-
 	var optionShit:Array<String> = ['story mode', 'freeplay', 'settings'];
-    #elseif !debug
-	var optionShit:Array<String> = ['freeplay', 'settings'];
 	#else
 	var optionShit:Array<String> = ['story mode', 'freeplay'];
 	#end

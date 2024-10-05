@@ -27,8 +27,6 @@ This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.co
 ```
 flixel 4.11.0 (NOT 5.0.0 or above!)
 flixel-addons 2.11.0 (Nothing above!)
-haxeui-core
-haxeui-flixel
 flixel-ui
 hscript
 openfl 9.2.0

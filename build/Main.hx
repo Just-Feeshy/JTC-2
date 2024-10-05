@@ -58,10 +58,6 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
-        #if debug
-        initHaxeUI();
-        #end
-
 		var stageWidth:Int = Lib.current.stage.stageWidth;
 		var stageHeight:Int = Lib.current.stage.stageHeight;
 
@@ -84,18 +80,4 @@ class Main extends Sprite
 
 		addChild(feeshmora);
 	}
-
-    private function initHaxeUI():Void {
-        // Calling this before any HaxeUI components get used is important:
-        // - It initializes the theme styles.
-        // - It scans the class path and registers any HaxeUI components.
-        Toolkit.init();
-        Toolkit.theme = 'dark'; // don't be cringe
-        // Toolkit.theme = 'light'; // embrace cringe
-        Toolkit.autoScale = false;
-        // Don't focus on UI elements when they first appear.
-        haxe.ui.focus.FocusManager.instance.autoFocus = false;
-        funkin.input.Cursor.registerHaxeUICursors();
-        haxe.ui.tooltips.ToolTipManager.defaultDelay = 200;
-    }
 }
