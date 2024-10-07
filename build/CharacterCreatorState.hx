@@ -45,7 +45,6 @@ import openfl.utils.ByteArray;
 import openfl.utils.Assets as OpenFLAssets;
 import openfl.utils.AssetType;
 import haxe.Json;
-import funkin.input.Cursor;
 
 import Character;
 import ModInitialize;

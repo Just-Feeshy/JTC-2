@@ -49,6 +49,9 @@
 	<!-- Allow for applying modifiers in the option menu -->
 	<define name="TOGGLEABLE_MODIFIERS" />
 
+    <!-- Disable Deprecation Warnings -->
+    <haxedef name="no-deprecation-warnings" />
+
 	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
 	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
 

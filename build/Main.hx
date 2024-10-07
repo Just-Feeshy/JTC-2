@@ -3,7 +3,6 @@ package;
 import flixel.FlxState;
 import flixel.FlxG;
 import flixel.FlxGame;
-import haxe.ui.Toolkit;
 import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Sprite;
