@@ -1,10 +1,11 @@
 -- First main game lua test of this "engine" to see how well it can handle lua modchart's and general scripting.
 -- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
 
---variables
+--variables of components
 local frost_modchart = nil
 local skater_boi = nil
 local string_utils = nil
+local inputs = nil
 
 
 local beatSection = 0
@@ -40,6 +41,7 @@ local jtcOffsets = {
 }
 
 local daddyIsHere = false
+local daddyTrans = false
 
 -- local functions
 local function playAnimation(spriteName, animName)
@@ -110,16 +112,23 @@ function generatedStage()
     frost_modchart.initStrumsAndNotes()
 
 	string_utils = require("mod_assets/scripts/utils/stringTools")
+    inputs = require("mod_assets/scripts/utils/inputs")
 end
 
 function onStepHit()
     if curStep == 630 and not daddyIsHere then
-        callEvent("character change", "dad-car", "dad")
 
-        removeSpriteFromState("frostbiteCAR")
-        destroySprite("frostbiteCAR")
+        if debug then
+            freezeOrUnFreezeGame();
+            disableInputs(true)
+        else
+            callEvent("character change", "dad-car", "dad")
 
-        daddyIsHere = true
+            removeSpriteFromState("frostbiteCAR")
+            destroySprite("frostbiteCAR")
+
+            daddyIsHere = true
+        end
     end
 
 	if curStep == 631 then
@@ -165,13 +174,18 @@ function onStepHit()
 		addAnimationByPrefix("boyfriend", "singRIGHT", "flying dance RIGHT GF", 24, false)
     end
 
-	-- if curStep == 606 and sprAnimFinsihed("frostbiteCAR") then
-		--stopAnim("frostbiteCAR")
-		--setSpritePosition("frostbiteCAR", -795, -107)
-		--setSpritePosition("frostbiteCAR", -745, -107)
-		--setSpritePosition("frostbiteCAR", 24, 116)
-		--playAnimRaw("frostbiteCAR", "transition")
-    -- end
+	if curStep == 606 and sprAnimFinsihed("frostbiteCAR") and not daddyTrans then
+		stopAnim("frostbiteCAR")
+	    setSpritePosition("frostbiteCAR", -795, -107)
+		setSpritePosition("frostbiteCAR", -745, -107)
+		setSpritePosition("frostbiteCAR", 24, 116)
+
+		playAnimRaw("frostbiteCAR", "transition")
+        stopAnim("frostbiteCAR")
+        setAnimFrame("frostbiteCAR", 0)
+
+        daddyTrans = true
+    end
 
     if curStep == 904 and beatSection == 5 then
         callEvent("bump per beat", "4", "1")
@@ -203,6 +217,9 @@ end
 
 function onUpdate(elapsed)
     if startedCountdown then
+        if debug then
+
+        end
 
 		-- Character update
 		do
@@ -216,9 +233,9 @@ function onUpdate(elapsed)
 				end
 
 				if not stunned
-				and not string_utils.starts_with(curAnimName, "sing")
-				and sprAnimFinished("second") then
-					playAnimation("second", "idle")
+                    and not string_utils.starts_with(curAnimName, "sing")
+                    and sprAnimFinished("second") then
+                        playAnimation("second", "idle")
 		  	    end
 		end
 
@@ -242,7 +259,9 @@ function onUpdate(elapsed)
     end
 end
 
+
 --functions
+
 function setupPunchHealth(amount)
     for i = 1, amount do
         local iconX = getSpriteX("healthBarBG") + getSpriteWidth("healthBarBG") + 50
@@ -261,5 +280,48 @@ function setupPunchHealth(amount)
         setSpriteToCamera("punchIcon" .. i, "camHUD")
         scaleSprite("punchIcon" .. i, 0.7, 0.7)
         addSpriteToStage("punchIcon" .. i)
+    end
+end
+
+function manageInputs()
+    if not daddyTrans then
+        return
+    end
+
+    if checkKeyStatus(inputs.MAPPED.UP, inputs.STATUS.JUST_PRESSED) then
+        setSpritePosition("frostbiteCAR",
+            getSpriteX("frostbiteCAR"),
+            getSpriteY("frostbiteCAR") - 1
+        )
+    end
+    if checkKeyStatus(inputs.MAPPED.DOWN, inputs.STATUS.JUST_PRESSED) then
+        setSpritePosition("frostbiteCAR",
+            getSpriteX("frostbiteCAR"),
+            getSpriteY("frostbiteCAR") + 1
+        )
+    end
+    if checkKeyStatus(inputs.MAPPED.LEFT, inputs.STATUS.JUST_PRESSED) then
+        setSpritePosition("frostbiteCAR",
+            getSpriteX("frostbiteCAR") - 1,
+            getSpriteY("frostbiteCAR")
+        )
+    end
+    if checkKeyStatus(inputs.MAPPED.RIGHT, inputs.STATUS.JUST_PRESSED) then
+        setSpritePosition("frostbiteCAR",
+            getSpriteX("frostbiteCAR") + 1,
+            getSpriteY("frostbiteCAR")
+        )
+    end
+    if checkKeyStatus(inputs.MAPPED.SCALE_UP, inputs.STATUS.JUST_PRESSED) then
+        setAnimFrame("frostbiteCAR", getAnimFrame("frostbiteCAR") + 1)
+    end
+    if checkKeyStatus(inputs.MAPPED.SCALE_DOWN, inputs.STATUS.JUST_PRESSED) then
+        setAnimFrame("frostbiteCAR", getAnimFrame("frostbiteCAR") - 1)
+    end
+    if checkKeyStatus(inputs.MAPPED.SPACE, inputs.STATUS.JUST_PRESSED) then
+        print("frostbiteCAR Position: [X]"
+            .. getSpriteX("frostbiteCAR")
+            .. " by [Y] " .. getSpriteY("frostbiteCAR")
+        )
     end
 end

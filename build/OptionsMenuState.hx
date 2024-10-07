@@ -691,18 +691,6 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Character Creator.";
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 30, "Stage Designer", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 3;
-
-								if(option.optionIcon.animation.curAnim.name != "other")
-									option.optionIcon.animation.play("other");
-
-								if(pressed)
-									FlxG.switchState(new StageDesignState());
-
-								option.description = "Stage Designer.";
-								setting(option, "", option.ID);
-							}),
 						]
 					}
 				];

@@ -510,6 +510,16 @@ class ModLua {
 				spr.animation.frameIndex = frame;
 		});
 
+        Lua_helper.add_callback(lua, "getAnimFrame", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return 0;
+            }
+
+            return spr.animation.frameIndex;
+        });
+
         Lua_helper.add_callback(lua, "sprAnimFinished", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
@@ -630,7 +640,7 @@ class ModLua {
             spr.updateHitbox();
         });
 
-        Lua_helper.add_callback(lua, "getSpriteX", function(name:String, x:Float) {
+        Lua_helper.add_callback(lua, "getSpriteX", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -640,7 +650,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "getSpriteY", function(name:String, y:Float) {
+        Lua_helper.add_callback(lua, "getSpriteY", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {

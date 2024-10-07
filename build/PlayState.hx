@@ -84,6 +84,7 @@ class PlayState extends MusicBeatState
 	private var camMovementPos:FlxPoint;
 	private var prevDadNoteData:Int = -1;
 	private var gamepadDetected:Bool = false;
+    private var disableInputs:Bool = false;
 	private var videoSwitchState:String = "";
 
 	public var camPos:FlxPoint;
@@ -501,12 +502,13 @@ class PlayState extends MusicBeatState
 		healthBarBG.screenCenter(X);
 		healthBarBG.scrollFactor.set();
 
-		//Feesh Miss
+        #if debug
 		debugText = new FlxText(0, 0, FlxG.width, "Debug Pause State", 32);
 		debugText.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		debugText.borderSize = 3;
 		debugText.visible = false;
 		add(debugText);
+        #end
 
 		counterTxt = new FlxText(healthBarBG.x + healthBarBG.width - 190, healthBarBG.y + 32, 0, "", 20);
 		counterTxt.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -558,8 +560,11 @@ class PlayState extends MusicBeatState
 		healthBarBG.cameras = [camHUD];
 		iconP1.cameras = [camHUD];
 		iconP2.cameras = [camHUD];
-		debugText.cameras = [camHUD];
 		counterTxt.cameras = [camHUD];
+
+        #if debug
+		debugText.cameras = [camHUD];
+        #end
 
 		if(SONG.modifiers != null)
 			eventInfo = SONG.modifiers.copy();
@@ -1662,22 +1667,15 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if(FlxG.keys.justPressed.TAB && startedCountdown && canPause) {
+		if(#if debug FlxG.keys.justPressed.TAB #end && startedCountdown && canPause) {
 			paused = (!paused ? true : false);
-			debugText.visible = paused;
 
-			if (paused) {
-				pauseMusic();
-			}else {
-				if (FlxG.sound.music != null && !startingSong) {
-					resyncVocals();
-				}
-	
-				if(startTimer != null) {
-					if (!startTimer.finished)
-						startTimer.active = true;
-				}
-			}
+            #if debug
+			debugText.visible = paused;
+            setLua("inDebugState", paused);
+            #end
+
+            haveGamePaused();
 		}
 
 		if(FlxG.keys.justPressed.SEVEN) {
@@ -2174,6 +2172,21 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+    function haveGamePaused():Void {
+			if (paused) {
+				pauseMusic();
+			}else {
+				if (FlxG.sound.music != null && !startingSong) {
+					resyncVocals();
+				}
+
+				if(startTimer != null) {
+					if (!startTimer.finished)
+						startTimer.active = true;
+				}
+			}
+    }
+
 	function pauseMenu():Void {
 		persistentUpdate = false;
 		persistentDraw = true;
@@ -2585,7 +2598,7 @@ class PlayState extends MusicBeatState
 
 		notes.forEachAlive(function(daNote:Note) {
 			if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate
-			&& !daNote.wasGoodHit && controlHoldArray[daNote.noteData] && daNote.isSustainNote) {
+			&& !daNote.wasGoodHit && controlHoldArray[daNote.noteData] && daNote.isSustainNote && !disableInputs) {
 				goodNoteHit(daNote);
 			}
 		});
@@ -2597,7 +2610,7 @@ class PlayState extends MusicBeatState
 
 	function getPressed(event:Event):Void
 	{
-		if(paused || inCutscene) {
+		if(paused || inCutscene || disableInputs) {
 			return;
 		}
 
@@ -2946,6 +2959,14 @@ class PlayState extends MusicBeatState
 			setLua("defaultGirlfriendY", 0);
 		}
 
+        addCallback("checkKeyStatus", function(key:Int, status:Int) {
+            return FlxG.keys.checkStatus(key, status);
+        });
+
+        addCallback("freezeOrUnfreezeGame", function() {
+            haveGamePaused();
+        });
+
 		addCallback("setEndVideo", function(path:String) {
 			videoSwitchState = Paths.video(path);
 		});
@@ -3152,6 +3173,10 @@ class PlayState extends MusicBeatState
 				healthBar.filledColor = hexColor;
 			}
 		});
+
+        addCallback("disableInputs", function(disable:Bool) {
+            disableInputs = disable;
+        });
 	}
 
 	function makeNoteLua():Void {
@@ -3163,7 +3188,7 @@ class PlayState extends MusicBeatState
 				setLua('defaultPlayerStrumWidth' + i, playerStrums.members[i].scale.x);
 				setLua('defaultPlayerStrumHeight' + i, playerStrums.members[i].scale.y);
 			}
-	
+
 			for (i in 0...opponentStrums.members.length) {
 				setLua('defaultOpponentStrumX' + i, opponentStrums.members[i].x);
 				setLua('defaultOpponentStrumY' + i, opponentStrums.members[i].y);
