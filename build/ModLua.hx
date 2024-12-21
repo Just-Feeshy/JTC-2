@@ -110,9 +110,9 @@ class ModLua {
         set('getCwd', Sys.getCwd());
 
         #if debug
-        set("debug", true);
+        set("inDebug", true);
         #else
-        set("debug", false);
+        set("inDebug", false);
         #end
 
 		Lua_helper.add_callback(lua, "getImageWidth", function(path:String) {
@@ -523,7 +523,7 @@ class ModLua {
         Lua_helper.add_callback(lua, "sprAnimFinished", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null ) {
+            if(spr == null) {
                 return false;
             }
 

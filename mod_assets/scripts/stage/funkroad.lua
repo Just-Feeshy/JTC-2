@@ -18,6 +18,9 @@ local multipler = 6.1
 local stunned = false
 local notDancing = false
 
+-- Constants
+local phaseTwo = 643
+
 local jtcStrumAnims = {
     "singRIGHT",
     "singUP",
@@ -42,8 +45,10 @@ local jtcOffsets = {
 
 local daddyIsHere = false
 local daddyTrans = false
+local hasManageInputs = false
 
 -- local functions
+
 local function playAnimation(spriteName, animName)
     if animName == "idle" and notDancing then
 		setSpritePosition("second", 650, 100)
@@ -76,17 +81,30 @@ local function init()
     daddyIsHere = false
 end
 
+local function cloudIncome()
+    if curStep > 614 and curStep < (phaseTwo + 1) then
+        local givenTime = (curStepFloat - 614) / ((phaseTwo + 1) - 614)
+        local timeLerp = math.min(givenTime, 1)
+        local easing = math.pow(math.min(timeLerp, 1), 2)
+
+        -- print(easing)
+
+        setSpritePosition("cloud", (10104 * easing) - 6736, -699 + math.sin(easing * math.pi * 2.0) * 250)
+    end
+end
+
 --events
 function generatedStage()
     init()
     setEndVideo("post.mp4")
 
     createSprite("frostbiteCAR")
-    setSpritePosition("frostbiteCAR", -185, -36)
+    setSpritePosition("frostbiteCAR", -170, -35)
 	--compileSpriteSheet("frostbiteCAR", "daddycar")
 	createCombinedFrames("frostbiteCAR-frames", "daddycar", "daddycar2", "sparrow", "sparrow")
 	addFramesToSprite("frostbiteCAR", "frostbiteCAR-frames")
 	addAnimationByPrefix("frostbiteCAR", "transition", "car drive and dust0", 24, false)
+    addAnimationByPrefix("frostbiteCAR", "fog", "car drive and dust t", 24, false)
     playAnimationByPrefix("frostbiteCAR", 'drive', "daddycar", 24, false)
     setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
@@ -107,6 +125,14 @@ function generatedStage()
 	spriteFlip("second", true, false)
 	playAnimation("second", "idle")
 
+    createSprite("cloud")
+	setSpritePosition("cloud", 0, 0)
+    loadGraphic("cloud", "daddy_transition_cloud")
+    scaleSprite("cloud", 2, 2)
+    screenCenter("cloud", "y")
+    setSpriteX("cloud", -6736)
+    addSpriteToState("cloud")
+
     setupPunchHealth(3)
     frost_modchart = require("mod_assets/scripts/modcharts/frost_modchart")
     frost_modchart.initStrumsAndNotes()
@@ -116,22 +142,24 @@ function generatedStage()
 end
 
 function onStepHit()
+
+	if curStep == 606 then
+        daddyTrans = true
+    end
+
+    -- if cur
+
     if curStep == 630 and not daddyIsHere then
+        callEvent("character change", "dad-car", "dad")
 
-        if debug then
-            freezeOrUnFreezeGame();
-            disableInputs(true)
-        else
-            callEvent("character change", "dad-car", "dad")
+        removeSpriteFromState("frostbiteCAR")
+        destroySprite("frostbiteCAR")
 
-            removeSpriteFromState("frostbiteCAR")
-            destroySprite("frostbiteCAR")
-
-            daddyIsHere = true
-        end
+        daddyIsHere = true
     end
 
 	if curStep == 631 then
+        insertSpriteToStage("dad")
 		addSpriteToStage("second")
 	end
 
@@ -174,19 +202,6 @@ function onStepHit()
 		addAnimationByPrefix("boyfriend", "singRIGHT", "flying dance RIGHT GF", 24, false)
     end
 
-	if curStep == 606 and sprAnimFinsihed("frostbiteCAR") and not daddyTrans then
-		stopAnim("frostbiteCAR")
-	    setSpritePosition("frostbiteCAR", -795, -107)
-		setSpritePosition("frostbiteCAR", -745, -107)
-		setSpritePosition("frostbiteCAR", 24, 116)
-
-		playAnimRaw("frostbiteCAR", "transition")
-        stopAnim("frostbiteCAR")
-        setAnimFrame("frostbiteCAR", 0)
-
-        daddyTrans = true
-    end
-
     if curStep == 904 and beatSection == 5 then
         callEvent("bump per beat", "4", "1")
         beatSection = beatSection + 1
@@ -217,38 +232,51 @@ end
 
 function onUpdate(elapsed)
     if startedCountdown then
-        if debug then
-
-        end
 
 		-- Character update
 		do
-				if string_utils.starts_with(curAnimName, "sing") then
-				    holdTimer = holdTimer + elapsed
-				end
+            if string_utils.starts_with(curAnimName, "sing") then
+                holdTimer = holdTimer + elapsed
+            end
 
-				if holdTimer > stepCrochet * crochetPitch * multipler then
-				    playAnimation("second", "idle")
-					holdTimer = 0
-				end
+            if holdTimer > stepCrochet * crochetPitch * multipler then
+                playAnimation("second", "idle")
+                holdTimer = 0
+            end
 
-				if not stunned
-                    and not string_utils.starts_with(curAnimName, "sing")
-                    and sprAnimFinished("second") then
-                        playAnimation("second", "idle")
-		  	    end
+            if not stunned
+                and not string_utils.starts_with(curAnimName, "sing")
+                and sprAnimFinished("second") then
+                    playAnimation("second", "idle")
+            end
 		end
 
-		-- Frostbite Car update
+        -- Transition Sprite is not possible
+        if sprAnimFinished("frostbiteCAR") and daddyTrans then
+            stopAnim("frostbiteCAR")
+
+            playAnimRaw("frostbiteCAR", "transition")
+            -- stopAnim("frostbiteCAR")
+            -- setAnimFrame("frostbiteCAR", 0)
+            setSpritePosition("frostbiteCAR", 241, 81)
+
+            print("Execute")
+
+            --if inDebug then
+            --    freezeOrUnfreezeGame();
+            --    disableInputs(true)
+            --    hasManageInputs = true
+            --end
+
+            daddyTrans = false
+        end
+
+        -- Frostbite Car update
 		if sprAnimFinished("frostbiteCAR") then
 		    if curStep < 607 then
 				playAnimRaw("frostbiteCAR", "drive")
-		    elseif transition == 0 then
-				playAnimRaw("frostbiteCAR", "transition")
-				transition = 1
 		    end
 		end
-
 
         --Modchart Section 1
         frost_modchart.sectionOne(elapsed)
@@ -256,6 +284,11 @@ function onUpdate(elapsed)
         --Modchart Section 2 (There is a HELL version, try it out if you want to suffer)
 		-- frost_modchart.sectionTwo_Hell(elapsed
         frost_modchart.sectionTwo_REGULAR()
+
+        -- Cloud Incoming for transition
+        cloudIncome()
+
+        -- manageInputs()
     end
 end
 
@@ -283,8 +316,14 @@ function setupPunchHealth(amount)
     end
 end
 
+function whenEventTriggered(skill, value, value2)
+    if skill == "character change" then
+        print("Add Daddy")
+    end
+end
+
 function manageInputs()
-    if not daddyTrans then
+    if not hasManageInputs then
         return
     end
 

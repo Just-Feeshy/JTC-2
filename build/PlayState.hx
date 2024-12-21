@@ -74,7 +74,7 @@ class PlayState extends MusicBeatState
 	public var modifiableCharacters:Map<String, Character>;
 
 	//More Stuff
-	private var stage:StageBuilder;
+	public var stage:StageBuilder;
 
 	private var createdCharacters:Bool;
 	private var testSprite:FlxSprite;
@@ -1668,11 +1668,9 @@ class PlayState extends MusicBeatState
 		}
 
 		if(#if debug FlxG.keys.justPressed.TAB #end && startedCountdown && canPause) {
-			paused = (!paused ? true : false);
-
             #if debug
-			debugText.visible = paused;
-            setLua("inDebugState", paused);
+			debugText.visible = !paused;
+            setLua("inDebugState", !paused);
             #end
 
             haveGamePaused();
@@ -2173,6 +2171,8 @@ class PlayState extends MusicBeatState
 	}
 
     function haveGamePaused():Void {
+			paused = (!paused ? true : false);
+
 			if (paused) {
 				pauseMusic();
 			}else {
@@ -2688,12 +2688,15 @@ class PlayState extends MusicBeatState
 
 		    var spr:Strum = currentStrums.members[index];
 
-			if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-				if(controlArray[index] && spr.animation.curAnim.name != "confirm") {
-				    spr.playAnim('pressed');
-					spr.holdTimer = 0;
-				}
-		    }
+            // Ewwwww
+            if(spr != null) {
+                if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+                    if(controlArray[index] && spr.animation.curAnim.name != "confirm") {
+                        spr.playAnim('pressed');
+                        spr.holdTimer = 0;
+                    }
+                }
+            }
 
 			callLua('onKeyPress', [getEvent.keyCode]);
 		}

@@ -116,7 +116,7 @@ function frost_modchart.sectionTwo_REGULAR()
         for i = 4, 1, -1 do
             local givenTime = (curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])
             local timeLerp = givenTime + (stepCrochet * 0.0011 * i) * math.min(givenTime, 1)
-            local easing = smootherStep(math.min(timeLerp, 1))
+            local easing = frost_modchart.smootherStep(math.min(timeLerp, 1))
 
             if not wheelIsHere then
                 allStrumsX2[i] = getNotePosX(i - 1)
@@ -193,7 +193,7 @@ function frost_modchart.sectionTwo_HELL(elapsed)
         for i = 4, 1, -1 do
             local givenTime = (curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])
             local timeLerp = givenTime + (stepCrochet * 0.0011 * i) * math.min(givenTime, 1)
-            local easing = smootherStep(math.min(timeLerp, 1))
+            local easing = frost_modchart.smootherStep(math.min(timeLerp, 1))
 
             if not wheelIsHere then
                 allStrumsX2[i] = getNotePosX(i - 1)
@@ -355,7 +355,7 @@ function quadOut(t)
     return -t * (t - 2)
 end
 
-function smootherStep(t)
+function frost_modchart.smootherStep(t)
     return t * t * t * (t * (t * 6 - 15) + 10);
 end
 

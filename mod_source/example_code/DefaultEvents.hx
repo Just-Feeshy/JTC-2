@@ -185,7 +185,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                             playState.dad.destroy();
                             playState.dad = new Character(100, 100, eventValue);
                             playState.dad.refresh(eventValue, playState.camPos);
-                            playState.add(playState.dad);
+                            playState.stage.add(playState.dad);
 
                             playState.iconP2.character = eventValue;
                             playState.iconP2.createAnim(eventValue, playState.dad._info.icon, false);
