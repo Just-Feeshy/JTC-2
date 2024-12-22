@@ -27,7 +27,11 @@ class GameOverSubstate extends MusicBeatSubstate
 				stageSuffix = '-pixel';
 				daBf = 'bf-pixel-dead';
 			default:
-				daBf = 'bf';
+                if(Paths.modJSON.game_over.exists(PlayState.curStage)) {
+                    daBf = Paths.modJSON.game_over.get(PlayState.curStage).character;
+                }else {
+				    daBf = Paths.modJSON.game_over.get("default").character;
+                }
 		}
 
 		super();
@@ -48,7 +52,11 @@ class GameOverSubstate extends MusicBeatSubstate
 		FlxG.camera.scroll.set();
 		FlxG.camera.target = null;
 
-		bf.playAnim('firstDeath');
+        if(Paths.modJSON.game_over.exists(PlayState.curStage)) {
+	    	bf.playAnim(Paths.modJSON.game_over.get(PlayState.curStage).animation);
+        }else {
+            bf.playAnim(Paths.modJSON.game_over.get("default").animation);
+        }
 	}
 
 	override function update(elapsed:Float)
