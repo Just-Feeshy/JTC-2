@@ -12,6 +12,7 @@ typedef ConfigDef = {
     var cache_configuration:Array<String>;
     var song_util:SongUtils;
 	var main_menu:Main_Menu;
+    var game_over:Map<String, GameOverInfo>;
     var title_menu:Title_Menu;
     var loading_display:LoadingDisplay;
 
@@ -75,6 +76,11 @@ typedef TitleMusic = {
 typedef Waky = {
     var texts:Array<String>;
     var addon:Bool;
+}
+
+typedef GameOverInfo = {
+    var character:String;
+    var animation:String;
 }
 
 typedef WeekInfo = {

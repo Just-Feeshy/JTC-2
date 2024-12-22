@@ -124,12 +124,16 @@ class MainMenuState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
-		if(FlxG.sound.music.playing && fromFreeplay) {
-			FlxG.sound.music.stop();
-			FlxG.sound.playMusic(Paths.music('Main Menu'));
-		}else {
-			FlxG.sound.playMusic(Paths.music('Main Menu'));
-		}
+        if(FlxG.sound.music != null) {
+            if(FlxG.sound.music.playing && fromFreeplay) {
+                FlxG.sound.music.stop();
+                FlxG.sound.playMusic(Paths.music('Main Menu'));
+            }else {
+                FlxG.sound.playMusic(Paths.music('Main Menu'));
+            }
+        }else {
+            FlxG.sound.playMusic(Paths.music('Main Menu'));
+        }
 
 		persistentUpdate = persistentDraw = true;
 

@@ -225,8 +225,9 @@ class HelperStates extends FlxState {
 	}
 
 	override function update(elapsed:Float):Void {
-		callLua("onUpdate", [elapsed]);
 		setLua("curElapsed", elapsed);
+        setLua("curTicks", FlxG.game.ticks);
+		callLua("onUpdate", [elapsed]);
 
 		super.update(elapsed);
 	}

@@ -54,6 +54,13 @@
         "bpm": 97
     },
 
+    "game_over": {
+        "default": {
+            "character": "bf",
+            "animation": "firstDeath"
+        }
+    },
+
     "weeks": {
         "week_0": {
             "week_name": "Tutorial",

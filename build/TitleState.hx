@@ -40,6 +40,7 @@ class TitleState extends MusicBeatState {
 	var credTextShit:Alphabet;
 	var textGroup:FlxGroup;
 	var ngSpr:FlxSprite;
+    var ticksPerUpdate:Float = 0;
 
 	var credits:Array<String> = Paths.modJSON.title_menu.mod_creators;
 
@@ -58,7 +59,7 @@ class TitleState extends MusicBeatState {
 
 		#if windows
 		DiscordClient.initialize();
-		
+
 		Application.current.onExit.add (function (exitCode) {
 			DiscordClient.shutdown();
 		});
@@ -77,10 +78,12 @@ class TitleState extends MusicBeatState {
 
 	function startIntro()
 	{
-		FlxG.sound.playMusic(Paths.music(Paths.modJSON.title_menu.music.song), 0);
-		FlxG.sound.music.fadeIn(4, 0, 0.7);
+        if(Paths.modJSON.title_menu.music.song != "") {
+            FlxG.sound.playMusic(Paths.music(Paths.modJSON.title_menu.music.song), 0);
+            FlxG.sound.music.fadeIn(4, 0, 0.7);
 
-		Conductor.changeBPM(Paths.modJSON.title_menu.music.bpm);
+            Conductor.changeBPM(Paths.modJSON.title_menu.music.bpm);
+        }
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		add(bg);
@@ -180,17 +183,21 @@ class TitleState extends MusicBeatState {
 	}
 
 	override function update(elapsed:Float) {
-		if (FlxG.sound.music != null) {
-			Conductor.songPosition += FlxG.elapsed * 1000;
-		}
+        if(Paths.modJSON.title_menu.music.song != "") {
+            if (FlxG.sound.music != null) {
+                Conductor.songPosition += FlxG.elapsed * 1000;
+            }
+
+		    if(curBeat >= 2)
+			    pressedEnter = FlxG.keys.justPressed.ENTER;
+        }else {
+			pressedEnter = FlxG.keys.justPressed.ENTER;
+        }
 
 		if (FlxG.keys.justPressed.F)
 		{
 			FlxG.fullscreen = !FlxG.fullscreen;
 		}
-
-		if(curBeat >= 2)
-			pressedEnter = FlxG.keys.justPressed.ENTER;
 
 		#if mobile
 		for (touch in FlxG.touches.list)
@@ -214,6 +221,10 @@ class TitleState extends MusicBeatState {
 		}
 
 		if(!disableControls) {
+			if (pressedEnter && !skippedIntro && initialized) {
+				skipIntro();
+			}
+
 			if (pressedEnter && !transitioning && skippedIntro) {
 				if(titleText != null) {
 					titleText.animation.play('press');
@@ -230,11 +241,10 @@ class TitleState extends MusicBeatState {
 					FlxG.switchState(new MainMenuState(true));
 				});
 			}
-
-			if (pressedEnter && !skippedIntro && initialized) {
-				skipIntro();
-			}
 		}
+
+        setLua("titleTicks", ticksPerUpdate);
+        ticksPerUpdate += elapsed;
 
 		super.update(elapsed);
 	}

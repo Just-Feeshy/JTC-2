@@ -1,31 +1,85 @@
+function logo()
+    local scrnAspectRatio = windowWidth / windowHeight
+
+    createSprite("logo")
+    loadGraphic("logo", "JTC-logo")
+    scaleSprite("logo", windowWidth / (2.0 * getSpriteWidth("logo")), windowWidth / (2.0 * getSpriteWidth("logo")))
+
+    setSpritePosition(
+        "logo",
+        ((windowWidth - getSpriteWidth("logo")) * 0.5) - (32),
+        ((windowHeight - getSpriteHeight("logo")) * 0.5) - (12)
+    )
+
+    addSpriteToState("logo")
+end
+
+function eye()
+    createSprite("eye")
+    loadGraphic("eye", "title/eye")
+    scaleSprite("eye", windowWidth / getSpriteWidth("eye"), windowHeight / getSpriteHeight("eye"))
+    addSpriteToState("eye")
+end
+
 function onUpdate(elapsed)
-    setCameraZoom("mainCam", lerp(1, getCameraZoom("mainCam"), 0.95))
+    local scrnAspectRatio = windowWidth / windowHeight
+
+    setSpritePosition("skater", (128 * math.pi * math.cos(titleTicks)) / 64, (120 * math.pi * math.sin(titleTicks)) / 64)
+    setSpriteAngle("skater", (180 / math.pi) * ((math.pi * math.sin(titleTicks)) / 128))
+    setSpriteAngle("logo", (180 / math.pi) * -(math.cos(titleTicks) / 30))
+
+    local b_x = 1.25 * math.cos(titleTicks - 0.25) * 0.1 + 0.925
+    local g_y = (0.05) * (0.5 * math.cos(2.5 * titleTicks) + 0.5)
+    local g_x = 1.25 * math.cos(titleTicks) * 0.1 + 0.125
+
+    setSpritePosition("bf", b_x * 128, -(g_y * 0.5 - 0.62) * 120)
+    setSpritePosition("gf", g_x * 128, -g_y * 120)
+    --setSpritePosition("eye", g_x * 128, -g_y * 120)
 end
 
 function onBeatHit()
-    if getCameraZoom("mainCam") < 1.35 then
-        setCameraZoom("mainCam", getCameraZoom("mainCam") + (6 * curElapsed))
-    end
 end
 
 function onStartIntro()
-    decreaseSpriteSizeBy("gfDance", 1.5, 1.5)
-    setSpritePosition("gfDance", windowWidth * 0.4, windowHeight * 0.21)
-    playAnim("gfDance", "danceRight")
+    createSprite("bg")
+    loadGraphic("bg", "title/BackgroundTitle")
+    scaleSprite("bg", windowWidth / getSpriteWidth("bg"), windowHeight / getSpriteHeight("bg"))
+    addSpriteToState("bg")
 
-    compileSpriteSheet("logoBl", "JTC logo bumpin")
-    playAnimationByPrefix("logoBl", "bump", "JTC logobumpin")
-    decreaseSpriteSizeBy("logoBl", 1.2, 1.2)
-    setSpritePosition("logoBl", 0, -50)
+    createSprite("swirl")
+    loadGraphic("swirl", "title/swirl")
+    scaleSprite("swirl", windowWidth / getSpriteWidth("swirl"), windowHeight / getSpriteHeight("swirl"))
+    addSpriteToState("swirl")
+
+    createSprite("thingy")
+    loadGraphic("thingy", "title/thingy")
+    scaleSprite("thingy", windowWidth / getSpriteWidth("thingy"), windowHeight / getSpriteHeight("thingy"))
+    addSpriteToState("thingy")
+
+    logo()
+
+    createSprite("skater")
+    loadGraphic("skater", "title/Skater")
+    scaleSprite("skater", windowWidth / getSpriteWidth("skater"), windowHeight / getSpriteHeight("skater"))
+    addSpriteToState("skater")
+
+    createSprite("bf")
+    loadGraphic("bf", "title/BF")
+    scaleSprite("bf", windowWidth / getSpriteWidth("bf"), windowHeight / getSpriteHeight("bf"))
+    addSpriteToState("bf")
+
+    createSprite("gf")
+    loadGraphic("gf", "title/GF")
+    scaleSprite("gf", windowWidth / getSpriteWidth("gf"), windowHeight / getSpriteHeight("gf"))
+    addSpriteToState("gf")
+
+    --eye()
+
+    createSprite("purple")
+    loadGraphic("purple", "title/Purple")
+    scaleSprite("purple", windowWidth / getSpriteWidth("purple"), windowHeight / getSpriteHeight("purple"))
+    addSpriteToState("purple")
 end
 
-function onSkipIntro() --This shit look like Mag Engine 👌.
-    createGradientSprite("tooMuchSpace", windowWidth, windowHeight, "[0xFF000000, 0xFF000000, 0xFF2b08b4]")
-    setSpriteY("tooMuchSpace", windowHeight)
-    insertSpriteToState(2, "tooMuchSpace")
-    doTweenY("tweenGrad", "tooMuchSpace", 0, 2, "quadOut")
-end
-
-function lerp(value1, value2, ratio)
-    return value1 + ratio * (value2 - value1)
+function onSkipIntro()
 end
