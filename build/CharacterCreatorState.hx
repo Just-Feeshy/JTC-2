@@ -844,6 +844,8 @@ class CharacterCreatorState extends MusicBeatState {
     }
 
     function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
+        trace("ID: " + id);
+        trace("Sender: " + sender);
         if((id == FlxUIDropDownMenu.CLICK_EVENT || id == "click_button") && changeCharacter) {
             changeCharacter = false;
 
@@ -880,30 +882,35 @@ class CharacterCreatorState extends MusicBeatState {
 
             iconP1.loadNewIcons(characterAutosave.get(character.curCharacter).iconFile);
 
-            if(iconP1.iconCharacters.contains(characterJSONs[Std.parseInt(data)]))
+            if(iconP1.iconCharacters.contains(characterJSONs[Std.parseInt(data)])) {
                 iconP1.animation.play(characterJSONs[Std.parseInt(data)]);
-            else
+            }else {
                 iconP1.animation.play('face');
+            }
 
             normalIxon.value = characterAutosave.get(character.curCharacter).icon[0];
 
-            if(characterAutosave.get(character.curCharacter).icon.length > 1)
+            if(characterAutosave.get(character.curCharacter).icon.length > 1) {
                 dedIxon.value = characterAutosave.get(character.curCharacter).icon[1];
-            else
+            }else {
                 dedIxon.value = characterAutosave.get(character.curCharacter).icon[0];
+            }
 
-            if(characterAutosave.get(character.curCharacter).icon.length > 2)
+            if(characterAutosave.get(character.curCharacter).icon.length > 2) {
                 hapeyIxon.value = characterAutosave.get(character.curCharacter).icon[2];
-            else
+            }else {
                 hapeyIxon.value = characterAutosave.get(character.curCharacter).icon[0];
+            }
 
-            if(character.animations.length > 0)
+            if(character.animations.length > 0) {
                 animationDrop.setData(FlxUIDropDownMenu.makeStrIdLabelArray(character.animations, true));
-            else
+            }else {
                 animationDrop.setData(FlxUIDropDownMenu.makeStrIdLabelArray([""], true));
+            }
 
-            if(character.animations.length > 0)
+            if(character.animations.length > 0) {
                 animationDrop.selectedLabel = character.animation.curAnim.name;
+            }
 
             fileName.text = characterAutosave.get(character.curCharacter).file;
 
@@ -923,6 +930,8 @@ class CharacterCreatorState extends MusicBeatState {
         if(id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper)) {
             var nums:FlxUINumericStepper = cast sender;
 			var wname = nums.name;
+
+            trace("Update Position");
 
             if(wname == 'x_pos') {
                 character._info.position.set('x', Std.int(nums.value));

@@ -1,0 +1,40 @@
+{
+	"animations": {
+		"deathConfirm": {
+			"prefix": "deathLoopDad",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				4,
+				0
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "firstDeathDad",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				886,
+				378
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": 0,
+		"camPosY": 0,
+		"y": 0,
+		"camPosX": 0
+	},
+	"clippingAdjustment": {},
+	"playAnim": "",
+	"file": "skating and flying DEATHDEMON.xml",
+	"icon": [
+		10,
+		11
+	],
+	"iconFile": "iconGrid"
+}

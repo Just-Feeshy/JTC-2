@@ -13,6 +13,7 @@ class GameOverSubstate extends MusicBeatSubstate
 	var camFollow:FlxObject;
 
 	var stageSuffix:String = "";
+    var animName:String = "";
 
 	public function new(x:Float, y:Float)
 	{
@@ -53,10 +54,12 @@ class GameOverSubstate extends MusicBeatSubstate
 		FlxG.camera.target = null;
 
         if(Paths.modJSON.game_over.exists(PlayState.curStage)) {
-	    	bf.playAnim(Paths.modJSON.game_over.get(PlayState.curStage).animation);
+            animName = Paths.modJSON.game_over.get(PlayState.curStage).animation;
         }else {
-            bf.playAnim(Paths.modJSON.game_over.get("default").animation);
+            animName = Paths.modJSON.game_over.get("default").animation;
         }
+
+        bf.playAnim(animName);
 	}
 
 	override function update(elapsed:Float)
@@ -78,12 +81,12 @@ class GameOverSubstate extends MusicBeatSubstate
 				FlxG.switchState(new FreeplayState());
 		}
 
-		if (bf.animation.curAnim.name == 'firstDeath' && bf.animation.curAnim.curFrame == 12)
+		if (bf.animation.curAnim.name == animName && bf.animation.curAnim.curFrame == 12)
 		{
 			FlxG.camera.follow(camFollow, LOCKON, 0.01);
 		}
 
-		if (bf.animation.curAnim.name == 'firstDeath' && bf.animation.curAnim.finished)
+		if (bf.animation.curAnim.name == animName && bf.animation.curAnim.finished)
 		{
 			FlxG.sound.playMusic(Paths.music('gameOver' + stageSuffix));
 		}

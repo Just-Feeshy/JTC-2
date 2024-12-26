@@ -51,6 +51,11 @@
     },
 
     "game_over": {
+        "funkroad": {
+            "character": "death-demon",
+            "animation": "singUP"
+        },
+
         "default": {
             "character": "bf",
             "animation": "firstDeath"
