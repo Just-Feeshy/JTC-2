@@ -4,6 +4,7 @@ This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.co
 
 **A fork of the Friday Night Funkin' legacy repo.**
 
+[![Watch The Video](https://www.youtube.com/watch?v=GU_lkfD-LGs)]
 
 ## Main Developers:
 ![jtc_dev_team](https://user-images.githubusercontent.com/58647349/173499193-ae4abb15-6879-40b1-b87a-d34a324a28ad.png)
