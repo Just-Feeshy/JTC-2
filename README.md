@@ -1,6 +1,6 @@
 # Friday Night Funkin' - JTC^2 Mod
 
-This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.com/mods/46741).
+This is the repository for [Friday Night Funkin': Vs. JTC](https://gamebanana.com/wips/53244).
 
 **A fork of the Friday Night Funkin' legacy repo.**
 
