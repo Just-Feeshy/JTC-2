@@ -11,7 +11,7 @@ https://github.com/user-attachments/assets/77e0e167-ac4a-4baf-9e92-689a0220b6b9
 ![jtc_dev_team](https://user-images.githubusercontent.com/58647349/173499193-ae4abb15-6879-40b1-b87a-d34a324a28ad.png)
 - [Suki](https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w) - Main Playtester
 - [FrogTreat](https://oliwiadeyna.wixsite.com/frogtreat) - Director, Animator, Artist and Charter
-- [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Artist and Charter
+- [Dificuz](https://www.youtube.com/channel/UCTJR8HpFUTUgyg7scqH7wIw) - Artist, Charter, and Programmer
 - [Feeshy](https://twitter.com/JustFeeshy) - Lead Programmer (Sorry for the crappy outdated code)
 - [Varsavi](https://www.instagram.com/varsavi_official/) - Lead Song Composer
 - [JDST](https://www.youtube.com/@JDST) - Song Composer and Joul's Soundfont
