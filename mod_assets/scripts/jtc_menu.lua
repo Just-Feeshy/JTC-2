@@ -28,7 +28,7 @@ function onCreate()
             createSprite(presetOptions[i + 1]);
         end
 
-        compileSpriteSheet(presetOptions[i + 1], "cool mainmenu assets");
+        compileSpriteSheet(presetOptions[i + 1], "cool_mainmenu_assets");
         decreaseSpriteSizeBy(presetOptions[i + 1], 1.75, 1.75);
         setSpritePosition(presetOptions[i + 1], menuPos[i + 1][1], menuPos[i + 1][2] + ((i + 1) * 400));
         playAnimationByPrefix(presetOptions[i + 1], 'idle', presetOptions[i + 1], 24, true);
@@ -40,7 +40,7 @@ function onCreate()
     end
 
     createSprite('chain');
-    compileSpriteSheet('chain', "cool mainmenu assets");
+    compileSpriteSheet('chain', "cool_mainmenu_assets");
     decreaseSpriteSizeBy('chain', 1.5, 1.5);
     setSpritePosition('chain', 0, -100);
     setScrollFactorToSprite('chain', 0, 1);
