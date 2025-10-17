@@ -75,6 +75,13 @@ class FreeplayState extends MusicBeatState
 	static inline var GRAFFITI_Y_OFFSET:Int = 0; // small vertical tweak to center on the row
 	static inline var MENU_SPACING:Int = 320; // spacing between menu rows (lower = tighter)
 
+	// Spray-can reveal animation state
+	private var graffitiRevealed:Array<Bool> = [];
+	private var graffitiCanSprites:Array<FlxSprite> = [];
+	private var graffitiAnimT:Array<Float> = [];
+	private var graffitiAnimActive:Array<Bool> = [];
+	static inline var CAN_ANIM_DURATION:Float = 2.0;
+
 	private var menuBG:MenuBackground;
 
 	var camFreeplay:FeshCamera;
@@ -187,9 +194,18 @@ class FreeplayState extends MusicBeatState
                 graffitiSprites.push(g);
                 // Hide the original text; we still keep it for layout/selection logic
                 songText.visible = false;
+                // init reveal flags
+                graffitiRevealed.push(false);
+                graffitiCanSprites.push(null);
+                graffitiAnimT.push(0);
+                graffitiAnimActive.push(false);
             } else {
                 // Keep array aligned with songs for simpler syncing
                 graffitiSprites.push(null);
+                graffitiRevealed.push(true);
+                graffitiCanSprites.push(null);
+                graffitiAnimT.push(0);
+                graffitiAnimActive.push(false);
             }
 		}
 
@@ -310,6 +326,13 @@ class FreeplayState extends MusicBeatState
                 g.alpha = songText.alpha;
             }
         }
+
+        // Update active spray-can animations
+        for (i in 0...songs.length) {
+            if (graffitiAnimActive[i]) {
+                updateCanAnim(i, elapsed);
+            }
+        }
 	}
 
 	override function stepHit() {
@@ -396,7 +419,76 @@ class FreeplayState extends MusicBeatState
                 g.y = songText.y + ((songText.height - g.height) / 2) + GRAFFITI_Y_OFFSET;
             }
         }
+
+        // Trigger reveal animation once per song when first selected
+        if (graffitiSprites[curSelected] != null && !graffitiRevealed[curSelected] && !graffitiAnimActive[curSelected]) {
+            startGraffitiReveal(curSelected);
+        }
 	}
+
+    inline function logChirp(x:Float, a:Float, b:Float, n:Float, A:Float):Float {
+        var shift:Float = Math.exp(-4.0 * Math.PI / a);
+        var u:Float = x / b + shift;
+        var phase:Float = a * Math.log(u);
+        var env:Float = Math.exp(0.5 - (x / (b * n)));
+        return A * 4.0 * env * Math.sin(phase);
+    }
+
+    inline function gFunc(t:Float):Float {
+        return t * Math.exp(t / 4);
+    }
+
+    function startGraffitiReveal(index:Int):Void {
+        var g = graffitiSprites[index];
+        if (g == null) return;
+
+        // Prepare for fade-in
+        g.alpha = 0;
+        graffitiAnimT[index] = 0;
+        graffitiAnimActive[index] = true;
+
+        var canGfx:FlxGraphic = Paths.image('Graffiti/can');
+        if (canGfx == null) {
+            graffitiRevealed[index] = true;
+            graffitiAnimActive[index] = false;
+            g.alpha = 1;
+            return;
+        }
+
+        var can = new FlxSprite();
+        can.loadGraphic(canGfx);
+        can.cameras = [camFreeplay];
+        can.setGraphicSize(Std.int(g.height * 2.0));
+        can.updateHitbox();
+        graffitiCanSprites[index] = can;
+        add(can);
+    }
+
+    function updateCanAnim(index:Int, elapsed:Float):Void {
+        var g = graffitiSprites[index];
+        var can = graffitiCanSprites[index];
+        if (g == null || can == null) return;
+
+        graffitiAnimT[index] += elapsed;
+        var t:Float = graffitiAnimT[index] / CAN_ANIM_DURATION;
+        if (t > 1) t = 1;
+
+        var left:Float = (FlxG.width - g.width) / 2 - can.width * 0.5;
+        var midY:Float = g.y + g.height * 0.5;
+        var xOffset:Float = g.width * t;
+        var yOffset:Float = logChirp(t * 48.0, 48.0, 24.0, 1.0, Math.max(6.0, g.height * 0.06));
+
+        can.x = left + xOffset;
+        can.y = midY + yOffset - can.height * 0.5;
+
+        if (graffitiAnimT[index] >= CAN_ANIM_DURATION) {
+            g.alpha = 1;
+            remove(can, true);
+            graffitiCanSprites[index] = null;
+            graffitiAnimActive[index] = false;
+            graffitiRevealed[index] = true;
+        }
+    }
 }
 
 class SongMetadata {
