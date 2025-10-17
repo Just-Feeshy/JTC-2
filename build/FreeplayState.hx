@@ -15,6 +15,8 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
@@ -80,7 +82,8 @@ class FreeplayState extends MusicBeatState
 	private var graffitiCanSprites:Array<FlxSprite> = [];
 	private var graffitiAnimT:Array<Float> = [];
 	private var graffitiAnimActive:Array<Bool> = [];
-	static inline var CAN_ANIM_DURATION:Float = 2.0;
+	private var graffitiFading:Array<Bool> = [];
+	static inline var CAN_ANIM_DURATION:Float = 1.0;
 
 	private var menuBG:MenuBackground;
 
@@ -199,6 +202,7 @@ class FreeplayState extends MusicBeatState
                 graffitiCanSprites.push(null);
                 graffitiAnimT.push(0);
                 graffitiAnimActive.push(false);
+                graffitiFading.push(false);
             } else {
                 // Keep array aligned with songs for simpler syncing
                 graffitiSprites.push(null);
@@ -206,6 +210,7 @@ class FreeplayState extends MusicBeatState
                 graffitiCanSprites.push(null);
                 graffitiAnimT.push(0);
                 graffitiAnimActive.push(false);
+                graffitiFading.push(false);
             }
 		}
 
@@ -323,7 +328,9 @@ class FreeplayState extends MusicBeatState
             if (g != null && songText != null) {
                 g.x = (FlxG.width - g.width) / 2;
                 g.y = songText.y + ((songText.height - g.height) / 2) + GRAFFITI_Y_OFFSET;
-                g.alpha = songText.alpha;
+                // Only force-hide before reveal; during fading let tween control alpha
+                if (!graffitiRevealed[i] && !graffitiFading[i]) g.alpha = 0;
+                if (graffitiRevealed[i]) g.alpha = songText.alpha;
             }
         }
 
@@ -414,7 +421,7 @@ class FreeplayState extends MusicBeatState
             var songText = grpSongs.members[i];
             var g = graffitiSprites[i];
             if (g != null && songText != null) {
-                g.alpha = songText.alpha;
+                if (graffitiRevealed[i]) g.alpha = songText.alpha;
                 g.x = (FlxG.width - g.width) / 2;
                 g.y = songText.y + ((songText.height - g.height) / 2) + GRAFFITI_Y_OFFSET;
             }
@@ -482,11 +489,21 @@ class FreeplayState extends MusicBeatState
         can.y = midY + yOffset - can.height * 0.5;
 
         if (graffitiAnimT[index] >= CAN_ANIM_DURATION) {
-            g.alpha = 1;
+            // Begin fade in; tween controls alpha until completion
+            g.alpha = 0;
+            g.visible = true;
+            graffitiFading[index] = true;
+            FlxTween.tween(g, {alpha: 1}, 0.4, {
+                ease: FlxEase.quadOut,
+                onComplete: function(_) {
+                    graffitiFading[index] = false;
+                    graffitiRevealed[index] = true;
+                }
+            });
+
             remove(can, true);
             graffitiCanSprites[index] = null;
             graffitiAnimActive[index] = false;
-            graffitiRevealed[index] = true;
         }
     }
 }
