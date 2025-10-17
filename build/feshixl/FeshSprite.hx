@@ -162,35 +162,56 @@ class FeshSprite extends FlxSprite {
     }
 
     public static function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):FlxFramesCollection {
+        if(firstF == null && secondF == null) {
+            return null;
+        }
+
+        if(firstF == null) {
+            return secondF;
+        }
+
+        if(secondF == null) {
+            return firstF;
+        }
+
         var firstBitmap:BitmapData = firstF.parent.bitmap;
         var secondBitmap:BitmapData = secondF.parent.bitmap;
 
-		final combinedBitmapWidth:Int = firstBitmap.width + secondBitmap.width;
-        final combinedBitmapHeight:Int = FlxMath.maxInt(firstBitmap.height, secondBitmap.height);
-        var combinedBitmap:BitmapData = new BitmapData(combinedBitmapWidth, combinedBitmapHeight, true, 0x00000000);
+        final combinedBitmapWidth:Int = Std.int(Math.max(firstBitmap.width, secondBitmap.width));
+        final combinedBitmapHeight:Int = firstBitmap.height + secondBitmap.height;
 
+        var combinedBitmap:BitmapData = new BitmapData(combinedBitmapWidth, combinedBitmapHeight, true, 0x00000000);
         combinedBitmap.draw(firstBitmap, new Matrix());
 
-		var matrix:Matrix = new Matrix();
-        matrix.translate(firstBitmap.width, 0);
+        var matrix:Matrix = new Matrix();
+        matrix.translate(0, firstBitmap.height);
         combinedBitmap.draw(secondBitmap, matrix);
 
-		var combinedFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxGraphic.fromBitmapData(combinedBitmap));
+        var combinedGraphic = FlxGraphic.fromBitmapData(combinedBitmap);
+        combinedGraphic.persist = true;
+        combinedGraphic.destroyOnNoUse = false;
 
-		for (frame in firstF.frames) {
-		    frame.parent = combinedFrames.parent;
-            combinedFrames.pushFrame(frame);
-		}
+        var combinedFrames:FlxAtlasFrames = new FlxAtlasFrames(combinedGraphic);
 
-		for (frame in secondF.frames) {
-		    frame.parent = combinedFrames.parent;
-			final rect = new FlxRect(frame.frame.x + firstBitmap.width, frame.frame.y, frame.frame.width, frame.frame.height);
-			frame.frame = rect;
-            combinedFrames.pushFrame(frame);
-		}
+        for (frame in firstF.frames) {
+            var clone = frame.copyTo();
+            clone.parent = combinedGraphic;
+            clone.frame = FlxRect.get(frame.frame.x, frame.frame.y, frame.frame.width, frame.frame.height);
+            @:privateAccess clone.cacheFrameMatrix();
+            combinedFrames.pushFrame(clone);
+        }
 
-		return combinedFrames;
-	}
+        for (frame in secondF.frames) {
+            var clone = frame.copyTo();
+            clone.parent = combinedGraphic;
+            var rect = FlxRect.get(frame.frame.x, frame.frame.y + firstBitmap.height, frame.frame.width, frame.frame.height);
+            clone.frame = rect;
+            @:privateAccess clone.cacheFrameMatrix();
+            combinedFrames.pushFrame(clone);
+        }
+
+        return combinedFrames;
+    }
 
     public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {
         __clippingPointAtlas.set(name, FlxPoint.get(width, height));

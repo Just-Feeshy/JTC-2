@@ -232,6 +232,8 @@ class CheesyStage extends StorageStage {
 
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
+
+			boyfriend.updateHitbox();
 		}
 	}
 

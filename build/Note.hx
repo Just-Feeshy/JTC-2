@@ -715,6 +715,14 @@ class Note extends FeshSprite {
 		return false;
 	}
 
+	public inline function isPressCandidate(lane:Int):Bool {
+		return mustPress && canBeHit && !tooLate && !wasGoodHit && !isSustainNote && noteData == lane;
+	}
+
+	public inline function shouldAutoHit(holdActive:Bool):Bool {
+		return holdActive && mustPress && canBeHit && !tooLate && !wasGoodHit && isSustainNote;
+	}
+
 	public function giveHealth():Float {
 		if(hasCustomAddon != null) {
 			return hasCustomAddon.giveHealth(isSustainNote);

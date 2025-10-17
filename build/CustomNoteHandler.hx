@@ -20,7 +20,7 @@ class CustomNoteHandler {
     @:allow(ChartingState.addNoteUI)
     private static var customNoteAddon:Map<String, Class<ICustomNote>> = new Map<String, Class<ICustomNote>>();
 
-    static public function spawn() {
+    static public function spawn():Void {
 
         //custom static note data
         yourNoteData = [

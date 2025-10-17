@@ -18,6 +18,7 @@ import flixel.effects.FlxFlicker;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.keyboard.FlxKey;
+import flixel.input.FlxInput.FlxInputState;
 import flixel.addons.effects.FlxTrail;
 import flixel.addons.effects.FlxTrailArea;
 import flixel.addons.effects.chainable.FlxEffectSprite;
@@ -49,7 +50,6 @@ import openfl.filters.ShaderFilter;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.events.Event;
-import openfl.events.KeyboardEvent;
 import feshixl.group.FeshEventGroup;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
@@ -83,7 +83,6 @@ class PlayState extends MusicBeatState
 	private var curChar:String = '';
 	private var camMovementPos:FlxPoint;
 	private var prevDadNoteData:Int = -1;
-	private var gamepadDetected:Bool = false;
     private var disableInputs:Bool = false;
 	private var videoSwitchState:String = "";
 
@@ -111,7 +110,8 @@ class PlayState extends MusicBeatState
 	public var fadeInValue:Int = 400;
 	public var cameraMovementInsensity:Float = 1;
 
-	@:isVar public var wobbleModPower(get, set):Float = 30;
+	@:isVar public var wobbleModPower(get, set):Float;
+	private var _wobbleModPower:Float = 30;
 
 	//Chart Shit
 	public static var muteInst:Bool;
@@ -129,12 +129,14 @@ class PlayState extends MusicBeatState
 
 	//Controls
 	private var keys2DArray:Array<Array<Int>> = [];
+	private var lanePressStates:Array<Bool> = [];
+	private var laneHoldStates:Array<Bool> = [];
+	private var laneReleaseStates:Array<Bool> = [];
 
 	//Da Variables
 	private var hits:Int = 0;
 	private var misses:Int = 0;
 	private var missesHold:Int = 0;
-	private var missClicks:Int = 0;
 	private var totalNotesLoaded:Int = 0;
 	private var defaultBlur:Float = 0;
 	private var playFPS:Null<Int> = Main.framerate;
@@ -280,6 +282,7 @@ class PlayState extends MusicBeatState
 		camHUD = new FeshCamera();
 		camHUD.bgColor.alpha = 0;
 		camNOTE.bgColor.alpha = 0;
+		set_wobbleModPower(_wobbleModPower);
 
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.add(camNOTE);
@@ -580,13 +583,6 @@ class PlayState extends MusicBeatState
 
 		setupKeyStuff();
 		eventLoad();
-
-		if(FlxG.keys.enabled) {
-			FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, getPressed);
-			FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, getReleased);
-		}
-
-		gamepadDetected = (FlxG.gamepads.lastActive != null ? true : false);
 
 		super.create();
 
@@ -1519,7 +1515,9 @@ class PlayState extends MusicBeatState
 			FlxG.sound.music.volume = 0;
 
 		FlxG.sound.music.play();
-		setSongPosition(FlxG.sound.music.time);
+		if(FlxG.sound.music != null) {
+			setSongPosition(FlxG.sound.music.time);
+		}
 		vocals.time = FlxG.sound.music.time;
 		vocals.play();
 	}
@@ -1631,7 +1629,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(FlxG.save.data.showstuff) {
-			counterTxt.text = 'Accuracy: ' + accTotal + '%' + '       ' + 'Miss Clicks: ' + missClicks + '       ' + 'Misses: ' + misses + '       ' + 'Score: ' + songScore;
+			counterTxt.text = 'Accuracy: ' + accTotal + '%' + '       ' + 'Misses: ' + misses + '       ' + 'Score: ' + songScore;
 			counterTxt.screenCenter(X);
 		}else
 			counterTxt.text = "Score: " + songScore;
@@ -1920,12 +1918,10 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if(gamepadDetected) {
-			controllerInput();
-		}
-
 		if (generatedMusic && !inCutscene)
 		{
+			updateLaneStates();
+			processPlayerInput();
 			defaultGameStuff();
 
 			//Nothing here!
@@ -2208,87 +2204,20 @@ class PlayState extends MusicBeatState
 		#end
 	}
 
-	function controllerInput():Void {
-		var controlPressArray:Array<Bool> = [
-			controls.GAME_LEFT_P,
-			controls.GAME_DOWN_P,
-			controls.GAME_UP_P,
-			controls.GAME_RIGHT_P
-		];
-
-		var controlReleaseArray:Array<Bool> = [
-			controls.GAME_LEFT_R,
-			controls.GAME_DOWN_R,
-			controls.GAME_UP_R,
-			controls.GAME_RIGHT_R
-		];
-
-		if (controlPressArray.contains(true)) {
-			var index:Int = 0;
-
-			while(index < controlPressArray.length) {
-				if (controlPressArray[index]) {
-					getPressed(new KeyboardEvent(KeyboardEvent.KEY_DOWN, true, true, -1, keys2DArray[index][0]));
-				}
-
-				index++;
-			}
-		}
-
-		if(controlReleaseArray.contains(true)) {
-			var index:Int = 0;
-
-			while(index < controlReleaseArray.length) {
-				if (controlReleaseArray[index]) {
-					getReleased(new KeyboardEvent(KeyboardEvent.KEY_DOWN, true, true, -1, keys2DArray[index][0]));
-				}
-
-				index++;
-			}
-		}
-	}
-
 	function getReleased(event:Event):Void {
-		if(paused || inCutscene)
+		if(paused || inCutscene) {
 			return;
+		}
 
 		var getEvent = cast event;
-		var index:Int = 0;
+		var index:Int = getKeyOrButton(getEvent.keyCode);
 
-
-		index = getKeyOrButton(getEvent.keyCode);
-
-		var controlArray = [
-			controls.GAME_LEFT_R,
-			controls.GAME_DOWN_R,
-			controls.GAME_UP_R,
-			controls.GAME_RIGHT_R
-		];
-
-		if(SONG.fifthKey) {
-			controlArray = [
-				controls.GAME_LEFT_R,
-				controls.GAME_DOWN_R,
-				controls.GAME_SPACE_R,
-				controls.GAME_UP_R,
-				controls.GAME_RIGHT_R
-			];
-		}
-
-		if(index >= controlArray.length) {
+		if(index == -1) {
 			return;
 		}
 
-		if(controlArray[index]) {
-			var spr:Strum = currentStrums.members[index];
-
-			if(spr != null) {
-				spr.holdTimer = 0;
-				spr.playAnim('static');
-			}
-
-			callLua('onKeyRelease', [getEvent.keyCode]);
-		}
+		updateLaneStates();
+		handleLaneRelease(index, getEvent.keyCode);
 	}
 
 	function gameOverScreen():Void {
@@ -2568,37 +2497,239 @@ class PlayState extends MusicBeatState
 		curSection += 1;
 	}
 
+	inline function getLaneCount():Int {
+		return (SONG != null && SONG.fifthKey) ? 5 : 4;
+	}
+
+	function ensureLaneCapacity(count:Int):Void {
+		while(lanePressStates.length < count) {
+			lanePressStates.push(false);
+		}
+
+		while(laneHoldStates.length < count) {
+			laneHoldStates.push(false);
+		}
+
+		while(laneReleaseStates.length < count) {
+			laneReleaseStates.push(false);
+		}
+	}
+
+	inline function setLaneState(index:Int, press:Bool, hold:Bool, release:Bool):Void {
+		ensureLaneCapacity(index + 1);
+		lanePressStates[index] = press;
+		laneHoldStates[index] = hold;
+		laneReleaseStates[index] = release;
+	}
+
+	function clearUnusedLaneStates(startIndex:Int):Void {
+		for(i in startIndex...lanePressStates.length) {
+			lanePressStates[i] = false;
+			laneHoldStates[i] = false;
+			laneReleaseStates[i] = false;
+		}
+	}
+
+	function updateLaneStates():Void {
+		if(SONG == null) {
+			return;
+		}
+
+		var laneCount = getLaneCount();
+		ensureLaneCapacity(laneCount);
+
+		setLaneState(0, controls.GAME_LEFT_P, controls.GAME_LEFT, controls.GAME_LEFT_R);
+		setLaneState(1, controls.GAME_DOWN_P, controls.GAME_DOWN, controls.GAME_DOWN_R);
+
+		if(SONG.fifthKey) {
+			setLaneState(2, controls.GAME_SPACE_P, controls.GAME_SPACE, controls.GAME_SPACE_R);
+			setLaneState(3, controls.GAME_UP_P, controls.GAME_UP, controls.GAME_UP_R);
+			setLaneState(4, controls.GAME_RIGHT_P, controls.GAME_RIGHT, controls.GAME_RIGHT_R);
+			clearUnusedLaneStates(5);
+		}else {
+			setLaneState(2, controls.GAME_UP_P, controls.GAME_UP, controls.GAME_UP_R);
+			setLaneState(3, controls.GAME_RIGHT_P, controls.GAME_RIGHT, controls.GAME_RIGHT_R);
+			clearUnusedLaneStates(4);
+		}
+	}
+
+	function getLaneKeyCode(index:Int, status:FlxInputState):Int {
+		if(keys2DArray == null || index < 0 || index >= keys2DArray.length) {
+			return -1;
+		}
+
+		var laneKeys = keys2DArray[index];
+
+		if(laneKeys == null || laneKeys.length == 0) {
+			return -1;
+		}
+
+		for(key in laneKeys) {
+			if(FlxG.keys.checkStatus(key, status)) {
+				return key;
+			}
+		}
+
+		return laneKeys[0];
+	}
+
+	function findClosestNoteForLane(lane:Int):Note {
+		if(notes == null) {
+			return null;
+		}
+
+		var front:Note = null;
+		var back:Note = null;
+
+		notes.forEachAlive(function(note:Note) {
+			if(note == null || !note.isPressCandidate(lane)) {
+				return;
+			}
+
+			if(front == null) {
+				front = note;
+				return;
+			}
+
+			var noteTime = DefaultHandler.getNoteTime(note.strumTime);
+			var frontTime = DefaultHandler.getNoteTime(front.strumTime);
+
+			if(noteTime < frontTime) {
+				back = front;
+				front = note;
+			}else if(back == null || noteTime < DefaultHandler.getNoteTime(back.strumTime)) {
+				back = note;
+			}
+		});
+
+		return resolveNoteConflict(front, back);
+	}
+
+	function resolveNoteConflict(front:Note, back:Note):Note {
+		if(front == null || back == null) {
+			return front;
+		}
+
+		var frontTime = DefaultHandler.getNoteTime(front.strumTime);
+		var backTime = DefaultHandler.getNoteTime(back.strumTime);
+
+		if(frontTime == backTime) {
+			if(front.getNoteHittable(back)) {
+				removeNote(back);
+				return front;
+			}else if(back.getNoteHittable(front)) {
+				removeNote(front);
+				return back;
+			}
+		}else if(front.getNoteHittable(back)) {
+			removeNote(back);
+			return front;
+		}else if(frontTime < backTime) {
+			return back;
+		}
+
+		return front;
+	}
+
+	function processPlayerInput():Void {
+		if(paused || inCutscene || disableInputs || !generatedMusic) {
+			return;
+		}
+
+		var laneCount = getLaneCount();
+
+		for(lane in 0...laneCount) {
+			if(lanePressStates[lane]) {
+				handleLanePress(lane, getLaneKeyCode(lane, FlxInputState.JUST_PRESSED));
+			}
+		}
+
+		for(lane in 0...laneCount) {
+			if(laneReleaseStates[lane]) {
+				handleLaneRelease(lane, getLaneKeyCode(lane, FlxInputState.JUST_RELEASED));
+			}
+		}
+	}
+
+	function handleLanePress(index:Int, keyCode:Int):Void {
+		if(index < 0 || disableInputs || paused || inCutscene) {
+			return;
+		}
+
+		if(index >= currentStrums.length) {
+			callLua('onKeyPress', [keyCode]);
+			return;
+		}
+
+		if(FlxG.sound.music != null) {
+			setSongPosition(FlxG.sound.music.time);
+		}
+
+		var note = findClosestNoteForLane(index);
+
+		if(note != null) {
+			goodNoteHit(note);
+		}else if(!GhostTapping.ghostTap) {
+			takeDamage(index, true);
+			songScore -= 10;
+			setHealth(health - 0.04);
+		}
+
+		var spr:Strum = currentStrums.members[index];
+
+		if(spr != null && !CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+			if(spr.animation == null || spr.animation.curAnim == null || spr.animation.curAnim.name != "confirm") {
+				spr.playAnim('pressed');
+				spr.holdTimer = 0;
+			}
+		}
+
+		callLua('onKeyPress', [keyCode]);
+	}
+
+	function handleLaneRelease(index:Int, keyCode:Int):Void {
+		if(index < 0 || paused || inCutscene) {
+			return;
+		}
+
+		if(index >= currentStrums.length) {
+			callLua('onKeyRelease', [keyCode]);
+			return;
+		}
+
+		var spr:Strum = currentStrums.members[index];
+
+		if(spr != null) {
+			spr.holdTimer = 0;
+			spr.playAnim('static');
+		}
+
+		callLua('onKeyRelease', [keyCode]);
+	}
+
 	function defaultGameStuff():Void {
 		if(paused || inCutscene)
 			return;
 
-		var controlHoldArray = [
-			controls.GAME_LEFT,
-			controls.GAME_DOWN,
-			controls.GAME_UP,
-			controls.GAME_RIGHT
-		];
-
-		if(SONG.fifthKey) {
-			controlHoldArray = [
-				controls.GAME_LEFT,
-				controls.GAME_DOWN,
-				controls.GAME_SPACE,
-				controls.GAME_UP,
-				controls.GAME_RIGHT
-			];
-		}
+		var controlHoldArray = laneHoldStates;
 
 		currentStrums.forEachAlive(function(spr:Strum) {
-		    if(!controlHoldArray[spr.ID] && spr.animation.curAnim.name == "pressed") {
+			if(spr == null || spr.ID >= controlHoldArray.length) {
+				return;
+			}
+
+			if(!controlHoldArray[spr.ID] && spr.animation != null && spr.animation.curAnim != null && spr.animation.curAnim.name == "pressed") {
 				spr.playAnim('static');
 				spr.holdTimer = 0;
 			}
 		});
 
 		notes.forEachAlive(function(daNote:Note) {
-			if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate
-			&& !daNote.wasGoodHit && controlHoldArray[daNote.noteData] && daNote.isSustainNote && !disableInputs) {
+			if(daNote == null || daNote.noteData >= controlHoldArray.length) {
+				return;
+			}
+
+			if (!disableInputs && daNote.shouldAutoHit(controlHoldArray[daNote.noteData])) {
 				goodNoteHit(daNote);
 			}
 		});
@@ -2615,91 +2746,19 @@ class PlayState extends MusicBeatState
 		}
 
 		var getEvent = cast event;
-		var index:Int = 0;
 
-		if(!FlxG.keys.checkStatus(getEvent.keyCode, JUST_PRESSED)) {
+		if(!FlxG.keys.checkStatus(getEvent.keyCode, FlxInputState.JUST_PRESSED)) {
 			return;
 		}
 
-		index = getKeyOrButton(getEvent.keyCode);
+		var index:Int = getKeyOrButton(getEvent.keyCode);
 
-		var controlArray = [
-			controls.GAME_LEFT_P,
-			controls.GAME_DOWN_P,
-			controls.GAME_UP_P,
-			controls.GAME_RIGHT_P
-		];
-
-		if(SONG.fifthKey) {
-			controlArray = [
-				controls.GAME_LEFT_P,
-				controls.GAME_DOWN_P,
-				controls.GAME_SPACE_P,
-				controls.GAME_UP_P,
-				controls.GAME_RIGHT_P
-			];
+		if(index == -1) {
+			return;
 		}
 
-		if (generatedMusic && controlArray.contains(true)) {
-			var noteCaculation:Bool = false;
-
-			setSongPosition(FlxG.sound.music.time);
-
-			var inputNotes = notes.members.filter(function(note:Note):Bool {
-				if(note == null) return false;
-
-				return note.canBeHit && note.mustPress && !note.tooLate && !note.wasGoodHit && !note.isSustainNote && note.noteData == index;
-			});
-			inputNotes.sort((a, b) -> Std.int(DefaultHandler.getNoteTime(a.strumTime) - DefaultHandler.getNoteTime(b.strumTime)));
-
-			if(inputNotes.length != 0) {
-				var front = inputNotes[0];
-
-				final frontTime = DefaultHandler.getNoteTime(front.strumTime);
-
-				if(inputNotes.length > 1) {
-					var back = inputNotes[1];
-
-					final backTime = DefaultHandler.getNoteTime(back.strumTime);
-
-				    if(frontTime == backTime) {
-						if(front.getNoteHittable(back)) {
-							removeNote(back);
-						}else if(back.getNoteHittable(front)) {
-							removeNote(front);
-							front = back;
-						}
-				    }else if(front.getNoteHittable(back)) {
-						removeNote(back);
-					}else if(frontTime < backTime) {
-						front = back;
-					}
-				}
-
-				goodNoteHit(front);
-			}else if(!GhostTapping.ghostTap) {
-				if(controlArray[index]) {
-				    takeDamage(index, true);
-				    songScore -= 10;
-				    setHealth(health - 0.04);
-				    missClicks++;
-				}
-		    }
-
-		    var spr:Strum = currentStrums.members[index];
-
-            // Ewwwww
-            if(spr != null) {
-                if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-                    if(controlArray[index] && spr.animation.curAnim.name != "confirm") {
-                        spr.playAnim('pressed');
-                        spr.holdTimer = 0;
-                    }
-                }
-            }
-
-			callLua('onKeyPress', [getEvent.keyCode]);
-		}
+		updateLaneStates();
+		handleLanePress(index, getEvent.keyCode);
 	}
 
 	function getKeyOrButton(keyCode:Int):Int {
@@ -3477,9 +3536,11 @@ class PlayState extends MusicBeatState
 	}
 
 	function set_wobbleModPower(value:Float):Float {
-		wobbleModPower = value;
-		camNOTE.wobblePower = wobbleModPower * flipWiggle;
-		return wobbleModPower;
+		_wobbleModPower = value;
+		if(camNOTE != null) {
+			camNOTE.wobblePower = _wobbleModPower * flipWiggle;
+		}
+		return _wobbleModPower;
 	}
 
 	//Getter Functions
@@ -3521,7 +3582,7 @@ class PlayState extends MusicBeatState
 
 	function get_wobbleModPower():Float {
 		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.wobbleNotes.enabled) {
-			return wobbleModPower;
+			return _wobbleModPower;
 		}
 
 		return 30;
@@ -3656,15 +3717,15 @@ class PlayState extends MusicBeatState
 	override public function destroy() {
 		super.destroy();
 
-		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, getPressed);
-		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, getReleased);
-
 		FlxG.sound.destroy();
 
 		stage = FlxDestroyUtil.destroy(stage);
 		events = FlxDestroyUtil.destroy(events);
 
 		keys2DArray = null;
+		lanePressStates = null;
+		laneHoldStates = null;
+		laneReleaseStates = null;
 		eventInfo = null;
 
 		if(getModLua() != null) {
