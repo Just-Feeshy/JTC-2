@@ -21,6 +21,7 @@ import openfl.filters.ShaderFilter;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
 import lime.utils.Assets;
+import flixel.graphics.FlxGraphic;
 import haxe.Json;
 
 import ModInitialize;
@@ -65,6 +66,14 @@ class FreeplayState extends MusicBeatState
 
 	var giveTick:Float = 0;
 	private var iconArray:Array<HealthIcon> = [];
+
+    // Optional graffiti images that replace song text if present
+    private var graffitiSprites:Array<FlxSprite> = [];
+	private var grpGraffiti:FlxTypedGroup<FlxSprite>;
+
+	static inline var GRAFFITI_HEIGHT:Int = 444; // target height for each graffiti label
+	static inline var GRAFFITI_Y_OFFSET:Int = 0; // small vertical tweak to center on the row
+	static inline var MENU_SPACING:Int = 320; // spacing between menu rows (lower = tighter)
 
 	private var menuBG:MenuBackground;
 
@@ -134,11 +143,17 @@ class FreeplayState extends MusicBeatState
 		grpSongs.cameras = [camFreeplay];
 		add(grpSongs);
 
+		// group to render graffiti labels; placed right after text so icons appear above
+		grpGraffiti = new FlxTypedGroup<FlxSprite>();
+		grpGraffiti.cameras = [camFreeplay];
+		add(grpGraffiti);
+
 		for (i in 0...songs.length)
 		{
 			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songs[i].songName, true, false);
 			songText.isMenuItem = true;
 			songText.targetY = i;
+			songText.yMultiplier = MENU_SPACING;
 
 			if(i != 0)
 				songText.alpha = 0.6;
@@ -155,6 +170,27 @@ class FreeplayState extends MusicBeatState
 			// using a FlxGroup is too much fuss!
 			iconArray.push(icon);
 			add(icon);
+			// Hide icons (yellow faces) in Freeplay when using graffiti labels
+			icon.visible = false;
+
+            // Try to load a graffiti image for this song: mod_assets/images/Graffiti/<song>.png
+            var graffitiKey:String = 'Graffiti/' + songs[i].songName.toLowerCase();
+            var graffitiGraphic:FlxGraphic = Paths.image(graffitiKey);
+            if (graffitiGraphic != null) {
+                var g:FlxSprite = new FlxSprite(songText.x, songText.y);
+                g.loadGraphic(graffitiGraphic);
+                g.setGraphicSize(0, GRAFFITI_HEIGHT);
+                g.updateHitbox();
+                g.cameras = [camFreeplay];
+                g.alpha = songText.alpha;
+                grpGraffiti.add(g);
+                graffitiSprites.push(g);
+                // Hide the original text; we still keep it for layout/selection logic
+                songText.visible = false;
+            } else {
+                // Keep array aligned with songs for simpler syncing
+                graffitiSprites.push(null);
+            }
 		}
 
 		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
@@ -263,6 +299,17 @@ class FreeplayState extends MusicBeatState
 			CacheState.loadAndSwitchStateF(new PlayState());
 		    #end
 		}
+
+        // Keep any graffiti images aligned with the invisible text items as they smoothly animate
+        for (i in 0...songs.length) {
+            var songText = grpSongs.members[i];
+            var g = graffitiSprites[i];
+            if (g != null && songText != null) {
+                g.x = (FlxG.width - g.width) / 2;
+                g.y = songText.y + ((songText.height - g.height) / 2) + GRAFFITI_Y_OFFSET;
+                g.alpha = songText.alpha;
+            }
+        }
 	}
 
 	override function stepHit() {
@@ -338,6 +385,17 @@ class FreeplayState extends MusicBeatState
 				// item.setGraphicSize(Std.int(item.width));
 			}
 		}
+
+        // Also update the alpha of any graffiti sprites to match selection highlighting
+        for (i in 0...songs.length) {
+            var songText = grpSongs.members[i];
+            var g = graffitiSprites[i];
+            if (g != null && songText != null) {
+                g.alpha = songText.alpha;
+                g.x = (FlxG.width - g.width) / 2;
+                g.y = songText.y + ((songText.height - g.height) / 2) + GRAFFITI_Y_OFFSET;
+            }
+        }
 	}
 }
 

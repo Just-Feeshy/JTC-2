@@ -1,9 +1,9 @@
 function onCreate()
     destroyStuff()
 
-    createSprite("freeplay-bg")
-    loadGraphic("freeplay-bg", "menu/freeplay-bg")
-    insertSpriteToState(0, "freeplay-bg")
+    createSprite("wall")
+    loadGraphic("wall", "Graffiti/wall")
+    insertSpriteToState(0, "wall")
 end
 
 function destroyStuff() --Destroy in-game preloaded sprites.
