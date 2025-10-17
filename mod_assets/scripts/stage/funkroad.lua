@@ -282,8 +282,8 @@ function onUpdate(elapsed)
         frost_modchart.sectionOne(elapsed)
 
         --Modchart Section 2 (There is a HELL version, try it out if you want to suffer)
-		-- frost_modchart.sectionTwo_Hell(elapsed
-        frost_modchart.sectionTwo_REGULAR()
+		-- frost_modchart.sectionTwo_Hell(elapsed)
+        -- frost_modchart.sectionTwo_REGULAR()
 
         -- Cloud Incoming for transition
         cloudIncome()

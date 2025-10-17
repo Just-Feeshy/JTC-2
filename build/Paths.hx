@@ -58,7 +58,7 @@ class Paths
 
 	static public function getPath(file:String, type:AssetType, library:Null<String>)
 	{
-		if (library != null)
+		if (library != null && library != "")
 			return getLibraryPath(file, library);
 
 		if (currentLevel != null)
@@ -77,13 +77,18 @@ class Paths
 
 	static public function getLibraryPath(file:String, library = "preload")
 	{
-		return if (library == "preload" || library == "default") getPreloadPath(file); else getLibraryPathForce(file, library);
+		if (library == null || library == "" || library == "preload" || library == "default")
+			return getPreloadPath(file);
+
+		return getLibraryPathForce(file, library);
 	}
 
 	inline static function getLibraryPathForce(file:String, library:String)
 	{
 		if(OpenFlAssets.exists('mod_assets/$file'))
 			return 'mod_assets/$file';
+		else if(library == null || library == "")
+			return getPreloadPath(file);
 		else
 			return '$library:assets/$library/$file';
 	}

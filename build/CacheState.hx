@@ -40,6 +40,11 @@ class CacheState extends HelperStates {
         super.create();
     }
 
+    override function update(elapsed:Float) {
+        Cache.processPendingGPUUploads();
+        super.update(elapsed);
+    }
+
     function cacheStuff():Void {
         Cache.clear();
 
