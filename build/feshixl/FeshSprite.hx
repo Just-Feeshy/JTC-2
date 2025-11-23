@@ -177,14 +177,14 @@ class FeshSprite extends FlxSprite {
         var firstBitmap:BitmapData = firstF.parent.bitmap;
         var secondBitmap:BitmapData = secondF.parent.bitmap;
 
-        final combinedBitmapWidth:Int = Std.int(Math.max(firstBitmap.width, secondBitmap.width));
-        final combinedBitmapHeight:Int = firstBitmap.height + secondBitmap.height;
+        final combinedBitmapWidth:Int = firstBitmap.width + secondBitmap.width;
+        final combinedBitmapHeight:Int = Std.int(Math.max(firstBitmap.height, secondBitmap.height));
 
         var combinedBitmap:BitmapData = new BitmapData(combinedBitmapWidth, combinedBitmapHeight, true, 0x00000000);
         combinedBitmap.draw(firstBitmap, new Matrix());
 
         var matrix:Matrix = new Matrix();
-        matrix.translate(0, firstBitmap.height);
+        matrix.translate(firstBitmap.width, 0);
         combinedBitmap.draw(secondBitmap, matrix);
 
         var combinedGraphic = FlxGraphic.fromBitmapData(combinedBitmap);
@@ -204,7 +204,7 @@ class FeshSprite extends FlxSprite {
         for (frame in secondF.frames) {
             var clone = frame.copyTo();
             clone.parent = combinedGraphic;
-            var rect = FlxRect.get(frame.frame.x, frame.frame.y + firstBitmap.height, frame.frame.width, frame.frame.height);
+            var rect = FlxRect.get(frame.frame.x + firstBitmap.width, frame.frame.y, frame.frame.width, frame.frame.height);
             clone.frame = rect;
             @:privateAccess clone.cacheFrameMatrix();
             combinedFrames.pushFrame(clone);

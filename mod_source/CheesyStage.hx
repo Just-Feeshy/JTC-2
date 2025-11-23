@@ -214,26 +214,36 @@ class CheesyStage extends StorageStage {
 		dad = Register.getInGameCharacter(OPPONENT);
 
 		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
-		    boyfriend.frames = feshixl.FeshSprite.twoInOneFrames(
+		    var combinedFrames = feshixl.FeshSprite.twoInOneFrames(
 				Paths.getSparrowAtlas("flying notes BF SINGS"),
 				Paths.getSparrowAtlas("flying notes GF SINGS")
-			);
-			boyfriend.animOffsets = flyingOffset;
+		    );
 
-			addAnimation("idle", "flying dance IDLE0");
-			addAnimation("singDOWN", "flying dance DOWN0");
-			addAnimation("singUP", "flying dance UP0");
-			addAnimation("singLEFT", "flying dance LEFT0");
-			addAnimation("singRIGHT", "flying dance RIGHT0");
-			addAnimation("singDOWNmiss", "flying miss DOWN0");
-			addAnimation("singUPmiss", "flying miss UP0");
-			addAnimation("singRIGHTmiss", "flying miss RIGHT0");
-			addAnimation("singLEFTmiss", "flying miss LEFT0");
+		    boyfriend.frames = combinedFrames;
+		    @:privateAccess boyfriend.animation.destroyAnimations();
+		    boyfriend.animations = [];
 
-			boyfriend.shouldPlayDance = false;
-			dad.shouldPlayDance = false;
+		    boyfriend.animOffsets = new Map<String, Array<Float>>();
+		    for (key in flyingOffset.keys()) {
+		        var offsets = flyingOffset.get(key);
+		        boyfriend.animOffsets.set(key, [offsets[0], offsets[1]]);
+		    }
 
-			boyfriend.updateHitbox();
+		    addAnimation("idle", "flying dance IDLE0");
+		    addAnimation("singDOWN", "flying dance DOWN0");
+		    addAnimation("singUP", "flying dance UP0");
+		    addAnimation("singLEFT", "flying dance LEFT0");
+		    addAnimation("singRIGHT", "flying dance RIGHT0");
+		    addAnimation("singDOWNmiss", "flying miss DOWN0");
+		    addAnimation("singUPmiss", "flying miss UP0");
+		    addAnimation("singRIGHTmiss", "flying miss RIGHT0");
+		    addAnimation("singLEFTmiss", "flying miss LEFT0");
+
+		    boyfriend.shouldPlayDance = false;
+		    dad.shouldPlayDance = false;
+
+		    boyfriend.updateHitbox();
+		    boyfriend.playAnim("idle", true);
 		}
 	}
 
