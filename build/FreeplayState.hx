@@ -15,15 +15,12 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import flixel.tweens.FlxTween;
-import flixel.tweens.FlxEase;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
 import lime.utils.Assets;
-import flixel.graphics.FlxGraphic;
 import haxe.Json;
 
 import ModInitialize;
@@ -69,31 +66,18 @@ class FreeplayState extends MusicBeatState
 	var giveTick:Float = 0;
 	private var iconArray:Array<HealthIcon> = [];
 
-    // Optional graffiti images that replace song text if present
-    private var graffitiSprites:Array<FlxSprite> = [];
-	private var grpGraffiti:FlxTypedGroup<FlxSprite>;
-
-	static inline var GRAFFITI_HEIGHT:Int = 444; // target height for each graffiti label
-	static inline var GRAFFITI_Y_OFFSET:Int = 0; // small vertical tweak to center on the row
-	static inline var MENU_SPACING:Int = 320; // spacing between menu rows (lower = tighter)
-
-	// Spray-can reveal animation state
-	private var graffitiRevealed:Array<Bool> = [];
-	private var graffitiCanSprites:Array<FlxSprite> = [];
-	private var graffitiAnimT:Array<Float> = [];
-	private var graffitiAnimActive:Array<Bool> = [];
-	private var graffitiFading:Array<Bool> = [];
-	static inline var CAN_ANIM_DURATION:Float = 1.0;
-
 	private var menuBG:MenuBackground;
 
 	var camFreeplay:FeshCamera;
 	var camBackground:FeshCamera;
 
+	#if (USING_LUA && cpp)
+	private var hasGraffiti:Array<Bool> = [];
+	private var luaReady:Bool = false;
+	#end
+
 	override function create()
 	{
-		super.create();
-
 		#if windows
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
@@ -106,6 +90,10 @@ class FreeplayState extends MusicBeatState
 		#end
 
 		var index:Int = 0;
+
+		#if (USING_LUA && cpp)
+		hasGraffiti = [];
+		#end
 
 		while(Paths.modJSON.weeks.get("week_" + index) != null) {
 			for(v in 0...Paths.modJSON.weeks.get("week_" + index).week_data.length) {
@@ -153,17 +141,11 @@ class FreeplayState extends MusicBeatState
 		grpSongs.cameras = [camFreeplay];
 		add(grpSongs);
 
-		// group to render graffiti labels; placed right after text so icons appear above
-		grpGraffiti = new FlxTypedGroup<FlxSprite>();
-		grpGraffiti.cameras = [camFreeplay];
-		add(grpGraffiti);
-
 		for (i in 0...songs.length)
 		{
 			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songs[i].songName, true, false);
 			songText.isMenuItem = true;
 			songText.targetY = i;
-			songText.yMultiplier = MENU_SPACING;
 
 			if(i != 0)
 				songText.alpha = 0.6;
@@ -180,38 +162,13 @@ class FreeplayState extends MusicBeatState
 			// using a FlxGroup is too much fuss!
 			iconArray.push(icon);
 			add(icon);
-			// Hide icons (yellow faces) in Freeplay when using graffiti labels
-			icon.visible = false;
 
-            // Try to load a graffiti image for this song: mod_assets/images/Graffiti/<song>.png
-            var graffitiKey:String = 'Graffiti/' + songs[i].songName.toLowerCase();
-            var graffitiGraphic:FlxGraphic = Paths.image(graffitiKey);
-            if (graffitiGraphic != null) {
-                var g:FlxSprite = new FlxSprite(songText.x, songText.y);
-                g.loadGraphic(graffitiGraphic);
-                g.setGraphicSize(0, GRAFFITI_HEIGHT);
-                g.updateHitbox();
-                g.cameras = [camFreeplay];
-                g.alpha = songText.alpha;
-                grpGraffiti.add(g);
-                graffitiSprites.push(g);
-                // Hide the original text; we still keep it for layout/selection logic
-                songText.visible = false;
-                // init reveal flags
-                graffitiRevealed.push(false);
-                graffitiCanSprites.push(null);
-                graffitiAnimT.push(0);
-                graffitiAnimActive.push(false);
-                graffitiFading.push(false);
-            } else {
-                // Keep array aligned with songs for simpler syncing
-                graffitiSprites.push(null);
-                graffitiRevealed.push(true);
-                graffitiCanSprites.push(null);
-                graffitiAnimT.push(0);
-                graffitiAnimActive.push(false);
-                graffitiFading.push(false);
-            }
+			#if (USING_LUA && cpp)
+			if(HelperStates.luaExist(Type.getClass(this))) {
+				modifiableSprites.set('freeplayIcon_' + i, icon);
+				hasGraffiti.push(Paths.image('Graffiti/' + songs[i].songName.toLowerCase()) != null);
+			}
+			#end
 		}
 
 		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
@@ -247,8 +204,12 @@ class FreeplayState extends MusicBeatState
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableSprites.set("menuBG", menuBG);
+			modifiableCameras.set("cameraBackground", camBackground);
+			modifiableCameras.set("cameraFreeplay", camFreeplay);
 		}
 		#end
+
+		super.create();
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String)
@@ -320,26 +281,6 @@ class FreeplayState extends MusicBeatState
 			CacheState.loadAndSwitchStateF(new PlayState());
 		    #end
 		}
-
-        // Keep any graffiti images aligned with the invisible text items as they smoothly animate
-        for (i in 0...songs.length) {
-            var songText = grpSongs.members[i];
-            var g = graffitiSprites[i];
-            if (g != null && songText != null) {
-                g.x = (FlxG.width - g.width) / 2;
-                g.y = songText.y + ((songText.height - g.height) / 2) + GRAFFITI_Y_OFFSET;
-                // Only force-hide before reveal; during fading let tween control alpha
-                if (!graffitiRevealed[i] && !graffitiFading[i]) g.alpha = 0;
-                if (graffitiRevealed[i]) g.alpha = songText.alpha;
-            }
-        }
-
-        // Update active spray-can animations
-        for (i in 0...songs.length) {
-            if (graffitiAnimActive[i]) {
-                updateCanAnim(i, elapsed);
-            }
-        }
 	}
 
 	override function stepHit() {
@@ -364,6 +305,13 @@ class FreeplayState extends MusicBeatState
 		#end
 
 		diffText.text = CoolUtil.difficultyArray[curDifficulty].toUpperCase();
+
+		#if (USING_LUA && cpp)
+		if(luaReady) {
+			setLua("curDifficulty", curDifficulty);
+			callLua("onFreeplayDifficultyChange", [curDifficulty, change]);
+		}
+		#end
 	}
 
 	function changeSelection(change:Int = 0)
@@ -416,96 +364,124 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-        // Also update the alpha of any graffiti sprites to match selection highlighting
-        for (i in 0...songs.length) {
-            var songText = grpSongs.members[i];
-            var g = graffitiSprites[i];
-            if (g != null && songText != null) {
-                if (graffitiRevealed[i]) g.alpha = songText.alpha;
-                g.x = (FlxG.width - g.width) / 2;
-                g.y = songText.y + ((songText.height - g.height) / 2) + GRAFFITI_Y_OFFSET;
-            }
-        }
-
-        // Trigger reveal animation once per song when first selected
-        if (graffitiSprites[curSelected] != null && !graffitiRevealed[curSelected] && !graffitiAnimActive[curSelected]) {
-            startGraffitiReveal(curSelected);
-        }
+		#if (USING_LUA && cpp)
+		if(luaReady) {
+			setLua("curSelected", curSelected);
+			callLua("onFreeplaySelectionChange", [curSelected, change]);
+		}
+		#end
 	}
 
-    inline function logChirp(x:Float, a:Float, b:Float, n:Float, A:Float):Float {
-        var shift:Float = Math.exp(-4.0 * Math.PI / a);
-        var u:Float = x / b + shift;
-        var phase:Float = a * Math.log(u);
-        var env:Float = Math.exp(0.5 - (x / (b * n)));
-        return A * 4.0 * env * Math.sin(phase);
-    }
+	#if (USING_LUA && cpp)
+	override function onCreate():Dynamic {
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			setupLuaBindings();
+		}
 
-    inline function gFunc(t:Float):Float {
-        return t * Math.exp(t / 4);
-    }
+		var result = super.onCreate();
 
-    function startGraffitiReveal(index:Int):Void {
-        var g = graffitiSprites[index];
-        if (g == null) return;
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			luaReady = true;
+			setLua("curSelected", curSelected);
+			setLua("curDifficulty", curDifficulty);
+			callLua("onFreeplaySelectionChange", [curSelected, 0]);
+			callLua("onFreeplayDifficultyChange", [curDifficulty, 0]);
+		}
 
-        // Prepare for fade-in
-        g.alpha = 0;
-        graffitiAnimT[index] = 0;
-        graffitiAnimActive[index] = true;
+		return result;
+	}
 
-        var canGfx:FlxGraphic = Paths.image('Graffiti/can');
-        if (canGfx == null) {
-            graffitiRevealed[index] = true;
-            graffitiAnimActive[index] = false;
-            g.alpha = 1;
-            return;
-        }
+	function setupLuaBindings():Void {
+		if(!HelperStates.luaExist(Type.getClass(this))) {
+			return;
+		}
 
-        var can = new FlxSprite();
-        can.loadGraphic(canGfx);
-        can.cameras = [camFreeplay];
-        can.setGraphicSize(Std.int(g.height * 2.0));
-        can.updateHitbox();
-        graffitiCanSprites[index] = can;
-        add(can);
-    }
+		setLua("freeplaySongCount", songs.length);
+		setLua("curSelected", curSelected);
+		setLua("curDifficulty", curDifficulty);
 
-    function updateCanAnim(index:Int, elapsed:Float):Void {
-        var g = graffitiSprites[index];
-        var can = graffitiCanSprites[index];
-        if (g == null || can == null) return;
+		addCallback("getFreeplaySongCount", function():Int {
+			return songs.length;
+		});
 
-        graffitiAnimT[index] += elapsed;
-        var t:Float = graffitiAnimT[index] / CAN_ANIM_DURATION;
-        if (t > 1) t = 1;
+		addCallback("getFreeplaySongName", function(index:Int):String {
+			var data = getSongAt(index);
+			return data != null ? data.songName : "";
+		});
 
-        var left:Float = (FlxG.width - g.width) / 2 - can.width * 0.5;
-        var midY:Float = g.y + g.height * 0.5;
-        var xOffset:Float = g.width * t;
-        var yOffset:Float = logChirp(t * 48.0, 48.0, 24.0, 1.0, Math.max(6.0, g.height * 0.06));
+		addCallback("getFreeplaySongWeek", function(index:Int):Int {
+			var data = getSongAt(index);
+			return data != null ? data.week : -1;
+		});
 
-        can.x = left + xOffset;
-        can.y = midY + yOffset - can.height * 0.5;
+		addCallback("getFreeplaySongCharacter", function(index:Int):String {
+			var data = getSongAt(index);
+			return data != null ? data.songCharacter : "";
+		});
 
-        if (graffitiAnimT[index] >= CAN_ANIM_DURATION) {
-            // Begin fade in; tween controls alpha until completion
-            g.alpha = 0;
-            g.visible = true;
-            graffitiFading[index] = true;
-            FlxTween.tween(g, {alpha: 1}, 0.4, {
-                ease: FlxEase.quadOut,
-                onComplete: function(_) {
-                    graffitiFading[index] = false;
-                    graffitiRevealed[index] = true;
-                }
-            });
+		addCallback("getFreeplayAlphabetInfo", function(index:Int):Dynamic {
+			var entry = getAlphabetAt(index);
+			if(entry == null) {
+				return null;
+			}
 
-            remove(can, true);
-            graffitiCanSprites[index] = null;
-            graffitiAnimActive[index] = false;
-        }
-    }
+			return {
+				x: entry.x,
+				y: entry.y,
+				width: entry.width,
+				height: entry.height,
+				alpha: entry.alpha,
+				targetY: entry.targetY,
+				visible: entry.visible
+			};
+		});
+
+		addCallback("setFreeplayAlphabetVisible", function(index:Int, value:Bool) {
+			var entry = getAlphabetAt(index);
+			if(entry != null) {
+				entry.visible = value;
+			}
+		});
+
+		addCallback("setFreeplayAlphabetAlpha", function(index:Int, value:Float) {
+			var entry = getAlphabetAt(index);
+			if(entry != null) {
+				entry.alpha = value;
+			}
+		});
+
+		addCallback("setFreeplayAlphabetYMultiplier", function(index:Int, value:Int) {
+			var entry = getAlphabetAt(index);
+			if(entry != null) {
+				entry.yMultiplier = value;
+			}
+		});
+
+		addCallback("hasFreeplayGraffiti", function(index:Int):Bool {
+			return (index >= 0 && index < hasGraffiti.length) ? hasGraffiti[index] : false;
+		});
+
+		addCallback("getFreeplaySelection", function():Int {
+			return curSelected;
+		});
+
+		addCallback("getFreeplayDifficulty", function():Int {
+			return curDifficulty;
+		});
+	}
+
+	inline function getSongAt(index:Int):SongMetadata {
+		return (index >= 0 && index < songs.length) ? songs[index] : null;
+	}
+
+	inline function getAlphabetAt(index:Int):Alphabet {
+		if(grpSongs == null || grpSongs.members == null) {
+			return null;
+		}
+
+		return (index >= 0 && index < grpSongs.members.length) ? grpSongs.members[index] : null;
+	}
+	#end
 }
 
 class SongMetadata {
