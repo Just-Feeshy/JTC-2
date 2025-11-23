@@ -71,10 +71,13 @@ class FreeplayState extends MusicBeatState
 	var camFreeplay:FeshCamera;
 	var camBackground:FeshCamera;
 
+	#if (USING_LUA && cpp)
+	private var hasGraffiti:Array<Bool> = [];
+	private var luaReady:Bool = false;
+	#end
+
 	override function create()
 	{
-		super.create();
-
 		#if windows
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
@@ -87,6 +90,10 @@ class FreeplayState extends MusicBeatState
 		#end
 
 		var index:Int = 0;
+
+		#if (USING_LUA && cpp)
+		hasGraffiti = [];
+		#end
 
 		while(Paths.modJSON.weeks.get("week_" + index) != null) {
 			for(v in 0...Paths.modJSON.weeks.get("week_" + index).week_data.length) {
@@ -155,6 +162,13 @@ class FreeplayState extends MusicBeatState
 			// using a FlxGroup is too much fuss!
 			iconArray.push(icon);
 			add(icon);
+
+			#if (USING_LUA && cpp)
+			if(HelperStates.luaExist(Type.getClass(this))) {
+				modifiableSprites.set('freeplayIcon_' + i, icon);
+				hasGraffiti.push(Paths.image('Graffiti/' + songs[i].songName.toLowerCase()) != null);
+			}
+			#end
 		}
 
 		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
@@ -190,8 +204,12 @@ class FreeplayState extends MusicBeatState
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableSprites.set("menuBG", menuBG);
+			modifiableCameras.set("cameraBackground", camBackground);
+			modifiableCameras.set("cameraFreeplay", camFreeplay);
 		}
 		#end
+
+		super.create();
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String)
@@ -287,6 +305,13 @@ class FreeplayState extends MusicBeatState
 		#end
 
 		diffText.text = CoolUtil.difficultyArray[curDifficulty].toUpperCase();
+
+		#if (USING_LUA && cpp)
+		if(luaReady) {
+			setLua("curDifficulty", curDifficulty);
+			callLua("onFreeplayDifficultyChange", [curDifficulty, change]);
+		}
+		#end
 	}
 
 	function changeSelection(change:Int = 0)
@@ -338,7 +363,125 @@ class FreeplayState extends MusicBeatState
 				// item.setGraphicSize(Std.int(item.width));
 			}
 		}
+
+		#if (USING_LUA && cpp)
+		if(luaReady) {
+			setLua("curSelected", curSelected);
+			callLua("onFreeplaySelectionChange", [curSelected, change]);
+		}
+		#end
 	}
+
+	#if (USING_LUA && cpp)
+	override function onCreate():Dynamic {
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			setupLuaBindings();
+		}
+
+		var result = super.onCreate();
+
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			luaReady = true;
+			setLua("curSelected", curSelected);
+			setLua("curDifficulty", curDifficulty);
+			callLua("onFreeplaySelectionChange", [curSelected, 0]);
+			callLua("onFreeplayDifficultyChange", [curDifficulty, 0]);
+		}
+
+		return result;
+	}
+
+	function setupLuaBindings():Void {
+		if(!HelperStates.luaExist(Type.getClass(this))) {
+			return;
+		}
+
+		setLua("freeplaySongCount", songs.length);
+		setLua("curSelected", curSelected);
+		setLua("curDifficulty", curDifficulty);
+
+		addCallback("getFreeplaySongCount", function():Int {
+			return songs.length;
+		});
+
+		addCallback("getFreeplaySongName", function(index:Int):String {
+			var data = getSongAt(index);
+			return data != null ? data.songName : "";
+		});
+
+		addCallback("getFreeplaySongWeek", function(index:Int):Int {
+			var data = getSongAt(index);
+			return data != null ? data.week : -1;
+		});
+
+		addCallback("getFreeplaySongCharacter", function(index:Int):String {
+			var data = getSongAt(index);
+			return data != null ? data.songCharacter : "";
+		});
+
+		addCallback("getFreeplayAlphabetInfo", function(index:Int):Dynamic {
+			var entry = getAlphabetAt(index);
+			if(entry == null) {
+				return null;
+			}
+
+			return {
+				x: entry.x,
+				y: entry.y,
+				width: entry.width,
+				height: entry.height,
+				alpha: entry.alpha,
+				targetY: entry.targetY,
+				visible: entry.visible
+			};
+		});
+
+		addCallback("setFreeplayAlphabetVisible", function(index:Int, value:Bool) {
+			var entry = getAlphabetAt(index);
+			if(entry != null) {
+				entry.visible = value;
+			}
+		});
+
+		addCallback("setFreeplayAlphabetAlpha", function(index:Int, value:Float) {
+			var entry = getAlphabetAt(index);
+			if(entry != null) {
+				entry.alpha = value;
+			}
+		});
+
+		addCallback("setFreeplayAlphabetYMultiplier", function(index:Int, value:Int) {
+			var entry = getAlphabetAt(index);
+			if(entry != null) {
+				entry.yMultiplier = value;
+			}
+		});
+
+		addCallback("hasFreeplayGraffiti", function(index:Int):Bool {
+			return (index >= 0 && index < hasGraffiti.length) ? hasGraffiti[index] : false;
+		});
+
+		addCallback("getFreeplaySelection", function():Int {
+			return curSelected;
+		});
+
+		addCallback("getFreeplayDifficulty", function():Int {
+			return curDifficulty;
+		});
+	}
+
+	inline function getSongAt(index:Int):SongMetadata {
+		return (index >= 0 && index < songs.length) ? songs[index] : null;
+	}
+
+	inline function getAlphabetAt(index:Int):Alphabet {
+		if(grpSongs == null || grpSongs.members == null) {
+			return null;
+		}
+
+		return (index >= 0 && index < grpSongs.members.length) ? grpSongs.members[index] : null;
+	}
+	#end
 }
 
 class SongMetadata {
