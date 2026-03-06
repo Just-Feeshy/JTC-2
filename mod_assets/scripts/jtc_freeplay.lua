@@ -14,9 +14,7 @@ local GRAFFITI_Y_OFFSET = 0
 local CAN_ANIM_DURATION = 1.0
 local FREEPLAY_SECTOR_NAME = "freeplay_sector"
 local FREEPLAY_REVEAL_SHADER = "freeplay_spray_reveal"
-local FREEPLAY_DEBUG_SHADER = "freeplay_debug_red"
-local ENABLE_FREEPLAY_REVEAL_SHADER = false
-local ENABLE_FREEPLAY_DEBUG_SHADER = true
+local ENABLE_FREEPLAY_REVEAL_SHADER = true
 local SPRAY_NOZZLE_X = 886.943 / 1280.0
 local SPRAY_NOZZLE_Y = 272.0 / 720.0
 local SPRAY_RADIUS = 300
@@ -24,77 +22,25 @@ local SPRAY_START_ANGLE = math.pi - math.pi / 5
 local SPRAY_END_ANGLE = math.pi + math.pi / 5
 local SPRAY_EDGE_SOFTNESS = 0.42
 local SPRAY_VISUAL_COLORS = "[0x58CFFFF0, 0x142C7FA8, 0x002C7FA8]"
-local FREEPLAY_REVEAL_SHADER_SOURCE = [[
-#pragma header
 
-uniform vec2 sectorCenterUv;
-uniform vec2 spriteSize;
-uniform float sectorRadius;
-uniform float sectorStartAngle;
-uniform float sectorEndAngle;
-uniform float edgeSoftness;
-uniform float active;
+local function shaderCall(label, fn, ...)
+    if fn == nil then
+        return false
+    end
 
-const float PI = 3.14159265358979323846;
-const float TWO_PI = 6.28318530717958647692;
+    local ok, result = pcall(fn, ...)
+    if not ok then
+        print("[jtc_freeplay] " .. label .. " failed: " .. tostring(result))
+        return false
+    end
 
-float normalizeAngle(float angle)
-{
-    float wrapped = mod(angle, TWO_PI);
-    return wrapped < 0.0 ? wrapped + TWO_PI : wrapped;
-}
-
-float angleDistance(float start, float angle)
-{
-    float diff = normalizeAngle(angle) - normalizeAngle(start);
-    return diff < 0.0 ? diff + TWO_PI : diff;
-}
-
-void main(void)
-{
-    vec4 color = flixel_texture2D(bitmap, openfl_TextureCoordv);
-    vec2 safeSpriteSize = max(spriteSize, vec2(1.0, 1.0));
-    vec2 delta = (openfl_TextureCoordv - sectorCenterUv) * safeSpriteSize;
-    float dist = length(delta);
-    float maskAlpha = 0.0;
-
-    if (active > 0.5 && dist <= sectorRadius) {
-        float angle = atan(delta.y, delta.x);
-        float sweep = angleDistance(sectorStartAngle, sectorEndAngle);
-        float point = angleDistance(sectorStartAngle, angle);
-
-        if (sweep <= 0.0) {
-            sweep = TWO_PI;
-        }
-
-        if (point <= sweep) {
-            float innerRadius = sectorRadius * max(0.0, 1.0 - edgeSoftness);
-            maskAlpha = 1.0 - smoothstep(innerRadius, sectorRadius, dist);
-        }
-    }
-
-    color *= maskAlpha;
-
-    gl_FragColor = color * maskAlpha;
-}
-]]
-
-local FREEPLAY_DEBUG_SHADER_SOURCE = [[
-#pragma header
-
-void main(void)
-{
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-}
-]]
+    return result
+end
 
 function onCreate()
     destroyStuff()
 
-    if initLuaShaderSource ~= nil then
-        initLuaShaderSource(FREEPLAY_REVEAL_SHADER, FREEPLAY_REVEAL_SHADER_SOURCE)
-        initLuaShaderSource(FREEPLAY_DEBUG_SHADER, FREEPLAY_DEBUG_SHADER_SOURCE)
-    elseif initLuaShader ~= nil then
+    if initLuaShader ~= nil then
         initLuaShader(FREEPLAY_REVEAL_SHADER, "feeshdata")
     end
 
@@ -112,10 +58,6 @@ function onCreate()
     setSpritePosition("wall", 0, 0)
     setSpriteToCamera("wall", "cameraBackground")
     insertSpriteToState(0, "wall")
-
-    if ENABLE_FREEPLAY_DEBUG_SHADER and setSpriteShader ~= nil then
-        setSpriteShader("wall", FREEPLAY_DEBUG_SHADER)
-    end
 
     createFreeplaySector()
     setupGraffiti()
@@ -369,32 +311,24 @@ function prepareGraffitiRevealShader(index)
         return
     end
 
-    if ENABLE_FREEPLAY_DEBUG_SHADER then
-        if setSpriteShader ~= nil then
-            setSpriteShader(sprName, FREEPLAY_DEBUG_SHADER)
-        end
-        return
-    end
-
     if not ENABLE_FREEPLAY_REVEAL_SHADER then
         return
     end
 
-    if setSpriteShader ~= nil then
-        setSpriteShader(sprName, FREEPLAY_REVEAL_SHADER)
-    end
-
-    if setShaderFloat ~= nil then
-        setShaderFloat(sprName, "sectorRadius", SPRAY_RADIUS)
-        setShaderFloat(sprName, "sectorStartAngle", SPRAY_START_ANGLE)
-        setShaderFloat(sprName, "sectorEndAngle", SPRAY_END_ANGLE)
-        setShaderFloat(sprName, "edgeSoftness", SPRAY_EDGE_SOFTNESS)
-        setShaderFloat(sprName, "active", 1)
-    end
-
-    if setShaderFloatArray ~= nil then
-        setShaderFloatArray(sprName, "spriteSize", {math.max(getSpriteWidth(sprName), 1), math.max(getSpriteHeight(sprName), 1)})
-    end
+    shaderCall("setSpriteShader(" .. sprName .. ")", setSpriteShader, sprName, FREEPLAY_REVEAL_SHADER)
+    shaderCall("setShaderFloat sectorRadius", setShaderFloat, sprName, "sectorRadius", SPRAY_RADIUS)
+    shaderCall("setShaderFloat sectorStartAngle", setShaderFloat, sprName, "sectorStartAngle", SPRAY_START_ANGLE)
+    shaderCall("setShaderFloat sectorEndAngle", setShaderFloat, sprName, "sectorEndAngle", SPRAY_END_ANGLE)
+    shaderCall("setShaderFloat edgeSoftness", setShaderFloat, sprName, "edgeSoftness", SPRAY_EDGE_SOFTNESS)
+    shaderCall("setShaderFloat active", setShaderFloat, sprName, "active", 1)
+    shaderCall(
+        "setShaderFloat2 spriteSize",
+        setShaderFloat2,
+        sprName,
+        "spriteSize",
+        math.max(getSpriteWidth(sprName), 1),
+        math.max(getSpriteHeight(sprName), 1)
+    )
 end
 
 function clearGraffitiRevealShader(index)
@@ -404,21 +338,14 @@ function clearGraffitiRevealShader(index)
         return
     end
 
-    if ENABLE_FREEPLAY_DEBUG_SHADER then
-        if removeSpriteShader ~= nil then
-            removeSpriteShader(sprName)
-        end
-        return
-    end
-
     if not ENABLE_FREEPLAY_REVEAL_SHADER then
         return
     end
 
     if removeSpriteShader ~= nil then
-        removeSpriteShader(sprName)
+        shaderCall("removeSpriteShader(" .. sprName .. ")", removeSpriteShader, sprName)
     elseif setShaderFloat ~= nil then
-        setShaderFloat(sprName, "active", 0)
+        shaderCall("setShaderFloat active=0", setShaderFloat, sprName, "active", 0)
     end
 end
 
@@ -462,7 +389,7 @@ function updateGraffitiRevealShader(index, canName)
 
     local sprName = graffitiSprites[index]
 
-    if sprName == nil or setShaderFloatArray == nil then
+    if sprName == nil or setShaderFloat2 == nil then
         return
     end
 
@@ -471,8 +398,8 @@ function updateGraffitiRevealShader(index, canName)
     local pivotX = getSpriteX(canName) + getSpriteWidth(canName) * SPRAY_NOZZLE_X - getSpriteX(sprName)
     local pivotY = getSpriteY(canName) + getSpriteHeight(canName) * SPRAY_NOZZLE_Y - getSpriteY(sprName)
 
-    setShaderFloatArray(sprName, "spriteSize", {spriteWidth, spriteHeight})
-    setShaderFloatArray(sprName, "sectorCenterUv", {pivotX / spriteWidth, pivotY / spriteHeight})
+    shaderCall("setShaderFloat2 spriteSize(update)", setShaderFloat2, sprName, "spriteSize", spriteWidth, spriteHeight)
+    shaderCall("setShaderFloat2 sectorCenterUv", setShaderFloat2, sprName, "sectorCenterUv", pivotX / spriteWidth, pivotY / spriteHeight)
 end
 
 function smin(a, b, k_0)

@@ -154,7 +154,6 @@ class FeshShader extends FeshBackendShader {
                 Reflect.setField(__data, name, input);
                 if (__isGenerated) {
                     bindKnownField(name, input);
-                    Reflect.setField(this, name, input);
                 }
             } else if (!Reflect.hasField(__data, name) || Reflect.field(__data, name) == null) {
                 var parameterType:ShaderParameterType = switch (type) {
@@ -216,7 +215,6 @@ class FeshShader extends FeshBackendShader {
                         Reflect.setField(__data, name, parameter);
                         if (__isGenerated) {
                             bindKnownField(name, parameter);
-                            Reflect.setField(this, name, parameter);
                         }
 
                     case INT, INT2, INT3, INT4:
@@ -231,7 +229,6 @@ class FeshShader extends FeshBackendShader {
                         Reflect.setField(__data, name, parameter);
                         if (__isGenerated) {
                             bindKnownField(name, parameter);
-                            Reflect.setField(this, name, parameter);
                         }
 
                     default:
@@ -270,7 +267,6 @@ class FeshShader extends FeshBackendShader {
                         Reflect.setField(__data, name, parameter);
                         if (__isGenerated) {
                             bindKnownField(name, parameter);
-                            Reflect.setField(this, name, parameter);
                         }
                 }
             }

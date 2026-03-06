@@ -1257,6 +1257,10 @@ class ModLua {
             return setShaderFloatValue(target, property, [value]);
         });
 
+        Lua_helper.add_callback(lua, "setShaderFloat2", function(target:String, property:String, x:Float, y:Float) {
+            return setShaderFloatValue(target, property, [x, y]);
+        });
+
         Lua_helper.add_callback(lua, "getShaderFloat", function(target:String, property:String) {
             var values:Array<Dynamic> = getShaderValue(target, property);
             return values.length > 0 ? values[0] : 0.0;
@@ -1494,11 +1498,6 @@ class ModLua {
         }
 
         var shader:FeshShader = new FeshShader(shaderSource.fragmentSource, shaderSource.vertexSource);
-        Log.info('[ModLua] Runtime shader `$name` created.');
-        Log.info('[ModLua] Shader `$name` fragment has red constant: ${shader.glFragmentSource.indexOf("vec4(1.0, 0.0, 0.0, 1.0)") != -1}.');
-        Log.info('[ModLua] Shader `$name` vertex has alpha attr: ${shader.glVertexSource.indexOf("attribute float alpha;") != -1}, hasTransform uniform: ${shader.glFragmentSource.indexOf("uniform bool hasTransform;") != -1}.');
-        Log.info('[ModLua] Shader `$name` fields bitmap=${shader.bitmap != null} alpha=${shader.alpha != null} colorMultiplier=${shader.colorMultiplier != null} colorOffset=${shader.colorOffset != null} hasTransform=${shader.hasTransform != null} hasColorTransform=${shader.hasColorTransform != null}.');
-
         if(tag != null && tag.trim() != "") {
             luaShaders.set(tag, shader);
         }
@@ -1787,6 +1786,7 @@ class ModLua {
     }
 
     function attachShaderToSprite(shaderName:String, spriteName:String):Bool {
+        try {
         var spr:FlxSprite = getSprite(spriteName);
 
         if(spr == null) {
@@ -1804,8 +1804,11 @@ class ModLua {
 
         spr.dirty = true;
         luaShaders.set(spriteName, shader);
-        Log.info('[ModLua] Attached runtime shader `$shaderName` to sprite `$spriteName`.');
         return true;
+        } catch(e:Dynamic) {
+            Log.error('Failed to attach shader `$shaderName` to sprite `$spriteName`: $e');
+            return false;
+        }
     }
 
     function attachShaderToCamera(shaderName:String, cameraName:String):Bool {
@@ -1839,6 +1842,7 @@ class ModLua {
     }
 
     function removeShaderFromSprite(spriteName:String):Bool {
+        try {
         var spr:FlxSprite = getSprite(spriteName);
 
         if(spr == null) {
@@ -1850,6 +1854,10 @@ class ModLua {
         spr.dirty = true;
         luaShaders.remove(spriteName);
         return true;
+        } catch(e:Dynamic) {
+            Log.error('Failed to remove shader from sprite `$spriteName`: $e');
+            return false;
+        }
     }
 
     function removeShaderFromCamera(cameraName:String):Bool {
@@ -1899,6 +1907,7 @@ class ModLua {
     }
 
     function setShaderFloatValue(target:String, property:String, values:Array<Float>):Bool {
+        try {
         var shaderField:Dynamic = getShaderDataField(target, property);
 
         if(shaderField == null) {
@@ -1907,9 +1916,14 @@ class ModLua {
 
         Reflect.setProperty(shaderField, "value", cast values);
         return true;
+        } catch(e:Dynamic) {
+            Log.error('Failed to set float shader property `$property` on `$target`: $e');
+            return false;
+        }
     }
 
     function setShaderIntValue(target:String, property:String, values:Array<Int>):Bool {
+        try {
         var shaderField:Dynamic = getShaderDataField(target, property);
 
         if(shaderField == null) {
@@ -1918,9 +1932,14 @@ class ModLua {
 
         Reflect.setProperty(shaderField, "value", cast values);
         return true;
+        } catch(e:Dynamic) {
+            Log.error('Failed to set int shader property `$property` on `$target`: $e');
+            return false;
+        }
     }
 
     function setShaderBoolValue(target:String, property:String, values:Array<Bool>):Bool {
+        try {
         var shaderField:Dynamic = getShaderDataField(target, property);
 
         if(shaderField == null) {
@@ -1929,9 +1948,14 @@ class ModLua {
 
         Reflect.setProperty(shaderField, "value", cast values);
         return true;
+        } catch(e:Dynamic) {
+            Log.error('Failed to set bool shader property `$property` on `$target`: $e');
+            return false;
+        }
     }
 
     function setShaderSampler(target:String, property:String, texture:String):Bool {
+        try {
         var shaderField:Dynamic = getShaderDataField(target, property);
         var bitmapData:BitmapData = resolveShaderBitmap(texture);
 
@@ -1941,6 +1965,10 @@ class ModLua {
 
         Reflect.setProperty(shaderField, "input", bitmapData);
         return true;
+        } catch(e:Dynamic) {
+            Log.error('Failed to set sampler shader property `$property` on `$target`: $e');
+            return false;
+        }
     }
 
     function resolveShaderBitmap(texture:String):BitmapData {
