@@ -11,11 +11,98 @@ local songCount = 0
 
 local GRAFFITI_HEIGHT = 444
 local GRAFFITI_Y_OFFSET = 0
-local DEFAULT_SPACING = 320
 local CAN_ANIM_DURATION = 1.0
+local FREEPLAY_SECTOR_NAME = "freeplay_sector"
+local FREEPLAY_REVEAL_SHADER = "freeplay_spray_reveal"
+local FREEPLAY_DEBUG_SHADER = "freeplay_debug_red"
+local ENABLE_FREEPLAY_REVEAL_SHADER = false
+local ENABLE_FREEPLAY_DEBUG_SHADER = true
+local SPRAY_NOZZLE_X = 886.943 / 1280.0
+local SPRAY_NOZZLE_Y = 272.0 / 720.0
+local SPRAY_RADIUS = 300
+local SPRAY_START_ANGLE = math.pi - math.pi / 5
+local SPRAY_END_ANGLE = math.pi + math.pi / 5
+local SPRAY_EDGE_SOFTNESS = 0.42
+local SPRAY_VISUAL_COLORS = "[0x58CFFFF0, 0x142C7FA8, 0x002C7FA8]"
+local FREEPLAY_REVEAL_SHADER_SOURCE = [[
+#pragma header
+
+uniform vec2 sectorCenterUv;
+uniform vec2 spriteSize;
+uniform float sectorRadius;
+uniform float sectorStartAngle;
+uniform float sectorEndAngle;
+uniform float edgeSoftness;
+uniform float active;
+
+const float PI = 3.14159265358979323846;
+const float TWO_PI = 6.28318530717958647692;
+
+float normalizeAngle(float angle)
+{
+    float wrapped = mod(angle, TWO_PI);
+    return wrapped < 0.0 ? wrapped + TWO_PI : wrapped;
+}
+
+float angleDistance(float start, float angle)
+{
+    float diff = normalizeAngle(angle) - normalizeAngle(start);
+    return diff < 0.0 ? diff + TWO_PI : diff;
+}
+
+void main(void)
+{
+    vec4 color = flixel_texture2D(bitmap, openfl_TextureCoordv);
+    vec2 safeSpriteSize = max(spriteSize, vec2(1.0, 1.0));
+    vec2 delta = (openfl_TextureCoordv - sectorCenterUv) * safeSpriteSize;
+    float dist = length(delta);
+    float maskAlpha = 0.0;
+
+    if (active > 0.5 && dist <= sectorRadius) {
+        float angle = atan(delta.y, delta.x);
+        float sweep = angleDistance(sectorStartAngle, sectorEndAngle);
+        float point = angleDistance(sectorStartAngle, angle);
+
+        if (sweep <= 0.0) {
+            sweep = TWO_PI;
+        }
+
+        if (point <= sweep) {
+            float innerRadius = sectorRadius * max(0.0, 1.0 - edgeSoftness);
+            maskAlpha = 1.0 - smoothstep(innerRadius, sectorRadius, dist);
+        }
+    }
+
+    color *= maskAlpha;
+
+    gl_FragColor = color * maskAlpha;
+}
+]]
+
+local FREEPLAY_DEBUG_SHADER_SOURCE = [[
+#pragma header
+
+void main(void)
+{
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+]]
 
 function onCreate()
     destroyStuff()
+
+    if initLuaShaderSource ~= nil then
+        initLuaShaderSource(FREEPLAY_REVEAL_SHADER, FREEPLAY_REVEAL_SHADER_SOURCE)
+        initLuaShaderSource(FREEPLAY_DEBUG_SHADER, FREEPLAY_DEBUG_SHADER_SOURCE)
+    elseif initLuaShader ~= nil then
+        initLuaShader(FREEPLAY_REVEAL_SHADER, "feeshdata")
+    end
+
+    if clearCameraBlur ~= nil then
+        clearCameraBlur("cameraBackground")
+    elseif setCameraBlur ~= nil then
+        setCameraBlur("cameraBackground", 0)
+    end
 
     if not spriteExist("wall") then
         createSprite("wall")
@@ -26,7 +113,32 @@ function onCreate()
     setSpriteToCamera("wall", "cameraBackground")
     insertSpriteToState(0, "wall")
 
+    if ENABLE_FREEPLAY_DEBUG_SHADER and setSpriteShader ~= nil then
+        setSpriteShader("wall", FREEPLAY_DEBUG_SHADER)
+    end
+
+    createFreeplaySector()
     setupGraffiti()
+end
+
+function createFreeplaySector()
+    if makeGradientSectorGraphic == nil and makeSectorGraphic == nil then
+        return
+    end
+
+    if not spriteExist(FREEPLAY_SECTOR_NAME) then
+        createSprite(FREEPLAY_SECTOR_NAME)
+    end
+
+    if makeGradientSectorGraphic ~= nil then
+        makeGradientSectorGraphic(FREEPLAY_SECTOR_NAME, SPRAY_RADIUS, SPRAY_START_ANGLE, SPRAY_END_ANGLE, SPRAY_VISUAL_COLORS, 72)
+    else
+        makeSectorGraphic(FREEPLAY_SECTOR_NAME, SPRAY_RADIUS, SPRAY_START_ANGLE, SPRAY_END_ANGLE, "0x2867E5C6", 72)
+    end
+
+    setSpriteToCamera(FREEPLAY_SECTOR_NAME, "cameraFreeplay")
+    setSpriteAlpha(FREEPLAY_SECTOR_NAME, 0)
+    addSpriteToState(FREEPLAY_SECTOR_NAME)
 end
 
 function setupGraffiti()
@@ -37,6 +149,14 @@ function setupGraffiti()
     songCount = getFreeplaySongCount()
 
     for i = 0, songCount - 1 do
+        if setFreeplayAlphabetVisible ~= nil then
+            setFreeplayAlphabetVisible(i, false)
+        end
+
+        if setFreeplayAlphabetAlpha ~= nil then
+            setFreeplayAlphabetAlpha(i, 0)
+        end
+
         local hasCustom = hasFreeplayGraffiti ~= nil and hasFreeplayGraffiti(i)
 
         if hasCustom then
@@ -62,22 +182,18 @@ function setupGraffiti()
             graffitiRevealTime[i] = 0
             graffitiRevealActive[i] = false
             graffitiFading[i] = false
-
-            if setFreeplayAlphabetVisible ~= nil then
-                setFreeplayAlphabetVisible(i, false)
-            end
         else
             graffitiHas[i] = false
             graffitiRevealed[i] = true
         end
 
-        if setFreeplayAlphabetYMultiplier ~= nil then
-            setFreeplayAlphabetYMultiplier(i, DEFAULT_SPACING)
-        end
-
         local iconName = "freeplayIcon_" .. i
         if spriteExist(iconName) then
             setSpriteAlpha(iconName, 0)
+
+            if removeSpriteFromState ~= nil then
+                removeSpriteFromState(iconName)
+            end
         end
     end
 end
@@ -93,6 +209,17 @@ function onFreeplaySelectionChange(index, change)
     end
 
     resetSprayCan()
+
+    if not graffitiHas[index] then
+        activeGraffitiIndex = index
+        return
+    end
+
+    if graffitiRevealed[index] then
+        activeGraffitiIndex = index
+        return
+    end
+
     startGraffitiReveal(index)
 end
 
@@ -114,19 +241,25 @@ function updateGraffitiPositions()
         return
     end
 
+    local selectedIndex = getFreeplaySelection ~= nil and getFreeplaySelection() or activeGraffitiIndex
+
     for i = 0, songCount - 1 do
-        local info = getFreeplayAlphabetInfo(i)
         local sprName = graffitiSprites[i]
 
-        if info ~= nil and sprName ~= nil then
+        if sprName ~= nil then
             local width = getSpriteWidth(sprName)
             local height = getSpriteHeight(sprName)
             local x = (windowWidth - width) / 2
-            local y = info.y + (info.height - height) / 2 + GRAFFITI_Y_OFFSET
+            local y = (windowHeight - height) / 2 + GRAFFITI_Y_OFFSET
+
             setSpritePosition(sprName, x, y)
 
-            if graffitiRevealed[i] and not graffitiFading[i] then
-                setSpriteAlpha(sprName, info.alpha)
+            if i ~= selectedIndex then
+                setSpriteAlpha(sprName, 0)
+            elseif graffitiRevealActive[i] then
+                setSpriteAlpha(sprName, 1)
+            elseif graffitiRevealed[i] and not graffitiFading[i] then
+                setSpriteAlpha(sprName, 1)
             end
         end
     end
@@ -148,14 +281,18 @@ function startGraffitiReveal(index)
         return
     end
 
-    setSpriteAlpha(sprName, 0)
+    setSpriteAlpha(sprName, 1)
     graffitiRevealTime[index] = 0
     graffitiRevealActive[index] = true
+    graffitiFading[index] = false
+
+    prepareGraffitiRevealShader(index)
 
     ensureSprayCan()
     local canName = graffitiCanName
+    bringSprayVisualsToFront()
 
-    local targetHeight = getSpriteHeight(sprName) * 2
+    local targetHeight = getSpriteHeight(sprName)
     local currentHeight = getSpriteHeight(canName)
     if currentHeight > 0 and targetHeight > 0 then
         local scale = targetHeight / currentHeight
@@ -165,6 +302,8 @@ function startGraffitiReveal(index)
     end
 
     setSpriteAlpha(canName, 1)
+    updateSprayVisuals(index, canName, 0)
+    setSpriteAlpha(FREEPLAY_SECTOR_NAME, 1)
     activeGraffitiIndex = index
 end
 
@@ -179,14 +318,161 @@ end
 
 function resetSprayCan()
     if activeGraffitiIndex ~= nil then
-        graffitiRevealActive[activeGraffitiIndex] = false
+        local previousIndex = activeGraffitiIndex
+        graffitiRevealActive[previousIndex] = false
+
+        if not graffitiRevealed[previousIndex] then
+            clearGraffitiRevealShader(previousIndex)
+
+            local previousSprite = graffitiSprites[previousIndex]
+            if previousSprite ~= nil then
+                setSpriteAlpha(previousSprite, 0)
+            end
+        end
     end
 
     if spriteExist(graffitiCanName) then
         setSpriteAlpha(graffitiCanName, 0)
     end
 
+    if spriteExist(FREEPLAY_SECTOR_NAME) then
+        setSpriteAlpha(FREEPLAY_SECTOR_NAME, 0)
+    end
+
     activeGraffitiIndex = nil
+end
+
+function bringSprayVisualsToFront()
+    if removeSpriteFromState ~= nil then
+        if spriteExist(FREEPLAY_SECTOR_NAME) then
+            removeSpriteFromState(FREEPLAY_SECTOR_NAME)
+        end
+
+        if spriteExist(graffitiCanName) then
+            removeSpriteFromState(graffitiCanName)
+        end
+    end
+
+    if spriteExist(FREEPLAY_SECTOR_NAME) then
+        addSpriteToState(FREEPLAY_SECTOR_NAME)
+    end
+
+    if spriteExist(graffitiCanName) then
+        addSpriteToState(graffitiCanName)
+    end
+end
+
+function prepareGraffitiRevealShader(index)
+    local sprName = graffitiSprites[index]
+
+    if sprName == nil then
+        return
+    end
+
+    if ENABLE_FREEPLAY_DEBUG_SHADER then
+        if setSpriteShader ~= nil then
+            setSpriteShader(sprName, FREEPLAY_DEBUG_SHADER)
+        end
+        return
+    end
+
+    if not ENABLE_FREEPLAY_REVEAL_SHADER then
+        return
+    end
+
+    if setSpriteShader ~= nil then
+        setSpriteShader(sprName, FREEPLAY_REVEAL_SHADER)
+    end
+
+    if setShaderFloat ~= nil then
+        setShaderFloat(sprName, "sectorRadius", SPRAY_RADIUS)
+        setShaderFloat(sprName, "sectorStartAngle", SPRAY_START_ANGLE)
+        setShaderFloat(sprName, "sectorEndAngle", SPRAY_END_ANGLE)
+        setShaderFloat(sprName, "edgeSoftness", SPRAY_EDGE_SOFTNESS)
+        setShaderFloat(sprName, "active", 1)
+    end
+
+    if setShaderFloatArray ~= nil then
+        setShaderFloatArray(sprName, "spriteSize", {math.max(getSpriteWidth(sprName), 1), math.max(getSpriteHeight(sprName), 1)})
+    end
+end
+
+function clearGraffitiRevealShader(index)
+    local sprName = graffitiSprites[index]
+
+    if sprName == nil then
+        return
+    end
+
+    if ENABLE_FREEPLAY_DEBUG_SHADER then
+        if removeSpriteShader ~= nil then
+            removeSpriteShader(sprName)
+        end
+        return
+    end
+
+    if not ENABLE_FREEPLAY_REVEAL_SHADER then
+        return
+    end
+
+    if removeSpriteShader ~= nil then
+        removeSpriteShader(sprName)
+    elseif setShaderFloat ~= nil then
+        setShaderFloat(sprName, "active", 0)
+    end
+end
+
+function updateSpraySector(canName)
+    if not spriteExist(FREEPLAY_SECTOR_NAME) or not spriteExist(canName) then
+        return
+    end
+
+    local pivotX = getSpriteX(canName) + getSpriteWidth(canName) * SPRAY_NOZZLE_X
+    local pivotY = getSpriteY(canName) + getSpriteHeight(canName) * SPRAY_NOZZLE_Y
+    local sectorX = pivotX - getSpriteWidth(FREEPLAY_SECTOR_NAME) / 2
+    local sectorY = pivotY - getSpriteHeight(FREEPLAY_SECTOR_NAME) / 2
+
+    setSpritePosition(FREEPLAY_SECTOR_NAME, sectorX, sectorY)
+end
+
+function updateSprayVisuals(index, canName, progress)
+    local sprName = graffitiSprites[index]
+
+    if sprName == nil or canName == nil then
+        return
+    end
+
+    -- DO NOT TOUCH!! (This goes for other programmers)
+    local gWidth = getSpriteWidth(sprName)
+    local gHeight = getSpriteHeight(sprName)
+    local curveMin = -5
+    local curveMax = math.exp(math.pi)
+    local t = curveMin + (curveMax - curveMin) * progress
+    local xOffset = 2.0 * t * math.exp(t / 8.0)
+    local yOffset = sprayY(t) + gHeight / 2.5
+
+    setSpritePosition(canName, xOffset + gWidth / 4.0, yOffset)
+    updateSpraySector(canName)
+end
+
+function updateGraffitiRevealShader(index, canName)
+    if not ENABLE_FREEPLAY_REVEAL_SHADER then
+        return
+    end
+
+    local sprName = graffitiSprites[index]
+
+    if sprName == nil or setShaderFloatArray == nil then
+        return
+    end
+
+    local spriteWidth = math.max(getSpriteWidth(sprName), 1)
+    local spriteHeight = math.max(getSpriteHeight(sprName), 1)
+    local pivotX = getSpriteX(canName) + getSpriteWidth(canName) * SPRAY_NOZZLE_X - getSpriteX(sprName)
+    local pivotY = getSpriteY(canName) + getSpriteHeight(canName) * SPRAY_NOZZLE_Y - getSpriteY(sprName)
+
+    setShaderFloatArray(sprName, "spriteSize", {spriteWidth, spriteHeight})
+    setShaderFloatArray(sprName, "sectorCenterUv", {pivotX / spriteWidth, pivotY / spriteHeight})
 end
 
 function smin(a, b, k_0)
@@ -204,8 +490,8 @@ function logChirp(x, a, b, n)
 end
 
 function sprayY(x)
-    local yOffset = 18.0 * logChirp(math.max(x,0.001), 48.0, 24.0, math.pi)
-    return -smin(yOffset, 200 * x + 170, 10)
+    local yOffset = 18.0 * logChirp(math.max(x,0.001) + 3.0 * math.pi / 2.0, 48.0, 24.0, math.pi)
+    return -smin(yOffset, 150 * x + 170, 10)
 end
 
 function updateGraffitiAnimation(elapsed)
@@ -221,28 +507,25 @@ function updateGraffitiAnimation(elapsed)
             if info ~= nil and canName ~= nil then
                 graffitiRevealTime[i] = graffitiRevealTime[i] + elapsed
                 local progress = math.min(graffitiRevealTime[i] / CAN_ANIM_DURATION, 1)
-                local slowProgress = math.pow(progress, 1)
 
-                local gWidth = getSpriteWidth(graffitiSprites[i])
-                local gHeight = getSpriteHeight(graffitiSprites[i])
-                local canWidth = getSpriteWidth(canName)
-                local curveMin = -5
-                local curveMax = math.exp(math.pi)
-                local t = curveMin + (curveMax - curveMin) * slowProgress
-                local xOffset = t * math.exp(t / 4)
-                local yOffset = sprayY(t)
-
-                setSpritePosition(canName, xOffset - gWidth / 2.0, yOffset)
+                updateSprayVisuals(i, canName, progress)
+                updateGraffitiRevealShader(i, canName)
             end
 
             if graffitiRevealTime[i] >= CAN_ANIM_DURATION then
                 graffitiRevealActive[i] = false
-                graffitiFading[i] = true
-                local fadeTag = "graffitiFade_" .. i
-                doTweenAlpha(fadeTag, graffitiSprites[i], 1, 0.4, "quadOut")
+                graffitiFading[i] = false
+                graffitiRevealed[i] = true
+
+                clearGraffitiRevealShader(i)
+                setSpriteAlpha(graffitiSprites[i], 1)
 
                 if spriteExist(graffitiCanName) then
                     setSpriteAlpha(graffitiCanName, 0)
+                end
+
+                if spriteExist(FREEPLAY_SECTOR_NAME) then
+                    setSpriteAlpha(FREEPLAY_SECTOR_NAME, 0)
                 end
 
                 activeGraffitiIndex = nil
@@ -253,5 +536,6 @@ end
 
 function destroyStuff()
     destroySprite("menuBG")
+    destroySprite(FREEPLAY_SECTOR_NAME)
     destroySprite(graffitiCanName)
 end

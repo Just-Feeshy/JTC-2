@@ -20,8 +20,15 @@ import flixel.system.FlxSound;
 import flixel.graphics.frames.FlxFramesCollection;
 import feshixl.shaders.FeshShader;
 import openfl.display.BitmapData;
+import openfl.display.GradientType;
+import openfl.display.InterpolationMethod;
+import openfl.display.Shape;
+import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilter;
+import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
+import openfl.display.SpreadMethod;
+import openfl.geom.Matrix;
 import openfl.utils.Assets as OpenFlAssets;
 import openfl.geom.Rectangle as OpenFlRectangle;
 import lime.graphics.opengl.GL;
@@ -141,6 +148,59 @@ class ModLua {
 
 		    var bmp:BitmapData = new BitmapData(width, height, true, 0x00000000);
 		    luaBitmaps.set(name, bmp);
+		});
+
+		Lua_helper.add_callback(lua, "fillBitmapData", function(name:String, colorStr:String = "0x00000000") {
+		    var bmp:BitmapData = luaBitmaps.get(name);
+
+		    if(bmp == null) {
+		        return;
+		    }
+
+		    bmp.fillRect(bmp.rect, parseLuaColor(colorStr));
+		});
+
+		Lua_helper.add_callback(lua, "makeBitmapSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String, segments:Int = 48) {
+		    if(radius <= 0) {
+		        return;
+		    }
+
+		    luaBitmaps.set(name, createSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), segments));
+		});
+
+		Lua_helper.add_callback(lua, "makeBitmapGradientSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colors:String, segments:Int = 48) {
+		    if(radius <= 0) {
+		        return;
+		    }
+
+		    var gradientColors:Array<Int> = parseLuaColorArray(colors);
+
+		    if(gradientColors.length == 0) {
+		        return;
+		    }
+
+		    luaBitmaps.set(name, createSectorGradientBitmapData(radius, startAngle, endAngle, gradientColors, segments));
+		});
+
+		Lua_helper.add_callback(lua, "makeBitmapSoftSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String = "0xFFFFFFFF", edgePercent:Float = 0.35, steps:Int = 24, segments:Int = 48) {
+		    if(radius <= 0) {
+		        return;
+		    }
+
+		    luaBitmaps.set(name, createSoftSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), edgePercent, steps, segments));
+		});
+
+		Lua_helper.add_callback(lua, "drawBitmapData", function(target:String, source:String, x:Float = 0, y:Float = 0) {
+		    var targetBitmap:BitmapData = luaBitmaps.get(target);
+		    var sourceBitmap:BitmapData = resolveShaderBitmap(source);
+
+		    if(targetBitmap == null || sourceBitmap == null) {
+		        return;
+		    }
+
+		    var matrix:Matrix = new Matrix();
+		    matrix.translate(x, y);
+		    targetBitmap.draw(sourceBitmap, matrix, null, null, null, true);
 		});
 
 		Lua_helper.add_callback(lua, "createCombinedFrames", function(name:String, first:String, second:String, type1:String, type2:String) {
@@ -279,15 +339,39 @@ class ModLua {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
-                var color:Int = Std.parseInt(colorStr);
-
-                if(!colorStr.startsWith('0x')) {
-                    color = Std.parseInt('0xff' + colorStr);
-                }
+                var color:Int = parseLuaColor(colorStr);
 
                 spr.makeGraphic(width, height, color);
             }
 		});
+
+        Lua_helper.add_callback(lua, "makeSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String, segments:Int = 48) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null || radius <= 0) {
+                return;
+            }
+
+            spr.loadGraphic(createSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), segments));
+            spr.updateHitbox();
+        });
+
+        Lua_helper.add_callback(lua, "makeGradientSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colors:String, segments:Int = 48) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null || radius <= 0) {
+                return;
+            }
+
+            var gradientColors:Array<Int> = parseLuaColorArray(colors);
+
+            if(gradientColors.length == 0) {
+                return;
+            }
+
+            spr.loadGraphic(createSectorGradientBitmapData(radius, startAngle, endAngle, gradientColors, segments));
+            spr.updateHitbox();
+        });
 
         Lua_helper.add_callback(lua, "screenCenter", function(name:String, ?axis:String) {
             var spr:FlxSprite = getSprite(name);
@@ -1086,6 +1170,14 @@ class ModLua {
             return 0;
         });
 
+        Lua_helper.add_callback(lua, "setCameraBlur", function(name:String, blurX:Float = 0, ?blurY:Null<Float>, quality:Int = 1) {
+            return setCameraBlurFilter(name, blurX, blurY, quality);
+        });
+
+        Lua_helper.add_callback(lua, "clearCameraBlur", function(name:String) {
+            return setCameraBlurFilter(name, 0, 0, 1);
+        });
+
         Lua_helper.add_callback(lua, "switchState", function(state:String) {
             FlxG.switchState(Register.forNameClass(state, []));
         });
@@ -1111,6 +1203,18 @@ class ModLua {
 
         Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, shader:String, path:String = "shaders") {
             return storeShaders(name, shader, path);
+        });
+
+        Lua_helper.add_callback(lua, "initLuaShaderSource", function(name:String, fragmentSource:String, vertexSource:String = "") {
+            if(name == null || name.trim() == "" || fragmentSource == null || fragmentSource.trim() == "") {
+                return false;
+            }
+
+            luaShaderSources.set(name, {
+                vertexSource: vertexSource == null ? "" : vertexSource,
+                fragmentSource: fragmentSource
+            });
+            return true;
         });
 
         Lua_helper.add_callback(lua, "createRuntimeShader", function(name:String, tag:String = null) {
@@ -1389,7 +1493,11 @@ class ModLua {
             return null;
         }
 
-        var shader:FeshShader = new FeshShader(shaderSource.vertexSource, shaderSource.fragmentSource);
+        var shader:FeshShader = new FeshShader(shaderSource.fragmentSource, shaderSource.vertexSource);
+        Log.info('[ModLua] Runtime shader `$name` created.');
+        Log.info('[ModLua] Shader `$name` fragment has red constant: ${shader.glFragmentSource.indexOf("vec4(1.0, 0.0, 0.0, 1.0)") != -1}.');
+        Log.info('[ModLua] Shader `$name` vertex has alpha attr: ${shader.glVertexSource.indexOf("attribute float alpha;") != -1}, hasTransform uniform: ${shader.glFragmentSource.indexOf("uniform bool hasTransform;") != -1}.');
+        Log.info('[ModLua] Shader `$name` fields bitmap=${shader.bitmap != null} alpha=${shader.alpha != null} colorMultiplier=${shader.colorMultiplier != null} colorOffset=${shader.colorOffset != null} hasTransform=${shader.hasTransform != null} hasColorTransform=${shader.hasColorTransform != null}.');
 
         if(tag != null && tag.trim() != "") {
             luaShaders.set(tag, shader);
@@ -1438,6 +1546,246 @@ class ModLua {
         return (cast filters:Array<BitmapFilter>).concat([]);
     }
 
+    function parseLuaColor(colorStr:String):Int {
+        var color:Int = Std.parseInt(colorStr);
+
+        if(colorStr != null && !colorStr.startsWith('0x')) {
+            color = Std.parseInt('0xff' + colorStr);
+        }
+
+        return color;
+    }
+
+    function parseLuaColorArray(colors:String):Array<Int> {
+        var output:Array<Int> = [];
+
+        if(colors == null) {
+            return output;
+        }
+
+        colors = colors.trim();
+
+        if(colors.length == 0) {
+            return output;
+        }
+
+        if(colors.substring(0, 1) == "[") {
+            colors = colors.substring(1, colors.length);
+        }
+
+        if(colors.substring(colors.length - 1, colors.length) == "]") {
+            colors = colors.substring(0, colors.length - 1);
+        }
+
+        for(color in colors.split(',')) {
+            var trimmed:String = color.trim();
+
+            if(trimmed.length > 0) {
+                output.push(parseLuaColor(trimmed));
+            }
+        }
+
+        return output;
+    }
+
+    function createSectorBitmapData(radius:Float, startAngle:Float, endAngle:Float, color:Int, segments:Int = 48):BitmapData {
+        var sanitizedSegments:Int = segments;
+
+        if(sanitizedSegments < 3) {
+            sanitizedSegments = 3;
+        }
+
+        var start:Float = startAngle;
+        var finish:Float = endAngle;
+
+        if(finish < start) {
+            finish += Math.PI * 2;
+        }
+
+        var sweep:Float = finish - start;
+
+        if(sweep == 0) {
+            sweep = Math.PI * 2;
+        }
+
+        var diameter:Int = Std.int(Math.ceil(radius * 2)) + 2;
+        var center:Float = radius + 1;
+        var bitmap:BitmapData = new BitmapData(diameter, diameter, true, 0x00000000);
+        var shape:Shape = new Shape();
+        var alpha:Float = ((color >> 24) & 0xFF) / 255;
+
+        shape.graphics.beginFill(color & 0xFFFFFF, alpha);
+        shape.graphics.moveTo(center, center);
+
+        var firstX:Float = center + Math.cos(start) * radius;
+        var firstY:Float = center + Math.sin(start) * radius;
+        shape.graphics.lineTo(firstX, firstY);
+
+        for(i in 1...sanitizedSegments + 1) {
+            var progress:Float = i / sanitizedSegments;
+            var angle:Float = start + sweep * progress;
+            var x:Float = center + Math.cos(angle) * radius;
+            var y:Float = center + Math.sin(angle) * radius;
+            shape.graphics.lineTo(x, y);
+        }
+
+        shape.graphics.lineTo(center, center);
+        shape.graphics.endFill();
+        bitmap.draw(shape);
+
+        return bitmap;
+    }
+
+    function createSectorGradientBitmapData(radius:Float, startAngle:Float, endAngle:Float, colors:Array<Int>, segments:Int = 48):BitmapData {
+        var sanitizedColors:Array<Int> = colors.copy();
+
+        if(sanitizedColors.length == 1) {
+            return createSectorBitmapData(radius, startAngle, endAngle, sanitizedColors[0], segments);
+        }
+
+        var sanitizedSegments:Int = segments;
+
+        if(sanitizedSegments < 3) {
+            sanitizedSegments = 3;
+        }
+
+        var start:Float = startAngle;
+        var finish:Float = endAngle;
+
+        if(finish < start) {
+            finish += Math.PI * 2;
+        }
+
+        var sweep:Float = finish - start;
+
+        if(sweep == 0) {
+            sweep = Math.PI * 2;
+        }
+
+        var diameter:Int = Std.int(Math.ceil(radius * 2)) + 2;
+        var center:Float = radius + 1;
+        var bitmap:BitmapData = new BitmapData(diameter, diameter, true, 0x00000000);
+        var shape:Shape = new Shape();
+        var matrix:Matrix = new Matrix();
+        var alphas:Array<Float> = [];
+        var ratios:Array<Int> = [];
+
+        matrix.createGradientBox(diameter, diameter, 0, 0, 0);
+
+        for(i in 0...sanitizedColors.length) {
+            alphas.push(((sanitizedColors[i] >> 24) & 0xFF) / 255);
+
+            if(sanitizedColors.length == 1) {
+                ratios.push(0);
+            }else {
+                ratios.push(Std.int((255 * i) / (sanitizedColors.length - 1)));
+            }
+        }
+
+        shape.graphics.beginGradientFill(GradientType.LINEAR, sanitizedColors, alphas, ratios, matrix, SpreadMethod.PAD, InterpolationMethod.RGB, 0);
+        shape.graphics.moveTo(center, center);
+
+        var firstX:Float = center + Math.cos(start) * radius;
+        var firstY:Float = center + Math.sin(start) * radius;
+        shape.graphics.lineTo(firstX, firstY);
+
+        for(i in 1...sanitizedSegments + 1) {
+            var progress:Float = i / sanitizedSegments;
+            var angle:Float = start + sweep * progress;
+            var x:Float = center + Math.cos(angle) * radius;
+            var y:Float = center + Math.sin(angle) * radius;
+            shape.graphics.lineTo(x, y);
+        }
+
+        shape.graphics.lineTo(center, center);
+        shape.graphics.endFill();
+        bitmap.draw(shape);
+
+        return bitmap;
+    }
+
+    function createSoftSectorBitmapData(radius:Float, startAngle:Float, endAngle:Float, color:Int, edgePercent:Float = 0.35, steps:Int = 24, segments:Int = 48):BitmapData {
+        var maxRadius:Float = Math.max(radius, 1);
+        var fadePercent:Float = edgePercent;
+
+        if(fadePercent < 0) {
+            fadePercent = 0;
+        }else if(fadePercent > 1) {
+            fadePercent = 1;
+        }
+
+        var sanitizedSteps:Int = steps;
+
+        if(sanitizedSteps < 2) {
+            sanitizedSteps = 2;
+        }
+
+        var diameter:Int = Std.int(Math.ceil(maxRadius * 2)) + 2;
+        var center:Float = maxRadius + 1;
+        var bitmap:BitmapData = new BitmapData(diameter, diameter, true, 0x00000000);
+        var innerRadius:Float = maxRadius * (1 - fadePercent);
+        var baseAlpha:Int = (color >> 24) & 0xFF;
+        var rgb:Int = color & 0xFFFFFF;
+
+        for(i in 0...sanitizedSteps) {
+            var progress:Float = i / (sanitizedSteps - 1);
+            var layerRadius:Float = innerRadius + (maxRadius - innerRadius) * progress;
+            var alphaFactor:Float = 1 - progress;
+            var layerAlpha:Int = Std.int(baseAlpha * alphaFactor);
+
+            if(layerAlpha <= 0 || layerRadius <= 0) {
+                continue;
+            }
+
+            var layerColor:Int = (layerAlpha << 24) | rgb;
+            var layerBitmap:BitmapData = createSectorBitmapData(layerRadius, startAngle, endAngle, layerColor, segments);
+            var matrix:Matrix = new Matrix();
+            var layerCenter:Float = layerRadius + 1;
+
+            matrix.translate(center - layerCenter, center - layerCenter);
+            bitmap.draw(layerBitmap, matrix, null, null, null, true);
+            layerBitmap.dispose();
+        }
+
+        return bitmap;
+    }
+
+    function setCameraBlurFilter(cameraName:String, blurX:Float = 0, ?blurY:Null<Float>, quality:Int = 1):Bool {
+        var cam:FlxCamera = getCamera(cameraName);
+
+        if(cam == null) {
+            Log.error('Camera `$cameraName` could not be found!');
+            return false;
+        }
+
+        if(blurY == null) {
+            blurY = blurX;
+        }
+
+        var filters:Array<BitmapFilter> = [];
+
+        for(filter in getCameraFilters(cam)) {
+            if(!isOfType(filter, BlurFilter)) {
+                filters.push(filter);
+            }
+        }
+
+        if(blurX > 0 || blurY > 0) {
+            var blurQualityValue:Int = quality;
+
+            if(blurQualityValue < 1) {
+                blurQualityValue = 1;
+            }else if(blurQualityValue > 3) {
+                blurQualityValue = 3;
+            }
+
+            filters.unshift(new BlurFilter(blurX, blurY, cast blurQualityValue));
+        }
+
+        cam.setFilters(filters);
+        return true;
+    }
+
     function attachShaderToSprite(shaderName:String, spriteName:String):Bool {
         var spr:FlxSprite = getSprite(spriteName);
 
@@ -1453,7 +1801,10 @@ class ModLua {
         }
 
         spr.shader = cast shader;
+
+        spr.dirty = true;
         luaShaders.set(spriteName, shader);
+        Log.info('[ModLua] Attached runtime shader `$shaderName` to sprite `$spriteName`.');
         return true;
     }
 
@@ -1495,6 +1846,8 @@ class ModLua {
         }
 
         spr.shader = null;
+
+        spr.dirty = true;
         luaShaders.remove(spriteName);
         return true;
     }
