@@ -25,7 +25,6 @@ enum SaveType {
     GRAPHICS;
     SET_FPS_DEFAULT;
     FPS_MULTIPLIER;
-    PRESET_INPUTS;
     CACHE_ASSETS;
     CUSTOM_KEYBINDS;
     CUSTOM_UI_KEYBINDS;
@@ -72,7 +71,6 @@ class SaveData {
         FlxG.save.data.safeballs = getData(SaveType.NO_BLUE_BALLS_MOD);
         FlxG.save.data.blind = getData(SaveType.BLIND_MOD);
         FlxG.save.data.xWobble = getData(SaveType.X_WOBBLE_MOD);
-        FlxG.save.data.simpInputs = getData(SaveType.PRESET_INPUTS);
         FlxG.save.data.preload = getData(SaveType.CACHE_ASSETS);
         FlxG.save.data.customKeys = getData(SaveType.CUSTOM_KEYBINDS);
         FlxG.save.data.customUIKeys = getData(SaveType.CUSTOM_UI_KEYBINDS);
@@ -184,11 +182,6 @@ class SaveData {
                     FlxG.save.data.xWobble = false;
 
                 return FlxG.save.data.xWobble;
-            case PRESET_INPUTS:
-                if(FlxG.save.data.simpInputs == null)
-                    FlxG.save.data.simpInputs = false;
-
-                return FlxG.save.data.simpInputs;
             case CACHE_ASSETS:
                 if(FlxG.save.data.preload == null)
                     FlxG.save.data.preload = true;

@@ -4,7 +4,8 @@ local graffitiRevealed = {}
 local graffitiRevealTime = {}
 local graffitiRevealActive = {}
 local graffitiFading = {}
-local graffitiCans = {}
+local graffitiCanName = "graffiti_can"
+local activeGraffitiIndex = nil
 
 local songCount = 0
 
@@ -91,6 +92,7 @@ function onFreeplaySelectionChange(index, change)
         return
     end
 
+    resetSprayCan()
     startGraffitiReveal(index)
 end
 
@@ -132,10 +134,12 @@ end
 
 function startGraffitiReveal(index)
     if not graffitiHas[index] then
+        activeGraffitiIndex = nil
         return
     end
 
     if graffitiRevealed[index] or graffitiRevealActive[index] then
+        activeGraffitiIndex = index
         return
     end
 
@@ -148,11 +152,8 @@ function startGraffitiReveal(index)
     graffitiRevealTime[index] = 0
     graffitiRevealActive[index] = true
 
-    local canName = "graffiti_can_" .. index
-    createSprite(canName)
-    loadGraphic(canName, "Graffiti/can")
-    setSpriteToCamera(canName, "cameraFreeplay")
-    addSpriteToState(canName)
+    ensureSprayCan()
+    local canName = graffitiCanName
 
     local targetHeight = getSpriteHeight(sprName) * 2
     local currentHeight = getSpriteHeight(canName)
@@ -163,7 +164,48 @@ function startGraffitiReveal(index)
         setSpriteSize(canName, newWidth, newHeight)
     end
 
-    graffitiCans[index] = canName
+    setSpriteAlpha(canName, 1)
+    activeGraffitiIndex = index
+end
+
+function ensureSprayCan()
+    if not spriteExist(graffitiCanName) then
+        createSprite(graffitiCanName)
+        loadGraphic(graffitiCanName, "Graffiti/can")
+        setSpriteToCamera(graffitiCanName, "cameraFreeplay")
+        addSpriteToState(graffitiCanName)
+    end
+end
+
+function resetSprayCan()
+    if activeGraffitiIndex ~= nil then
+        graffitiRevealActive[activeGraffitiIndex] = false
+    end
+
+    if spriteExist(graffitiCanName) then
+        setSpriteAlpha(graffitiCanName, 0)
+    end
+
+    activeGraffitiIndex = nil
+end
+
+function smin(a, b, k_0)
+    local k = k_0 * 2.0
+    local x = b - a
+    return 0.5*( a+b-math.sqrt(x*x+k*k) )
+end
+
+function logChirp(x, a, b, n)
+    local shift = math.exp(-(2.0 * n) / 8.0)
+    local u = x / b + shift
+    local phase = a * math.log(u)
+    local env = math.exp(0.5 - (x / (b * n)))
+    return 6.0 * env * math.cos(phase / 3.0)
+end
+
+function sprayY(x)
+    local yOffset = 18.0 * logChirp(math.max(x,0.001), 48.0, 24.0, math.pi)
+    return -smin(yOffset, 200 * x + 170, 10)
 end
 
 function updateGraffitiAnimation(elapsed)
@@ -172,23 +214,25 @@ function updateGraffitiAnimation(elapsed)
     end
 
     for i = 0, songCount - 1 do
-        if graffitiRevealActive[i] and graffitiSprites[i] ~= nil then
+        if graffitiRevealActive[i] and graffitiSprites[i] ~= nil and activeGraffitiIndex == i then
             local info = getFreeplayAlphabetInfo(i)
-            local canName = graffitiCans[i]
+            local canName = graffitiCanName
 
             if info ~= nil and canName ~= nil then
                 graffitiRevealTime[i] = graffitiRevealTime[i] + elapsed
-                local t = math.min(graffitiRevealTime[i] / CAN_ANIM_DURATION, 1)
+                local progress = math.min(graffitiRevealTime[i] / CAN_ANIM_DURATION, 1)
+                local slowProgress = math.pow(progress, 1)
 
                 local gWidth = getSpriteWidth(graffitiSprites[i])
                 local gHeight = getSpriteHeight(graffitiSprites[i])
                 local canWidth = getSpriteWidth(canName)
-                local left = (windowWidth - gWidth) / 2 - canWidth * 0.5
-                local midY = info.y + info.height / 2
-                local xOffset = gWidth * t
-                local yOffset = logChirp(t * 48.0, 48.0, 24.0, 1.0, math.max(6.0, gHeight * 0.06))
+                local curveMin = -5
+                local curveMax = math.exp(math.pi)
+                local t = curveMin + (curveMax - curveMin) * slowProgress
+                local xOffset = t * math.exp(t / 4)
+                local yOffset = sprayY(t)
 
-                setSpritePosition(canName, left + xOffset, midY + yOffset - getSpriteHeight(canName) / 2)
+                setSpritePosition(canName, xOffset - gWidth / 2.0, yOffset)
             end
 
             if graffitiRevealTime[i] >= CAN_ANIM_DURATION then
@@ -197,23 +241,17 @@ function updateGraffitiAnimation(elapsed)
                 local fadeTag = "graffitiFade_" .. i
                 doTweenAlpha(fadeTag, graffitiSprites[i], 1, 0.4, "quadOut")
 
-                if canName ~= nil then
-                    destroySprite(canName)
-                    graffitiCans[i] = nil
+                if spriteExist(graffitiCanName) then
+                    setSpriteAlpha(graffitiCanName, 0)
                 end
+
+                activeGraffitiIndex = nil
             end
         end
     end
 end
 
-function logChirp(x, a, b, n, A)
-    local shift = math.exp(-4.0 * math.pi / a)
-    local u = x / b + shift
-    local phase = a * math.log(u)
-    local env = math.exp(0.5 - (x / (b * n)))
-    return A * 4.0 * env * math.sin(phase)
-end
-
 function destroyStuff()
     destroySprite("menuBG")
+    destroySprite(graffitiCanName)
 end

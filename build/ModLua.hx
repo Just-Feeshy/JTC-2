@@ -20,6 +20,8 @@ import flixel.system.FlxSound;
 import flixel.graphics.frames.FlxFramesCollection;
 import feshixl.shaders.FeshShader;
 import openfl.display.BitmapData;
+import openfl.filters.BitmapFilter;
+import openfl.filters.ShaderFilter;
 import openfl.utils.Assets as OpenFlAssets;
 import openfl.geom.Rectangle as OpenFlRectangle;
 import lime.graphics.opengl.GL;
@@ -43,6 +45,11 @@ import Std.is as isOfType;
 
 using StringTools;
 
+typedef LuaShaderSource = {
+    var vertexSource:String;
+    var fragmentSource:String;
+}
+
 /**
 * Honestly, modcharts are my least concern, since this is mostly object-orientated based.
 */
@@ -61,7 +68,9 @@ class ModLua {
     public var luaCameras(default, null):Map<String, FlxCamera> = new Map<String, FlxCamera>();
     public var luaTweens(default, null):Map<String, FlxTween> = new Map<String, FlxTween>();
     public var luaSounds(default, null):Map<String, FlxSound> = new Map<String, FlxSound>();
+    public var luaShaderSources(default, null):Map<String, LuaShaderSource> = new Map<String, LuaShaderSource>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
+    public var luaCameraShaderFilters(default, null):Map<String, ShaderFilter> = new Map<String, ShaderFilter>();
 	public var luaBitmaps(default, null):Map<String, BitmapData> = new Map<String, BitmapData>();
 	public var luaFrameCollections(default, null):Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
 
@@ -1094,18 +1103,105 @@ class ModLua {
         });
 
         /**
-        * shaders (Don't work yet)
+        * Psych-style runtime shaders for Lua.
         */
-        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, shader:String, path:String = "shaders") {
-            storeShaders(name, shader, path);
+        Lua_helper.add_callback(lua, "initLuaShader", function(name:String, path:String = "shaders") {
+            return storeShaders(name, name, path);
         });
 
-        Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, path:String) {
+        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, shader:String, path:String = "shaders") {
+            return storeShaders(name, shader, path);
+        });
 
+        Lua_helper.add_callback(lua, "createRuntimeShader", function(name:String, tag:String = null) {
+            if(tag == null || tag.trim() == "") {
+                tag = name;
+            }
+
+            return createShaderInstance(name, tag) != null ? tag : null;
+        });
+
+        Lua_helper.add_callback(lua, "setSpriteShader", function(spriteName:String, shaderName:String) {
+            return attachShaderToSprite(shaderName, spriteName);
+        });
+
+        Lua_helper.add_callback(lua, "setObjectShader", function(spriteName:String, shaderName:String) {
+            return attachShaderToSprite(shaderName, spriteName);
+        });
+
+        Lua_helper.add_callback(lua, "removeSpriteShader", function(spriteName:String) {
+            return removeShaderFromSprite(spriteName);
+        });
+
+        Lua_helper.add_callback(lua, "setCameraShader", function(cameraName:String, shaderName:String) {
+            return attachShaderToCamera(shaderName, cameraName);
+        });
+
+        Lua_helper.add_callback(lua, "removeCameraShader", function(cameraName:String) {
+            return removeShaderFromCamera(cameraName);
+        });
+
+        Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, cameraName:String) {
+            return attachShaderToCamera(name, cameraName);
         });
 
         Lua_helper.add_callback(lua, "attachShaderToObject", function(name:String, spriteName:String) {
+            return attachShaderToSprite(name, spriteName);
+        });
 
+        Lua_helper.add_callback(lua, "setShaderFloat", function(target:String, property:String, value:Float) {
+            return setShaderFloatValue(target, property, [value]);
+        });
+
+        Lua_helper.add_callback(lua, "getShaderFloat", function(target:String, property:String) {
+            var values:Array<Dynamic> = getShaderValue(target, property);
+            return values.length > 0 ? values[0] : 0.0;
+        });
+
+        Lua_helper.add_callback(lua, "setShaderFloatArray", function(target:String, property:String, values:Array<Dynamic>) {
+            return setShaderFloatValue(target, property, normalizeFloatArray(values));
+        });
+
+        Lua_helper.add_callback(lua, "getShaderFloatArray", function(target:String, property:String) {
+            return getShaderValue(target, property);
+        });
+
+        Lua_helper.add_callback(lua, "setShaderInt", function(target:String, property:String, value:Int) {
+            return setShaderIntValue(target, property, [value]);
+        });
+
+        Lua_helper.add_callback(lua, "getShaderInt", function(target:String, property:String) {
+            var values:Array<Dynamic> = getShaderValue(target, property);
+            return values.length > 0 ? Std.int(values[0]) : 0;
+        });
+
+        Lua_helper.add_callback(lua, "setShaderIntArray", function(target:String, property:String, values:Array<Dynamic>) {
+            return setShaderIntValue(target, property, normalizeIntArray(values));
+        });
+
+        Lua_helper.add_callback(lua, "getShaderIntArray", function(target:String, property:String) {
+            return getShaderValue(target, property);
+        });
+
+        Lua_helper.add_callback(lua, "setShaderBool", function(target:String, property:String, value:Bool) {
+            return setShaderBoolValue(target, property, [value]);
+        });
+
+        Lua_helper.add_callback(lua, "getShaderBool", function(target:String, property:String) {
+            var values:Array<Dynamic> = getShaderValue(target, property);
+            return values.length > 0 ? values[0] == true : false;
+        });
+
+        Lua_helper.add_callback(lua, "setShaderBoolArray", function(target:String, property:String, values:Array<Dynamic>) {
+            return setShaderBoolValue(target, property, normalizeBoolArray(values));
+        });
+
+        Lua_helper.add_callback(lua, "getShaderBoolArray", function(target:String, property:String) {
+            return getShaderValue(target, property);
+        });
+
+        Lua_helper.add_callback(lua, "setShaderSampler2D", function(target:String, property:String, texture:String) {
+            return setShaderSampler(target, property, texture);
         });
 
         /*
@@ -1247,7 +1343,7 @@ class ModLua {
 
     function storeShaders(name:String, shader:String, path:String = "shaders", ?glslVersion:Null<UInt>):Bool {
         #if sys
-        if(luaShaders.exists(name)) {
+        if(luaShaderSources.exists(name)) {
             Log.info('Shader `$name` was already stored!');
 			return true;
         }
@@ -1272,14 +1368,300 @@ class ModLua {
         }
 
         if(foundAtLeastOne) {
-            luaShaders.set(name, new FeshShader(vertHeader, fragHeader));
+            luaShaderSources.set(name, {
+                vertexSource: vertHeader,
+                fragmentSource: fragHeader
+            });
             return true;
         }
 
-        Log.error('Missing shader `$name` .frag AND .vert files!');
+        Log.error('Missing shader `$shader` .frag AND .vert files!');
         #end
 
         return false;
+    }
+
+    function createShaderInstance(name:String, ?tag:String):FeshShader {
+        var shaderSource:LuaShaderSource = luaShaderSources.get(name);
+
+        if(shaderSource == null) {
+            Log.error('Shader `$name` was not initialized!');
+            return null;
+        }
+
+        var shader:FeshShader = new FeshShader(shaderSource.vertexSource, shaderSource.fragmentSource);
+
+        if(tag != null && tag.trim() != "") {
+            luaShaders.set(tag, shader);
+        }
+
+        return shader;
+    }
+
+    function getShaderInstance(name:String):FeshShader {
+        if(name == null) {
+            return null;
+        }
+
+        var shader:FeshShader = luaShaders.get(name);
+
+        if(shader != null) {
+            return shader;
+        }
+
+        var spr:FlxSprite = getSprite(name);
+
+        if(spr != null && spr.shader != null && isOfType(spr.shader, FeshShader)) {
+            return cast spr.shader;
+        }
+
+        var shaderFilter:ShaderFilter = luaCameraShaderFilters.get(name);
+
+        if(shaderFilter != null && shaderFilter.shader != null && isOfType(shaderFilter.shader, FeshShader)) {
+            return cast shaderFilter.shader;
+        }
+
+        return null;
+    }
+
+    function getCameraFilters(camera:FlxCamera):Array<BitmapFilter> {
+        if(camera == null) {
+            return [];
+        }
+
+        var filters:Dynamic = Reflect.getProperty(camera, "filters");
+
+        if(filters == null) {
+            return [];
+        }
+
+        return (cast filters:Array<BitmapFilter>).concat([]);
+    }
+
+    function attachShaderToSprite(shaderName:String, spriteName:String):Bool {
+        var spr:FlxSprite = getSprite(spriteName);
+
+        if(spr == null) {
+            Log.error('Object `$spriteName` could not be found!');
+            return false;
+        }
+
+        var shader:FeshShader = luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, spriteName);
+
+        if(shader == null) {
+            return false;
+        }
+
+        spr.shader = cast shader;
+        luaShaders.set(spriteName, shader);
+        return true;
+    }
+
+    function attachShaderToCamera(shaderName:String, cameraName:String):Bool {
+        var cam:FlxCamera = getCamera(cameraName);
+
+        if(cam == null) {
+            Log.error('Camera `$cameraName` could not be found!');
+            return false;
+        }
+
+        var shader:FeshShader = luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, cameraName);
+
+        if(shader == null) {
+            return false;
+        }
+
+        var filters:Array<BitmapFilter> = getCameraFilters(cam);
+        var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
+
+        if(previousFilter != null) {
+            filters.remove(previousFilter);
+        }
+
+        var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
+        filters.push(shaderFilter);
+
+        cam.setFilters(filters);
+        luaCameraShaderFilters.set(cameraName, shaderFilter);
+        luaShaders.set(cameraName, shader);
+        return true;
+    }
+
+    function removeShaderFromSprite(spriteName:String):Bool {
+        var spr:FlxSprite = getSprite(spriteName);
+
+        if(spr == null) {
+            return false;
+        }
+
+        spr.shader = null;
+        luaShaders.remove(spriteName);
+        return true;
+    }
+
+    function removeShaderFromCamera(cameraName:String):Bool {
+        var cam:FlxCamera = getCamera(cameraName);
+        var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
+
+        if(cam == null || previousFilter == null) {
+            return false;
+        }
+
+        var filters:Array<BitmapFilter> = getCameraFilters(cam);
+        filters.remove(previousFilter);
+
+        cam.setFilters(filters);
+        luaCameraShaderFilters.remove(cameraName);
+        luaShaders.remove(cameraName);
+        return true;
+    }
+
+    function getShaderDataField(target:String, property:String):Dynamic {
+        var shader:FeshShader = getShaderInstance(target);
+
+        if(shader == null) {
+            Log.error('Shader target `$target` could not be found!');
+            return null;
+        }
+
+        var shaderField:Dynamic = Reflect.field(shader.data, property);
+
+        if(shaderField == null) {
+            Log.error('Shader property `$property` was not found on `$target`!');
+            return null;
+        }
+
+        return shaderField;
+    }
+
+    function getShaderValue(target:String, property:String):Array<Dynamic> {
+        var shaderField:Dynamic = getShaderDataField(target, property);
+
+        if(shaderField == null) {
+            return [];
+        }
+
+        var value:Dynamic = Reflect.getProperty(shaderField, "value");
+        return value != null ? cast value : [];
+    }
+
+    function setShaderFloatValue(target:String, property:String, values:Array<Float>):Bool {
+        var shaderField:Dynamic = getShaderDataField(target, property);
+
+        if(shaderField == null) {
+            return false;
+        }
+
+        Reflect.setProperty(shaderField, "value", cast values);
+        return true;
+    }
+
+    function setShaderIntValue(target:String, property:String, values:Array<Int>):Bool {
+        var shaderField:Dynamic = getShaderDataField(target, property);
+
+        if(shaderField == null) {
+            return false;
+        }
+
+        Reflect.setProperty(shaderField, "value", cast values);
+        return true;
+    }
+
+    function setShaderBoolValue(target:String, property:String, values:Array<Bool>):Bool {
+        var shaderField:Dynamic = getShaderDataField(target, property);
+
+        if(shaderField == null) {
+            return false;
+        }
+
+        Reflect.setProperty(shaderField, "value", cast values);
+        return true;
+    }
+
+    function setShaderSampler(target:String, property:String, texture:String):Bool {
+        var shaderField:Dynamic = getShaderDataField(target, property);
+        var bitmapData:BitmapData = resolveShaderBitmap(texture);
+
+        if(shaderField == null || bitmapData == null) {
+            return false;
+        }
+
+        Reflect.setProperty(shaderField, "input", bitmapData);
+        return true;
+    }
+
+    function resolveShaderBitmap(texture:String):BitmapData {
+        if(texture == null || texture.trim() == "") {
+            return null;
+        }
+
+        if(luaBitmaps.exists(texture)) {
+            return luaBitmaps.get(texture);
+        }
+
+        if(OpenFlAssets.exists(texture, IMAGE)) {
+            return OpenFlAssets.getBitmapData(texture);
+        }
+
+        var assetPath:String = texture.startsWith("images/") ? texture : 'images/$texture.png';
+        var resolvedPath:String = Paths.getPath(assetPath, IMAGE, null);
+
+        if(OpenFlAssets.exists(resolvedPath, IMAGE)) {
+            return OpenFlAssets.getBitmapData(resolvedPath);
+        }
+
+        Log.error('Bitmap `$texture` could not be found for shader input!');
+        return null;
+    }
+
+    function normalizeFloatArray(values:Array<Dynamic>):Array<Float> {
+        var output:Array<Float> = [];
+
+        if(values == null) {
+            return output;
+        }
+
+        for(value in values) {
+            output.push(value == null ? 0 : Std.parseFloat(Std.string(value)));
+        }
+
+        return output;
+    }
+
+    function normalizeIntArray(values:Array<Dynamic>):Array<Int> {
+        var output:Array<Int> = [];
+
+        if(values == null) {
+            return output;
+        }
+
+        for(value in values) {
+            output.push(value == null ? 0 : Std.int(Std.parseFloat(Std.string(value))));
+        }
+
+        return output;
+    }
+
+    function normalizeBoolArray(values:Array<Dynamic>):Array<Bool> {
+        var output:Array<Bool> = [];
+
+        if(values == null) {
+            return output;
+        }
+
+        for(value in values) {
+            if(value == null) {
+                output.push(false);
+            }else if(isOfType(value, Bool)) {
+                output.push(cast value);
+            }else if(isOfType(value, Int) || isOfType(value, Float)) {
+                output.push(value != 0);
+            }else {
+                output.push(Std.string(value).toLowerCase().trim() == "true");
+            }
+        }
+
+        return output;
     }
 
     public function getObjectFromMap(name:String):Dynamic {
@@ -1377,6 +1759,10 @@ class ModLua {
     }
 
     public function getSprite(name:String):FlxSprite {
+        if(name == null) {
+            return null;
+        }
+
         var spr:FlxSprite = luaSprites.get(name);
         var curState = cast FlxG.state;
 
@@ -1401,14 +1787,38 @@ class ModLua {
         }
 
         if(curState is PlayState) {
-            if(curState.modifiableCharacters.exists(name))
-                spr = curState.modifiableCharacters.get(name);
+            var playState:PlayState = cast curState;
+
+            switch(name.toLowerCase().trim()) {
+                case "boyfriend", "bf":
+                    spr = playState.boyfriend;
+                case "dad", "opponent":
+                    spr = playState.dad;
+                case "gf", "girlfriend":
+                    spr = playState.gf;
+                default:
+            }
+
+            if(spr == null && playState.modifiableCharacters.exists(name))
+                spr = playState.modifiableCharacters.get(name);
+        }
+
+        if(spr == null) {
+            var reflectedObject:Dynamic = Reflect.getProperty(curState, name);
+
+            if(isOfType(reflectedObject, FlxSprite)) {
+                spr = cast reflectedObject;
+            }
         }
 
         return spr;
     }
 
     public function getCamera(name:String):FlxCamera {
+        if(name == null) {
+            return null;
+        }
+
         var cam:FlxCamera = luaCameras.get(name);
         var curState = cast FlxG.state;
 
@@ -1417,10 +1827,40 @@ class ModLua {
                 cam = curState.modifiableCameras.get(name);
         }
 
+        if(cam == null) {
+            switch(name.toLowerCase().trim()) {
+                case "camhud", "hud":
+                    cam = PlayState.camHUD;
+                case "camgame", "game":
+                    var reflectedCam:Dynamic = Reflect.getProperty(curState, "camGame");
+
+                    if(isOfType(reflectedCam, FlxCamera)) {
+                        cam = cast reflectedCam;
+                    }else {
+                        cam = FlxG.camera;
+                    }
+                case "camera", "default":
+                    cam = FlxG.camera;
+                default:
+            }
+        }
+
+        if(cam == null) {
+            var reflectedObject:Dynamic = Reflect.getProperty(curState, name);
+
+            if(isOfType(reflectedObject, FlxCamera)) {
+                cam = cast reflectedObject;
+            }
+        }
+
         return cam;
     }
 
     public function getText(name:String):FlxText {
+        if(name == null) {
+            return null;
+        }
+
         var text:FlxText = luaTexts.get(name);
         var curState = cast FlxG.state;
 
@@ -1436,6 +1876,40 @@ class ModLua {
         #if (USING_LUA && cpp)
         if(lua == null) {
             return;
+        }
+
+        if(luaCameraShaderFilters != null) {
+            var cameraShaderNames:Array<String> = [];
+
+            for(k in luaCameraShaderFilters.keys()) {
+                cameraShaderNames.push(k);
+            }
+
+            for(k in cameraShaderNames) {
+                removeShaderFromCamera(k);
+            }
+
+            luaCameraShaderFilters.clear();
+            luaCameraShaderFilters = null;
+        }
+
+        if(luaShaders != null) {
+            for(k in luaShaders.keys()) {
+                var spr:FlxSprite = getSprite(k);
+                var runtimeShader:FeshShader = luaShaders.get(k);
+
+                if(spr != null && spr.shader == cast runtimeShader) {
+                    spr.shader = null;
+                }
+            }
+
+            luaShaders.clear();
+            luaShaders = null;
+        }
+
+        if(luaShaderSources != null) {
+            luaShaderSources.clear();
+            luaShaderSources = null;
         }
 
         if(luaSprites != null) {

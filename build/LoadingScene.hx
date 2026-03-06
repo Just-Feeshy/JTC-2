@@ -88,7 +88,8 @@ class LoadingScene extends FlxSpriteGroup {
                     compileList[i] = "songs:" + compileList[i];
                 }
 
-                Cache.cacheListedFormat(compileList[i]);
+                // Cache from worker thread without creating Context3D textures.
+                Cache.cacheListedFormat(compileList[i], false);
                 cacheValue = i / compileList.length;
             }
 

@@ -1,0 +1,41 @@
+{
+  "dependencies": [
+    {
+      "name": "openfl",
+      "type": "haxelib",
+      "version": "9.2.0"
+    },
+    {
+      "name": "flixel",
+      "type": "haxelib",
+      "version": "4.11.0"
+    },
+    {
+      "name": "flixel-addons",
+      "type": "haxelib",
+      "version": "2.11.0"
+    },
+    {
+      "name": "flixel-ui",
+      "type": "haxelib",
+      "version": "2.3.3"
+    },
+    {
+      "name": "json2object",
+      "type": "haxelib",
+      "version": "3.11.0"
+    },
+    {
+      "name": "hscript",
+      "type": "haxelib"
+    },
+    {
+      "name": "discord_rpc",
+      "type": "haxelib"
+    },
+    {
+      "name": "hxvlc",
+      "type": "haxelib"
+    }
+  ]
+}

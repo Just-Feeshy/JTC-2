@@ -54,7 +54,8 @@ class CacheState extends HelperStates {
             cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")));
 
             for(i in 0...cacheList.length) {
-                Cache.cacheAsset(cacheList[i], "");
+                // Cache from worker thread without creating Context3D textures.
+                Cache.cacheAsset(cacheList[i], "", false);
                 loadingScene.setCacheValue(i / cacheList.length);
             }
 

@@ -17,20 +17,20 @@ import SaveData.SaveType;
 class Cache {
     @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 
-    static public function cacheListedFormat(path:String):Void {
+    static public function cacheListedFormat(path:String, allowGPUCache:Bool = true):Void {
         switch(path.split('.')[1]) {
             case "png":
-                cacheAssetDirectly(path);
+                cacheAssetDirectly(path, allowGPUCache);
             case Paths.SOUND_EXT:
                 OpenFlAssets.getSound(path, true);
         }
     }
 
-    static function cacheAssetDirectly(path:String):Void {
+    static function cacheAssetDirectly(path:String, allowGPUCache:Bool = true):Void {
         if(getAssetDirectly(path) == null) {
 				var bitmap = OpenFlAssets.getBitmapData(path);
 
-				if(SaveData.getData(SaveType.GPU_CACHE)) {
+				if(allowGPUCache && SaveData.getData(SaveType.GPU_CACHE)) {
 				    var texture:RectangleTexture = FlxG.stage.context3D.createRectangleTexture(bitmap.width, bitmap.height, BGRA, true);
 					texture.uploadFromBitmapData(bitmap);
 					bitmap.image.data = null;
@@ -48,9 +48,9 @@ class Cache {
         }
     }
 
-    static public function cacheAsset(key:String, ?library:String = "", directly:Bool = false):Void {
+    static public function cacheAsset(key:String, ?library:String = "", allowGPUCache:Bool = true):Void {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);
-        cacheAssetDirectly(path);
+        cacheAssetDirectly(path, allowGPUCache);
     }
 
     static public function cacheRemove(key:String, ?library:String = ""):Void {

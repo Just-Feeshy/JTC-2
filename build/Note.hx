@@ -78,6 +78,8 @@ class Note extends FeshSprite {
 
 	public var howSpeed(default, null):Null<Float> = 0;
 	public var earlyHit(default, null):Float = 0.5;
+	public var playerEarlyHit(default, null):Float = 0.5;
+	public var playerLateHit(default, null):Float = 1;
 
 	public var endPieceOffsetX(default, null):Float = 0;
 	public var endPieceOffsetY(default, null):Float = 0;
@@ -661,6 +663,34 @@ class Note extends FeshSprite {
 		note.updateHitbox();
 	}
 
+	inline function resolveSongPosition(songPosition:Null<Float>):Float {
+		return songPosition == null ? Conductor.trackPosition : songPosition;
+	}
+
+	public function getNoteTime():Float {
+		return DefaultHandler.getNoteTime(strumTime);
+	}
+
+	public function canPlayerHit(?songPosition:Float):Bool {
+		var currentPosition = resolveSongPosition(songPosition);
+		var noteTime = getNoteTime();
+
+		return noteTime > currentPosition - (Conductor.safeZoneOffset * playerLateHit)
+			&& noteTime < currentPosition + (Conductor.safeZoneOffset * playerEarlyHit);
+	}
+
+	public function canHoldHit(?songPosition:Float):Bool {
+		return isSustainNote && !wasGoodHit && !isLateForPlayer(songPosition) && canPlayerHit(songPosition);
+	}
+
+	public function isLateForPlayer(?songPosition:Float):Bool {
+		return !wasGoodHit && getNoteTime() < resolveSongPosition(songPosition) - (Conductor.safeZoneOffset * playerLateHit);
+	}
+
+	public function shouldAutoHit(?songPosition:Float):Bool {
+		return getNoteTime() < resolveSongPosition(songPosition) + (Conductor.safeZoneOffset * earlyHit);
+	}
+
 	override function update(elapsed:Float) {
 		super.update(elapsed * tickDivider);
 
@@ -669,23 +699,17 @@ class Note extends FeshSprite {
 
 		if (mustPress)
 		{
-			var safeHit:Float = 0.5;
-
-			if (DefaultHandler.getNoteTime(strumTime) > Conductor.trackPosition - Conductor.safeZoneOffset
-				&& DefaultHandler.getNoteTime(strumTime) < Conductor.trackPosition + (Conductor.safeZoneOffset * safeHit))
-				canBeHit = true;
-			else
-				canBeHit = false;
-
-			if (DefaultHandler.getNoteTime(strumTime) < Conductor.trackPosition - Conductor.safeZoneOffset && !wasGoodHit)
+			if (isLateForPlayer())
 				tooLate = true;
+
+			canBeHit = !tooLate && canPlayerHit();
 		}
 		else
 		{
 			canBeHit = false;
 	
-			if (DefaultHandler.getNoteTime(strumTime) < Conductor.trackPosition + (Conductor.safeZoneOffset * earlyHit)) {
-				if((isSustainNote && prevNote.wasGoodHit) || DefaultHandler.getNoteTime(strumTime) <= Conductor.trackPosition) {
+			if (shouldAutoHit()) {
+				if((isSustainNote && prevNote.wasGoodHit) || getNoteTime() <= Conductor.trackPosition) {
 					wasGoodHit = true;
 				}
 			}
@@ -702,17 +726,7 @@ class Note extends FeshSprite {
 	}
 
 	public function getNoteHittable(second:Note):Bool {
-		if(SaveData.getData(PRESET_INPUTS)) {
-				if(Math.abs(DefaultHandler.getNoteTime(second.strumTime) - DefaultHandler.getNoteTime(strumTime)) < 1.0) {
-					return true;
-				}
-		}else {
-				if((Math.abs(second.getNoteY()) < Note.swagWidth || Math.abs(getNoteY()) < Note.swagWidth)) {
-					return true;
-				}
-		}
-
-		return false;
+		return second != null && Math.abs(second.getNoteTime() - getNoteTime()) <= 1.0;
 	}
 
 	public function giveHealth():Float {

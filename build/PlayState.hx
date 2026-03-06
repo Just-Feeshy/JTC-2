@@ -6,6 +6,8 @@ import Discord.DiscordClient;
 import Section.SwagSection;
 import Song.SwagSong;
 import WiggleEffect.WiggleEffectType;
+import Controls.Control;
+import Controls.Device;
 import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -65,6 +67,13 @@ import SaveData.SaveType;
 
 using StringTools;
 
+typedef QueuedLaneInput =
+{
+	var lane:Int;
+	var pressed:Bool;
+	var songTime:Float;
+}
+
 class PlayState extends MusicBeatState
 {
 	//Cache Stuff
@@ -83,7 +92,6 @@ class PlayState extends MusicBeatState
 	private var curChar:String = '';
 	private var camMovementPos:FlxPoint;
 	private var prevDadNoteData:Int = -1;
-	private var gamepadDetected:Bool = false;
     private var disableInputs:Bool = false;
 	private var videoSwitchState:String = "";
 
@@ -129,6 +137,7 @@ class PlayState extends MusicBeatState
 
 	//Controls
 	private var keys2DArray:Array<Array<Int>> = [];
+	private var inputQueue:Array<QueuedLaneInput> = [];
 
 	//Da Variables
 	private var hits:Int = 0;
@@ -586,8 +595,6 @@ class PlayState extends MusicBeatState
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, getReleased);
 		}
 
-		gamepadDetected = (FlxG.gamepads.lastActive != null ? true : false);
-
 		super.create();
 
 		stage.finishedInitGame();
@@ -617,69 +624,16 @@ class PlayState extends MusicBeatState
 			singAnims = ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
 		}
 
-		FlxG.save.data.gamepadBinds = [
-			FlxGamepadInputID.LEFT_TRIGGER, //LEFT
-			FlxGamepadInputID.LEFT_SHOULDER, //DOWN
-			FlxGamepadInputID.RIGHT_SHOULDER, //UP
-			FlxGamepadInputID.RIGHT_TRIGGER, //RIGHT
-			FlxGamepadInputID.X //SPACE
-		];
-
 		SaveData.saveClient();
 
-		switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
-			case 0:
-				if(SONG.fifthKey) {
-					keys2DArray[0] = [FlxKey.A, FlxKey.LEFT];
-					keys2DArray[1] = [FlxKey.S, FlxKey.DOWN];
-					keys2DArray[2] = [FlxKey.SPACE];
-					keys2DArray[3] = [FlxKey.W, FlxKey.UP];
-					keys2DArray[4] = [FlxKey.D, FlxKey.RIGHT];
-				}else {
-					keys2DArray[0] = [FlxKey.A, FlxKey.LEFT];
-					keys2DArray[1] = [FlxKey.S, FlxKey.DOWN];
-					keys2DArray[2] = [FlxKey.W, FlxKey.UP];
-					keys2DArray[3] = [FlxKey.D, FlxKey.RIGHT];
-				}
-			case 1:
-				if(SONG.fifthKey) {
-					keys2DArray[0] = [FlxKey.D, FlxKey.LEFT];
-					keys2DArray[1] = [FlxKey.F, FlxKey.DOWN];
-					keys2DArray[2] = [FlxKey.SPACE];
-					keys2DArray[3] = [FlxKey.J, FlxKey.UP];
-					keys2DArray[4] = [FlxKey.K, FlxKey.RIGHT];
-				}else {
-					keys2DArray[0] = [FlxKey.D, FlxKey.LEFT];
-					keys2DArray[1] = [FlxKey.F, FlxKey.DOWN];
-					keys2DArray[2] = [FlxKey.J, FlxKey.UP];
-					keys2DArray[3] = [FlxKey.K, FlxKey.RIGHT];
-				}
-			case 2:
-				if(SONG.fifthKey) {
-					keys2DArray[0] = [FlxKey.Z, FlxKey.LEFT];
-					keys2DArray[1] = [FlxKey.X, FlxKey.DOWN];
-					keys2DArray[2] = [FlxKey.SPACE];
-					keys2DArray[3] = [ONE, NUMPADONE, FlxKey.UP];
-					keys2DArray[4] = [TWO, NUMPADTWO, FlxKey.RIGHT];
-				}else {
-					keys2DArray[0] = [FlxKey.Z, FlxKey.LEFT];
-					keys2DArray[1] = [FlxKey.X, FlxKey.DOWN];
-					keys2DArray[2] = [ONE, NUMPADONE, FlxKey.UP];
-					keys2DArray[3] = [TWO, NUMPADTWO, FlxKey.RIGHT];
-				}
-			case 3:
-				if(SONG.fifthKey) {
-					keys2DArray[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
-					keys2DArray[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-					keys2DArray[2] = SaveData.getData(CUSTOM_KEYBINDS)[4];
-					keys2DArray[3] = SaveData.getData(CUSTOM_KEYBINDS)[2];
-					keys2DArray[4] = SaveData.getData(CUSTOM_KEYBINDS)[3];
-				}else {
-					keys2DArray[0] = SaveData.getData(CUSTOM_KEYBINDS)[0];
-					keys2DArray[1] = SaveData.getData(CUSTOM_KEYBINDS)[1];
-					keys2DArray[2] = SaveData.getData(CUSTOM_KEYBINDS)[2];
-					keys2DArray[3] = SaveData.getData(CUSTOM_KEYBINDS)[3];
-				}
+		keys2DArray = [];
+
+		var laneControls = getLaneControls();
+		var index:Int = 0;
+
+		while(index < laneControls.length) {
+			keys2DArray[index] = controls.getInputsFor(laneControls[index], Keys, []);
+			index++;
 		}
 	}
 
@@ -1920,7 +1874,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if(gamepadDetected) {
+		if(FlxG.gamepads.lastActive != null) {
 			controllerInput();
 		}
 
@@ -2209,42 +2163,22 @@ class PlayState extends MusicBeatState
 	}
 
 	function controllerInput():Void {
-		var controlPressArray:Array<Bool> = [
-			controls.GAME_LEFT_P,
-			controls.GAME_DOWN_P,
-			controls.GAME_UP_P,
-			controls.GAME_RIGHT_P
-		];
+		var controlPressArray = getGamepadPressArray();
+		var controlReleaseArray = getGamepadReleaseArray();
+		var index:Int = 0;
 
-		var controlReleaseArray:Array<Bool> = [
-			controls.GAME_LEFT_R,
-			controls.GAME_DOWN_R,
-			controls.GAME_UP_R,
-			controls.GAME_RIGHT_R
-		];
-
-		if (controlPressArray.contains(true)) {
-			var index:Int = 0;
-
-			while(index < controlPressArray.length) {
-				if (controlPressArray[index]) {
-					getPressed(new KeyboardEvent(KeyboardEvent.KEY_DOWN, true, true, -1, keys2DArray[index][0]));
-				}
-
-				index++;
+		while(index < getLaneCount()) {
+			if (controlPressArray[index]) {
+				queueLaneInput(index, true, getCurrentInputSongTime());
+				callLua('onKeyPress', [getPrimaryLaneKeyCode(index)]);
 			}
-		}
 
-		if(controlReleaseArray.contains(true)) {
-			var index:Int = 0;
-
-			while(index < controlReleaseArray.length) {
-				if (controlReleaseArray[index]) {
-					getReleased(new KeyboardEvent(KeyboardEvent.KEY_DOWN, true, true, -1, keys2DArray[index][0]));
-				}
-
-				index++;
+			if (controlReleaseArray[index]) {
+				queueLaneInput(index, false, getCurrentInputSongTime());
+				callLua('onKeyRelease', [getPrimaryLaneKeyCode(index)]);
 			}
+
+			index++;
 		}
 	}
 
@@ -2252,43 +2186,15 @@ class PlayState extends MusicBeatState
 		if(paused || inCutscene)
 			return;
 
-		var getEvent = cast event;
-		var index:Int = 0;
+		var getEvent:KeyboardEvent = cast event;
+		var index:Int = getKeyOrButton(getEvent.keyCode);
 
-
-		index = getKeyOrButton(getEvent.keyCode);
-
-		var controlArray = [
-			controls.GAME_LEFT_R,
-			controls.GAME_DOWN_R,
-			controls.GAME_UP_R,
-			controls.GAME_RIGHT_R
-		];
-
-		if(SONG.fifthKey) {
-			controlArray = [
-				controls.GAME_LEFT_R,
-				controls.GAME_DOWN_R,
-				controls.GAME_SPACE_R,
-				controls.GAME_UP_R,
-				controls.GAME_RIGHT_R
-			];
-		}
-
-		if(index >= controlArray.length) {
+		if(index < 0 || index >= getLaneCount()) {
 			return;
 		}
 
-		if(controlArray[index]) {
-			var spr:Strum = currentStrums.members[index];
-
-			if(spr != null) {
-				spr.holdTimer = 0;
-				spr.playAnim('static');
-			}
-
-			callLua('onKeyRelease', [getEvent.keyCode]);
-		}
+		queueLaneInput(index, false, getCurrentInputSongTime());
+		callLua('onKeyRelease', [getEvent.keyCode]);
 	}
 
 	function gameOverScreen():Void {
@@ -2403,9 +2309,9 @@ class PlayState extends MusicBeatState
 
 	var endingSong:Bool = false;
 
-	private function popUpScore(strumtime:Float, id:Int, abby:String):Void
+	private function popUpScore(strumtime:Float, id:Int, abby:String, ?judgeSongPosition:Float):Void
 	{
-		var noteDiff:Float = Math.abs(strumtime - Conductor.trackPosition);
+		var noteDiff:Float = Math.abs(strumtime - (judgeSongPosition == null ? Conductor.trackPosition : judgeSongPosition));
 		vocals.volume = 1;
 
 		var placement:String = Std.string(combo);
@@ -2572,36 +2478,11 @@ class PlayState extends MusicBeatState
 		if(paused || inCutscene)
 			return;
 
-		var controlHoldArray = [
-			controls.GAME_LEFT,
-			controls.GAME_DOWN,
-			controls.GAME_UP,
-			controls.GAME_RIGHT
-		];
+		var controlHoldArray = getControlHoldArray();
 
-		if(SONG.fifthKey) {
-			controlHoldArray = [
-				controls.GAME_LEFT,
-				controls.GAME_DOWN,
-				controls.GAME_SPACE,
-				controls.GAME_UP,
-				controls.GAME_RIGHT
-			];
-		}
-
-		currentStrums.forEachAlive(function(spr:Strum) {
-		    if(!controlHoldArray[spr.ID] && spr.animation.curAnim.name == "pressed") {
-				spr.playAnim('static');
-				spr.holdTimer = 0;
-			}
-		});
-
-		notes.forEachAlive(function(daNote:Note) {
-			if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate
-			&& !daNote.wasGoodHit && controlHoldArray[daNote.noteData] && daNote.isSustainNote && !disableInputs) {
-				goodNoteHit(daNote);
-			}
-		});
+		processInputQueue(controlHoldArray);
+		refreshHeldStrums(controlHoldArray);
+		processHeldNotes(controlHoldArray);
 
 		if(boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end) * boyfriend.singMultiplier && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
 			boyfriend.dance();
@@ -2614,91 +2495,270 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		var getEvent = cast event;
-		var index:Int = 0;
+		var getEvent:KeyboardEvent = cast event;
+		var index:Int = getKeyOrButton(getEvent.keyCode);
+
+		if(index < 0 || index >= getLaneCount() || !generatedMusic) {
+			return;
+		}
 
 		if(!FlxG.keys.checkStatus(getEvent.keyCode, JUST_PRESSED)) {
 			return;
 		}
 
-		index = getKeyOrButton(getEvent.keyCode);
+		queueLaneInput(index, true, getCurrentInputSongTime());
+		callLua('onKeyPress', [getEvent.keyCode]);
+	}
 
-		var controlArray = [
-			controls.GAME_LEFT_P,
-			controls.GAME_DOWN_P,
-			controls.GAME_UP_P,
-			controls.GAME_RIGHT_P
-		];
+	function getLaneCount():Int {
+		return SONG.fifthKey ? 5 : 4;
+	}
 
+	function getLaneControls():Array<Control> {
 		if(SONG.fifthKey) {
-			controlArray = [
-				controls.GAME_LEFT_P,
-				controls.GAME_DOWN_P,
-				controls.GAME_SPACE_P,
-				controls.GAME_UP_P,
-				controls.GAME_RIGHT_P
+			return [
+				Control.GAME_LEFT,
+				Control.GAME_DOWN,
+				Control.GAME_SPACE,
+				Control.GAME_UP,
+				Control.GAME_RIGHT
 			];
 		}
 
-		if (generatedMusic && controlArray.contains(true)) {
-			var noteCaculation:Bool = false;
+		return [
+			Control.GAME_LEFT,
+			Control.GAME_DOWN,
+			Control.GAME_UP,
+			Control.GAME_RIGHT
+		];
+	}
 
+	function getLaneGamepadBinds():Array<FlxGamepadInputID> {
+		var savedBinds:Array<Dynamic> = cast SaveData.getData(CUSTOM_GAMEPAD_BINDS);
+		var defaultBinds:Array<FlxGamepadInputID> = [
+			FlxGamepadInputID.LEFT_TRIGGER,
+			FlxGamepadInputID.LEFT_SHOULDER,
+			FlxGamepadInputID.RIGHT_SHOULDER,
+			FlxGamepadInputID.RIGHT_TRIGGER,
+			FlxGamepadInputID.X
+		];
+
+		inline function resolveBind(index:Int):FlxGamepadInputID {
+			if(savedBinds != null && index < savedBinds.length && savedBinds[index] != null) {
+				return cast savedBinds[index];
+			}
+
+			return defaultBinds[index];
+		}
+
+		if(SONG.fifthKey) {
+			return [resolveBind(0), resolveBind(1), resolveBind(4), resolveBind(2), resolveBind(3)];
+		}
+
+		return [resolveBind(0), resolveBind(1), resolveBind(2), resolveBind(3)];
+	}
+
+	function getControlHoldArray():Array<Bool> {
+		if(SONG.fifthKey) {
+			return [
+				controls.GAME_LEFT,
+				controls.GAME_DOWN,
+				controls.GAME_SPACE,
+				controls.GAME_UP,
+				controls.GAME_RIGHT
+			];
+		}
+
+		return [
+			controls.GAME_LEFT,
+			controls.GAME_DOWN,
+			controls.GAME_UP,
+			controls.GAME_RIGHT
+		];
+	}
+
+	function getGamepadPressArray():Array<Bool> {
+		var gamepadBinds = getLaneGamepadBinds();
+		var values:Array<Bool> = [];
+		var index:Int = 0;
+
+		while(index < getLaneCount()) {
+			var bind = gamepadBinds[index];
+			values.push(FlxG.gamepads.anyJustPressed(bind));
+			index++;
+		}
+
+		return values;
+	}
+
+	function getGamepadReleaseArray():Array<Bool> {
+		var gamepadBinds = getLaneGamepadBinds();
+		var values:Array<Bool> = [];
+		var index:Int = 0;
+
+		while(index < getLaneCount()) {
+			var bind = gamepadBinds[index];
+			values.push(FlxG.gamepads.anyJustReleased(bind));
+			index++;
+		}
+
+		return values;
+	}
+
+	function getPrimaryLaneKeyCode(lane:Int):Int {
+		if(lane < 0 || lane >= keys2DArray.length || keys2DArray[lane] == null || keys2DArray[lane].length == 0) {
+			return FlxKey.NONE;
+		}
+
+		return keys2DArray[lane][0];
+	}
+
+	function getCurrentInputSongTime():Float {
+		if(FlxG.sound.music != null) {
+			return FlxG.sound.music.time;
+		}
+
+		return Conductor.trackPosition;
+	}
+
+	function queueLaneInput(lane:Int, pressed:Bool, songTime:Float):Void {
+		if(lane < 0 || lane >= getLaneCount()) {
+			return;
+		}
+
+		inputQueue.push({lane: lane, pressed: pressed, songTime: songTime});
+
+		if(pressed) {
+			playStrumPress(lane);
+		}
+	}
+
+	function processInputQueue(controlHoldArray:Array<Bool>):Void {
+		if(inputQueue.length == 0) {
+			return;
+		}
+
+		if(FlxG.sound.music != null) {
 			setSongPosition(FlxG.sound.music.time);
+		}
 
-			var inputNotes = notes.members.filter(function(note:Note):Bool {
-				if(note == null) return false;
+		while(inputQueue.length > 0) {
+			var input = inputQueue.shift();
 
-				return note.canBeHit && note.mustPress && !note.tooLate && !note.wasGoodHit && !note.isSustainNote && note.noteData == index;
-			});
-			inputNotes.sort((a, b) -> Std.int(DefaultHandler.getNoteTime(a.strumTime) - DefaultHandler.getNoteTime(b.strumTime)));
+			if(input == null) {
+				continue;
+			}
 
-			if(inputNotes.length != 0) {
-				var front = inputNotes[0];
+			if(input.pressed) {
+				handleLanePress(input.lane, input.songTime);
+			}else {
+				handleLaneRelease(input.lane, controlHoldArray);
+			}
+		}
+	}
 
-				final frontTime = DefaultHandler.getNoteTime(front.strumTime);
+	function refreshHeldStrums(controlHoldArray:Array<Bool>):Void {
+		currentStrums.forEachAlive(function(spr:Strum) {
+			if(!controlHoldArray[spr.ID] && spr.animation.curAnim != null && spr.animation.curAnim.name == "pressed") {
+				spr.playAnim('static');
+				spr.holdTimer = 0;
+			}
+		});
+	}
 
-				if(inputNotes.length > 1) {
-					var back = inputNotes[1];
+	function processHeldNotes(controlHoldArray:Array<Bool>):Void {
+		notes.forEachAlive(function(daNote:Note) {
+			if (daNote.mustPress && daNote.isSustainNote && !daNote.wasGoodHit
+				&& controlHoldArray[daNote.noteData] && daNote.canHoldHit() && !disableInputs) {
+				goodNoteHit(daNote);
+			}
+		});
+	}
 
-					final backTime = DefaultHandler.getNoteTime(back.strumTime);
+	function handleLanePress(lane:Int, hitSongTime:Float):Void {
+		if(!generatedMusic || disableInputs) {
+			return;
+		}
 
-				    if(frontTime == backTime) {
-						if(front.getNoteHittable(back)) {
-							removeNote(back);
-						}else if(back.getNoteHittable(front)) {
-							removeNote(front);
-							front = back;
-						}
-				    }else if(front.getNoteHittable(back)) {
-						removeNote(back);
-					}else if(frontTime < backTime) {
-						front = back;
-					}
-				}
+		var targetNote = findTapNote(lane, hitSongTime);
 
-				goodNoteHit(front);
-			}else if(!GhostTapping.ghostTap) {
-				if(controlArray[index]) {
-				    takeDamage(index, true);
-				    songScore -= 10;
-				    setHealth(health - 0.04);
-				    missClicks++;
-				}
-		    }
+		if(targetNote != null) {
+			goodNoteHit(targetNote, hitSongTime);
+			return;
+		}
 
-		    var spr:Strum = currentStrums.members[index];
+		if(!GhostTapping.ghostTap) {
+			takeDamage(lane, true);
+			songScore -= 10;
+			setHealth(health - 0.04);
+			missClicks++;
+		}
+	}
 
-            // Ewwwww
-            if(spr != null) {
-                if(!CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-                    if(controlArray[index] && spr.animation.curAnim.name != "confirm") {
-                        spr.playAnim('pressed');
-                        spr.holdTimer = 0;
-                    }
-                }
-            }
+	function handleLaneRelease(lane:Int, controlHoldArray:Array<Bool>):Void {
+		var spr:Strum = currentStrums.members[lane];
 
-			callLua('onKeyPress', [getEvent.keyCode]);
+		if(spr == null || controlHoldArray[lane]) {
+			return;
+		}
+
+		spr.holdTimer = 0;
+
+		if(spr.animation.curAnim != null && spr.animation.curAnim.name != "confirm") {
+			spr.playAnim('static');
+		}
+	}
+
+	function findTapNote(lane:Int, hitSongTime:Float):Note {
+		var inputNotes = notes.members.filter(function(note:Note):Bool {
+			return note != null
+				&& note.mustPress
+				&& note.noteData == lane
+				&& !note.wasGoodHit
+				&& !note.isSustainNote
+				&& note.canPlayerHit(hitSongTime);
+		});
+
+		inputNotes.sort(function(a:Note, b:Note):Int {
+			var timeDiff = a.getNoteTime() - b.getNoteTime();
+
+			if(timeDiff < 0) return -1;
+			if(timeDiff > 0) return 1;
+
+			return 0;
+		});
+
+		if(inputNotes.length == 0) {
+			return null;
+		}
+
+		var targetNote = inputNotes[0];
+		var index:Int = 1;
+
+		while(index < inputNotes.length) {
+			var stackedNote = inputNotes[index];
+
+			if(!targetNote.getNoteHittable(stackedNote)) {
+				break;
+			}
+
+			removeNote(stackedNote);
+			index++;
+		}
+
+		return targetNote;
+	}
+
+	function playStrumPress(lane:Int):Void {
+		var spr:Strum = currentStrums.members[lane];
+
+		if(spr == null || CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+			return;
+		}
+
+		if(spr.animation.curAnim == null || spr.animation.curAnim.name != "confirm") {
+			spr.playAnim('pressed');
+			spr.holdTimer = 0;
 		}
 	}
 
@@ -2780,13 +2840,13 @@ class PlayState extends MusicBeatState
 			}
 	}
 
-	function goodNoteHit(note:Note):Void
+	function goodNoteHit(note:Note, ?hitSongTime:Float):Void
 	{
 		if (!note.wasGoodHit)
 		{
 			if (!note.isSustainNote && !CustomNoteHandler.dontHitNotes.contains(note.noteAbstract))
 			{
-				popUpScore(DefaultHandler.getNoteTime(note.strumTime), note.noteData, note.noteAbstract);
+				popUpScore(note.getNoteTime(), note.noteData, note.noteAbstract, hitSongTime);
 				combo += 1;
 			}
 

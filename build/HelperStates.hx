@@ -260,7 +260,7 @@ class HelperStates extends FlxState {
             for(k in modifiableCameras.keys()) {
                 var cam:FlxCamera = modifiableCameras.get(k);
 
-                if(cam != null) {
+                if(cam != null && cam != FlxG.camera) {
                     cam.destroy();
                 }
             }
