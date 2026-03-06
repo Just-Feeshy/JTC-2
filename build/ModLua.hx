@@ -29,6 +29,7 @@ import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 import openfl.display.SpreadMethod;
 import openfl.geom.Matrix;
+import openfl.geom.Point as OpenFlPoint;
 import openfl.utils.Assets as OpenFlAssets;
 import openfl.geom.Rectangle as OpenFlRectangle;
 import lime.graphics.opengl.GL;
@@ -203,6 +204,32 @@ class ModLua {
 		    targetBitmap.draw(sourceBitmap, matrix, null, null, null, true);
 		});
 
+		Lua_helper.add_callback(lua, "stampBitmapMask", function(target:String, source:String, mask:String, x:Float = 0, y:Float = 0) {
+		    var targetBitmap:BitmapData = luaBitmaps.get(target);
+		    var sourceBitmap:BitmapData = resolveShaderBitmap(source);
+		    var maskBitmap:BitmapData = resolveShaderBitmap(mask);
+
+		    if(targetBitmap == null || sourceBitmap == null || maskBitmap == null) {
+		        return;
+		    }
+
+		    var destX:Int = Std.int(Math.floor(x));
+		    var destY:Int = Std.int(Math.floor(y));
+		    var left:Int = Std.int(Math.max(destX, 0));
+		    var top:Int = Std.int(Math.max(destY, 0));
+		    var right:Int = Std.int(Math.min(destX + maskBitmap.width, targetBitmap.width));
+		    var bottom:Int = Std.int(Math.min(destY + maskBitmap.height, targetBitmap.height));
+
+		    if(right <= left || bottom <= top) {
+		        return;
+		    }
+
+		    var sourceRect = new OpenFlRectangle(left, top, right - left, bottom - top);
+		    var destPoint = new OpenFlPoint(left, top);
+		    var alphaPoint = new OpenFlPoint(left - destX, top - destY);
+		    targetBitmap.copyPixels(sourceBitmap, sourceRect, destPoint, maskBitmap, alphaPoint, true);
+		});
+
 		Lua_helper.add_callback(lua, "createCombinedFrames", function(name:String, first:String, second:String, type1:String, type2:String) {
 		    var firstFrames:FlxFramesCollection;
 			var secondFrames:FlxFramesCollection;
@@ -251,7 +278,7 @@ class ModLua {
 
 			{ // I want to make this confusing as possible lmao.
 				var imgBytes = image.getPixels(new Rectangle(0, 0, image.width, image.height));
-				bmp.setPixels(new OpenFlRectangle(x, y, x|image.width, y|image.height), imgBytes);
+				bmp.setPixels(new OpenFlRectangle(x, y, image.width, image.height), imgBytes);
 			}
 		});
 
@@ -333,6 +360,19 @@ class ModLua {
                 image = image.split('.')[0];
 				spr.loadGraphic(Paths.image(image), animated, gridX, gridY);
 			}
+		});
+
+        Lua_helper.add_callback(lua, "loadSpriteBitmapData", function(name:String, bitmapName:String) {
+			var spr:FlxSprite = getSprite(name);
+            var bmp:BitmapData = luaBitmaps.get(bitmapName);
+
+            if(spr == null || bmp == null) {
+                return;
+            }
+
+            spr.pixels = bmp;
+            spr.dirty = true;
+            spr.updateHitbox();
 		});
 
         Lua_helper.add_callback(lua, "makeGraphic", function(name:String, width:Int, height:Int, colorStr:String) {
