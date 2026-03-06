@@ -9,8 +9,11 @@ uniform float trailShift;
 uniform float trailRadius;
 uniform float edgeSoftness;
 uniform float active;
+uniform float fullReveal;
 
+const float BASE_CURVE_MAX = 23.140692632779267;
 const float CURVE_MIN = -5.0;
+const float CURVE_MAX = BASE_CURVE_MAX * 1.32;
 const float PI = 3.14159265358979323846;
 const int TRAIL_SAMPLES = 96;
 
@@ -27,7 +30,7 @@ float logChirp(float x, float a, float b, float n)
     float u = x / b + shift;
     float phase = a * log(u);
     float env = exp(0.5 - (x / (b * n)));
-    return 6.0 * env * cos(phase / 3.0);
+    return 6.0 * env * cos(phase / 2.0);
 }
 
 float sprayCurveY(float x)
@@ -38,7 +41,7 @@ float sprayCurveY(float x)
 
 vec2 trailPoint(float t)
 {
-    float x = (2.0 * t * exp(t / 8.0)) * curveScaleX + pathBaseX - trailShift;
+    float x = (t * exp(t / 8.0)) * curveScaleX + pathBaseX - trailShift;
     float y = sprayCurveY(t) * curveScaleY + pathBaseY;
     return vec2(x, y);
 }
@@ -61,7 +64,7 @@ void main(void)
     }
 
     vec2 pos = openfl_TextureCoordv * openfl_TextureSize;
-    float headT = max(sprayT, CURVE_MIN);
+    float headT = clamp(sprayT, CURVE_MIN, CURVE_MAX);
     if (headT <= CURVE_MIN + 0.05) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
         return;
@@ -79,7 +82,10 @@ void main(void)
     }
 
     float safeRadius = max(1.0, trailRadius);
-    float mask = minDist <= safeRadius ? 1.0 : 0.0;
+    float feather = max(1.0, safeRadius * clamp(edgeSoftness, 0.01, 0.44));
+    float solidRadius = max(0.0, safeRadius - feather);
+    float mask = minDist <= solidRadius ? 1.0 : 1.0 - smoothstep(solidRadius, safeRadius, minDist);
+    mask = mix(mask, 1.0, clamp(fullReveal, 0.0, 1.0));
 
     gl_FragColor = vec4(color.rgb * mask, color.a * mask);
 }

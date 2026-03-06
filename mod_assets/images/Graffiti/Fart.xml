@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Fart.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="fart0000" x="10" y="10" width="751" height="612" frameX="0" frameY="-3" frameWidth="758" frameHeight="615"/>
+	<SubTexture name="fart0001" x="10" y="10" width="751" height="612" frameX="0" frameY="-3" frameWidth="758" frameHeight="615"/>
+	<SubTexture name="fart0002" x="10" y="10" width="751" height="612" frameX="0" frameY="-3" frameWidth="758" frameHeight="615"/>
+	<SubTexture name="fart0003" x="811" y="10" width="755" height="600" frameX="-3" frameY="-6" frameWidth="758" frameHeight="615"/>
+	<SubTexture name="fart0004" x="811" y="10" width="755" height="600" frameX="-3" frameY="-6" frameWidth="758" frameHeight="615"/>
+	<SubTexture name="fart0005" x="10" y="672" width="725" height="604" frameX="-10" frameY="0" frameWidth="758" frameHeight="615"/>
+	<SubTexture name="fart0006" x="10" y="672" width="725" height="604" frameX="-10" frameY="0" frameWidth="758" frameHeight="615"/>
+	<SubTexture name="fart0007" x="10" y="672" width="725" height="604" frameX="-10" frameY="0" frameWidth="758" frameHeight="615"/>
+</TextureAtlas>
