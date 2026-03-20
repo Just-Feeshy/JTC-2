@@ -27,6 +27,8 @@ local FULL_REVEAL_DURATION = 0.2
 local FREEPLAY_SECTOR_NAME = "freeplay_sector"
 local FREEPLAY_REVEAL_SHADER = "freeplay_spray_reveal"
 local SHOW_SPRAY_VISUAL = true
+local SPRAY_VISUAL_BASE_WIDTH = 0
+local SPRAY_VISUAL_BASE_HEIGHT = 0
 local SPRAY_NOZZLE_X = 886.943 / 1280.0
 local SPRAY_NOZZLE_Y = 272.0 / 720.0
 local SPRAY_RADIUS = 300
@@ -36,9 +38,21 @@ local SPRAY_VISUAL_ALPHA = 0.45
 local SPRAY_VISUAL_COLOR = "0xFF26F7FD"
 local SPRAY_VISUAL_PIVOT_X = 1.06
 local SPRAY_VISUAL_PIVOT_Y = 0.55
+local SPRAY_VISUAL_SCALE_MIN = 0.82
+local SPRAY_VISUAL_SCALE_MAX = 1.14
 local SPRAY_TRAIL_SHIFT = 275
 local SPRAY_TRAIL_START_RADIUS = 112
 local SPRAY_TRAIL_RADIUS = 224
+
+local function curveStep(edge0, edge1, value)
+    if edge0 == edge1 then
+        return value >= edge1 and 1 or 0
+    end
+
+    local t = (value - edge0) / (edge1 - edge0)
+    t = math.max(0, math.min(t, 1))
+    return t * t * (3 - 2 * t)
+end
 
 function onCreate()
     destroyStuff()
@@ -79,6 +93,8 @@ function createFreeplaySector()
     if fartWidth > 0 and fartHeight > 0 then
         local targetWidth = math.floor(SPRAY_RADIUS * 1.2)
         local targetHeight = math.floor(fartHeight * (targetWidth / fartWidth))
+        SPRAY_VISUAL_BASE_WIDTH = targetWidth
+        SPRAY_VISUAL_BASE_HEIGHT = targetHeight
         setSpriteSize(FREEPLAY_SECTOR_NAME, targetWidth, targetHeight)
     end
 
@@ -379,6 +395,27 @@ function updateSpraySector(canName)
     setSpritePosition(FREEPLAY_SECTOR_NAME, sectorX, sectorY)
 end
 
+function updateSprayScale(progress)
+    if not spriteExist(FREEPLAY_SECTOR_NAME) then
+        return
+    end
+
+    if SPRAY_VISUAL_BASE_WIDTH <= 0 or SPRAY_VISUAL_BASE_HEIGHT <= 0 then
+        return
+    end
+
+    local grow = curveStep(0.0, 0.07, progress)
+    local shrink = curveStep(0.07, 0.58, progress)
+    local pulse = grow - shrink
+    local scale = SPRAY_VISUAL_SCALE_MIN + (SPRAY_VISUAL_SCALE_MAX - SPRAY_VISUAL_SCALE_MIN) * pulse
+
+    setSpriteSize(
+        FREEPLAY_SECTOR_NAME,
+        math.floor(SPRAY_VISUAL_BASE_WIDTH * scale),
+        math.floor(SPRAY_VISUAL_BASE_HEIGHT * scale)
+    )
+end
+
 function updateSprayVisuals(index, canName, progress)
     local sprName = graffitiSprites[index]
 
@@ -394,6 +431,7 @@ function updateSprayVisuals(index, canName, progress)
     local yOffset = sprayY(t) + gHeight / 2.5
 
     setSpritePosition(canName, xOffset + gWidth / 4.0, yOffset)
+    updateSprayScale(progress)
     updateSpraySector(canName)
 end
 
