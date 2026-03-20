@@ -31,6 +31,7 @@ import lime.app.Application;
 import feshixl.FeshCamera;
 
 import openfl.filters.BlurFilter;
+import openfl.filters.BitmapFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 
@@ -70,20 +71,42 @@ class MainMenuState extends MusicBeatState
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var displayChain:FlxSpriteGroup;
+	var menuBG:MenuBackground;
+	var menuBGOverlay:FlxSprite;
 
 	var camFollow:FlxObject;
 	var secondCam:FlxObject;
 
-	var blurSize:Int = 0;
+	var blurSize:Float = 0;
 	var saturationBackground:Float = 1;
 	var saturationMenu:Float = 1;
+	var zoomSineWave:Bool = true;
+	final baseMenuZoom:Float = 1.1;
 
 	var fromFreeplay:Bool = false;
 
 	public function new(fromFreeplay:Bool = false) {
 		this.fromFreeplay = fromFreeplay;
 
-		super();
+		super("void", "void");
+	}
+
+	function applyBackgroundFilters():Void {
+		var filters:Array<BitmapFilter> = [new ShaderFilter(new StupidVibeShader(saturationBackground))];
+
+		if(blurSize > 0) {
+			filters.unshift(new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW));
+		}
+
+		camX.setFilters(filters);
+	}
+
+	function applyMenuZoom():Void {
+		if(zoomSineWave) {
+			camMenu.zoom = baseMenuZoom + 0.02 * (Math.sin(0.0005 * Conductor.songPosition * Math.PI * (Paths.modJSON.main_menu.bpm / 120)));
+		}else {
+			camMenu.zoom = baseMenuZoom;
+		}
 	}
 
 	#if !(switch || debug)
@@ -102,14 +125,20 @@ class MainMenuState extends MusicBeatState
 		camMenu = new FeshCamera();
 		camNoBump = new FeshCamera();
 		camX.bgColor.alpha = 0;
+		camMenu.bgColor.alpha = 0;
 		camNoBump.bgColor.alpha = 0;
+		camX.zoom = 1;
 
-		FlxG.cameras.reset(camMenu);
-		FlxG.cameras.add(camX);
+		FlxG.cameras.reset(camX);
+		FlxG.cameras.add(camMenu);
 		FlxG.cameras.add(camNoBump);
 
+		blurSize = Paths.modJSON.main_menu.background_blur != null ? Paths.modJSON.main_menu.background_blur : 0;
+		zoomSineWave = Paths.modJSON.main_menu.zoom_sine_wave != null ? Paths.modJSON.main_menu.zoom_sine_wave : true;
+
 		FlxCamera.defaultCameras = [camMenu];
-		FlxG.camera.setFilters([new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(saturationBackground))]);
+		applyBackgroundFilters();
+		applyMenuZoom();
 		camNoBump.setFilters([new ShaderFilter(new StupidVibeShader(saturationMenu))]);
 
 		PlayState.hasWarning = true;
@@ -124,6 +153,7 @@ class MainMenuState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
+        #if !(USING_LUA && cpp)
         if(FlxG.sound.music != null) {
             if(FlxG.sound.music.playing && fromFreeplay) {
                 FlxG.sound.music.stop();
@@ -134,43 +164,19 @@ class MainMenuState extends MusicBeatState
         }else {
             FlxG.sound.playMusic(Paths.music('Main Menu'));
         }
+        #end
 
 		persistentUpdate = persistentDraw = true;
 
-		if(Paths.modJSON.main_menu.has_background_image) {
-			if(Paths.modJSON.main_menu.background_image != '') {
-				var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image(Paths.modJSON.main_menu.background_image));
-				bg.setGraphicSize(1280, 720);
-				bg.updateHitbox();
-				bg.screenCenter();
-				bg.scrollFactor.set();
-				add(bg);
-			}else {
-				var bg:FlxSprite = new FlxSprite(-100, -15).loadGraphic(Paths.image('menu/sky2'));
-				bg.scrollFactor.set();
-				add(bg);
+		menuBG = new MenuBackground(0, 0);
+		menuBG.cameras = [camX];
+		add(menuBG);
 
-				var city:FlxSprite = new FlxSprite(-10, -15).loadGraphic(Paths.image('menu/city'));
-				city.scrollFactor.set();
-				city.updateHitbox();
-				city.screenCenter();
-				add(city);
-
-				var light:FlxSprite = new FlxSprite(city.x, city.y).loadGraphic(Paths.image('menu/win2'));
-				light.scrollFactor.set();
-				light.updateHitbox();
-				light.screenCenter();
-				add(light);
-
-				var streetBehind:FlxSprite = new FlxSprite(-40, -50).loadGraphic(Paths.image('menu/behindTrain'));
-				streetBehind.scrollFactor.set();
-				add(streetBehind);
-
-				var street:FlxSprite = new FlxSprite(-40, streetBehind.y).loadGraphic(Paths.image('menu/street'));
-				street.scrollFactor.set();
-				add(street);
-			}
-		}
+		menuBGOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		menuBGOverlay.alpha = 0.2;
+		menuBGOverlay.scrollFactor.set();
+		menuBGOverlay.cameras = [camX];
+		add(menuBGOverlay);
 
 		camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
@@ -207,8 +213,16 @@ class MainMenuState extends MusicBeatState
 
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
-			modifiableCameras.set("cameraBackground", camMenu);
+			modifiableCameras.set("cameraBackground", camX);
 			modifiableCameras.set("cameraMenu", camNoBump);
+			if(menuBG != null) {
+				modifiableSprites.set("menuBG", menuBG);
+			}
+			if(menuBGOverlay != null) {
+				modifiableSprites.set("menuBGOverlay", menuBGOverlay);
+			}
+			setLua("menuBackgroundBlur", blurSize);
+			setLua("menuZoomSineWave", zoomSineWave);
 
 			getLuaOptions();
 
@@ -234,22 +248,32 @@ class MainMenuState extends MusicBeatState
 				displayChain.add(spr);
 			});
 
-			addCallback("setBackgroundBlur", function(blurSize:Int) {
+			addCallback("setBackgroundBlur", function(blurSize:Float) {
 				this.blurSize = blurSize;
 
-				FlxG.camera.setFilters([new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(saturationBackground))]);
+				applyBackgroundFilters();
 			});
 
 			addCallback("setBackgroundSaturation", function(saturation:Float) {
 				this.saturationBackground = saturation;
 
-				FlxG.camera.setFilters([new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(saturationBackground))]);
+				applyBackgroundFilters();
 			});
 
 			addCallback("setMenuSaturation", function(saturation:Float) {
 				this.saturationMenu = saturation;
 
 				camNoBump.setFilters([new ShaderFilter(new StupidVibeShader(saturationMenu))]);
+			});
+
+			addCallback("setMenuZoomSineWave", function(enabled:Bool) {
+				this.zoomSineWave = enabled;
+				setLua("menuZoomSineWave", enabled);
+				applyMenuZoom();
+			});
+
+			addCallback("finishMenuOptionChoice", function(option:String) {
+				switchToOption(option);
 			});
 		}
 
@@ -294,6 +318,7 @@ class MainMenuState extends MusicBeatState
 		FlxTween.tween(menuItems.members[0], {alpha: 1}, 1, {ease: FlxEase.quadOut});
 
 		changeItem();
+		secondCam.setPosition(camFollow.x, camFollow.y);
 	}
 
 	//To call from different segment in code.
@@ -302,6 +327,22 @@ class MainMenuState extends MusicBeatState
 	}
 
 	var selectedSomethin:Bool = false;
+
+	function switchToOption(option:String):Void {
+		HelperStates.nextTransitionInType = "void";
+		HelperStates.skipNextTransitionIn = false;
+
+		switch(option) {
+			case 'story mode':
+				FlxG.switchState(new StoryMenuState());
+			case 'freeplay':
+				FlxG.switchState(new FreeplayState());
+			case 'settings':
+				FlxG.switchState(new OptionsMenuState());
+			case 'crew':
+				FlxG.switchState(new CrewState());
+		}
+	}
 
 	override function update(elapsed:Float)
 	{
@@ -332,63 +373,29 @@ class MainMenuState extends MusicBeatState
 			{
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('confirmMenu'));
+				var selectedOption:String = optionShit[curSelected];
+				var hasLuaScript:Bool = false;
+
+				#if (USING_LUA && cpp)
+				hasLuaScript = HelperStates.luaExist(Type.getClass(this));
+				#end
 
 				menuItems.forEach(function(spr:FlxSprite)
 				{
-					if (curSelected != spr.ID)
+					if (curSelected == spr.ID)
 					{
-						FlxTween.tween(spr, {alpha: 0}, 0.4, {
-							ease: FlxEase.quadOut,
-							onComplete: function(twn:FlxTween)
-							{
-								spr.kill();
-							}
-						});
-					}
-					else
-					{
-						selectedSomethin = true;
-						FlxG.sound.play(Paths.sound('confirmMenu'));
+						spr.updateHitbox();
 
-						menuItems.forEach(function(spr:FlxSprite)
+						#if (USING_LUA && cpp)
+						if(hasLuaScript) {
+							HelperStates.getLua(Type.getClass(this)).call("callOptionChoice", [selectedOption]);
+						}
+						#end
+
+						FlxFlicker.flicker(spr, 1, 0.06, true, false, function(flick:FlxFlicker)
 						{
-							if (curSelected != spr.ID)
-							{
-								FlxTween.tween(spr, {alpha: 0}, 1.3, {
-									ease: FlxEase.quadOut,
-									onComplete: function(twn:FlxTween)
-									{
-										spr.kill();
-									}
-								});
-							}
-							else
-							{
-								spr.updateHitbox();
-
-								#if (USING_LUA && cpp)
-								if(HelperStates.luaExist(Type.getClass(this))) {
-									HelperStates.getLua(Type.getClass(this)).call("callOptionChoice", []);
-								}
-								#end
-
-								FlxFlicker.flicker(spr, 1, 0.06, false, false, function(flick:FlxFlicker)
-								{
-									#if (USING_LUA && cpp)
-									if(HelperStates.luaExist(Type.getClass(this))) {
-										HelperStates.getLua(Type.getClass(this)).call("pressedAnOption", [optionShit[curSelected]]);
-									}
-									#end
-
-									switch(optionShit[curSelected]) {
-										case 'story mode':
-											FlxG.switchState(new StoryMenuState());
-										case 'freeplay':
-											FlxG.switchState(new FreeplayState());
-										case 'settings':
-											FlxG.switchState(new OptionsMenuState());
-									}
-								});
+							if(!hasLuaScript) {
+								switchToOption(selectedOption);
 							}
 						});
 					}
@@ -404,7 +411,7 @@ class MainMenuState extends MusicBeatState
 			});
 		}
 
-		FlxG.camera.zoom = 1.1 + 0.02 * (Math.sin(0.0005 * Conductor.songPosition * Math.PI * (Paths.modJSON.main_menu.bpm/120)));
+		applyMenuZoom();
 
 		super.update(elapsed);
 	}
@@ -440,7 +447,8 @@ class MainMenuState extends MusicBeatState
 			
 			if(spr.ID == curSelected) {
 				camFollow.y = spr.getGraphicMidpoint().y - spr.height / 4;
-				camFollow.x = spr.getGraphicMidpoint().x - spr.width / 4;
+				// Keep the menu camera locked to the resting menu layout while the chain group slides in and out.
+				camFollow.x = spr.getGraphicMidpoint().x - spr.width / 4 - displayChain.x;
 			}
 	
 			spr.updateHitbox();

@@ -1,7 +1,6 @@
 package;
 
 import flixel.FlxG;
-import feshixl.utils.FeshGradient;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
@@ -28,12 +27,13 @@ class CrewState extends MusicBeatState {
 
         allTweens = new Array<FlxTween>();
 
-        var background:FlxSprite = FeshGradient.createGradientFlxSprite(FlxG.width, FlxG.height,
-            [FlxColor.fromRGB(85, 0, 150), FlxColor.fromRGB(43, 8, 180, 75), FlxColor.fromRGB(43, 8, 180, 75), FlxColor.fromRGB(43, 8, 180, 75), FlxColor.fromRGB(85, 0, 150)
-		]);
-        background.screenCenter();
-        background.scrollFactor.set();
+        var background:MenuBackground = new MenuBackground(0, 0);
         add(background);
+
+        var backgroundOverlay:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+        backgroundOverlay.alpha = 0.2;
+        backgroundOverlay.scrollFactor.set();
+        add(backgroundOverlay);
 
         officalDevTeam = new FlxTypedGroup<CreditSprites>();
         add(officalDevTeam);
@@ -84,6 +84,10 @@ class CrewState extends MusicBeatState {
     }
 
     function changeDev(change:Int = 0):Void {
+        if(change != 0) {
+            FlxG.sound.play(Paths.sound("scrollMenu"), 0.4);
+        }
+
         curSelected += change;
 
         if (curSelected < 0)
@@ -138,7 +142,7 @@ class CrewState extends MusicBeatState {
         difi.ID = 2;
 
         var feeshy:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/FeshyFeeshy")); //Dat's Me! :D
-		feeshy.linkTree = "https://kung.foo/feeshy";
+		feeshy.linkTree = "https://portfolio.just-feeshy.world/";
         feeshy.scrollFactor.set(0, 1);
         feeshy.ID = 3;
         officalDevTeam.add(feeshy);

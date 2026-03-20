@@ -54,6 +54,8 @@ typedef ConfigEvent = {
 typedef Main_Menu = {
     var background_image:String;
     var has_background_image:Bool;
+    @:optional var background_blur:Float;
+    @:optional var zoom_sine_wave:Bool;
     var bpm:Int;
 }
 

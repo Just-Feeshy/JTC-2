@@ -63,6 +63,7 @@ typedef LuaShaderSource = {
 */
 
 class ModLua {
+    private static var sharedVariables:Map<String, Dynamic> = new Map<String, Dynamic>();
     private var executed:Bool = false;
 
     #if (USING_LUA && cpp)
@@ -1175,6 +1176,76 @@ class ModLua {
         Lua_helper.add_callback(lua, "playMusic", function(sound:String, volume:Float = 1, loop:Bool = false) {
 			FlxG.sound.playMusic(Paths.music(sound), volume, loop);
 		});
+
+        Lua_helper.add_callback(lua, "playMusicAt", function(sound:String, startTime:Float = 0, volume:Float = 1, loop:Bool = true) {
+			FlxG.sound.playMusic(Paths.music(sound), volume, loop);
+
+            if(FlxG.sound.music != null) {
+                var targetTime:Float = Math.max(0, startTime);
+
+                if(FlxG.sound.music.length > 0) {
+                    targetTime = Math.min(targetTime, Math.max(0, FlxG.sound.music.length - 1));
+                }
+
+                FlxG.sound.music.time = targetTime;
+            }
+		});
+
+        Lua_helper.add_callback(lua, "playInst", function(song:String, volume:Float = 1, loop:Bool = false) {
+            FlxG.sound.playMusic(Paths.inst(song), volume, loop);
+        });
+
+        Lua_helper.add_callback(lua, "playInstAt", function(song:String, startTime:Float = 0, volume:Float = 1, loop:Bool = true) {
+            FlxG.sound.playMusic(Paths.inst(song), volume, loop);
+
+            if(FlxG.sound.music != null) {
+                var targetTime:Float = Math.max(0, startTime);
+
+                if(FlxG.sound.music.length > 0) {
+                    targetTime = Math.min(targetTime, Math.max(0, FlxG.sound.music.length - 1));
+                }
+
+                FlxG.sound.music.time = targetTime;
+            }
+        });
+
+        Lua_helper.add_callback(lua, "getMusicTime", function() {
+            if(FlxG.sound.music != null) {
+                return FlxG.sound.music.time;
+            }
+
+            return 0;
+        });
+
+        Lua_helper.add_callback(lua, "setMusicTime", function(time:Float) {
+            if(FlxG.sound.music == null) {
+                return;
+            }
+
+            var targetTime:Float = Math.max(0, time);
+
+            if(FlxG.sound.music.length > 0) {
+                targetTime = Math.min(targetTime, Math.max(0, FlxG.sound.music.length - 1));
+            }
+
+            FlxG.sound.music.time = targetTime;
+        });
+
+        Lua_helper.add_callback(lua, "isMusicPlaying", function() {
+            return FlxG.sound.music != null && FlxG.sound.music.playing;
+        });
+
+        Lua_helper.add_callback(lua, "setGlobalVar", function(name:String, value:Dynamic) {
+            sharedVariables.set(name, value);
+        });
+
+        Lua_helper.add_callback(lua, "getGlobalVar", function(name:String, ?defaultValue:Dynamic = null) {
+            if(sharedVariables.exists(name)) {
+                return sharedVariables.get(name);
+            }
+
+            return defaultValue;
+        });
 
         Lua_helper.add_callback(lua, "playSound", function(sound:String, volume:Float = 1, ?tag:String = "") {
             if(tag != null && tag.trim() != "") {

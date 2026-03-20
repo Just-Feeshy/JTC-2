@@ -1,3 +1,5 @@
+local menu_music = require("mod_assets/scripts/utils/menuMusic")
+
 local graffitiSprites = {}
 local graffitiHas = {}
 local graffitiRevealed = {}
@@ -24,12 +26,13 @@ local CAN_ANIM_DURATION = 1.0 * SPRAY_DURATION_SCALE
 local FULL_REVEAL_DURATION = 0.2
 local FREEPLAY_SECTOR_NAME = "freeplay_sector"
 local FREEPLAY_REVEAL_SHADER = "freeplay_spray_reveal"
+local SHOW_SPRAY_VISUAL = true
 local SPRAY_NOZZLE_X = 886.943 / 1280.0
 local SPRAY_NOZZLE_Y = 272.0 / 720.0
 local SPRAY_RADIUS = 300
 local SPRAY_EDGE_SOFTNESS = 0.42
 local SPRAY_REVEAL_START = 0.035
-local SPRAY_VISUAL_ALPHA = 0.6
+local SPRAY_VISUAL_ALPHA = 0.45
 local SPRAY_VISUAL_COLOR = "0xFF26F7FD"
 local SPRAY_VISUAL_PIVOT_X = 1.06
 local SPRAY_VISUAL_PIVOT_Y = 0.55
@@ -39,32 +42,28 @@ local SPRAY_TRAIL_RADIUS = 224
 
 function onCreate()
     destroyStuff()
+    menu_music.markInactive()
+
+    local backgroundBlur = menuBackgroundBlur or 0
 
     if initLuaShader ~= nil then
         initLuaShader(FREEPLAY_REVEAL_SHADER, "feeshdata")
     end
 
-    if clearCameraBlur ~= nil then
+    if backgroundBlur > 0 and setCameraBlur ~= nil then
+        setCameraBlur("cameraBackground", backgroundBlur)
+    elseif clearCameraBlur ~= nil then
         clearCameraBlur("cameraBackground")
     elseif setCameraBlur ~= nil then
         setCameraBlur("cameraBackground", 0)
     end
-
-    if not spriteExist("wall") then
-        createSprite("wall")
-    end
-
-    loadGraphic("wall", "Graffiti/wall")
-    setSpritePosition("wall", 0, 0)
-    setSpriteToCamera("wall", "cameraBackground")
-    insertSpriteToState(0, "wall")
 
     createFreeplaySector()
     setupGraffiti()
 end
 
 function createFreeplaySector()
-    if compileSpriteSheet == nil or playAnimationByPrefix == nil then
+    if not SHOW_SPRAY_VISUAL or compileSpriteSheet == nil or playAnimationByPrefix == nil then
         return
     end
 
@@ -521,7 +520,6 @@ function updateGraffitiAnimation(elapsed)
 end
 
 function destroyStuff()
-    destroySprite("menuBG")
     destroySprite(FREEPLAY_SECTOR_NAME)
     destroySprite(graffitiCanName)
 end

@@ -5,6 +5,7 @@ import Discord.DiscordClient;
 import sys.thread.Thread;
 #end
 import flixel.FlxG;
+import flixel.FlxCamera;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.addons.display.FlxGridOverlay;
@@ -41,6 +42,7 @@ class TitleState extends MusicBeatState {
 	var textGroup:FlxGroup;
 	var ngSpr:FlxSprite;
     var ticksPerUpdate:Float = 0;
+	var flashCam:FlxCamera;
 
 	var credits:Array<String> = Paths.modJSON.title_menu.mod_creators;
 
@@ -67,6 +69,10 @@ class TitleState extends MusicBeatState {
 
 		super.create();
 
+		flashCam = new FlxCamera();
+		flashCam.bgColor.alpha = 0;
+		FlxG.cameras.add(flashCam, false);
+
 		persistentUpdate = true;
 
 		luaFunctions();
@@ -81,9 +87,9 @@ class TitleState extends MusicBeatState {
         if(Paths.modJSON.title_menu.music.song != "") {
             FlxG.sound.playMusic(Paths.music(Paths.modJSON.title_menu.music.song), 0);
             FlxG.sound.music.fadeIn(4, 0, 0.7);
-
-            Conductor.changeBPM(Paths.modJSON.title_menu.music.bpm);
         }
+
+        Conductor.changeBPM(Paths.modJSON.title_menu.music.bpm);
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		add(bg);
@@ -147,6 +153,7 @@ class TitleState extends MusicBeatState {
 			modifiableSprites.set("gfDance", gfDance);
 			modifiableSprites.set("titleText", titleText);
 			modifiableCameras.set("mainCam", FlxG.camera);
+			modifiableCameras.set("flashCam", flashCam);
 		}
 		#end
 
@@ -183,13 +190,12 @@ class TitleState extends MusicBeatState {
 	}
 
 	override function update(elapsed:Float) {
-        if(Paths.modJSON.title_menu.music.song != "") {
-            if (FlxG.sound.music != null) {
-                Conductor.songPosition += FlxG.elapsed * 1000;
-            }
+        if (FlxG.sound.music != null && FlxG.sound.music.playing) {
+            Conductor.songPosition += FlxG.elapsed * 1000;
+        }
 
-		    if(curBeat >= 2)
-			    pressedEnter = FlxG.keys.justPressed.ENTER;
+		if(Paths.modJSON.title_menu.music.song != "" && curBeat >= 2) {
+			pressedEnter = FlxG.keys.justPressed.ENTER;
         }else {
 			pressedEnter = FlxG.keys.justPressed.ENTER;
         }
@@ -335,7 +341,7 @@ class TitleState extends MusicBeatState {
 
 	var skippedIntro:Bool = false;
 
-	function skipIntro(flash:Bool = true):Void
+	function skipIntro(flash:Bool = false):Void
 	{
 		if (!skippedIntro)
 		{

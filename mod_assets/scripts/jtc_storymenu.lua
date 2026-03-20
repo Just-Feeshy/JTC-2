@@ -1,12 +1,19 @@
+local menu_music = require("mod_assets/scripts/utils/menuMusic")
+local menu_background = require("mod_assets/scripts/utils/menuBackground")
+
 local tweenCounter = 0
 local yCons = 50
 local tickCounter = 0
+local STORY_PURPLE_NAME = "storyPurpleBG"
+local STORY_PURPLE_COLOR = "0xFF4E2A84"
+local STORY_PURPLE_SCALE = 1.08
 
 local stopSpam = false
 local selectedWeek = false
 
 function onCreate()
     destroyStuff()
+    menu_music.markActiveIfPlaying()
 
     disableRegularInput(true) --Disable regular input so I can make my own
     setSpritePosition("grpWeekText", 0, windowHeight / 2)
@@ -34,8 +41,9 @@ function onCreate()
     setSpriteAlpha("staticText", 0)
     addSpriteToState("staticText")
 
-    createSprite("purple-bg")
-    loadGraphic("purple-bg", "menu/purple-bg")
+    createSprite(STORY_PURPLE_NAME)
+    makeGraphic(STORY_PURPLE_NAME, windowWidth, windowHeight, STORY_PURPLE_COLOR)
+    setSpritePosition(STORY_PURPLE_NAME, 0, 0)
 end
 
 function finishedTransitionIn()
@@ -52,6 +60,7 @@ function onUpdate(elapsed)
         if getControl("accept") and not stopSpam then
             stopSpam = true
             selectedWeek = true
+            menu_music.markInactive()
 
             setTransitionOut("void")
 		    doTweenAngle("lightningShake", "lightningIcon", 12, 0.1, "quadOut")
@@ -80,8 +89,12 @@ function onTweenCompleted(name)
         if tweenCounter == 0 then
             removeSpriteFromState("fadeBlackSprite")
             setSpritePosition("fadeBlackSprite", 0, 0)
-            insertSpriteToState(0, "fadeBlackSprite")
-            insertSpriteToState(0, "purple-bg")
+            insertSpriteToState(0, STORY_PURPLE_NAME)
+            insertSpriteToState(1, "fadeBlackSprite")
+            doTweenScaleX("storyPurpleScaleX", STORY_PURPLE_NAME, STORY_PURPLE_SCALE, 0.75, "quadOut")
+            doTweenScaleY("storyPurpleScaleY", STORY_PURPLE_NAME, STORY_PURPLE_SCALE, 0.75, "quadOut")
+            doTweenX("storyPurpleX", STORY_PURPLE_NAME, -(windowWidth * (STORY_PURPLE_SCALE - 1)) / 2, 0.75, "quadOut")
+            doTweenY("storyPurpleY", STORY_PURPLE_NAME, -(windowHeight * (STORY_PURPLE_SCALE - 1)) / 2, 0.75, "quadOut")
             doTweenY("fadeTween", "fadeBlackSprite", -windowHeight, 0.3, "quadOut")
 
             createSprite("betterDifficulty")
@@ -164,6 +177,7 @@ function setDifficultySprite()
 end
 
 function destroyStuff() --Destroy in-game preloaded sprites.
+    destroySprite(STORY_PURPLE_NAME)
     destroySprite("menuBG")
     destroySprite("backdrop")
     destroySprite("blackBarTop")

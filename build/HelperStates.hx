@@ -33,6 +33,8 @@ class HelperStates extends FlxState {
 	public var modifiableCameras:Map<String, FlxCamera>;
 
 	public static var transitionSkip:Bool = false;
+	public static var skipNextTransitionIn:Bool = false;
+	public static var nextTransitionInType:String = null;
 
 	private static var scriptsInStates:Map<String, ModLua> = new Map<String, ModLua>();
 	private static var transitionBuilds:Map<String, Class<TransitionBuilder>> = new Map<String, Class<TransitionBuilder>>();
@@ -60,13 +62,13 @@ class HelperStates extends FlxState {
 		if(transInType != null) {
 			this.transInType = transInType;
 		}else {
-			this.transInType = "fade";
+			this.transInType = "void";
 		}
 
 		if(transOutType != null) {
 			this.transOutType = transOutType;
 		}else {
-			this.transOutType = "tile";
+			this.transOutType = "void";
 		}
 	}
 
@@ -138,8 +140,17 @@ class HelperStates extends FlxState {
             onCreate();
         }
 
-		if(!transitionSkip) {
-			transitionIn();
+		var transitionType:String = transInType;
+
+		if(nextTransitionInType != null) {
+			transitionType = nextTransitionInType;
+			nextTransitionInType = null;
+		}
+
+		if(skipNextTransitionIn) {
+			skipNextTransitionIn = false;
+		}else if(!transitionSkip) {
+			transitionIn(transitionType);
 		}
     }
 
@@ -307,7 +318,8 @@ class HelperStates extends FlxState {
 	* Based off of `FlxTransitionableState` class from HaxeFlixel.
 	*/
 	function createTransition(transType:String, fade:TransitionFade):TransitionBuilder {
-		return Type.createInstance(transitionBuilds.get(transType), [0.5, fade]);
+		var transitionDuration:Float = transType == "void" ? 0.18 : 0.5;
+		return Type.createInstance(transitionBuilds.get(transType), [transitionDuration, fade]);
 	}
 
 	function finishedTransition() {
@@ -315,9 +327,11 @@ class HelperStates extends FlxState {
 	}
 
 	@:noCompletion
-	public function transitionIn():Void {
-		if(transInType != null && transInType != "none") {
-			var _transition = createTransition(transInType, IN);
+	public function transitionIn(?transitionType:String):Void {
+		var useTransitionType:String = transitionType != null ? transitionType : transInType;
+
+		if(useTransitionType != null && useTransitionType != "none") {
+			var _transition = createTransition(useTransitionType, IN);
 
 			if(_transition == null) {
 				return;
@@ -356,6 +370,8 @@ class HelperStates extends FlxState {
 			};
 
 			openSubState(_transition);
+		}else {
+			transOutFinished = true;
 		}
 	}
 }

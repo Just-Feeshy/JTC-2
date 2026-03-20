@@ -21,6 +21,7 @@ import feshixl.FeshCamera;
 import openfl.Lib;
 
 import openfl.filters.BlurFilter;
+import openfl.filters.BitmapFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 
@@ -59,6 +60,8 @@ class OptionsMenuState extends MusicBeatState {
 	final imNotSure:Int = 0;
 
 	private var bar:FlxSprite;
+	private var menuBG:FlxSprite;
+	private var menuBGOverlay:FlxSprite;
 	private var displayDescription:FlxText;
 
 	private var camBackground:FeshCamera;
@@ -122,6 +125,8 @@ class OptionsMenuState extends MusicBeatState {
 		#end
 
 		persistentUpdate = persistentDraw = true;
+
+		var configuredBackgroundBlur:Float = Paths.modJSON.main_menu.background_blur != null ? Paths.modJSON.main_menu.background_blur : 0;
 
 		switch(this.catalog) {
 			case "game": {
@@ -760,6 +765,9 @@ class OptionsMenuState extends MusicBeatState {
 
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
+			modifiableCameras.set("cameraBackground", camBackground);
+			modifiableCameras.set("cameraMenu", camNoBlur);
+			setLua("menuBackgroundBlur", configuredBackgroundBlur);
 			HelperStates.getLua(Type.getClass(this)).set("catalog", catalog);
 			HelperStates.getLua(Type.getClass(this)).set("listSize", optionList[0].options.length);
 
@@ -795,28 +803,17 @@ class OptionsMenuState extends MusicBeatState {
 		}
 		#end
 
-		super.onCreate();
-
-		setCat(curCatalog);
-
-        camBackground.setFilters([new BlurFilter(15, 15, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(1.5))]);
-
-		add(curOptionSection);
-
-		blurEffect = new GuassianBlur(0);
-		camNoBlur.setFilters([new ShaderFilter(blurEffect)]);
-
         if(Paths.modJSON.main_menu.background_image != '') {
-			var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image(Paths.modJSON.main_menu.background_image));
-			bg.setGraphicSize(1280, 720);
-			bg.updateHitbox();
-			bg.screenCenter();
-			bg.scrollFactor.set(0.1);
-			add(bg);
+			menuBG = new FlxSprite().loadGraphic(Paths.image(Paths.modJSON.main_menu.background_image));
+			menuBG.setGraphicSize(1280, 720);
+			menuBG.updateHitbox();
+			menuBG.screenCenter();
+			menuBG.scrollFactor.set(0.1);
+			add(menuBG);
 		}else {
-			var bg:FlxSprite = new FlxSprite(-100, -15).loadGraphic(Paths.image('menu/sky2'));
-			bg.scrollFactor.set();
-			add(bg);
+			menuBG = new FlxSprite(-100, -15).loadGraphic(Paths.image('menu/sky2'));
+			menuBG.scrollFactor.set();
+			add(menuBG);
 
 			var city:FlxSprite = new FlxSprite(-10, -15).loadGraphic(Paths.image('menu/city'));
 			city.scrollFactor.set(0.1);
@@ -838,6 +835,37 @@ class OptionsMenuState extends MusicBeatState {
 			street.scrollFactor.set(0.1);
 			add(street);
 		}
+
+		menuBGOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		menuBGOverlay.alpha = 0.2;
+		menuBGOverlay.scrollFactor.set();
+		add(menuBGOverlay);
+
+		#if (USING_LUA && cpp)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			if(menuBG != null) {
+				modifiableSprites.set("menuBG", menuBG);
+			}
+			if(menuBGOverlay != null) {
+				modifiableSprites.set("menuBGOverlay", menuBGOverlay);
+			}
+		}
+		#end
+
+		super.onCreate();
+
+		setCat(curCatalog);
+
+        var backgroundFilters:Array<BitmapFilter> = [new ShaderFilter(new StupidVibeShader(1.5))];
+        if(configuredBackgroundBlur > 0) {
+            backgroundFilters.unshift(new BlurFilter(configuredBackgroundBlur, configuredBackgroundBlur, BitmapFilterQuality.LOW));
+        }
+        camBackground.setFilters(backgroundFilters);
+
+		add(curOptionSection);
+
+		blurEffect = new GuassianBlur(0);
+		camNoBlur.setFilters([new ShaderFilter(blurEffect)]);
 
 		allTweens = new Array<FlxTween>();
 

@@ -16,6 +16,7 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import openfl.filters.BlurFilter;
+import openfl.filters.BitmapFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.math.FeshMath;
@@ -67,6 +68,7 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	private var menuBG:MenuBackground;
+	private var backgroundBlur:Float = 0;
 
 	var camFreeplay:FeshCamera;
 	var camBackground:FeshCamera;
@@ -120,9 +122,15 @@ class FreeplayState extends MusicBeatState
         FlxG.cameras.reset(camBackground);
 		FlxG.cameras.add(camFreeplay);
 
+		backgroundBlur = Paths.modJSON.main_menu.background_blur != null ? Paths.modJSON.main_menu.background_blur : 0;
+
 		FlxCamera.defaultCameras = [camFreeplay];
 
-		camBackground.setFilters([new BlurFilter(10, 10, BitmapFilterQuality.LOW), new ShaderFilter(new StupidVibeShader(1.5))]);
+		var backgroundFilters:Array<BitmapFilter> = [new ShaderFilter(new StupidVibeShader(1.5))];
+		if(backgroundBlur > 0) {
+			backgroundFilters.unshift(new BlurFilter(backgroundBlur, backgroundBlur, BitmapFilterQuality.LOW));
+		}
+		camBackground.setFilters(backgroundFilters);
 
 		// LOAD MUSIC
 
@@ -206,6 +214,7 @@ class FreeplayState extends MusicBeatState
 			modifiableSprites.set("menuBG", menuBG);
 			modifiableCameras.set("cameraBackground", camBackground);
 			modifiableCameras.set("cameraFreeplay", camFreeplay);
+			setLua("menuBackgroundBlur", backgroundBlur);
 		}
 		#end
 
@@ -399,6 +408,7 @@ class FreeplayState extends MusicBeatState
 		setLua("freeplaySongCount", songs.length);
 		setLua("curSelected", curSelected);
 		setLua("curDifficulty", curDifficulty);
+		setLua("menuBackgroundBlur", backgroundBlur);
 
 		addCallback("getFreeplaySongCount", function():Int {
 			return songs.length;
