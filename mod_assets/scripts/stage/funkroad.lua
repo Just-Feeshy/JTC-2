@@ -2,6 +2,7 @@
 -- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
 
 --variables of components
+local frost_shader = nil
 local frost_modchart = nil
 local skater_boi = nil
 local string_utils = nil
@@ -65,6 +66,7 @@ local function init()
     frost_modchart = nil
 	skater_boi = nil
 	string_utils = nil
+    frost_shader = nil
 
 	-- Frostbite Car stuff
 	beatSection = 0
@@ -97,6 +99,14 @@ end
 function generatedStage()
     init()
     setEndVideo("post.mp4")
+
+    frost_shader = require("mod_assets/scripts/stage/funkroad_shaders")
+    if frost_shader ~= nil then
+        frost_shader.init()
+        if not frost_shader.applyToWholeGame() then
+            frost_shader.applyToGameCamera()
+        end
+    end
 
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", -170, -35)
@@ -362,5 +372,13 @@ function manageInputs()
             .. getSpriteX("frostbiteCAR")
             .. " by [Y] " .. getSpriteY("frostbiteCAR")
         )
+    end
+end
+
+function onDestroy()
+    if frost_shader ~= nil then
+        if not frost_shader.removeFromWholeGame() then
+            frost_shader.removeFromGameCamera()
+        end
     end
 end
