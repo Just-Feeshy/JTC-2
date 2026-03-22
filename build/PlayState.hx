@@ -1670,7 +1670,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function shouldUseSustainCurveShader():Bool {
-		return curStage == "funkroad";
+		return false;
 	}
 
 	function getSustainCurveStrength():Float {
@@ -3854,6 +3854,20 @@ class PlayState extends MusicBeatState
                 }
 
 				return 0;
+			});
+
+			addCallback("getNoteCameraCenter", function(id:Int, ?axis:String) {
+				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
+				var point = strumOBJ.getMidpoint();
+				var value:Float = 0;
+
+				switch(axis.toLowerCase()) {
+                    case "x": value = point.x;
+                    case "y": value = point.y;
+                }
+
+				point.put();
+				return value;
 			});
 
 			addCallback("noteTweenX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {

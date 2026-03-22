@@ -144,6 +144,10 @@ class CameraNote extends FeshCamera {
         sustainCompositeShader = null;
     }
 
+    public inline function hasSustainCompositeShader():Bool {
+        return sustainCompositeShader != null;
+    }
+
     private inline function shouldSeparateSustainPass():Bool {
         return sustainCompositeShader != null;
     }

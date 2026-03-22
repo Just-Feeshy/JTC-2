@@ -2,7 +2,6 @@
 -- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
 
 --variables of components
-local frost_shader = nil
 local frost_modchart = nil
 local skater_boi = nil
 local string_utils = nil
@@ -21,16 +20,6 @@ local notDancing = false
 
 -- Constants
 local phaseTwo = 643
-local noteCurveStrength = 0.16
-local noteCurveOriginY = 0.18
-local noteCurvePadding = 0.28
-local noteCurveFadeStart = 614
-local noteCurveFadeEnd = 640
-local noteCurveLaneCentersA = {0.125, 0.25, 0.375, 0.5}
-local noteCurveLaneCentersB = {0.625, 0.75, 0.875, 1.0}
-local noteCurveLaneCentersC = {1.0, 1.0, 1.0, 1.0}
-local noteCurveLaneCount = 8
-
 local jtcStrumAnims = {
     "singRIGHT",
     "singUP",
@@ -71,11 +60,10 @@ end
 
 local function init()
 
-    -- Frostbite Car stuff
+	-- Frostbite Car stuff
     frost_modchart = nil
 	skater_boi = nil
 	string_utils = nil
-    frost_shader = nil
 
 	-- Frostbite Car stuff
 	beatSection = 0
@@ -104,82 +92,13 @@ local function cloudIncome()
     end
 end
 
-local function updateNoteCurveShader()
-    if frost_shader == nil or frost_shader.setNoteCurve == nil then
-        return
-    end
-
-    if getNoteScreenCenter ~= nil and windowWidth ~= nil and windowWidth > 0 then
-        local laneCount = 8
-
-        if defaultPlayerStrumX4 ~= nil then
-            laneCount = 10
-        end
-
-        noteCurveLaneCount = laneCount
-
-        for lane = 0, laneCount - 1 do
-            local centerX = getNoteScreenCenter(lane, "x") / windowWidth
-
-            if lane < 4 then
-                noteCurveLaneCentersA[lane + 1] = centerX
-            elseif lane < 8 then
-                noteCurveLaneCentersB[(lane - 4) + 1] = centerX
-            else
-                noteCurveLaneCentersC[(lane - 8) + 1] = centerX
-            end
-        end
-    end
-
-    local strength = 0
-
-    if curStepFloat < noteCurveFadeStart then
-        strength = noteCurveStrength
-    elseif curStepFloat < noteCurveFadeEnd then
-        local progress = (curStepFloat - noteCurveFadeStart) / (noteCurveFadeEnd - noteCurveFadeStart)
-        local eased = progress * progress * (3 - (2 * progress))
-
-        strength = noteCurveStrength * (1 - eased)
-    end
-
-    frost_shader.setNoteCurve(
-        strength,
-        noteCurveOriginY,
-        noteCurveLaneCentersA,
-        noteCurveLaneCentersB,
-        noteCurveLaneCentersC,
-        noteCurveLaneCount,
-        noteCurvePadding
-    )
-end
-
 --events
 function generatedStage()
     init()
     setEndVideo("post.mp4")
 
-    frost_shader = require("mod_assets/scripts/stage/funkroad_shaders")
-    if frost_shader ~= nil then
-        frost_shader.init()
-        frost_shader.applyToSustainCamera()
-
-        if defaultOpponentStrumY0 ~= nil and windowHeight ~= nil and windowHeight > 0 then
-            noteCurveOriginY = defaultOpponentStrumY0 / windowHeight
-        end
-
-        frost_shader.setNoteCurve(
-            0,
-            noteCurveOriginY,
-            noteCurveLaneCentersA,
-            noteCurveLaneCentersB,
-            noteCurveLaneCentersC,
-            noteCurveLaneCount,
-            noteCurvePadding
-        )
-    end
-
     createSprite("frostbiteCAR")
-    setSpritePosition("frostbiteCAR", -170, -35)
+	setSpritePosition("frostbiteCAR", -170, -35)
 	--compileSpriteSheet("frostbiteCAR", "daddycar")
 	createCombinedFrames("frostbiteCAR-frames", "daddycar", "daddycar2", "sparrow", "sparrow")
 	addFramesToSprite("frostbiteCAR", "frostbiteCAR-frames")
@@ -358,8 +277,6 @@ function onUpdate(elapsed)
 		    end
 		end
 
-        updateNoteCurveShader()
-
         frost_modchart.updateStrumSpin()
 
         --Modchart Section 1
@@ -450,9 +367,4 @@ function manageInputs()
 end
 
 function onDestroy()
-    if frost_shader ~= nil then
-        if not frost_shader.removeFromSustainCamera() then
-            frost_shader.removeFromGameCamera()
-        end
-    end
 end
