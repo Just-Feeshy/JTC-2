@@ -69,14 +69,81 @@ class Song
 		this.fps = fps;
 	}
 
+	static function getChartFolder(?folder:String, ?jsonInput:String):String
+	{
+		var chartFolder:String = folder != null ? folder : jsonInput;
+		return chartFolder != null ? chartFolder.toLowerCase().trim() : "";
+	}
+
+	static function getChartPath(chartName:String, folder:String):String
+	{
+		return Paths.getPath('data/' + folder + '/' + chartName.toLowerCase() + '.json', TEXT, null);
+	}
+
+	static function chartExists(chartName:String, folder:String):Bool
+	{
+		if (chartName == null || chartName.trim() == "" || folder == null || folder.trim() == "")
+			return false;
+
+		var chartPath:String = getChartPath(chartName, folder);
+		return chartPath != null && chartPath != "" && OpenFlAssets.exists(chartPath, TEXT);
+	}
+
+	static function pushChartCandidate(candidates:Array<String>, chartName:String):Void
+	{
+		if (chartName == null)
+			return;
+
+		var resolvedName:String = chartName.toLowerCase().trim();
+
+		if (resolvedName != "" && !candidates.contains(resolvedName))
+			candidates.push(resolvedName);
+	}
+
+	static function resolveChartJsonInput(jsonInput:String, ?folder:String):String
+	{
+		var chartFolder:String = getChartFolder(folder, jsonInput);
+		var requestedChart:String = jsonInput != null ? jsonInput.toLowerCase().trim() : chartFolder;
+		var candidates:Array<String> = [];
+		var hasExplicitDifficulty:Bool = requestedChart != chartFolder;
+
+		pushChartCandidate(candidates, requestedChart);
+		pushChartCandidate(candidates, chartFolder);
+
+		if (!hasExplicitDifficulty || CoolUtil.difficultyArray.length == 1)
+		{
+			for (difficulty in CoolUtil.difficultyArray)
+			{
+				var difficultyName:String = difficulty.toLowerCase().trim();
+				pushChartCandidate(candidates, difficultyName == "normal" ? chartFolder : chartFolder + "-" + difficultyName);
+			}
+		}
+
+		for (candidate in candidates)
+		{
+			if (chartExists(candidate, chartFolder))
+			{
+				if (candidate != requestedChart)
+					trace('Chart fallback: ' + requestedChart + ' -> ' + candidate);
+
+				return candidate;
+			}
+		}
+
+		throw 'Could not locate chart JSON for "' + chartFolder + '" (requested "' + requestedChart + '"). Tried: ' + candidates.join(", ");
+	}
+
 	public static function loadFromJson(jsonInput:String, ?folder:String, ?ifPlayState:Bool = true):SwagSong
 	{
 		var rawJson;
+		var resolvedJsonInput:String = resolveChartJsonInput(jsonInput, folder);
+		var chartFolder:String = getChartFolder(folder, jsonInput);
+		var chartPath:String = getChartPath(resolvedJsonInput, chartFolder);
 
 		if(ifPlayState)
-			rawJson = Assets.getText(Paths.json(folder.toLowerCase() + '/' + jsonInput.toLowerCase())).trim();
+			rawJson = Assets.getText(chartPath).trim();
 		else
-			rawJson = Assets.getText(Paths.getPath(folder.toLowerCase() + '/' + jsonInput + '.json', TEXT, null)).trim();
+			rawJson = Assets.getText(chartPath).trim();
 
 		while (!rawJson.endsWith("}"))
 		{
@@ -104,7 +171,9 @@ class Song
 	}
 
 	public static function getRawJSON(jsonInput:String, ?folder:String):String {
-		return Assets.getText(Paths.json(folder.toLowerCase() + '/' + jsonInput.toLowerCase())).trim();
+		var resolvedJsonInput:String = resolveChartJsonInput(jsonInput, folder);
+		var chartPath:String = getChartPath(resolvedJsonInput, getChartFolder(folder, jsonInput));
+		return Assets.getText(chartPath).trim();
 	}
 
 	public static function parseJSONshit(rawJson:String):SwagSong

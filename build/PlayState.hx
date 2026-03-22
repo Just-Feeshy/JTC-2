@@ -323,15 +323,7 @@ class PlayState extends MusicBeatState
 			SONG.modifiers = [];
 
 		// Making difficulty text for Discord Rich Presence.
-		switch (storyDifficulty)
-		{
-			case 0:
-				storyDifficultyText = "Easy";
-			case 1:
-				storyDifficultyText = "Normal";
-			case 2:
-				storyDifficultyText = "Hard";
-		}
+		storyDifficultyText = CoolUtil.getDifficultyName(storyDifficulty);
 
 		playFPS = SONG.fps;
 
@@ -2387,8 +2379,7 @@ class PlayState extends MusicBeatState
 			}
 			else
 			{
-				var difficulty:String = "";
-				difficulty = '-hard';
+				var difficulty:String = CoolUtil.getDifficultyFileSuffix(storyDifficulty);
 
 				trace('LOADING NEXT SONG');
 				trace(PlayState.storyPlaylist[0].toLowerCase() + difficulty);
@@ -2406,7 +2397,7 @@ class PlayState extends MusicBeatState
 
 				prevCamFollow = camFollow;
 
-				PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + "-hard", PlayState.storyPlaylist[0]);
+				PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + difficulty, PlayState.storyPlaylist[0]);
 				FlxG.sound.music.stop();
 
 				if(videoSwitchState == "" || videoSwitchState == null) {
@@ -3297,7 +3288,7 @@ class PlayState extends MusicBeatState
 		setLua("isStoryMode", PlayState.isStoryMode);
 		setLua("startedCountdown", false);
 		setLua("difficulty", PlayState.storyDifficulty);
-		setLua("difficultyName", CoolUtil.difficultyArray[PlayState.storyDifficulty]);
+		setLua("difficultyName", CoolUtil.getDifficultyName(PlayState.storyDifficulty));
 		setLua("week", Paths.modJSON.weeks.get("week_" + PlayState.storyWeek).week_name.toUpperCase());
 		setLua("weekRaw", PlayState.storyWeek);
 		setLua("hasCutscene", PlayState.SONG.video != null ? true : false);

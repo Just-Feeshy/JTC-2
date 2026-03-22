@@ -53,13 +53,7 @@ class Highscore {
 	}
 
 	public static function formatSong(song:String, diff:Int):String {
-		var daDif:String = "-" + CoolUtil.difficultyArray[diff].toLowerCase();
-
-		if(CoolUtil.difficultyArray[diff].toLowerCase() == "normal") {
-			daDif = "";
-		}
-
-		return song.toLowerCase() + daDif;
+		return song.toLowerCase() + CoolUtil.getDifficultyFileSuffix(diff);
 	}
 
 	public static function getScore(song:String, diff:Int):Int {

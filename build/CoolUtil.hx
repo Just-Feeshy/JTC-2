@@ -16,7 +16,40 @@ class CoolUtil
 
 	public static function difficultyString():String
 	{
-		return difficultyArray[PlayState.storyDifficulty];
+		return getDifficultyName(PlayState.storyDifficulty);
+	}
+
+	public static function normalizeDifficulty(diff:Int):Int
+	{
+		var difficulties = difficultyArray;
+
+		if (difficulties == null || difficulties.length <= 0)
+			return 0;
+
+		if (diff < 0)
+			return 0;
+
+		if (diff >= difficulties.length)
+			return difficulties.length - 1;
+
+		return diff;
+	}
+
+	public static function getDifficultyName(?diff:Int):String
+	{
+		var difficulties = difficultyArray;
+
+		if (difficulties == null || difficulties.length <= 0)
+			return "Normal";
+
+		var difficultyIndex:Int = normalizeDifficulty(diff == null ? PlayState.storyDifficulty : diff);
+		return difficulties[difficultyIndex];
+	}
+
+	public static function getDifficultyFileSuffix(?diff:Int):String
+	{
+		var difficultyName:String = getDifficultyName(diff).toLowerCase().trim();
+		return difficultyName == "normal" ? "" : "-" + difficultyName;
 	}
 
 	public static function coolTextFile(path:String):Array<String>
@@ -72,7 +105,7 @@ class CoolUtil
 
 	inline static function get_difficultyArray():Array<String>
 	{
-		if(Paths.modJSON == null) {
+		if(Paths.modJSON == null || Paths.modJSON.song_util == null || Paths.modJSON.song_util.difficulties == null || Paths.modJSON.song_util.difficulties.length <= 0) {
 			return ["Easy", "Normal", "Hard"];
 		}else {
 			return Paths.modJSON.song_util.difficulties;
