@@ -4,6 +4,8 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
 
+using StringTools;
+
 class Strum extends feshixl.FeshSprite {
 	public var noteData(get, never):Int;
 	public var direction(get, never):String;
@@ -15,6 +17,7 @@ class Strum extends feshixl.FeshSprite {
 
 	public var directionAngle:Float = 0; //This is in radians.
 	public var holdTimer:Float = 0;
+	public var keyHeld:Bool = false;
 
 	public var prevVisible:Bool = true;
 	public var onlyVisible:Bool = true;
@@ -43,10 +46,70 @@ class Strum extends feshixl.FeshSprite {
 		centerOrigin();
 	}
 
+	private function getModernPrefix(base:String):Null<String> {
+		var suffix:Null<String> = switch(direction) {
+			case "left": "Left";
+			case "down": "Down";
+			case "up": "Up";
+			case "right": "Right";
+			default: null;
+		}
+
+		return suffix == null ? null : base + suffix;
+	}
+
+	private function atlasHasPrefix(prefix:Null<String>):Bool {
+		if(prefix == null || frames == null || frames.frames == null) {
+			return false;
+		}
+
+		for(frame in frames.frames) {
+			if(frame != null && frame.name != null && frame.name.startsWith(prefix)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function addAnimationWithFallback(name:String, prefixes:Array<Null<String>>, frameRate:Int = 24, loop:Bool = false):Void {
+		for(prefix in prefixes) {
+			if(atlasHasPrefix(prefix)) {
+				animation.addByPrefix(name, prefix, frameRate, loop);
+				return;
+			}
+		}
+	}
+
+	public function hasAnimation(animName:String):Bool {
+		return animation != null && animation.getByName(animName) != null;
+	}
+
+	public function isConfirmAnimation():Bool {
+		var animName:String = getAnimName();
+		return animName == "confirm" || animName == "confirm-hold";
+	}
+
 	public function setupAnimations():Void {
-		animation.addByPrefix('static', 'arrow' + direction.toUpperCase());
-		animation.addByPrefix('pressed', direction + ' press', 24, false);
-		animation.addByPrefix('confirm', direction + ' confirm0', 24, false);
+		addAnimationWithFallback('static', [
+			getModernPrefix('static'),
+			'arrow' + direction.toUpperCase()
+		], 24, false);
+		addAnimationWithFallback('pressed', [
+			getModernPrefix('press'),
+			direction + ' press'
+		], 24, false);
+		addAnimationWithFallback('confirm', [
+			getModernPrefix('confirm'),
+			direction + ' confirm0',
+			direction + ' confirm'
+		], 24, false);
+		addAnimationWithFallback('confirm-hold', [
+			getModernPrefix('confirmHold'),
+			getModernPrefix('confirm'),
+			direction + ' confirm0',
+			direction + ' confirm'
+		], 24, false);
 
 		updateHitbox();
 	}
@@ -98,9 +161,10 @@ class Strum extends feshixl.FeshSprite {
 			holdTimer -= elapsed;
 
 			if(holdTimer < 0) {
-
-				if(ifOpponent || getAnimName() != 'confirm') {
+				if(ifOpponent || !keyHeld) {
 					playAnim('static');
+				}else if(hasAnimation('confirm-hold') && getAnimName() == 'confirm') {
+					playAnim('confirm-hold');
 				}else {
 					playAnim('pressed');
 				}

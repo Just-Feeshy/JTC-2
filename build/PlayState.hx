@@ -132,8 +132,13 @@ class PlayState extends MusicBeatState
 	//Note Stuff Funk U
 	private var trippyWiggle:WiggleEffect = new WiggleEffect();
 	private var triggerGroup:FlxTypedGroup<FlxSprite>;
+	private var grpHoldCover:FlxTypedGroup<HoldCoverSprite>;
 	private var grpSplash:FlxTypedGroup<SplashSprite>;
 	private var trippyShader:ShaderFilter;
+	private var currentHoldCoverSprites:Array<HoldCoverSprite> = [];
+	private var currentHoldCoverTimers:Array<Float> = [];
+	private var oppositeHoldCoverSprites:Array<HoldCoverSprite> = [];
+	private var oppositeHoldCoverTimers:Array<Float> = [];
 
 	//Controls
 	private var keys2DArray:Array<Array<Int>> = [];
@@ -564,6 +569,7 @@ class PlayState extends MusicBeatState
 
 		strumLineNotes.cameras = [camNOTE];
 		notes.cameras = [camNOTE];
+		grpHoldCover.cameras = [camNOTE];
 		grpSplash.cameras = [camNOTE];
 		healthBar.cameras = [camHUD];
 		healthBarBG.cameras = [camHUD];
@@ -902,6 +908,7 @@ class PlayState extends MusicBeatState
 
 		generateStaticArrows(0);
 		generateStaticArrows(1);
+		setupHoldCoverSprites();
 
 		talking = false;
 		startedCountdown = true;
@@ -1070,6 +1077,9 @@ class PlayState extends MusicBeatState
 
 		notes = new FlxTypedGroup<Note>();
 		add(notes);
+
+		grpHoldCover = new FlxTypedGroup<HoldCoverSprite>();
+		add(grpHoldCover);
 
 		var noteData:Array<SwagSection>;
 
@@ -2108,6 +2118,9 @@ class PlayState extends MusicBeatState
 		oppositeStrums.forEach(function(spr:Strum) {
 			if(Math.abs(note.noteData) == spr.ID) {
 				note.hit();
+				if(note.isSustainNote || note.sustainLength > 0) {
+					refreshHoldCoverForLane(spr.ID, false);
+				}
 				playStrumConfirm(spr);
 			}
 		});
@@ -2483,6 +2496,8 @@ class PlayState extends MusicBeatState
 		processInputQueue(controlHoldArray);
 		refreshHeldStrums(controlHoldArray);
 		processHeldNotes(controlHoldArray);
+		updateHoldCoverSprites(true, controlHoldArray);
+		updateHoldCoverSprites(false);
 
 		if(boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end) * boyfriend.singMultiplier && boyfriend.animation.curAnim.name.startsWith('sing') && !boyfriend.animation.curAnim.name.endsWith('miss')) {
 			boyfriend.dance();
@@ -2630,6 +2645,12 @@ class PlayState extends MusicBeatState
 
 		if(pressed) {
 			playStrumPress(lane);
+		}else {
+			var spr:Strum = currentStrums.members[lane];
+
+			if(spr != null) {
+				spr.keyHeld = false;
+			}
 		}
 	}
 
@@ -2659,9 +2680,14 @@ class PlayState extends MusicBeatState
 
 	function refreshHeldStrums(controlHoldArray:Array<Bool>):Void {
 		currentStrums.forEachAlive(function(spr:Strum) {
-			if(!controlHoldArray[spr.ID] && spr.animation.curAnim != null && spr.animation.curAnim.name == "pressed") {
-				spr.playAnim('static');
-				spr.holdTimer = 0;
+			if(!controlHoldArray[spr.ID]) {
+				spr.keyHeld = false;
+
+				if(spr.animation.curAnim != null
+					&& (spr.animation.curAnim.name == "pressed" || spr.animation.curAnim.name == "confirm-hold")) {
+					spr.playAnim('static');
+					spr.holdTimer = 0;
+				}
 			}
 		});
 	}
@@ -2698,15 +2724,14 @@ class PlayState extends MusicBeatState
 	function handleLaneRelease(lane:Int, controlHoldArray:Array<Bool>):Void {
 		var spr:Strum = currentStrums.members[lane];
 
-		if(spr == null || controlHoldArray[lane]) {
+		if(spr == null) {
 			return;
 		}
 
+		spr.keyHeld = false;
 		spr.holdTimer = 0;
-
-		if(spr.animation.curAnim != null && spr.animation.curAnim.name != "confirm") {
-			spr.playAnim('static');
-		}
+		spr.playAnim('static');
+		endHoldCoverForLane(lane, true);
 	}
 
 	function findTapNote(lane:Int, hitSongTime:Float):Note {
@@ -2756,7 +2781,9 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		if(spr.animation.curAnim == null || spr.animation.curAnim.name != "confirm") {
+		spr.keyHeld = true;
+
+		if(spr.animation.curAnim == null || !spr.isConfirmAnimation()) {
 			spr.playAnim('pressed');
 			spr.holdTimer = 0;
 		}
@@ -2883,6 +2910,10 @@ class PlayState extends MusicBeatState
 
 			note.hit();
 
+			if(spr != null && spr.keyHeld && (note.isSustainNote || note.sustainLength > 0)) {
+				refreshHoldCoverForLane(note.noteData, true);
+			}
+
 			if(!isPixel) {
 				note.splash(grpSplash.members[spr.ID], spr, daRating);
 			}
@@ -2894,10 +2925,18 @@ class PlayState extends MusicBeatState
 					customNoteSprites.add(noteSprite);
 				}
 			    if(note.hasCustomAddon.whenNoteIsHit(spr)) {
-					playStrumConfirm(spr);
+					if(note.isSustainNote && spr.keyHeld) {
+						playStrumConfirmHold(spr);
+					}else {
+						playStrumConfirm(spr);
+					}
 			    }
 			}else {
-				playStrumConfirm(spr);
+				if(note.isSustainNote && spr.keyHeld) {
+					playStrumConfirmHold(spr);
+				}else {
+					playStrumConfirm(spr);
+				}
 			}
 
 			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
@@ -2923,6 +2962,156 @@ class PlayState extends MusicBeatState
 	private function playStrumConfirm(strumNote:Strum):Void {
 		strumNote.playAnim("confirm", true);
 		strumNote.holdTimer = Conductor.stepCrochet * 1.25 / 1000;
+	}
+
+	private function playStrumConfirmHold(strumNote:Strum):Void {
+		if(strumNote.hasAnimation("confirm-hold")) {
+			strumNote.playAnim("confirm-hold", true);
+		}else {
+			strumNote.playAnim("confirm", true);
+		}
+
+		strumNote.holdTimer = 0;
+	}
+
+	function setupHoldCoverSprites():Void {
+		if(grpHoldCover == null) {
+			return;
+		}
+
+		for(cover in currentHoldCoverSprites) {
+			if(cover != null) {
+				grpHoldCover.remove(cover, true);
+				cover.destroy();
+			}
+		}
+
+		for(cover in oppositeHoldCoverSprites) {
+			if(cover != null) {
+				grpHoldCover.remove(cover, true);
+				cover.destroy();
+			}
+		}
+
+		currentHoldCoverSprites = [];
+		currentHoldCoverTimers = [];
+		oppositeHoldCoverSprites = [];
+		oppositeHoldCoverTimers = [];
+
+		setupHoldCoverSpriteList(currentStrums, currentHoldCoverSprites, currentHoldCoverTimers, true);
+		setupHoldCoverSpriteList(oppositeStrums, oppositeHoldCoverSprites, oppositeHoldCoverTimers, false);
+	}
+
+	function setupHoldCoverSpriteList(strums:FlxTypedSpriteGroup<Strum>, sprites:Array<HoldCoverSprite>, timers:Array<Float>, currentSide:Bool):Void {
+		for(index in 0...getLaneCount()) {
+			var strum:Strum = strums.members[index];
+			var cover:HoldCoverSprite = null;
+
+			if(strum != null) {
+				cover = new HoldCoverSprite(strum.direction);
+			}
+
+			sprites.push(cover);
+			timers.push(0);
+
+			if(cover != null) {
+				grpHoldCover.add(cover);
+				updateHoldCoverPosition(index, currentSide);
+			}
+		}
+	}
+
+	function refreshHoldCoverForLane(lane:Int, currentSide:Bool):Void {
+		var holdCoverSprites = currentSide ? currentHoldCoverSprites : oppositeHoldCoverSprites;
+		var holdCoverTimers = currentSide ? currentHoldCoverTimers : oppositeHoldCoverTimers;
+
+		if(lane < 0 || lane >= holdCoverSprites.length) {
+			return;
+		}
+
+		var cover:HoldCoverSprite = holdCoverSprites[lane];
+
+		if(cover == null || !cover.available) {
+			return;
+		}
+
+		holdCoverTimers[lane] = (Conductor.stepCrochet * 1.1) / 1000;
+
+		if(cover.activeHold && !cover.ending) {
+			cover.refreshHold();
+		}else {
+			cover.beginHold();
+		}
+
+		updateHoldCoverPosition(lane, currentSide);
+	}
+
+	function endHoldCoverForLane(lane:Int, currentSide:Bool):Void {
+		var holdCoverSprites = currentSide ? currentHoldCoverSprites : oppositeHoldCoverSprites;
+		var holdCoverTimers = currentSide ? currentHoldCoverTimers : oppositeHoldCoverTimers;
+
+		if(lane < 0 || lane >= holdCoverSprites.length) {
+			return;
+		}
+
+		holdCoverTimers[lane] = 0;
+
+		var cover:HoldCoverSprite = holdCoverSprites[lane];
+
+		if(cover != null) {
+			cover.endHold();
+		}
+	}
+
+	function updateHoldCoverSprites(currentSide:Bool, ?controlHoldArray:Array<Bool>):Void {
+		var holdCoverSprites = currentSide ? currentHoldCoverSprites : oppositeHoldCoverSprites;
+		var holdCoverTimers = currentSide ? currentHoldCoverTimers : oppositeHoldCoverTimers;
+		var lane:Int = 0;
+
+		while(lane < holdCoverSprites.length) {
+			if(holdCoverTimers[lane] > 0) {
+				holdCoverTimers[lane] -= FlxG.elapsed;
+			}
+
+			updateHoldCoverPosition(lane, currentSide);
+
+			if(currentSide) {
+				if(controlHoldArray == null || lane >= controlHoldArray.length || !controlHoldArray[lane] || holdCoverTimers[lane] <= 0) {
+					endHoldCoverForLane(lane, true);
+				}
+			}else if(holdCoverTimers[lane] <= 0) {
+				endHoldCoverForLane(lane, false);
+			}
+
+			lane++;
+		}
+	}
+
+	function updateHoldCoverPosition(lane:Int, currentSide:Bool):Void {
+		var holdCoverSprites = currentSide ? currentHoldCoverSprites : oppositeHoldCoverSprites;
+		var strums = currentSide ? currentStrums : oppositeStrums;
+
+		if(lane < 0 || lane >= holdCoverSprites.length) {
+			return;
+		}
+
+		var cover:HoldCoverSprite = holdCoverSprites[lane];
+		var strum:Strum = strums.members[lane];
+
+		if(cover == null || strum == null) {
+			return;
+		}
+
+		cover.visible = (cover.activeHold || cover.ending) && strum.visible;
+
+		if(!cover.visible) {
+			return;
+		}
+
+		cover.alpha = strum.alpha;
+		cover.angle = strum.angle;
+		cover.x = strum.x + (strum.width * 0.5) - (cover.width * 0.5) - 8;
+		cover.y = strum.y - 96;
 	}
 
 	private function cameraMovement(noteCData:Int, isSus:Bool):Void {

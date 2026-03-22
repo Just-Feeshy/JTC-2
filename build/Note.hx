@@ -78,7 +78,7 @@ class Note extends FeshSprite {
 
 	public var howSpeed(default, null):Null<Float> = 0;
 	public var earlyHit(default, null):Float = 0.5;
-	public var playerEarlyHit(default, null):Float = 0.5;
+	public var playerEarlyHit(default, null):Float = 1;
 	public var playerLateHit(default, null):Float = 1;
 
 	public var endPieceOffsetX(default, null):Float = 0;
