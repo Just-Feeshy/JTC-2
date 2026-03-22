@@ -1,0 +1,17 @@
+{
+	"timeFormat": "ms",
+	"artist": "Varsavi",
+	"charter": "DiFicuz",
+	"playData": {
+		"stage": "mainStage",
+		"noteStyle": "funkin",
+		"difficulties": null,
+		"characters": {"girlfriend": "gf", "opponent": "jtc", "player": "bf"}
+	},
+	"songName": "i-am-blue",
+	"timeChanges": [
+		{"t": 0, "bpm": 135}
+	],
+	"generatedBy": "Psych Engine v1.0 - Chart Editor V-Slice Exporter",
+	"version": "2.2.3"
+}

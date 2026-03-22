@@ -197,6 +197,7 @@ class FreeplayState extends MusicBeatState
 
 		add(scoreText);
 
+		normalizeDifficulty();
 		changeSelection();
 		changeDiff();
 		clearStuff();
@@ -219,6 +220,27 @@ class FreeplayState extends MusicBeatState
 		#end
 
 		super.create();
+	}
+
+	inline function getDifficultyCount():Int
+	{
+		return CoolUtil.difficultyArray != null ? CoolUtil.difficultyArray.length : 0;
+	}
+
+	function normalizeDifficulty():Int
+	{
+		var difficultyCount:Int = getDifficultyCount();
+
+		if (difficultyCount <= 0)
+		{
+			curDifficulty = 0;
+			return 0;
+		}
+
+		if (curDifficulty < 0 || curDifficulty >= difficultyCount)
+			curDifficulty = 0;
+
+		return difficultyCount;
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String)
@@ -252,10 +274,15 @@ class FreeplayState extends MusicBeatState
 			changeSelection(1);
 		}
 
-		if (controls.LEFT_P)
-			changeDiff(-1);
-		if (controls.RIGHT_P)
-			changeDiff(1);
+		var difficultyCount:Int = normalizeDifficulty();
+
+		if (difficultyCount > 1)
+		{
+			if (controls.LEFT_P)
+				changeDiff(-1);
+			if (controls.RIGHT_P)
+				changeDiff(1);
+		}
 
 		if (controls.BACK)
 		{
@@ -302,12 +329,29 @@ class FreeplayState extends MusicBeatState
 
 	function changeDiff(change:Int = 0)
 	{
-		curDifficulty += change;
+		var difficultyCount:Int = getDifficultyCount();
 
-		if (curDifficulty < 0)
-			curDifficulty = CoolUtil.difficultyArray.length - 1;
-		if (curDifficulty > CoolUtil.difficultyArray.length - 1)
+		if (difficultyCount <= 0)
+		{
 			curDifficulty = 0;
+			diffText.text = "";
+			return;
+		}
+
+		if (difficultyCount > 1)
+		{
+			curDifficulty += change;
+
+			if (curDifficulty < 0)
+				curDifficulty = difficultyCount - 1;
+			if (curDifficulty > difficultyCount - 1)
+				curDifficulty = 0;
+		}
+		else
+		{
+			curDifficulty = 0;
+			change = 0;
+		}
 
 		#if !switch
 		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
@@ -343,6 +387,7 @@ class FreeplayState extends MusicBeatState
 		}
 
 		// selector.y = (70 * curSelected) + 30;
+		normalizeDifficulty();
 
 		#if !switch
 		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);

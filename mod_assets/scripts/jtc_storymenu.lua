@@ -11,6 +11,10 @@ local STORY_PURPLE_SCALE = 1.08
 local stopSpam = false
 local selectedWeek = false
 
+local function canChangeDifficulty()
+    return difficultyCount ~= nil and difficultyCount > 1
+end
+
 function onCreate()
     destroyStuff()
     menu_music.markActiveIfPlaying()
@@ -69,11 +73,11 @@ function onUpdate(elapsed)
             playSound("confirmMenu", 1, "confirm")
         end
 
-        if getControl("right-press") then
+        if canChangeDifficulty() and getControl("right-press") then
             changeDifficulty(1)
         end
 
-        if getControl("left-press") then
+        if canChangeDifficulty() and getControl("left-press") then
             changeDifficulty(-1)
         end
 
@@ -157,21 +161,27 @@ function onTweenCompleted(name)
 end
 
 function changedDifficulty()
+    if not spriteExist("betterDifficulty") then
+        return
+    end
+
     setDifficultySprite()
     setSpriteY("betterDifficulty", 60)
     doTweenY("difficultyTween", "betterDifficulty", 50, 0.11, "quadOut")
 end
 
 function setDifficultySprite()
-    if curDifficulty == 0 then
+    if not spriteExist("betterDifficulty") then
+        return
+    end
+
+    local currentDifficultyName = difficultyName ~= nil and string.lower(difficultyName) or ""
+
+    if currentDifficultyName == "easy" then
         loadGraphic("betterDifficulty", "menu/easy")
-    end
-
-    if curDifficulty == 1 then
+    elseif currentDifficultyName == "normal" then
         loadGraphic("betterDifficulty", "menu/normal")
-    end
-
-    if curDifficulty == 2 then
+    else
         loadGraphic("betterDifficulty", "menu/cool")
     end
 end

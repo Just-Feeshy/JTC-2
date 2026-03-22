@@ -186,6 +186,45 @@ class StoryMenuState extends MusicBeatState
 		super.create();
 	}
 
+	inline function getDifficultyCount():Int
+	{
+		return CoolUtil.difficultyArray != null ? CoolUtil.difficultyArray.length : 0;
+	}
+
+	function normalizeDifficulty():Int
+	{
+		var difficultyCount:Int = getDifficultyCount();
+
+		if (difficultyCount <= 0)
+		{
+			curDifficulty = 0;
+			return 0;
+		}
+
+		if (curDifficulty < 0 || curDifficulty >= difficultyCount)
+			curDifficulty = 0;
+
+		return difficultyCount;
+	}
+
+	inline function getCurrentDifficultyName():String
+	{
+		return getDifficultyCount() > 0 ? CoolUtil.difficultyArray[curDifficulty] : "HARD";
+	}
+
+	inline function getDifficultyAnimName():String
+	{
+		switch (getCurrentDifficultyName().toLowerCase().trim())
+		{
+			case "easy":
+				return "easy";
+			case "normal":
+				return "normal";
+			default:
+				return "hard";
+		}
+	}
+
 	override function onCreate():Dynamic {
 		addCallback("disableRegularInput", function(value:Bool) {
 			disableControls = value;
@@ -203,7 +242,10 @@ class StoryMenuState extends MusicBeatState
 			scoreName = name;
 		});
 
+		normalizeDifficulty();
 		setLua("curDifficulty", curDifficulty);
+		setLua("difficultyCount", getDifficultyCount());
+		setLua("difficultyName", getCurrentDifficultyName());
 		changeDifficulty();
 		return super.onCreate();
 	}
@@ -234,7 +276,7 @@ class StoryMenuState extends MusicBeatState
 			txtWeekTitle.x = FlxG.width - (txtWeekTitle.width + 10);
 		}
 
-		difficultySelectors.visible = Paths.modJSON.weeks.get("week_" + curWeek).week_unlocked;
+		difficultySelectors.visible = Paths.modJSON.weeks.get("week_" + curWeek).week_unlocked && normalizeDifficulty() > 1;
 
 		grpLocks.forEach(function(lock:FlxSprite)
 		{
@@ -255,7 +297,7 @@ class StoryMenuState extends MusicBeatState
 				if (rightP) {
 					if(rightArrow.exists)rightArrow.animation.play('press');
 
-					if(chooseDifficulty)
+					if(chooseDifficulty && getDifficultyCount() > 1)
 						changeDifficulty(1);
 					else
 						changeWeek(1);
@@ -266,7 +308,7 @@ class StoryMenuState extends MusicBeatState
 				if (leftP) {
 					if(leftArrow.exists)leftArrow.animation.play('press');
 					
-					if(chooseDifficulty)
+					if(chooseDifficulty && getDifficultyCount() > 1)
 						changeDifficulty(-1);
 					else
 						changeWeek(-1);
@@ -286,7 +328,7 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		if (back && !movedBack && !selectedWeek) {
-			if(chooseDifficulty) {
+			if(chooseDifficulty && getDifficultyCount() > 1) {
 				chooseDifficulty = false;
 
 				if(sprDifficulty.exists) {
@@ -316,7 +358,7 @@ class StoryMenuState extends MusicBeatState
 
 	function selectWeek()
 	{
-		if(!chooseDifficulty) {
+		if(!chooseDifficulty && getDifficultyCount() > 1) {
 			if(grpWeekText.exists) {
 				remove(grpWeekText);
 			}
@@ -350,12 +392,10 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		var diffic = "";
+		var difficultyName:String = getCurrentDifficultyName().toLowerCase().trim();
 
-		switch (curDifficulty) {
-			case 1:
-				diffic = '';
-			default:
-				diffic = '-' + CoolUtil.difficultyArray[curDifficulty].toLowerCase();
+		if (difficultyName != "normal") {
+			diffic = '-' + difficultyName;
 		}
 
 		PlayState.storyPlaylist = daSongs;
@@ -379,14 +419,32 @@ class StoryMenuState extends MusicBeatState
 
 	function changeDifficulty(change:Int = 0):Void
 	{
-		curDifficulty += change;
+		var difficultyCount:Int = getDifficultyCount();
 
-		if (curDifficulty < 0)
-			curDifficulty = CoolUtil.difficultyArray.length - 1;
-		if (curDifficulty > CoolUtil.difficultyArray.length - 1)
+		if (difficultyCount <= 0)
+		{
 			curDifficulty = 0;
+			return;
+		}
+
+		if (difficultyCount > 1)
+		{
+			curDifficulty += change;
+
+			if (curDifficulty < 0)
+				curDifficulty = difficultyCount - 1;
+			if (curDifficulty > difficultyCount - 1)
+				curDifficulty = 0;
+		}
+		else
+		{
+			curDifficulty = 0;
+			change = 0;
+		}
 
 		setLua("curDifficulty", curDifficulty);
+		setLua("difficultyCount", difficultyCount);
+		setLua("difficultyName", getCurrentDifficultyName());
 		callLua("changedDifficulty", []);
 
 		if(change != 0)
@@ -395,15 +453,9 @@ class StoryMenuState extends MusicBeatState
 		if(sprDifficulty.exists) {
 			sprDifficulty.offset.x = 0;
 
-			switch (curDifficulty)
-			{
-				case 0:
-					sprDifficulty.animation.play('easy');
-				case 1:
-					sprDifficulty.animation.play('normal');
-				case 2:
-					sprDifficulty.animation.play('hard');
-			}
+			var animName:String = getDifficultyAnimName();
+			if (sprDifficulty.animation.getByName(animName) != null)
+				sprDifficulty.animation.play(animName);
 
 			sprDifficulty.centerOffsets();
 			sprDifficulty.alpha = 0;

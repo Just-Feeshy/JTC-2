@@ -32,8 +32,6 @@
 
     "song_util": {
         "difficulties": [
-            "EASY",
-            "NORMAL",
             "HARD"
         ]
     },

@@ -172,6 +172,7 @@ class PlayState extends MusicBeatState
 	private var curSection:Int = 0;
 
 	private var vocals:FlxSound;
+	private var opponentVocals:FlxSound;
 
 	public var dad:Character;
 	public var gf:Character;
@@ -616,7 +617,12 @@ class PlayState extends MusicBeatState
 				case 'music':
 					Paths.music(key);
 				case "voices":
-					Paths.voices(key);
+					if (Paths.songSoundExists(key, "1_Voices") && Paths.songSoundExists(key, "2_Voices")) {
+						Paths.songSound(key, "1_Voices");
+						Paths.songSound(key, "2_Voices");
+					}else {
+						Paths.voices(key);
+					}
 				case "inst":
 					Paths.inst(key);
 			}
@@ -1027,6 +1033,110 @@ class PlayState extends MusicBeatState
 	var lastReportedPlayheadPosition:Int = 0;
 	var songTime:Float = 0;
 
+	private function loadSongVocals(song:String):Void
+	{
+		opponentVocals = null;
+
+		if (SONG.needsVoices)
+		{
+			var hasSplitVocals:Bool = Paths.songSoundExists(song, "1_Voices") && Paths.songSoundExists(song, "2_Voices");
+			var hasSingleVocals:Bool = Paths.songSoundExists(song, "Voices");
+
+			if (hasSplitVocals)
+			{
+				vocals = new FlxSound().loadEmbedded(Paths.songSound(song, "1_Voices"));
+				opponentVocals = new FlxSound().loadEmbedded(Paths.songSound(song, "2_Voices"));
+			}
+			else if (hasSingleVocals)
+			{
+				vocals = new FlxSound().loadEmbedded(Paths.voices(song));
+			}
+			else
+			{
+				trace("Warning: no vocals found for " + song + ", continuing without vocals.");
+				vocals = new FlxSound();
+			}
+		}
+		else
+		{
+			vocals = new FlxSound();
+		}
+
+		FlxG.sound.list.add(vocals);
+
+		if (opponentVocals != null)
+		{
+			FlxG.sound.list.add(opponentVocals);
+		}
+	}
+
+	private inline function pauseVocals():Void
+	{
+		vocals.pause();
+
+		if (opponentVocals != null)
+		{
+			opponentVocals.pause();
+		}
+	}
+
+	private inline function playVocals():Void
+	{
+		vocals.play();
+
+		if (opponentVocals != null)
+		{
+			opponentVocals.play();
+		}
+	}
+
+	private inline function stopVocals():Void
+	{
+		vocals.stop();
+
+		if (opponentVocals != null)
+		{
+			opponentVocals.stop();
+		}
+	}
+
+	private inline function setVocalsTime(time:Float):Void
+	{
+		vocals.time = time;
+
+		if (opponentVocals != null)
+		{
+			opponentVocals.time = time;
+		}
+	}
+
+	private inline function setAllVocalsVolume(volume:Float):Void
+	{
+		vocals.volume = volume;
+
+		if (opponentVocals != null)
+		{
+			opponentVocals.volume = volume;
+		}
+	}
+
+	private inline function setPlayerVocalsVolume(volume:Float):Void
+	{
+		vocals.volume = volume;
+	}
+
+	private inline function setOpponentVocalsVolume(volume:Float):Void
+	{
+		if (opponentVocals != null)
+		{
+			opponentVocals.volume = volume;
+		}
+		else
+		{
+			vocals.volume = volume;
+		}
+	}
+
 	function startSong():Void
 	{
 		startingSong = false;
@@ -1038,11 +1148,11 @@ class PlayState extends MusicBeatState
 			FlxG.sound.playMusic(Paths.inst(PlayState.SONG.song), 1, false);
 
 		FlxG.sound.music.onComplete = whenSongFinished.bind();
-		vocals.play();
+		playVocals();
 
 		if(paused) {
 			FlxG.sound.music.pause();
-			vocals.pause();
+			pauseVocals();
 		}
 
 		songLength = FlxG.sound.music.length;
@@ -1068,12 +1178,7 @@ class PlayState extends MusicBeatState
 
 		curSong = songData.song;
 
-		if (SONG.needsVoices)
-			vocals = new FlxSound().loadEmbedded(Paths.voices(PlayState.SONG.song));
-		else
-			vocals = new FlxSound();
-
-		FlxG.sound.list.add(vocals);
+		loadSongVocals(PlayState.SONG.song);
 
 		notes = new FlxTypedGroup<Note>();
 		add(notes);
@@ -1464,7 +1569,7 @@ class PlayState extends MusicBeatState
 	public function pauseMusic():Void {
 		if (FlxG.sound.music != null) {
 			FlxG.sound.music.pause();
-			vocals.pause();
+			pauseVocals();
 		}
 
 		if(startTimer != null) {
@@ -1477,15 +1582,15 @@ class PlayState extends MusicBeatState
 		if(timeFreeze > 0)
 			return;
 
-		vocals.pause();
+		pauseVocals();
 
 		if(muteInst)
 			FlxG.sound.music.volume = 0;
 
 		FlxG.sound.music.play();
 		setSongPosition(FlxG.sound.music.time);
-		vocals.time = FlxG.sound.music.time;
-		vocals.play();
+		setVocalsTime(FlxG.sound.music.time);
+		playVocals();
 	}
 
 	function setSongPosition(time:Float):Void {
@@ -1761,7 +1866,7 @@ class PlayState extends MusicBeatState
 				camPos.y = camFollowY;
 
 				if (dad.curCharacter == 'mom')
-					vocals.volume = 1;
+					setOpponentVocalsVolume(1);
 
 				if (SONG.song.toLowerCase() == 'tutorial')
 				{
@@ -1844,7 +1949,7 @@ class PlayState extends MusicBeatState
 			switch (curBeat)
 			{
 				case 128, 129, 130:
-					vocals.volume = 0;
+					setAllVocalsVolume(0);
 			}
 		}
 		// better streaming of shit
@@ -2026,7 +2131,7 @@ class PlayState extends MusicBeatState
 								setHealth(health - daNote.missDamage());
 							}
 
-							vocals.volume = 0;
+							setPlayerVocalsVolume(0);
 						}
 
 						if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
@@ -2126,7 +2231,7 @@ class PlayState extends MusicBeatState
 		});
 
 		if (SONG.needsVoices)
-			vocals.volume = 1;
+			setOpponentVocalsVolume(1);
 
 		callLua("opponentNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
@@ -2220,7 +2325,7 @@ class PlayState extends MusicBeatState
 		persistentDraw = false;
 		paused = true;
 
-		vocals.stop();
+		stopVocals();
 		FlxG.sound.music.stop();
 
 		FlxG.camera.zoom = defaultCamZoom;
@@ -2238,8 +2343,8 @@ class PlayState extends MusicBeatState
 	function whenSongFinished():Void {
 		canPause = false;
 		FlxG.sound.music.volume = 0;
-		vocals.volume = 0;
-		vocals.pause();
+		setAllVocalsVolume(0);
+		pauseVocals();
 
 		if(SaveData.getData(NOTE_OFFSET) > 0) {
 			new FlxTimer().start(SaveData.getData(NOTE_OFFSET) / 1000, function(tmr:FlxTimer) {
@@ -2325,7 +2430,7 @@ class PlayState extends MusicBeatState
 	private function popUpScore(strumtime:Float, id:Int, abby:String, ?judgeSongPosition:Float):Void
 	{
 		var noteDiff:Float = Math.abs(strumtime - (judgeSongPosition == null ? Conductor.trackPosition : judgeSongPosition));
-		vocals.volume = 1;
+		setPlayerVocalsVolume(1);
 
 		var placement:String = Std.string(combo);
 
@@ -2943,7 +3048,7 @@ class PlayState extends MusicBeatState
 				note.wasGoodHit = true;
 
 				if(SONG.needsVoices && !currentPlayer.stunned) {
-					vocals.volume = 1;
+					setPlayerVocalsVolume(1);
 				}
 
 				hits++;

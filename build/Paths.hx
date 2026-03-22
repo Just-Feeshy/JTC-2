@@ -225,28 +225,39 @@ class Paths
 		}
 	}
 
-	inline static public function voices(song:String)
+	inline static function getSongSoundPath(song:String, soundFile:String):String
 	{
-		var getPath:String = "songs:" + getPreloadPath('songs/${song.toLowerCase()}/Voices.$SOUND_EXT');
+		return "songs:" + getPreloadPath('songs/${song.toLowerCase()}/$soundFile.$SOUND_EXT');
+	}
+
+	inline static public function songSoundExists(song:String, soundFile:String):Bool
+	{
+		return OpenFlAssets.exists(getSongSoundPath(song, soundFile));
+	}
+
+	inline static public function songSound(song:String, soundFile:String)
+	{
+		var getPath:String = getSongSoundPath(song, soundFile);
 
 		if(OpenFlAssets.exists(getPath)) {
 			return OpenFlAssets.getSound(getPath, true);
 		}else {
-			trace("Error: could not locate voices - " + song + "." + SOUND_EXT);
+			trace("Error: could not locate song audio - " + song + "/" + soundFile + "." + SOUND_EXT);
 			return null;
 		}
+	}
+
+	inline static public function voices(song:String, ?suffix:String = "")
+	{
+		if(suffix == null)
+			suffix = "";
+
+		return songSound(song, 'Voices$suffix');
 	}
 	
 	inline static public function inst(song:String)
 	{
-		var getPath:String = "songs:" + getPreloadPath('songs/${song.toLowerCase()}/Inst.$SOUND_EXT');
-
-		if(OpenFlAssets.exists(getPath)) {
-			return OpenFlAssets.getSound(getPath, true);
-		}else {
-			trace("Error: could not locate instrumental - " + song + "." + SOUND_EXT);
-			return null;
-		}
+		return songSound(song, "Inst");
 	}
 
 	inline static public function getSparrowAtlas(key:String, ?library:String, ?cache:Bool)

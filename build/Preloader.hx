@@ -10,8 +10,8 @@ import openfl.display.FPS;
 import openfl.filters.ShaderFilter;
 import openfl.events.KeyboardEvent;
 import openfl.events.UncaughtErrorEvent;
-import openfl.text.TextFormat;
 import openfl.errors.Error;
+import openfl.text.TextFormat;
 
 import haxe.CallStack;
 import lime.ui.Window;
@@ -52,7 +52,6 @@ class Preloader extends HelperStates {
 
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
         SaveData.globalMEM = new Memory(10, 28, 0xFFFFFF);
-
         SaveData.globalFPS.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("PhantomMuff.ttf")).fontName, 18, 0xFFFFFF);
         SaveData.globalMEM.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("PhantomMuff.ttf")).fontName, 18, 0xFFFFFF);
 
@@ -94,11 +93,15 @@ class Preloader extends HelperStates {
         add(loadingScene);
 
         loadingScene.callback = function() {
-            Register.setup();
-            Register.compile();
-
-            FlxG.switchState(cast Type.createInstance(_initialState, []));
-        }
+            try {
+                Register.setup();
+                Register.compile();
+                FlxG.switchState(cast Type.createInstance(_initialState, []));
+            } catch(e) {
+                trace("Preloader: callback failed -> " + Std.string(e));
+                throw e;
+            }
+        };
 
         loadingScene.cacheNecessaries();
         #end

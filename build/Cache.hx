@@ -18,11 +18,21 @@ class Cache {
     @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 
     static public function cacheListedFormat(path:String, allowGPUCache:Bool = true):Void {
-        switch(path.split('.')[1]) {
+        var extensionIndex:Int = path.lastIndexOf(".");
+
+        if(extensionIndex < 0 || extensionIndex >= path.length - 1) {
+            return;
+        }
+
+        switch(path.substr(extensionIndex + 1).toLowerCase()) {
             case "png":
-                cacheAssetDirectly(path, allowGPUCache);
+                if(OpenFlAssets.exists(path, IMAGE)) {
+                    cacheAssetDirectly(path, allowGPUCache);
+                }
             case Paths.SOUND_EXT:
-                OpenFlAssets.getSound(path, true);
+                if(OpenFlAssets.exists(path, SOUND) || OpenFlAssets.exists(path, MUSIC)) {
+                    OpenFlAssets.getSound(path, true);
+                }
         }
     }
 

@@ -8,10 +8,6 @@ import flixel.tweens.FlxEase;
 import flixel.group.FlxSpriteGroup;
 import flixel.ui.FlxBar;
 
-#if sys
-import sys.thread.Thread;
-#end
-
 using StringTools;
 
 class LoadingScene extends FlxSpriteGroup {
@@ -25,6 +21,16 @@ class LoadingScene extends FlxSpriteGroup {
 
     var prevCacheValue:Float = 0;
     var colorSway:Float = 0;
+
+    inline function shouldCacheDuringBoot(path:String):Bool {
+        var loweredPath:String = path.toLowerCase();
+
+        return !(loweredPath.endsWith("." + Paths.SOUND_EXT)
+            || loweredPath.endsWith(".mp3")
+            || loweredPath.endsWith(".wav")
+            || loweredPath.endsWith(".ogg")
+            || loweredPath.startsWith("songs:"));
+    }
 
     public function new() {
         super();
@@ -76,9 +82,9 @@ class LoadingScene extends FlxSpriteGroup {
     */
     #if sys
     public function cacheNecessaries():Void {
-        Thread.create(() -> {
-            var compileList:Array<String> = [];
+        var compileList:Array<String> = [];
 
+        try {
             for(i in 0...Paths.modJSON.cache_configuration.length) {
                 compileList = compileList.concat(CoolUtil.getFilesInDirectories(Paths.modJSON.cache_configuration[i]));
             }
@@ -88,13 +94,23 @@ class LoadingScene extends FlxSpriteGroup {
                     compileList[i] = "songs:" + compileList[i];
                 }
 
-                // Cache from worker thread without creating Context3D textures.
-                Cache.cacheListedFormat(compileList[i], false);
+                try {
+                    // Sound loading is not safe here on macOS; only cache boot-safe assets.
+                    if(shouldCacheDuringBoot(compileList[i])) {
+                        Cache.cacheListedFormat(compileList[i], false);
+                    }
+                } catch(e) {
+                    trace('Warning: failed to cache preload asset ' + compileList[i] + ' -> ' + Std.string(e));
+                }
+
                 cacheValue = i / compileList.length;
             }
 
             cacheValue = 1;
-        });
+        } catch(e) {
+            trace('Warning: preload caching failed -> ' + Std.string(e));
+            cacheValue = 1;
+        }
     }
     #end
 
