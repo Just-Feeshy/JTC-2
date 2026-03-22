@@ -1670,7 +1670,14 @@ class PlayState extends MusicBeatState
 	}
 
 	function shouldUseSustainCurveShader():Bool {
-		return false;
+		var rawValue:Dynamic = ModLua.getSharedVariable("useSustainCurveShader", false);
+
+		if(Std.isOfType(rawValue, Bool)) {
+			return cast rawValue;
+		}
+
+		var parsedValue:String = Std.string(rawValue).toLowerCase().trim();
+		return parsedValue == "true" || parsedValue == "1";
 	}
 
 	function getSustainCurveStrength():Float {

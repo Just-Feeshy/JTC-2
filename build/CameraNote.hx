@@ -33,7 +33,7 @@ class CameraNote extends FeshCamera {
     private var notePassActive:Bool = false;
     private var notePassDirty:Bool = false;
     private var currentNoteTarget:Int = NOTE_TARGET_NONE;
-    private var sustainCompositePending:Bool = false;
+    private var noteCompositePending:Bool = false;
     private var regularPassDirty:Bool = false;
     private var sustainPassDirty:Bool = false;
 
@@ -58,7 +58,7 @@ class CameraNote extends FeshCamera {
         notePassActive = true;
         notePassDirty = false;
         currentNoteTarget = NOTE_TARGET_NONE;
-        sustainCompositePending = false;
+        noteCompositePending = false;
         regularPassDirty = false;
         sustainPassDirty = false;
 
@@ -78,7 +78,7 @@ class CameraNote extends FeshCamera {
 
         currentNoteTarget = NOTE_TARGET_NONE;
 
-        if(!notePassDirty) {
+        if(!notePassDirty && sustainCompositeShader == null) {
             notePassActive = false;
             return;
         }
@@ -94,17 +94,16 @@ class CameraNote extends FeshCamera {
             if(sustainPassDirty) {
                 sustainNoteBuffer.fillRect(noteLayerRect, FlxColor.TRANSPARENT);
                 sustainNoteBuffer.draw(sustainNoteLayer);
-                sustainCompositePending = true;
+            }
+
+            if(regularPassDirty || sustainPassDirty || sustainCompositeShader != null) {
+                noteCompositePending = true;
             }
         }
 
         if(FlxG.renderBlit) {
-            if(regularPassDirty && regularNoteBuffer != null) {
-                buffer.copyPixels(regularNoteBuffer, noteLayerRect, _flashPoint, null, null, true);
-            }
-
-            if(sustainPassDirty) {
-                drawSustainBufferToMainBuffer();
+            if(regularPassDirty || sustainPassDirty || sustainCompositeShader != null) {
+                drawNoteBuffersToMainBuffer();
                 screen.dirty = true;
             }
         }
@@ -121,7 +120,7 @@ class CameraNote extends FeshCamera {
             return;
         }
 
-        currentNoteTarget = isSustainNote && shouldSeparateSustainPass() ? NOTE_TARGET_SUSTAIN : NOTE_TARGET_NONE;
+        currentNoteTarget = shouldSeparateSustainPass() ? (isSustainNote ? NOTE_TARGET_SUSTAIN : NOTE_TARGET_REGULAR) : NOTE_TARGET_NONE;
         if(currentNoteTarget != NOTE_TARGET_NONE) {
             notePassDirty = true;
             if(currentNoteTarget == NOTE_TARGET_REGULAR) {
@@ -155,11 +154,6 @@ class CameraNote extends FeshCamera {
     override function drawPixels(?frame:FlxFrame, ?pixels:BitmapData, matrix:FlxMatrix, ?transform:ColorTransform, ?blend:BlendMode, ?smoothing:Bool = false,
         ?shader:FlxShader):Void {
         if(currentNoteTarget != NOTE_TARGET_NONE) {
-            if(currentNoteTarget == NOTE_TARGET_REGULAR && FlxG.renderTile) {
-                super.drawPixels(frame, pixels, matrix, transform, blend, smoothing, shader);
-                return;
-            }
-
             ensureNoteTargets();
 
             if(FlxG.renderBlit) {
@@ -176,11 +170,6 @@ class CameraNote extends FeshCamera {
     override function copyPixels(?frame:FlxFrame, ?pixels:BitmapData, ?sourceRect:Rectangle, destPoint:openfl.geom.Point, ?transform:ColorTransform, ?blend:BlendMode,
         ?smoothing:Bool = false, ?shader:FlxShader):Void {
         if(currentNoteTarget != NOTE_TARGET_NONE) {
-            if(currentNoteTarget == NOTE_TARGET_REGULAR && FlxG.renderTile) {
-                super.copyPixels(frame, pixels, sourceRect, destPoint, transform, blend, smoothing, shader);
-                return;
-            }
-
             ensureNoteTargets();
 
             if(FlxG.renderBlit) {
@@ -201,12 +190,16 @@ class CameraNote extends FeshCamera {
     }
 
     override function render():Void {
-        if(FlxG.renderTile && sustainCompositePending) {
-            drawSustainBufferToCanvas();
-            sustainCompositePending = false;
+        super.render();
+
+        if(FlxG.renderTile && noteCompositePending) {
+            drawNoteBuffersToCanvas();
+            noteCompositePending = false;
         }
 
-        super.render();
+        if(sustainCompositeShader != null) {
+            configureExternalNoteShaderSamplers();
+        }
     }
 
     override function destroy() {
@@ -365,54 +358,40 @@ class CameraNote extends FeshCamera {
         setShaderBool(shader.hasColorTransform, hasColorTransform);
     }
 
-    private function drawSustainBufferToMainBuffer():Void {
-        if(sustainNoteBuffer == null) {
+    private function drawNoteBuffersToMainBuffer():Void {
+        if(regularNoteBuffer == null && sustainNoteBuffer == null) {
             return;
         }
 
-        if(sustainCompositeShader == null) {
+        if(regularNoteBuffer != null) {
+            buffer.copyPixels(regularNoteBuffer, noteLayerRect, _flashPoint, null, null, true);
+        }
+
+        if(sustainNoteBuffer != null) {
             buffer.copyPixels(sustainNoteBuffer, noteLayerRect, _flashPoint, null, null, true);
-            return;
         }
-
-        var shader:Dynamic = sustainCompositeShader;
-        shader.bitmap.input = sustainNoteBuffer;
-        shader.bitmap.filter = antialiasing ? Context3DTextureFilter.LINEAR : Context3DTextureFilter.NEAREST;
-        setShaderBool(shader.hasTransform, false);
-        setShaderBool(shader.hasColorTransform, false);
-
-        blitSustainShape.graphics.clear();
-        blitSustainShape.graphics.beginShaderFill(shader);
-        blitSustainShape.graphics.drawRect(0, 0, noteLayerRect.width, noteLayerRect.height);
-        blitSustainShape.graphics.endFill();
-
-        buffer.draw(blitSustainShape, null, null, null, null, antialiasing);
     }
 
-    private function drawSustainBufferToCanvas():Void {
-        if(sustainNoteBuffer == null) {
+    private function drawNoteBuffersToCanvas():Void {
+        if(regularNoteBuffer == null && sustainNoteBuffer == null) {
             return;
         }
 
-        if(sustainCompositeShader == null) {
+        if(regularNoteBuffer != null) {
+            canvas.graphics.overrideBlendMode(null);
+            _helperMatrix.identity();
+            canvas.graphics.beginBitmapFill(regularNoteBuffer, _helperMatrix, false, antialiasing);
+            canvas.graphics.drawRect(0, 0, noteLayerRect.width, noteLayerRect.height);
+            canvas.graphics.endFill();
+        }
+
+        if(sustainNoteBuffer != null) {
             canvas.graphics.overrideBlendMode(null);
             _helperMatrix.identity();
             canvas.graphics.beginBitmapFill(sustainNoteBuffer, _helperMatrix, false, antialiasing);
             canvas.graphics.drawRect(0, 0, noteLayerRect.width, noteLayerRect.height);
             canvas.graphics.endFill();
-            return;
         }
-
-        var shader:Dynamic = sustainCompositeShader;
-        shader.bitmap.input = sustainNoteBuffer;
-        shader.bitmap.filter = antialiasing ? Context3DTextureFilter.LINEAR : Context3DTextureFilter.NEAREST;
-        setShaderBool(shader.hasTransform, false);
-        setShaderBool(shader.hasColorTransform, false);
-
-        canvas.graphics.overrideBlendMode(null);
-        canvas.graphics.beginShaderFill(shader);
-        canvas.graphics.drawRect(0, 0, noteLayerRect.width, noteLayerRect.height);
-        canvas.graphics.endFill();
     }
 
     private inline function setShaderBool(parameter:ShaderParameter<Bool>, value:Bool):Void {
@@ -425,5 +404,19 @@ class CameraNote extends FeshCamera {
         }
 
         parameter.value[0] = value;
+    }
+
+    private function configureExternalNoteShaderSamplers():Void {
+        var shader:Dynamic = sustainCompositeShader;
+        var regularField:Dynamic = Reflect.field(shader.data, "regularBitmap");
+        var sustainField:Dynamic = Reflect.field(shader.data, "sustainBitmap");
+
+        if(regularField != null) {
+            Reflect.setProperty(regularField, "input", regularNoteBuffer);
+        }
+
+        if(sustainField != null) {
+            Reflect.setProperty(sustainField, "input", sustainNoteBuffer);
+        }
     }
 }
