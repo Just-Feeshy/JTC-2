@@ -19,6 +19,7 @@
 			"bpm": 130
 		}
 	],
+	"cutsceneFile": "introcutscene.webm",
 	"generatedBy": "Psych Engine v1.0 - Chart Editor V-Slice Exporter",
 	"version": "2.2.3"
 }

@@ -70,7 +70,8 @@ class VideoState extends HelperStates {
             keytoSkip = FlxKey.toStringMap.get(SaveData.getData(CUSTOM_UI_KEYBINDS)[4][0]).toUpperCase();
         }
 
-        SPACE = new FlxText(20, 20, "Press " + keytoSkip + " to skip", 16);
+        SPACE = new FlxText(20, 20, FlxG.width - 40, "Press " + keytoSkip + " to skip", 16);
+        SPACE.alignment = RIGHT;
         SPACE.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
         SPACE.borderSize = 2;
         add(SPACE);

@@ -270,6 +270,7 @@ class Song
 		var playData:Dynamic = readDynamic(metadata, "playData");
 		var characters:Dynamic = readDynamic(playData, "characters");
 		var stage:String = readString(playData, "stage", "stage");
+		var video:String = resolveVSliceVideo(chartData, metadata, playData);
 
 		if(stage.toLowerCase().trim() == "mainstage")
 			stage = "stage";
@@ -285,7 +286,7 @@ class Song
 			player2: readString(characters, "opponent", "dad"),
 			girlfriend: readString(characters, "girlfriend", "gf"),
 			stage: stage,
-			video: null,
+			video: video,
 			validScore: true,
 			fifthKey: false,
 			modifyFPS: false,
@@ -298,6 +299,32 @@ class Song
 		};
 
 		return finalizeSwagSong(swagShit, chartFolder);
+	}
+
+	static function resolveVSliceVideo(chartData:Dynamic, metadata:Dynamic, playData:Dynamic):Null<String>
+	{
+		var rawVideo:Null<String> = firstNonEmptyString([
+			readNullableString(metadata, "video"),
+			readNullableString(metadata, "cutscene"),
+			readNullableString(metadata, "cutsceneFile"),
+			readNullableString(playData, "video"),
+			readNullableString(playData, "cutscene"),
+			readNullableString(playData, "cutsceneFile"),
+			readNullableString(chartData, "video"),
+			readNullableString(chartData, "cutscene"),
+			readNullableString(chartData, "cutsceneFile")
+		]);
+
+		if(rawVideo == null)
+			return null;
+
+		if(rawVideo.indexOf("/") != -1 || rawVideo.indexOf("\\") != -1)
+			return rawVideo;
+
+		if(rawVideo.toLowerCase().startsWith("videos/"))
+			return Paths.getPreloadPath(rawVideo);
+
+		return Paths.video(rawVideo);
 	}
 
 	static function resolveVSliceDifficulty(noteData:Dynamic, chartFolder:String, chartName:String):String
@@ -614,6 +641,16 @@ class Song
 
 		var text:String = Std.string(value);
 		return text.trim() == "" ? null : text;
+	}
+
+	static function firstNonEmptyString(candidates:Array<Null<String>>):Null<String>
+	{
+		for(candidate in candidates) {
+			if(candidate != null && candidate.trim() != "")
+				return candidate;
+		}
+
+		return null;
 	}
 
 	static function readFloat(payload:Dynamic, field:String, fallback:Float):Float

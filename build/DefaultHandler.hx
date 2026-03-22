@@ -30,6 +30,7 @@ private typedef Modifiers = {
     var blindEffect:Modifier;
     var wobbleNotes:Modifier;
     var cameraMovement:Modifier;
+    var botMode:Modifier;
 }
 
 class DefaultHandler {
@@ -108,7 +109,8 @@ class DefaultHandler {
             safeBalls: {enabled: false},
             blindEffect: {enabled: false},
             wobbleNotes: {enabled: false},
-            cameraMovement: {enabled: false}
+            cameraMovement: {enabled: false},
+            botMode: {enabled: false}
         };
 
         FlxG.stage.addEventListener(Event.ENTER_FRAME, update);

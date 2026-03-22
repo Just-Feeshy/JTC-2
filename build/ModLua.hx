@@ -1261,6 +1261,32 @@ class ModLua {
             }
         });
 
+        Lua_helper.add_callback(lua, "playSoundAt", function(sound:String, startTime:Float = 0, volume:Float = 1, ?tag:String = "") {
+            var targetTime:Float = Math.max(0, startTime);
+            var luaSound:FlxSound = null;
+
+            if(tag != null && tag.trim() != "") {
+                tag = tag.replace('.', '');
+                cancelSound(tag);
+
+                luaSound = FlxG.sound.play(Paths.sound(sound), volume, false, function() {
+                    call('onSoundFinished', [tag]);
+                    cancelSound(tag);
+                });
+                luaSounds.set(tag, luaSound);
+            }else {
+                luaSound = FlxG.sound.play(Paths.sound(sound), volume);
+            }
+
+            if(luaSound != null) {
+                if(luaSound.length > 0) {
+                    targetTime = Math.min(targetTime, Math.max(0, luaSound.length - 1));
+                }
+
+                luaSound.time = targetTime;
+            }
+        });
+
         Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Float) {
             var cam:FlxCamera = getCamera(name);
 

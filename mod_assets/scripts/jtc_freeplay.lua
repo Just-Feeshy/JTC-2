@@ -258,6 +258,13 @@ function startGraffitiReveal(index)
 
     setSpriteAlpha(sprName, 1)
     graffitiRevealTime[index] = 0
+
+    if playSoundAt ~= nil then
+        playSoundAt("spray", 1500, 2, "freeplaySpray")
+    elseif playSound ~= nil then
+        playSound("spray", 2, "freeplaySpray")
+    end
+
     graffitiRevealActive[index] = true
     graffitiFading[index] = false
     graffitiFullRevealTime[index] = 0

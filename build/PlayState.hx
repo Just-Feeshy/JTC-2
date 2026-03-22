@@ -873,6 +873,11 @@ class PlayState extends MusicBeatState
 		DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
 		DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
 		DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
+		DefaultHandler.modifiers.botMode.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BOT_MODE_MOD) #else false #end;
+
+		if(modifierCheckList('bot mode')) {
+			SONG.validScore = false;
+		}
 	}
 
 	function modifierCheckList(mod:String):Bool {
@@ -899,6 +904,8 @@ class PlayState extends MusicBeatState
 				return DefaultHandler.modifiers.wobbleNotes.enabled;
 			case "camera move":
 				return DefaultHandler.modifiers.cameraMovement.enabled;
+			case "bot mode":
+				return DefaultHandler.modifiers.botMode.enabled;
 			default: return false;
 		}
 	}
@@ -2135,7 +2142,7 @@ class PlayState extends MusicBeatState
 				if (detector) {
 					if (daNote.isSustainNote && daNote.wasGoodHit) {
 						removeNote(daNote);
-					}else if(daNote.mustPress) {
+					}else if(daNote.mustPress && !modifierCheckList('bot mode')) {
 						if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
 
 							if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note") {
@@ -2294,6 +2301,10 @@ class PlayState extends MusicBeatState
 	}
 
 	function controllerInput():Void {
+		if(modifierCheckList('bot mode')) {
+			return;
+		}
+
 		var controlPressArray = getGamepadPressArray();
 		var controlReleaseArray = getGamepadReleaseArray();
 		var index:Int = 0;
@@ -2314,7 +2325,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function getReleased(event:Event):Void {
-		if(paused || inCutscene)
+		if(paused || inCutscene || modifierCheckList('bot mode'))
 			return;
 
 		var getEvent:KeyboardEvent = cast event;
@@ -2608,7 +2619,12 @@ class PlayState extends MusicBeatState
 		if(paused || inCutscene)
 			return;
 
-		var controlHoldArray = getControlHoldArray();
+		var botMode:Bool = modifierCheckList('bot mode');
+		var controlHoldArray = botMode ? getBotControlHoldArray() : getControlHoldArray();
+
+		if(botMode) {
+			processBotplayNotes();
+		}
 
 		processInputQueue(controlHoldArray);
 		refreshHeldStrums(controlHoldArray);
@@ -2623,7 +2639,7 @@ class PlayState extends MusicBeatState
 
 	function getPressed(event:Event):Void
 	{
-		if(paused || inCutscene || disableInputs) {
+		if(paused || inCutscene || disableInputs || modifierCheckList('bot mode')) {
 			return;
 		}
 
@@ -2709,6 +2725,31 @@ class PlayState extends MusicBeatState
 		];
 	}
 
+	function getBotControlHoldArray():Array<Bool> {
+		var values:Array<Bool> = [];
+		var index:Int = 0;
+		var songTime:Float = getCurrentInputSongTime();
+
+		while(index < getLaneCount()) {
+			values.push(false);
+			index++;
+		}
+
+		notes.forEachAlive(function(daNote:Note) {
+			if(daNote.mustPress
+				&& daNote.isSustainNote
+				&& !daNote.wasGoodHit
+				&& daNote.noteData >= 0
+				&& daNote.noteData < values.length
+				&& daNote.canHoldHit(songTime)
+				&& songTime >= daNote.getNoteTime()) {
+				values[daNote.noteData] = true;
+			}
+		});
+
+		return values;
+	}
+
 	function getGamepadPressArray():Array<Bool> {
 		var gamepadBinds = getLaneGamepadBinds();
 		var values:Array<Bool> = [];
@@ -2751,6 +2792,27 @@ class PlayState extends MusicBeatState
 		}
 
 		return Conductor.trackPosition;
+	}
+
+	function processBotplayNotes():Void {
+		if(!generatedMusic || disableInputs) {
+			return;
+		}
+
+		var songTime:Float = getCurrentInputSongTime();
+		var lane:Int = 0;
+
+		while(lane < getLaneCount()) {
+			var targetNote:Note = findTapNote(lane, songTime);
+
+			while(targetNote != null && targetNote.shouldAutoHit(songTime)) {
+				playStrumPress(lane);
+				goodNoteHit(targetNote, targetNote.getNoteTime());
+				targetNote = findTapNote(lane, songTime);
+			}
+
+			lane++;
+		}
 	}
 
 	function queueLaneInput(lane:Int, pressed:Bool, songTime:Float):Void {
@@ -2805,6 +2867,10 @@ class PlayState extends MusicBeatState
 					spr.playAnim('static');
 					spr.holdTimer = 0;
 				}
+			}else if(spr.animation.curAnim != null
+				&& spr.animation.curAnim.name == "static"
+				&& !CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+				spr.playAnim('pressed');
 			}
 		});
 	}
@@ -3082,13 +3148,14 @@ class PlayState extends MusicBeatState
 	}
 
 	private function playStrumConfirmHold(strumNote:Strum):Void {
-		if(strumNote.hasAnimation("confirm-hold")) {
+		if(strumNote.ifOpponent && strumNote.hasAnimation("confirm-hold")) {
 			strumNote.playAnim("confirm-hold", true);
-		}else {
+		}else if(strumNote.ifOpponent) {
 			strumNote.playAnim("confirm", true);
+		}else if(strumNote.getAnimName() != "confirm" || strumNote.holdTimer <= 0) {
+			strumNote.playAnim("pressed", true);
+			strumNote.holdTimer = 0;
 		}
-
-		strumNote.holdTimer = 0;
 	}
 
 	function setupHoldCoverSprites():Void {

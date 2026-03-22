@@ -163,8 +163,6 @@ class Strum extends feshixl.FeshSprite {
 			if(holdTimer < 0) {
 				if(ifOpponent || !keyHeld) {
 					playAnim('static');
-				}else if(hasAnimation('confirm-hold') && getAnimName() == 'confirm') {
-					playAnim('confirm-hold');
 				}else {
 					playAnim('pressed');
 				}

@@ -610,8 +610,27 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new GhostTapping(0, ((imNotSure + 8) * 10), "Play As Opponent", SaveType.PLAY_AS_OPPONENT, function(option:Options, pressed:Bool) {
+							new Options(0, ((imNotSure + 8) * 10), "Bot Mode", SaveType.BOT_MODE_MOD, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure + 8;
+
+								if(pressed)
+									FlxG.save.data.botMode = !FlxG.save.data.botMode;
+
+								option.description = "Auto-play player notes, like Funkin's botplay.";
+
+								if(!SaveData.getData(SaveType.BOT_MODE_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
+
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new GhostTapping(0, ((imNotSure + 9) * 10), "Play As Opponent", SaveType.PLAY_AS_OPPONENT, function(option:Options, pressed:Bool) {
+								option.ID = imNotSure + 9;
 
 								if(pressed)
 									FlxG.save.data.playAsOpponent = !FlxG.save.data.playAsOpponent;

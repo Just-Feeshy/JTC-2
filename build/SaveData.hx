@@ -18,6 +18,7 @@ enum SaveType {
     FADE_BATTLE_MOD;
     NO_BLUE_BALLS_MOD;
     CAMERA_MOVEMENT_MOD;
+    BOT_MODE_MOD;
     BLIND_MOD;
     X_WOBBLE_MOD;
     SHOW_BOTTOM_BAR;
@@ -71,6 +72,7 @@ class SaveData {
         FlxG.save.data.safeballs = getData(SaveType.NO_BLUE_BALLS_MOD);
         FlxG.save.data.blind = getData(SaveType.BLIND_MOD);
         FlxG.save.data.xWobble = getData(SaveType.X_WOBBLE_MOD);
+        FlxG.save.data.botMode = getData(SaveType.BOT_MODE_MOD);
         FlxG.save.data.preload = getData(SaveType.CACHE_ASSETS);
         FlxG.save.data.customKeys = getData(SaveType.CUSTOM_KEYBINDS);
         FlxG.save.data.customUIKeys = getData(SaveType.CUSTOM_UI_KEYBINDS);
@@ -237,6 +239,11 @@ class SaveData {
                     FlxG.save.data.camMove = false;
 
                 return FlxG.save.data.camMove;
+            case BOT_MODE_MOD:
+                if(FlxG.save.data.botMode == null)
+                    FlxG.save.data.botMode = false;
+
+                return FlxG.save.data.botMode;
             case GHOST_TAPPING:
                 if(FlxG.save.data.ghostTapping == null)
                     FlxG.save.data.ghostTapping = false;
