@@ -50,6 +50,16 @@ class MenuBackground extends FlxSpriteGroup {
                 prevSelected = totalWeeks - 1;
         }
 
+        if(selected == prevSelected || change == 0) {
+            cleanTween();
+
+            for(i in 0...totalWeeks) {
+                this.members[i].alpha = this.members[i].ID == selected ? 1 : 0;
+            }
+
+            return;
+        }
+
         for(i in 0...totalWeeks) {
             if(change >= 1) {
                 if(this.members[i].ID != prevSelected && this.members[i].ID != selected)
