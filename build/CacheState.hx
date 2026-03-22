@@ -153,9 +153,10 @@ class CacheState extends HelperStates {
         }
 
         var songCacheDirectory:String = getSongCacheDirectory();
+        var hasSongCache:Bool = songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""));
 
         if(PlayState.SONG.video != null && !exception) {
-            if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""))) {
+            if(hasSongCache) {
                 FlxG.switchState(new VideoState(new CacheState(new PlayState(), true), PlayState.SONG.video));
             }else {
                 FlxG.switchState(new VideoState(new PlayState(), PlayState.SONG.video));
@@ -164,7 +165,7 @@ class CacheState extends HelperStates {
             return;
         }
 
-        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")) && !exception) {
+        if(hasSongCache && !exception) {
             FlxG.switchState(new CacheState(new PlayState(), true));
         }else {
             FlxG.switchState(new PlayState());
@@ -180,8 +181,9 @@ class CacheState extends HelperStates {
         }
 
         var songCacheDirectory:String = getSongCacheDirectory();
+        var hasSongCache:Bool = songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""));
 
-        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")) && !exception) {
+        if(hasSongCache && !exception) {
             FlxG.switchState(new CacheState(new PlayState(), true));
         }else {
             FlxG.switchState(new PlayState());

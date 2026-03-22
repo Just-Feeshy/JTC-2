@@ -11,8 +11,24 @@ local graffitiBitmapWidths = {}
 local graffitiBitmapHeights = {}
 local graffitiCanName = "graffiti_can"
 local activeGraffitiIndex = nil
+local TOP_SECTION_CARET = "freeplay_section_caret_top"
+local BOTTOM_SECTION_CARET = "freeplay_section_caret_bottom"
+local TOP_SECTION_CARET_OUT_TWEEN = "freeplaySectionCaretTopOut"
+local BOTTOM_SECTION_CARET_OUT_TWEEN = "freeplaySectionCaretBottomOut"
+local TOP_SECTION_CARET_BACK_TWEEN = "freeplaySectionCaretTopBack"
+local BOTTOM_SECTION_CARET_BACK_TWEEN = "freeplaySectionCaretBottomBack"
+local SECTION_CARET_TEXT = "^"
+local SECTION_CARET_SIZE = 116
+local SECTION_CARET_TOP_Y = 8
+local SECTION_CARET_BOTTOM_MARGIN = 142
+local SECTION_CARET_BUMP = 18
+local SECTION_CARET_COLOR = "0xFFFFFFFF"
+local SECTION_CARET_BORDER_COLOR = "0xFF000000"
+local SECTION_CARET_BORDER_SIZE = 4
 
 local songCount = 0
+local topSectionCaretBaseY = SECTION_CARET_TOP_Y
+local bottomSectionCaretBaseY = 0
 
 local BASE_SPRAY_CURVE_MIN = -5
 local BASE_SPRAY_CURVE_MAX = math.exp(math.pi)
@@ -73,7 +89,84 @@ function onCreate()
     end
 
     createFreeplaySector()
+    createSectionCarets()
     setupGraffiti()
+end
+
+function createSectionCarets()
+    if createText == nil then
+        return
+    end
+
+    bottomSectionCaretBaseY = windowHeight - SECTION_CARET_BOTTOM_MARGIN
+
+    createText(TOP_SECTION_CARET, 0, topSectionCaretBaseY, 0, SECTION_CARET_TEXT, SECTION_CARET_SIZE)
+    setTextFont(TOP_SECTION_CARET, "PhantomMuff.ttf")
+    setTextSize(TOP_SECTION_CARET, SECTION_CARET_SIZE)
+    setText(TOP_SECTION_CARET, SECTION_CARET_TEXT)
+    if setTextColor ~= nil then
+        setTextColor(TOP_SECTION_CARET, SECTION_CARET_COLOR)
+    else
+        setSpriteColor(TOP_SECTION_CARET, SECTION_CARET_COLOR)
+    end
+    if setTextBorder ~= nil then
+        setTextBorder(TOP_SECTION_CARET, "outline", SECTION_CARET_BORDER_SIZE, SECTION_CARET_BORDER_COLOR)
+    end
+    setSpriteToCamera(TOP_SECTION_CARET, "cameraFreeplay")
+    addSpriteToState(TOP_SECTION_CARET)
+    centerSectionCaret(TOP_SECTION_CARET, topSectionCaretBaseY)
+
+    createText(BOTTOM_SECTION_CARET, 0, bottomSectionCaretBaseY, 0, SECTION_CARET_TEXT, SECTION_CARET_SIZE)
+    setTextFont(BOTTOM_SECTION_CARET, "PhantomMuff.ttf")
+    setTextSize(BOTTOM_SECTION_CARET, SECTION_CARET_SIZE)
+    setText(BOTTOM_SECTION_CARET, SECTION_CARET_TEXT)
+    if setTextColor ~= nil then
+        setTextColor(BOTTOM_SECTION_CARET, SECTION_CARET_COLOR)
+    else
+        setSpriteColor(BOTTOM_SECTION_CARET, SECTION_CARET_COLOR)
+    end
+    if setTextBorder ~= nil then
+        setTextBorder(BOTTOM_SECTION_CARET, "outline", SECTION_CARET_BORDER_SIZE, SECTION_CARET_BORDER_COLOR)
+    end
+    setSpriteToCamera(BOTTOM_SECTION_CARET, "cameraFreeplay")
+    addSpriteToState(BOTTOM_SECTION_CARET)
+    setSpriteAngle(BOTTOM_SECTION_CARET, 180)
+    centerSectionCaret(BOTTOM_SECTION_CARET, bottomSectionCaretBaseY)
+end
+
+function centerSectionCaret(name, y)
+    local width = getSpriteWidth(name)
+    local x = (windowWidth - width) * 0.5
+    setSpritePosition(name, x, y)
+end
+
+function bumpSectionCarets(change)
+    if change == nil or change == 0 then
+        return
+    end
+
+    if change < 0 then
+        nudgeSectionCaret(TOP_SECTION_CARET, topSectionCaretBaseY, -SECTION_CARET_BUMP, TOP_SECTION_CARET_OUT_TWEEN)
+    elseif change > 0 then
+        nudgeSectionCaret(BOTTOM_SECTION_CARET, bottomSectionCaretBaseY, SECTION_CARET_BUMP, BOTTOM_SECTION_CARET_OUT_TWEEN)
+    end
+end
+
+function nudgeSectionCaret(name, baseY, offset, tweenName)
+    if not spriteExist(name) then
+        return
+    end
+
+    cancelTween(tweenName)
+
+    if tweenName == TOP_SECTION_CARET_OUT_TWEEN then
+        cancelTween(TOP_SECTION_CARET_BACK_TWEEN)
+    else
+        cancelTween(BOTTOM_SECTION_CARET_BACK_TWEEN)
+    end
+
+    setSpriteY(name, baseY)
+    doTweenY(tweenName, name, baseY + offset, 0.07, "quadOut")
 end
 
 function createFreeplaySector()
@@ -176,6 +269,8 @@ function onFreeplaySelectionChange(index, change)
         return
     end
 
+    bumpSectionCarets(change)
+
     resetSprayCan()
 
     if not graffitiHas[index] then
@@ -208,6 +303,10 @@ function onTweenCompleted(tag)
             graffitiRevealed[index] = true
             setSpriteAlpha(graffitiSprites[index], 1)
         end
+    elseif tag == TOP_SECTION_CARET_OUT_TWEEN then
+        doTweenY(TOP_SECTION_CARET_BACK_TWEEN, TOP_SECTION_CARET, topSectionCaretBaseY, 0.14, "backOut")
+    elseif tag == BOTTOM_SECTION_CARET_OUT_TWEEN then
+        doTweenY(BOTTOM_SECTION_CARET_BACK_TWEEN, BOTTOM_SECTION_CARET, bottomSectionCaretBaseY, 0.14, "backOut")
     end
 end
 
@@ -567,4 +666,6 @@ end
 function destroyStuff()
     destroySprite(FREEPLAY_SECTOR_NAME)
     destroySprite(graffitiCanName)
+    destroySprite(TOP_SECTION_CARET)
+    destroySprite(BOTTOM_SECTION_CARET)
 end

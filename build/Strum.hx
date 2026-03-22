@@ -18,6 +18,8 @@ class Strum extends feshixl.FeshSprite {
 	public var directionAngle:Float = 0; //This is in radians.
 	public var holdTimer:Float = 0;
 	public var keyHeld:Bool = false;
+	public var sustainHeld:Bool = false;
+	public var confirmHoldUsesConfirmFallback:Bool = false;
 
 	public var prevVisible:Bool = true;
 	public var onlyVisible:Bool = true;
@@ -72,17 +74,23 @@ class Strum extends feshixl.FeshSprite {
 		return false;
 	}
 
-	private function addAnimationWithFallback(name:String, prefixes:Array<Null<String>>, frameRate:Int = 24, loop:Bool = false):Void {
+	private function addAnimationWithFallback(name:String, prefixes:Array<Null<String>>, frameRate:Int = 24, loop:Bool = false):Null<String> {
 		for(prefix in prefixes) {
 			if(atlasHasPrefix(prefix)) {
 				animation.addByPrefix(name, prefix, frameRate, loop);
-				return;
+				return prefix;
 			}
 		}
+
+		return null;
 	}
 
 	public function hasAnimation(animName:String):Bool {
 		return animation != null && animation.getByName(animName) != null;
+	}
+
+	public function hasDedicatedConfirmHold():Bool {
+		return hasAnimation("confirm-hold") && !confirmHoldUsesConfirmFallback;
 	}
 
 	public function isConfirmAnimation():Bool {
@@ -104,12 +112,18 @@ class Strum extends feshixl.FeshSprite {
 			direction + ' confirm0',
 			direction + ' confirm'
 		], 24, false);
-		addAnimationWithFallback('confirm-hold', [
+		var confirmPrefix:Null<String> = getModernPrefix('confirm');
+		var legacyConfirmZero:String = direction + ' confirm0';
+		var legacyConfirm:String = direction + ' confirm';
+		var confirmHoldPrefix:Null<String> = addAnimationWithFallback('confirm-hold', [
 			getModernPrefix('confirmHold'),
-			getModernPrefix('confirm'),
-			direction + ' confirm0',
-			direction + ' confirm'
+			confirmPrefix,
+			legacyConfirmZero,
+			legacyConfirm
 		], 24, false);
+		confirmHoldUsesConfirmFallback = confirmHoldPrefix == confirmPrefix
+			|| confirmHoldPrefix == legacyConfirmZero
+			|| confirmHoldPrefix == legacyConfirm;
 
 		updateHitbox();
 	}
@@ -161,12 +175,7 @@ class Strum extends feshixl.FeshSprite {
 			holdTimer -= elapsed;
 
 			if(holdTimer < 0) {
-				if(ifOpponent || !keyHeld) {
-					playAnim('static');
-				}else {
-					playAnim('pressed');
-				}
-
+				playAnim('static');
 				holdTimer = 0;
 			}
 		}

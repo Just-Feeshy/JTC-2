@@ -182,7 +182,7 @@ class Paths
 			library = "";
 		}
 
-		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key);
+		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key, library);
 
 		if(OpenFlAssets.exists(file('images/' + cacheFile + key + '.txt', library))) {
 			return FlxAtlasFrames.fromSpriteSheetPacker(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.txt', library));
@@ -274,7 +274,7 @@ class Paths
 			library = "";
 		}
 
-		var cachedImage:FlxGraphic = ifImageCached(key, "");
+		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key, library);
 
 		if(OpenFlAssets.exists(file('images/' + cacheFile + key + '.xml', library))) {
 			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
@@ -289,7 +289,7 @@ class Paths
 	}
 
 	static public function image(key:String, ?library:String):FlxGraphic {
-		var cachedImage:FlxGraphic = ifImageCached(key);
+		var cachedImage:FlxGraphic = ifImageCached(key, library);
 
 		if(cachedImage != null) {
 			return cachedImage;

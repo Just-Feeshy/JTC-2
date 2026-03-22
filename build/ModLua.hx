@@ -16,6 +16,7 @@ import flixel.util.FlxGradient;
 import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.text.FlxText;
+import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.system.FlxSound;
 import flixel.graphics.frames.FlxFramesCollection;
 import feshixl.shaders.FeshShader;
@@ -293,6 +294,18 @@ class ModLua {
             sprite.active = true;
 
             luaSprites.set(name, sprite);
+        });
+
+        Lua_helper.add_callback(lua, "createText", function(name:String, x:Float = 0, y:Float = 0, width:Float = 0, text:String = "", size:Int = 16) {
+            if(luaTexts.exists(name)) {
+                return;
+            }
+
+            var luaText:FlxText = new FlxText(x, y, width, text, size);
+            luaText.antialiasing = SaveData.getData(SaveType.GRAPHICS);
+            luaText.active = true;
+
+            luaTexts.set(name, luaText);
         });
 
         Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
@@ -972,6 +985,39 @@ class ModLua {
             }
 
             txt.size = size;
+        });
+
+        Lua_helper.add_callback(lua, "setTextColor", function(name:String, colorStr:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            txt.color = parseLuaColor(colorStr);
+        });
+
+        Lua_helper.add_callback(lua, "setTextBorder", function(name:String, style:String = "NONE", size:Float = 1, colorStr:String = "0xFF000000") {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            var borderStyle:FlxTextBorderStyle = switch(style.toLowerCase().trim()) {
+                case "shadow":
+                    FlxTextBorderStyle.SHADOW;
+                case "outline_fast":
+                    FlxTextBorderStyle.OUTLINE_FAST;
+                case "outline":
+                    FlxTextBorderStyle.OUTLINE;
+                default:
+                    FlxTextBorderStyle.NONE;
+            }
+
+            txt.borderStyle = borderStyle;
+            txt.borderSize = size;
+            txt.borderColor = parseLuaColor(colorStr);
         });
 
         Lua_helper.add_callback(lua, "removeSpriteFromState", function(name:String) {

@@ -2857,23 +2857,86 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	function getActiveSustainHoldArray(controlHoldArray:Array<Bool>):Array<Bool> {
+		var values:Array<Bool> = [];
+		var index:Int = 0;
+		var songTime:Float = getCurrentInputSongTime();
+
+		while(index < getLaneCount()) {
+			values.push(false);
+			index++;
+		}
+
+		notes.forEachAlive(function(daNote:Note) {
+			var lane:Int = daNote.noteData;
+			var chainActive:Bool = false;
+
+			if(daNote.mustPress
+				&& daNote.isSustainNote
+				&& lane >= 0
+				&& lane < values.length
+				&& controlHoldArray[lane]) {
+				if(daNote.wasGoodHit || daNote.shouldBeDead) {
+					chainActive = true;
+				}else if(daNote.canHoldHit(songTime)) {
+					chainActive = true;
+				}else if(songTime < daNote.getNoteTime()
+					&& daNote.prevNote != null
+					&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)) {
+					chainActive = true;
+				}
+			}
+
+			if(chainActive) {
+				values[lane] = true;
+			}
+		});
+
+		return values;
+	}
+
 	function refreshHeldStrums(controlHoldArray:Array<Bool>):Void {
+		var sustainHoldArray:Array<Bool> = getActiveSustainHoldArray(controlHoldArray);
+
 		currentStrums.forEachAlive(function(spr:Strum) {
 			if(!controlHoldArray[spr.ID]) {
 				spr.keyHeld = false;
+				spr.sustainHeld = false;
 
 				if(spr.animation.curAnim != null
 					&& (spr.animation.curAnim.name == "pressed" || spr.animation.curAnim.name == "confirm-hold")) {
 					spr.playAnim('static');
 					spr.holdTimer = 0;
 				}
-			}else if(spr.animation.curAnim != null
-				&& spr.animation.curAnim.name == "static"
-				&& !CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
-				spr.playAnim('pressed');
-			}
-		});
-	}
+				}else {
+					spr.sustainHeld = sustainHoldArray[spr.ID];
+
+					if(spr.animation.curAnim != null) {
+						if(spr.sustainHeld) {
+							if((spr.animation.curAnim.name == "static" || spr.animation.curAnim.name == "pressed")
+								&& !CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)
+								&& spr.hasDedicatedConfirmHold()) {
+								spr.playAnim("confirm-hold");
+							}else if(spr.animation.curAnim.name == "confirm"
+								&& spr.animation.curAnim.finished
+								&& spr.hasDedicatedConfirmHold()) {
+								if(spr.hasDedicatedConfirmHold()) {
+									spr.playAnim("confirm-hold");
+								}
+							}
+						}else {
+							if(spr.animation.curAnim.name == "static"
+								&& !CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
+								spr.playAnim("pressed");
+							}else if(spr.animation.curAnim.name == "confirm-hold"
+								|| (spr.animation.curAnim.name == "confirm" && spr.holdTimer <= 0 && spr.animation.curAnim.finished)) {
+								spr.playAnim("pressed");
+							}
+						}
+					}
+				}
+			});
+		}
 
 	function processHeldNotes(controlHoldArray:Array<Bool>):Void {
 		notes.forEachAlive(function(daNote:Note) {
@@ -2912,6 +2975,7 @@ class PlayState extends MusicBeatState
 		}
 
 		spr.keyHeld = false;
+		spr.sustainHeld = false;
 		spr.holdTimer = 0;
 		spr.playAnim('static');
 		endHoldCoverForLane(lane, true);
@@ -3109,14 +3173,22 @@ class PlayState extends MusicBeatState
 				}
 			    if(note.hasCustomAddon.whenNoteIsHit(spr)) {
 					if(note.isSustainNote && spr.keyHeld) {
-						playStrumConfirmHold(spr);
+						if(spr.hasDedicatedConfirmHold()) {
+							playStrumConfirmHold(spr);
+						}else {
+							playStrumConfirm(spr);
+						}
 					}else {
 						playStrumConfirm(spr);
 					}
 			    }
 			}else {
 				if(note.isSustainNote && spr.keyHeld) {
-					playStrumConfirmHold(spr);
+					if(spr.hasDedicatedConfirmHold()) {
+						playStrumConfirmHold(spr);
+					}else {
+						playStrumConfirm(spr);
+					}
 				}else {
 					playStrumConfirm(spr);
 				}
@@ -3148,13 +3220,21 @@ class PlayState extends MusicBeatState
 	}
 
 	private function playStrumConfirmHold(strumNote:Strum):Void {
-		if(strumNote.ifOpponent && strumNote.hasAnimation("confirm-hold")) {
-			strumNote.playAnim("confirm-hold", true);
-		}else if(strumNote.ifOpponent) {
-			strumNote.playAnim("confirm", true);
-		}else if(strumNote.getAnimName() != "confirm" || strumNote.holdTimer <= 0) {
-			strumNote.playAnim("pressed", true);
-			strumNote.holdTimer = 0;
+		if(strumNote.hasDedicatedConfirmHold()) {
+			if(strumNote.getAnimName() == "confirm-hold") {
+				return;
+			}
+
+			if(strumNote.getAnimName() == "confirm") {
+				if(strumNote.animation.curAnim != null && strumNote.animation.curAnim.finished) {
+					strumNote.playAnim("confirm-hold", true);
+				}
+			}else {
+				strumNote.playAnim("confirm", true);
+				strumNote.holdTimer = 0;
+			}
+		}else {
+			playStrumConfirm(strumNote);
 		}
 	}
 

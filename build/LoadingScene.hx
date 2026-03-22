@@ -10,7 +10,14 @@ import flixel.ui.FlxBar;
 
 using StringTools;
 
+#if sys
+import sys.FileSystem;
+import sys.thread.Thread;
+#end
+
 class LoadingScene extends FlxSpriteGroup {
+    public static var bootSongCachesReady(default, null):Bool = false;
+
     public var callback:Void->Void;
     public var cacheValue(default, null):Float = 0;
 
@@ -21,16 +28,6 @@ class LoadingScene extends FlxSpriteGroup {
 
     var prevCacheValue:Float = 0;
     var colorSway:Float = 0;
-
-    inline function shouldCacheDuringBoot(path:String):Bool {
-        var loweredPath:String = path.toLowerCase();
-
-        return !(loweredPath.endsWith("." + Paths.SOUND_EXT)
-            || loweredPath.endsWith(".mp3")
-            || loweredPath.endsWith(".wav")
-            || loweredPath.endsWith(".ogg")
-            || loweredPath.startsWith("songs:"));
-    }
 
     public function new() {
         super();
@@ -81,9 +78,84 @@ class LoadingScene extends FlxSpriteGroup {
     * Default Loader
     */
     #if sys
+    static function collectBootSongDirectories():Array<String> {
+        var result:Array<String> = [];
+
+        inline function addSongDirectory(path:String):Void {
+            if(path == null || path.trim() == "") {
+                return;
+            }
+
+            if(FileSystem.exists(path) && FileSystem.isDirectory(path)) {
+                for(entry in FileSystem.readDirectory(path)) {
+                    var songPath:String = path + "/" + entry;
+
+                    if(FileSystem.exists(songPath) && FileSystem.isDirectory(songPath) && !result.contains(entry)) {
+                        result.push(entry);
+                    }
+                }
+            }
+        }
+
+        if(Paths.modJSON != null && Paths.modJSON.cache_configuration != null) {
+            for(path in Paths.modJSON.cache_configuration) {
+                if(path != null && path.toLowerCase().indexOf("/songs") != -1) {
+                    addSongDirectory(path);
+                }
+            }
+        }
+
+        if(result.length == 0) {
+            addSongDirectory("mod_assets/songs");
+        }
+
+        return result;
+    }
+
+    static function collectBootSongAudioEntries(songDirectories:Array<String>):Array<Array<String>> {
+        var result:Array<Array<String>> = [];
+        var soundFiles:Array<String> = ["Inst", "Voices", "1_Voices", "2_Voices"];
+
+        for(songDirectory in songDirectories) {
+            for(soundFile in soundFiles) {
+                if(Paths.songSoundExists(songDirectory, soundFile)) {
+                    result.push([songDirectory, soundFile]);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    static function cacheSongAudio(song:String, soundFile:String):Void {
+        if(Paths.songSoundExists(song, soundFile)) {
+            Paths.songSound(song, soundFile);
+        }
+    }
+
     public function cacheNecessaries():Void {
-        // Boot no longer preloads arbitrary assets. Song-specific cache.json files handle gameplay caching.
-        cacheValue = 1;
+        bootSongCachesReady = false;
+
+        Thread.create(() -> {
+            var songAudioEntries:Array<Array<String>> = collectBootSongAudioEntries(collectBootSongDirectories());
+            var totalEntries:Int = songAudioEntries.length;
+            var cachedEntries:Int = 0;
+
+            if(totalEntries <= 0) {
+                bootSongCachesReady = true;
+                setCacheValue(1);
+                return;
+            }
+
+            for(songAudio in songAudioEntries) {
+                cacheSongAudio(songAudio[0], songAudio[1]);
+                cachedEntries++;
+                setCacheValue(cachedEntries / totalEntries);
+            }
+
+            bootSongCachesReady = true;
+            setCacheValue(1);
+        });
     }
     #end
 
