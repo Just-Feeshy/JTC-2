@@ -284,6 +284,8 @@ class DialogueCreatorState extends MusicBeatState {
             displayText.sounds = [FeshBytesHandler.loadSoundFromByteArray(ByteArray.fromBytes(_info.totalSounds[_info.info[dialogueScene].soundIndex]))];
             displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
             displayText.size = _info.info[dialogueScene].textSize;
+            displayText.font = _info.info[dialogueScene].font;
+            displayText.color = _info.info[dialogueScene].textColor;
 
             if(text.trim() != "") {
                 displayText.resetText(text);
@@ -292,10 +294,9 @@ class DialogueCreatorState extends MusicBeatState {
         }else {
             displayText = new DialogueText(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10, Std.int(FlxG.width * 0.8), "", _info.info[dialogueScene].textSize);
             add(displayText);
+            displayText.font = _info.info[dialogueScene].font;
+            displayText.color = _info.info[dialogueScene].textColor;
         }
-
-        displayText.font = _info.info[dialogueScene].font;
-        displayText.color = _info.info[dialogueScene].textColor;
     }
 
     function refreshDisplaySound():Void {

@@ -212,14 +212,13 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         displayText.sounds = [soundBinds[_info.info[dialogueScene].soundIndex]];
         displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
         displayText.size = _info.info[dialogueScene].textSize;
+        displayText.font = _info.info[dialogueScene].font;
+        displayText.color = _info.info[dialogueScene].textColor;
 
         if(text.trim() != "") {
             displayText.resetText(text);
             displayText.start(0.04 / _info.info[dialogueScene].speed, true);
         }
-
-        displayText.font = _info.info[dialogueScene].font;
-        displayText.color = _info.info[dialogueScene].textColor;
     }
 
     function refreshShadowText() {
