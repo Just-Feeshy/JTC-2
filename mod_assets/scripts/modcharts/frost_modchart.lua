@@ -97,13 +97,7 @@ function frost_modchart.sectionOne(elapsed)
     if not wheelIsHere then
         for i = 0, 7 do
             setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
-
-            local Xdistance = allStrumsX[i + 1] - defaultNoteMovement(i, a)
-            local Ydistance = (windowHeight * 0.5) - allStrumsY[i + 1]
-
-            local angle = getOppositeAngle(math.atan(Ydistance / Xdistance))
-
-            setNoteDirection(i, (math.pi * 0.5) - angle)
+            setNoteDirection(i, 0)
         end
 
         a = a + (elapsed * 0.5) * (curBpm / 120)
@@ -332,14 +326,6 @@ function bounceNormal(strength, direction)
             bounceWheel[i + 1] = 0
         end
     end
-end
-
-function getOppositeAngle(angle)
-    if math.floor(angle) <= -1 then
-        return math.pi + angle
-    end
-
-    return angle
 end
 
 function defaultNoteMovement(i, var)

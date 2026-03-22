@@ -1,6 +1,7 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxCamera;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -18,6 +19,7 @@ import flixel.text.FlxText;
 import feshixl.math.FeshMath;
 import feshixl.FeshSprite;
 import feshixl.FeshCamera;
+import feshixl.shaders.FeshShader;
 
 import template.CustomNote;
 import SaveData.SaveType;
@@ -70,6 +72,8 @@ class Note extends FeshSprite {
 	public var noteAbstract:String = "regular";
 
 	public var trail:FlxTypedGroup<FlxSprite>;
+	public var sustainCurveShader:FeshShader;
+	public var useSustainCurveShader:Bool = false;
 
 	public var hasCustomAddon:ICustomNote;
 
@@ -374,6 +378,36 @@ class Note extends FeshSprite {
 		}
 	}
 
+	override function drawSimple(camera:FlxCamera):Void
+	{
+		var noteCamera:CameraNote = Std.isOfType(camera, CameraNote) ? cast camera : null;
+
+		if(noteCamera != null && noteCamera.isNotePassActive()) {
+			noteCamera.beginNoteSpriteDraw(isSustainNote);
+		}
+
+		super.drawSimple(camera);
+
+		if(noteCamera != null && noteCamera.isNotePassActive()) {
+			noteCamera.endNoteSpriteDraw();
+		}
+	}
+
+	override function drawComplex(camera:FlxCamera):Void
+	{
+		var noteCamera:CameraNote = Std.isOfType(camera, CameraNote) ? cast camera : null;
+
+		if(noteCamera != null && noteCamera.isNotePassActive()) {
+			noteCamera.beginNoteSpriteDraw(isSustainNote);
+		}
+
+		super.drawComplex(camera);
+
+		if(noteCamera != null && noteCamera.isNotePassActive()) {
+			noteCamera.endNoteSpriteDraw();
+		}
+	}
+
 	public function refresh(fifth:Bool, ?findSus:Bool):Void {
 		if(!findSus) {
 			if(fifth && !isSustainNote) {
@@ -520,19 +554,36 @@ class Note extends FeshSprite {
 	}
 
 	public function setNoteAngle(value:Float, value2:Float):Void {
+		var sustainAngle:Float = useSustainCurveShader ? value : value2;
+
 		if(hasCustomAddon != null) {
 			if(!isSustainNote) {
 				angle = hasCustomAddon.setNoteAngle(this, value);
 			}else {
-				angle = hasCustomAddon.setNoteAngle(this, value2);
+				angle = hasCustomAddon.setNoteAngle(this, sustainAngle);
 			}
 		} else {
 			if(!isSustainNote) {
 				angle = value;
 			}else {
-				angle = value2;
+				angle = sustainAngle;
 			}
 		}
+	}
+
+	public function applySustainCurveShader(curveShader:FeshShader):Void {
+		sustainCurveShader = curveShader;
+		useSustainCurveShader = curveShader != null;
+		shader = cast curveShader;
+	}
+
+	public function clearSustainCurveShader():Void {
+		if(sustainCurveShader != null && shader == cast sustainCurveShader) {
+			shader = null;
+		}
+
+		sustainCurveShader = null;
+		useSustainCurveShader = false;
 	}
 
 	public function getNoteY():Float {
@@ -789,6 +840,7 @@ class Note extends FeshSprite {
 	}
 
 	override function destroy():Void {
+		clearSustainCurveShader();
 		super.destroy();
 
 		hasCustomAddon = null;

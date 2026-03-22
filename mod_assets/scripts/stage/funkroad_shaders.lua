@@ -2,19 +2,16 @@ local funkroad_shaders = {}
 
 local SHADER_NAME = "funkroad_shader"
 local SHADER_TAG = "funkroad_runtime"
+local NOTE_SHADER_NAME = "funkroad_note_curve"
+local NOTE_SHADER_TAG = "funkroad_note_curve_runtime"
+local SUSTAIN_CURVE_KEY = "funkroadSustainCurveStrength"
 
 function funkroad_shaders.init()
-    if initLuaShaderSource == nil then
-        return false
+    if initLuaShader ~= nil then
+        initLuaShader(SHADER_NAME, "feeshdata")
     end
 
-    return initLuaShaderSource(SHADER_NAME, [[
-        #pragma header
-
-        void main() {
-            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        }
-    ]], "")
+    return true
 end
 
 function funkroad_shaders.applyToGameCamera()
@@ -49,6 +46,27 @@ function funkroad_shaders.removeFromWholeGame()
     end
 
     return removeGameShader(SHADER_TAG)
+end
+
+function funkroad_shaders.applyToSustainCamera()
+    return true
+end
+
+function funkroad_shaders.removeFromSustainCamera()
+    return true
+end
+
+function funkroad_shaders.setNoteCurve(strength, originY, laneCentersA, laneCentersB, laneCentersC, laneCount, padding)
+    return funkroad_shaders.setSustainCurve(strength)
+end
+
+function funkroad_shaders.setSustainCurve(strength)
+    if setGlobalVar == nil then
+        return false
+    end
+
+    setGlobalVar(SUSTAIN_CURVE_KEY, strength or 0)
+    return true
 end
 
 return funkroad_shaders

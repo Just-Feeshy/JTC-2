@@ -2,12 +2,10 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
-import feshixl.math.FeshMath;
 import lime.utils.Assets;
 import haxe.Json;
 
@@ -23,29 +21,6 @@ class CheesyStage extends StorageStage {
 		0xffe9ff48 //Joul The Cool
 	];
 
-	final spinSteps:Array<UInt> = [
-		279,
-		303,
-		312,
-		336,
-		344,
-		368,
-		376,
-		401,
-		409,
-		435,
-		443,
-		467,
-		475,
-		501,
-		509,
-		533,
-		542,
-		567,
-		575,
-		602
-	];
-
 	final flyingOffset:Map<String, Array<Float>> = [
 		"idle" => [0, 0],
 		"singDOWN" => [21, -11],
@@ -59,7 +34,6 @@ class CheesyStage extends StorageStage {
 		"singLEFTmiss" => [-27, -15]
 	];
 
-	var spinIndex:UInt = 0;
 	var tweenIndex:UInt = 0;
 
 	var allTweens:Array<FlxTween>;
@@ -69,11 +43,6 @@ class CheesyStage extends StorageStage {
 
 	var dadShouldDance:Bool = true;
 	var phase2_switch:Bool = false;
-
-	/*
-	* Variables for lazy modcharts.
-	*/
-	var strumSpinning:Bool = false;
 
 	var curStep:Float = 0;
 	var curBeat:Float = 0;
@@ -105,8 +74,6 @@ class CheesyStage extends StorageStage {
 
 				add(stageCurtains);
 			case "funkroad":
-				strumSpinning = true;
-
 				setDefaultCameraZoom(0.50);
 
 				var funkroadSky:FlxSprite = new FlxSprite(-900, -500).loadGraphic(Paths.image('funkroadSky'));
@@ -194,14 +161,6 @@ class CheesyStage extends StorageStage {
 	function updateBeat():Void {
 		curBeat = curStep * 0.25;
 		playstate.setLua("curBeatFloat", curBeat);
-	}
-
-	function getLastStepIndex(index:UInt):Float {
-		if(spinIndex - index >= 0) {
-			return spinSteps[spinIndex - index];
-		}
-
-		return 0;
 	}
 
 	function addAnimation(anim:String, prefix:String):Void {
@@ -318,44 +277,6 @@ class CheesyStage extends StorageStage {
 		if(boyfriend.animation.curAnim != null) {
 			if(!boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned) {
 				boyfriend.dance();
-			}
-		}
-
-		if(strumSpinning) {
-			for(strum in playstate.strumLineNotes) {
-				strum.yAngle = FlxMath.lerp(0, strum.yAngle, 0.95);
-			}
-		}
-
-		if(spinSteps[spinSteps.length - 1] < curStep && strumSpinning) {
-			for(i in 0...playstate.strumLineNotes.length) {
-				playstate.strumLineNotes.members[i].yAngle = 0;
-			}
-
-			strumSpinning = false;
-		}
-
-		if(strumSpinning) {
-			if(getLastStepIndex(0) <= curStep) {
-				spinIndex++;
-			}
-
-			for(i in 0...Std.int(playstate.strumLineNotes.length * 0.5)) {
-				var playerStrum:Strum = PlayState.playerStrums.members[i];
-				var opponentStrum:Strum = PlayState.opponentStrums.members[i];
-
-				if(spinSteps[0] <= curStep) {
-					var speed:Float = 1;
-
-					if(getLastStepIndex(0) - getLastStepIndex(1) > 20) {
-						speed = 1.8;
-					}
-
-					var time:Float = ((curStep - getLastStepIndex(1)) / (getLastStepIndex(0) - getLastStepIndex(1))) - (Conductor.stepCrochet * 0.0011 * (i / speed));
-
-					playerStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
-					opponentStrum.yAngle = FlxMath.lerp(0, Math.PI * 2, FeshMath.clamp(FlxEase.quadOut(time) * speed, 0, 1));
-				}
 			}
 		}
 
