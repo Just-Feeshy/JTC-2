@@ -82,35 +82,8 @@ class LoadingScene extends FlxSpriteGroup {
     */
     #if sys
     public function cacheNecessaries():Void {
-        var compileList:Array<String> = [];
-
-        try {
-            for(i in 0...Paths.modJSON.cache_configuration.length) {
-                compileList = compileList.concat(CoolUtil.getFilesInDirectories(Paths.modJSON.cache_configuration[i]));
-            }
-
-            for(i in 0...compileList.length) {
-                if(compileList[i].startsWith("assets/songs") || compileList[i].startsWith("mod_assets/songs")) {
-                    compileList[i] = "songs:" + compileList[i];
-                }
-
-                try {
-                    // Sound loading is not safe here on macOS; only cache boot-safe assets.
-                    if(shouldCacheDuringBoot(compileList[i])) {
-                        Cache.cacheListedFormat(compileList[i], false);
-                    }
-                } catch(e) {
-                    trace('Warning: failed to cache preload asset ' + compileList[i] + ' -> ' + Std.string(e));
-                }
-
-                cacheValue = i / compileList.length;
-            }
-
-            cacheValue = 1;
-        } catch(e) {
-            trace('Warning: preload caching failed -> ' + Std.string(e));
-            cacheValue = 1;
-        }
+        // Boot no longer preloads arbitrary assets. Song-specific cache.json files handle gameplay caching.
+        cacheValue = 1;
     }
     #end
 

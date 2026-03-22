@@ -15,6 +15,8 @@ import ModInitialize;
 import json2object.JsonParser;
 #end
 
+using StringTools;
+
 class CacheState extends HelperStates {
     var target:FlxState;
 	var stopMusic = false;
@@ -40,22 +42,91 @@ class CacheState extends HelperStates {
         super.create();
     }
 
+    static function getSongCacheDirectory():String {
+        var candidates:Array<String> = [];
+
+        inline function pushCandidate(name:String):Void {
+            if(name == null) {
+                return;
+            }
+
+            var value:String = name.toLowerCase().trim();
+
+            if(value != "" && !candidates.contains(value)) {
+                candidates.push(value);
+            }
+        }
+
+        if(PlayState.SONG != null) {
+            pushCandidate(PlayState.SONG.song);
+            pushCandidate(CoolUtil.readableSongDirectory(PlayState.SONG.song));
+        }
+
+        if(PlayState.storyPlaylist != null && PlayState.storyPlaylist.length > 0) {
+            pushCandidate(PlayState.storyPlaylist[0]);
+            pushCandidate(CoolUtil.readableSongDirectory(PlayState.storyPlaylist[0]));
+        }
+
+        for(candidate in candidates) {
+            if(Assets.exists(Paths.getPath('data/${candidate}/cache.json', TEXT, ""))) {
+                return candidate;
+            }
+        }
+
+        return candidates.length > 0 ? candidates[0] : "";
+    }
+
+    static function cacheAssetEntry(entry:Dynamic):Void {
+        if(entry == null) {
+            return;
+        }
+
+        var key:String = null;
+        var library:String = "";
+
+        if(Std.isOfType(entry, String)) {
+            var text:String = cast entry;
+            var separatorIndex:Int = text.indexOf(":");
+
+            if(separatorIndex > 0) {
+                library = text.substr(0, separatorIndex).trim();
+                key = text.substr(separatorIndex + 1).trim();
+            }else {
+                key = text.trim();
+            }
+        }else {
+            key = Std.string(Reflect.field(entry, "key")).trim();
+
+            if(Reflect.hasField(entry, "library")) {
+                library = Std.string(Reflect.field(entry, "library")).trim();
+            }
+        }
+
+        if(key == null || key == "") {
+            return;
+        }
+
+        Cache.cacheAsset(key, library, false);
+    }
+
     function cacheStuff():Void {
         Cache.clear();
 
-        var cacheList:Array<String> = [];
+        var cacheList:Array<Dynamic> = [];
         var dialogueList:Array<DialogueData>;
+        var songCacheDirectory:String = getSongCacheDirectory();
 
-        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/dialogue.json', TEXT, ""))) {
+        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/dialogue.json', TEXT, ""))) {
             dialogueList = loadDialogue("dialogue");
         }
 
-        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
-            cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")));
+        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""))) {
+            cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")));
 
             for(i in 0...cacheList.length) {
                 // Cache from worker thread without creating Context3D textures.
-                Cache.cacheAsset(cacheList[i], "", false);
+                // Entries may optionally use "library:key" for non-mod assets.
+                cacheAssetEntry(cacheList[i]);
                 loadingScene.setCacheValue(i / cacheList.length);
             }
 
@@ -69,8 +140,9 @@ class CacheState extends HelperStates {
 
     function loadDialogue(name:String):Array<DialogueData> {
         var parser:JsonParser<Array<DialogueData>> = new JsonParser<Array<DialogueData>>();
+        var songCacheDirectory:String = getSongCacheDirectory();
 
-		return parser.fromJson(File.getContent(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/$name.json', TEXT, "")), '${name}.json');
+		return parser.fromJson(File.getContent(Paths.getPath('data/${songCacheDirectory}/$name.json', TEXT, "")), '${name}.json');
     }
 
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
@@ -80,8 +152,10 @@ class CacheState extends HelperStates {
 			FlxG.sound.music.stop();
         }
 
+        var songCacheDirectory:String = getSongCacheDirectory();
+
         if(PlayState.SONG.video != null && !exception) {
-            if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, ""))) {
+            if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""))) {
                 FlxG.switchState(new VideoState(new CacheState(new PlayState(), true), PlayState.SONG.video));
             }else {
                 FlxG.switchState(new VideoState(new PlayState(), PlayState.SONG.video));
@@ -90,7 +164,7 @@ class CacheState extends HelperStates {
             return;
         }
 
-        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")) && !exception) {
+        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")) && !exception) {
             FlxG.switchState(new CacheState(new PlayState(), true));
         }else {
             FlxG.switchState(new PlayState());
@@ -105,7 +179,9 @@ class CacheState extends HelperStates {
 			FlxG.sound.music.stop();
         }
 
-        if(Assets.exists(Paths.getPath('data/${PlayState.SONG.song.toLowerCase()}/cache.json', TEXT, "")) && !exception) {
+        var songCacheDirectory:String = getSongCacheDirectory();
+
+        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")) && !exception) {
             FlxG.switchState(new CacheState(new PlayState(), true));
         }else {
             FlxG.switchState(new PlayState());

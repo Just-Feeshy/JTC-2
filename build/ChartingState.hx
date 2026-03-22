@@ -173,6 +173,7 @@ class ChartingState extends MusicBeatState
 			['note rewind', "Value 1 - Set rewind value.\nValue 2 - Set tween value to the rewind speed."],
 			['character change', "Value 1 - New character's name.\nValue 2 - Character to change \n(bf: Boyfriend's Side, dad: Dad's Side, gf: Girlfriend's Side)"],
 			['bump per beat', "Value 1 - Each bump for beat.\nValue 2 - The amount of force for each bump."],
+			['v-slice event', "Value 1 - V-Slice event kind or a full component JSON.\nValue 2 - V-Slice payload JSON when Value 1 is only the event kind.\nExamples:\nFocusCamera + {\"char\":1}\nZoomCamera + {\"zoom\":1.2,\"duration\":4,\"mode\":\"stage\"}"],
 			['clear events', "Value 1 - Event's name.\nValue 2 - Second event's name. (optional)"],
 			['clear all', "Value 1 - nothing.\nValue 2 - nothing."]
 		]
@@ -193,6 +194,7 @@ class ChartingState extends MusicBeatState
 		'note rewind' => "Regular",
 		'character change' => "Regular",
 		'bump per beat' => "Regular",
+		'v-slice event' => "Regular",
 		'clear events' => "Regular",
 		'clear all' => "Regular"
 	];
@@ -756,6 +758,9 @@ class ChartingState extends MusicBeatState
 						createEvent.modValue = Std.string(Math.max(0, Std.parseInt(makeRegularValue.text)));
 					else
 						createEvent.modValue = "1";
+				case "v-slice event":
+					createEvent.modValue = makeRegularValue.text;
+					createEvent.modValueTwo = makeRegularTwoValue.text;
 				case "clear all":
 					createEvent.modValue = null;
 					createEvent.modValueTwo = null;

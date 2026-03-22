@@ -1,0 +1,24 @@
+{
+	"timeFormat": "ms",
+	"artist": "Varsavi",
+	"charter": "DiFicuz",
+	"playData": {
+		"stage": "funkstreet",
+		"noteStyle": "funkin",
+		"difficulties": null,
+		"characters": {
+			"girlfriend": "gf",
+			"opponent": "joul",
+			"player": "bf-cool"
+		}
+	},
+	"songName": "Funk-Off",
+	"timeChanges": [
+		{
+			"t": 0,
+			"bpm": 130
+		}
+	],
+	"generatedBy": "Psych Engine v1.0 - Chart Editor V-Slice Exporter",
+	"version": "2.2.3"
+}

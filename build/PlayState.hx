@@ -118,6 +118,11 @@ class PlayState extends MusicBeatState
 	public var singDrainValue:Float = 1;
 	public var fadeInValue:Int = 400;
 	public var cameraMovementInsensity:Float = 1;
+	public var vSliceCameraFocusEnabled:Bool = false;
+	public var vSliceCameraFocusX:Float = 0;
+	public var vSliceCameraFocusY:Float = 0;
+	public var vSliceDirectZoomEnabled:Bool = false;
+	public var vSliceDirectZoomValue:Float = 1;
 
 	@:isVar public var wobbleModPower(get, set):Float = 30;
 
@@ -189,6 +194,7 @@ class PlayState extends MusicBeatState
 
 	public var bumpPerBeat:Int = 4;
 	public var bumpForce:Float = 1;
+	public var bumpOffset:Int = 0;
 
 	private var strumLine:FlxSprite;
 	public var camFollow:FlxObject;
@@ -244,7 +250,7 @@ class PlayState extends MusicBeatState
 
 	public static var campaignScore:Int = 0;
 
-	var defaultCamZoom:Float = 1.05;
+	public var defaultCamZoom:Float = 1.05;
 
 	var doof:DialogueBox;
 	var events:FeshEventGroup;
@@ -495,6 +501,9 @@ class PlayState extends MusicBeatState
 		FlxG.camera.follow(camFollow, LOCKON, 0.04);
 		// FlxG.camera.setScrollBounds(0, FlxG.width, 0, FlxG.height);
 		FlxG.camera.zoom = defaultCamZoom;
+		vSliceDirectZoomValue = defaultCamZoom;
+		vSliceCameraFocusX = camPos.x;
+		vSliceCameraFocusY = camPos.y;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -1907,7 +1916,15 @@ class PlayState extends MusicBeatState
 				camPos = newCamPos;
 			}
 
-			camFollow.setPosition(camPos.x + camMovementPos.x, camPos.y + camMovementPos.y);
+			var followX:Float = camPos.x + camMovementPos.x;
+			var followY:Float = camPos.y + camMovementPos.y;
+
+			if(vSliceCameraFocusEnabled) {
+				followX = vSliceCameraFocusX + camMovementPos.x;
+				followY = vSliceCameraFocusY + camMovementPos.y;
+			}
+
+			camFollow.setPosition(followX, followY);
 		}
 
 		if (camZooming)
@@ -1915,6 +1932,10 @@ class PlayState extends MusicBeatState
 			FlxG.camera.zoom = FlxMath.lerp(defaultCamZoom, FlxG.camera.zoom, 0.95);
 			camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, 0.95);
 			camNOTE.zoom = FlxMath.lerp(1, camNOTE.zoom, 0.95);
+		}
+
+		if(vSliceDirectZoomEnabled) {
+			FlxG.camera.zoom = vSliceDirectZoomValue;
 		}
 
 		FlxG.watch.addQuick("beatShit", curBeat);
@@ -3805,11 +3826,24 @@ class PlayState extends MusicBeatState
 
 		eventInfo.shift();
 
+		if(skill == null) {
+			skill = "";
+		}
+
+		skill = skill.toLowerCase().trim();
+
 		if(!eventStorage.contains(skill))
 			eventStorage.push(skill);
 
-		value = value.toLowerCase();
-		value2 = value2.toLowerCase();
+		var useRawValues:Bool = VSliceEvent.usesRawValues(skill);
+
+		if(value != null) {
+			value = useRawValues ? value.trim() : value.toLowerCase().trim();
+		}
+
+		if(value2 != null) {
+			value2 = useRawValues ? value2.trim() : value2.toLowerCase().trim();
+		}
 
 		events.whenTriggered(skill, value, value2, this);
 		event_Extra(skill, value, value2);
@@ -3954,7 +3988,7 @@ class PlayState extends MusicBeatState
 		// FlxG.log.add('change bpm' + SONG.notes[Std.int(curStep / 16)].changeBPM);
 		wiggleShit.update(Conductor.crochet);
 
-		if(curBeat % bumpPerBeat == 0) {
+		if(bumpPerBeat > 0 && curBeat >= bumpOffset && (curBeat - bumpOffset) % bumpPerBeat == 0) {
 			if (camZooming && FlxG.camera.zoom < 1.35) {
 				FlxG.camera.zoom += 7 * bumpForce * FlxG.elapsed;
 				camHUD.zoom += 3 * bumpForce * FlxG.elapsed;

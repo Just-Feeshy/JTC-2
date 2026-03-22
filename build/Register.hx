@@ -65,6 +65,7 @@ class Register {
         */
 
         addEvent(DefaultEvents);
+        addEvent(VSliceEvent);
 
         addCustomTransition("fade", FadeTransition);
         addCustomTransition("tile", TileTransition);
