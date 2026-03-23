@@ -148,6 +148,10 @@ class CacheState extends HelperStates {
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
         Paths.setCurrentLevel("week" + PlayState.storyWeek);
 
+		if(Std.isOfType(FlxG.state, PlayState)) {
+			cast(FlxG.state, PlayState).prepareForStateSwitch();
+		}
+
 		if (stopMusic && FlxG.sound.music != null) {
 			FlxG.sound.music.stop();
         }
@@ -175,6 +179,10 @@ class CacheState extends HelperStates {
 
     static public function loadAndSwitchStateF(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
         Paths.setCurrentLevel("week" + PlayState.storyWeek);
+
+		if(Std.isOfType(FlxG.state, PlayState)) {
+			cast(FlxG.state, PlayState).prepareForStateSwitch();
+		}
 
 		if (stopMusic && FlxG.sound.music != null) {
 			FlxG.sound.music.stop();

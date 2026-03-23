@@ -118,7 +118,7 @@ class GameOverSubstate extends MusicBeatSubstate
 			{
 				FlxG.camera.fade(FlxColor.BLACK, 2, false, function()
 				{
-					CacheState.loadAndSwitchState(new PlayState(), true, true);
+					CacheState.loadAndSwitchState(new PlayState(), true, false);
 				});
 			});
 		}

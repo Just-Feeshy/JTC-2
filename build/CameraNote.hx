@@ -28,9 +28,10 @@ class CameraNote extends FeshCamera {
     }
 
     override function destroy() {
-        FlxG.cameras.remove(camNoteSustain, false);
-
-        camNoteSustain = FlxDestroyUtil.destroy(camNoteSustain);
+        if(camNoteSustain != null) {
+            FlxG.cameras.remove(camNoteSustain, false);
+            camNoteSustain = FlxDestroyUtil.destroy(camNoteSustain);
+        }
 
         super.destroy();
     }
