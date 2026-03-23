@@ -298,12 +298,14 @@ class PlayState extends MusicBeatState
 
 		camGame = new FeshCamera();
 		camNOTE = new CameraNote();
+		camNOTE.createSustainCam();
 		camHUD = new FeshCamera();
 		camHUD.bgColor.alpha = 0;
 		camNOTE.bgColor.alpha = 0;
 
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.add(camNOTE);
+		FlxG.cameras.add(camNOTE.camNoteSustain);
 		FlxG.cameras.add(camHUD);
 
 		FlxCamera.defaultCameras = [camGame];
@@ -571,7 +573,7 @@ class PlayState extends MusicBeatState
 
 		strumLineNotes.cameras = [camNOTE];
 		notes.cameras = [camNOTE];
-		grpHoldCover.cameras = [camNOTE];
+		grpHoldCover.cameras = [camNOTE.camNoteSustain];
 		grpSplash.cameras = [camNOTE];
 		healthBar.cameras = [camHUD];
 		healthBarBG.cameras = [camHUD];
@@ -871,7 +873,6 @@ class PlayState extends MusicBeatState
 		DefaultHandler.modifiers.fadeInNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FADE_BATTLE_MOD) #else false #end;
 		DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
 		DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
-		DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
 		DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
 		DefaultHandler.modifiers.botMode.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BOT_MODE_MOD) #else false #end;
 
@@ -900,8 +901,6 @@ class PlayState extends MusicBeatState
 				return DefaultHandler.modifiers.safeBalls.enabled;
 			case "blind effect":
 				return DefaultHandler.modifiers.blindEffect.enabled;
-			case "note woggle":
-				return DefaultHandler.modifiers.wobbleNotes.enabled;
 			case "camera move":
 				return DefaultHandler.modifiers.cameraMovement.enabled;
 			case "bot mode":
@@ -1659,22 +1658,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function addToNoteX(alreadyX:Float, note:Note):Float {
-		final noteCacurations:Float = Math.min(0, note.getNoteY());
-
-		var wobbleStrength:Int = 0;
-		var modWobble:Float = 0;
-
-		if(note.hasCustomAddon != null)
-			wobbleStrength = note.hasCustomAddon.getWobblePower();
-		
-		if(modifierCheckList('note woggle') && Main.feeshmoraModifiers && wobbleStrength == 0 && !note.isSustainNote) {
-			modWobble = flipWiggle * (wobbleModPower * Math.sin(noteCacurations * Math.PI * 0.005));
-		}
-
-		if(wobbleStrength > 0 && !note.isSustainNote)
-			modWobble = flipWiggle * (wobbleStrength * Math.sin(noteCacurations * Math.PI * 0.005));
-
-		return alreadyX + modWobble;
+		return alreadyX;
 	}
 
 	private var paused:Bool = false;
@@ -2062,79 +2046,64 @@ class PlayState extends MusicBeatState
 				}
 
 				if (daNote.mustPress) {
-					daNote.setVisibility(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
+					final strumIndex = Math.floor(Math.abs(daNote.noteData));
+					final currentStrum = currentStrums.members[strumIndex];
+					final sustainDirectionAngle = currentStrum.directionAngle;
+					final sustainNoteAngle = currentStrum.directionAngle * -FeshMath.sec(daNote.yAngle);
+
+					daNote.setVisibility(currentStrum.onlyVisible);
 
 					daNote.setXaxis(
 						currentStrums.members,
-						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
-						addToNoteX(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote),
-						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+						currentStrum.x,
+						addToNoteX(currentStrum.x, daNote),
+						currentStrum.directionAngle
 					);
 
-					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
-					daNote.setNoteAlpha(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
+					daNote.setNoteAngle(currentStrum.angle, sustainNoteAngle);
+					daNote.setNoteAlpha(currentStrum.onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = currentStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
-					daNote.yAngle = currentStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
+					daNote.xAngle = currentStrum.xAngle;
+					daNote.yAngle = currentStrum.yAngle;
 
 					if (daNote.isSustainNote) {
-						daNote.setXaxisSustain(currentStrums.members, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x + (Note.swagWidth / 3), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+						daNote.setXaxisSustain(currentStrums.members, currentStrum.x, currentStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
 					}
 				}
 				else {
-					daNote.setVisibility(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
+					final strumIndex = Math.floor(Math.abs(daNote.noteData));
+					final oppositeStrum = oppositeStrums.members[strumIndex];
+					final sustainDirectionAngle = oppositeStrum.directionAngle;
+					final sustainNoteAngle = oppositeStrum.directionAngle * -FeshMath.sec(daNote.yAngle);
+
+					daNote.setVisibility(oppositeStrum.onlyVisible);
 
 					daNote.setXaxis(
 						oppositeStrums.members,
-						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
-						addToNoteX(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote),
-						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+						oppositeStrum.x,
+						addToNoteX(oppositeStrum.x, daNote),
+						oppositeStrum.directionAngle
 					);
 
-					daNote.setNoteAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
-					daNote.setNoteAlpha(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
+					daNote.setNoteAngle(oppositeStrum.angle, sustainNoteAngle);
+					daNote.setNoteAlpha(oppositeStrum.onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
-					daNote.yAngle = oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
+					daNote.xAngle = oppositeStrum.xAngle;
+					daNote.yAngle = oppositeStrum.yAngle;
 
 					if (daNote.isSustainNote) {
-						daNote.setXaxisSustain(oppositeStrums.members, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x + (Note.swagWidth / 3), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+						daNote.setXaxisSustain(oppositeStrums.members, oppositeStrum.x, oppositeStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
 					}
 				}
 
-				var noteShouldWobble:Bool = false;
-
-				if(modifierCheckList('note woggle') && Main.feeshmoraModifiers) {
-					noteShouldWobble = true;
-				}
-
-				if(daNote.hasCustomAddon != null) {
-					if(daNote.hasCustomAddon.getWobblePower() > 0) {
-						noteShouldWobble = true;
+				if(daNote.isSustainNote) {
+					if(!daNote.cameras.contains(camNOTE.camNoteSustain)) {
+						daNote.cameras = [camNOTE.camNoteSustain];
 					}
-				}
-
-				if(noteShouldWobble) {
-					if(daNote.isSustainNote) {
-						if(camNOTE.camNoteWOBBLE == null) {
-							camNOTE.createNoteCam(daNote.noteAbstract);
-
-							FlxG.cameras.remove(camNOTE, false);
-							FlxG.cameras.add(camNOTE);
-							FlxG.cameras.add(camNOTE.camNoteWOBBLE);
-							FlxG.cameras.remove(camHUD, false);
-							FlxG.cameras.add(camHUD);
-						}
-
-						if(!daNote.cameras.contains(camNOTE.camNoteWOBBLE)) {
-							daNote.cameras = [camNOTE.camNoteWOBBLE];
-						}
-					}
-				}else if(!noteShouldWobble) {
-					if(daNote.cameras.contains(camNOTE.camNoteWOBBLE) && daNote.noteAbstract != "side note")
-						daNote.cameras = [camNOTE];
+				}else if(daNote.cameras.contains(camNOTE.camNoteSustain) && daNote.noteAbstract != "side note") {
+					daNote.cameras = [camNOTE];
 				}
 
 				var detector:Bool = Conductor.trackPosition > DefaultHandler.getNoteTime(daNote.strumTime) + 260;
@@ -3279,6 +3248,7 @@ class PlayState extends MusicBeatState
 			timers.push(0);
 
 			if(cover != null) {
+				cover.cameras = [camNOTE.camNoteSustain];
 				grpHoldCover.add(cover);
 				updateHoldCoverPosition(index, currentSide);
 			}
@@ -3451,6 +3421,7 @@ class PlayState extends MusicBeatState
 		modifiableCameras.set("camHUD", camHUD);
 		modifiableCameras.set("camGAME", FlxG.camera);
 		modifiableCameras.set("camNOTE", camNOTE);
+		modifiableCameras.set("camNoteSustain", camNOTE.camNoteSustain);
 
 		setLua("songName", PlayState.SONG.song);
 		setLua("isStoryMode", PlayState.isStoryMode);
@@ -4004,7 +3975,6 @@ class PlayState extends MusicBeatState
 
 	function set_wobbleModPower(value:Float):Float {
 		wobbleModPower = value;
-		camNOTE.wobblePower = wobbleModPower * flipWiggle;
 		return wobbleModPower;
 	}
 
@@ -4046,11 +4016,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function get_wobbleModPower():Float {
-		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.wobbleNotes.enabled) {
-			return wobbleModPower;
-		}
-
-		return 30;
+		return wobbleModPower;
 	}
 
 	override function stepHit()

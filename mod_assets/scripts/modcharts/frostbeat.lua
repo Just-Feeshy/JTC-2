@@ -25,17 +25,25 @@ local spinSteps = {
 
 local spinIndex = 1
 local strumSpinning = true
-local laneCount = 8
 local strumSideCount = 4
 
 local originalInitStrumsAndNotes = frostbeat.initStrumsAndNotes
+
+local function setSpinAngle(index, angle)
+    if setNoteStrumAngleY == nil then
+        return
+    end
+
+    setNoteStrumAngleY(index, angle)
+    setNoteStrumAngleY(index + 4, angle)
+end
 
 local function resetStrumSpin()
     spinIndex = 1
     strumSpinning = true
 
-    for i = 0, laneCount - 1 do
-        setNoteStrumAngleY(i, 0)
+    for i = 0, strumSideCount - 1 do
+        setSpinAngle(i, 0)
     end
 end
 
@@ -51,19 +59,14 @@ end
 
 local function updateStrumSpinStep()
     if not strumSpinning then
+        resetStrumSpin()
         return
     end
 
-    for i = 0, laneCount - 1 do
-        local currentAngle = getNoteStrumAngleY(i)
-        setNoteStrumAngleY(i, lerp(0, currentAngle, 0.95))
-    end
-
     if spinSteps[#spinSteps] < curStep then
-        for i = 0, laneCount - 1 do
-            setNoteStrumAngleY(i, 0)
+        for i = 0, strumSideCount - 1 do
+            setSpinAngle(i, 0)
         end
-
         strumSpinning = false
         return
     end
@@ -92,9 +95,7 @@ local function updateStrumSpinStep()
 
         local time = ((curStepFloat - previousStep) / stepDelta) - (stepCrochet * 0.0011 * (i / speed))
         local angle = lerp(0, math.pi * 2, clamp(quadOut(time) * speed, 0, 1))
-
-        setNoteStrumAngleY(i, angle)
-        setNoteStrumAngleY(i + strumSideCount, angle)
+        setSpinAngle(i, angle)
     end
 end
 

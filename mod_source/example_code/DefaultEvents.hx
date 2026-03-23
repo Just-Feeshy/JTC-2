@@ -91,24 +91,12 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     playState.camGame.engineAlpha = 0;
                 }
             case "note woggle":
-                if(Std.parseFloat(eventValue) > 0) {
-                    DefaultHandler.modifiers.wobbleNotes.enabled = true;
-                }
-    
-                storeTween(eventName, FlxTween.tween(playState, {wobbleModPower : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500), {
-                    onComplete: function(tween:FlxTween) {
-                        if(playState.wobbleModPower == 0) {
-                            setModifierToDefault("note woggle");
-                        }
-    
-                        cancelTween(eventName);
-                    }
-                }));
+                cancelTween(eventName);
             case "camera move":
                 playState.cameraMovementInsensity = Std.parseFloat(eventValue);
 
                 if(Std.parseFloat(eventValue) > 0) {
-                    DefaultHandler.modifiers.wobbleNotes.enabled = true;
+                    DefaultHandler.modifiers.cameraMovement.enabled = true;
                 }else {
                     setModifierToDefault("camera move");
                 }
@@ -280,8 +268,6 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 				DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
 			case "blind effect":
 				DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
-			case "note woggle":
-				DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
 			case "camera move":
 				DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
 		}
@@ -295,7 +281,6 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 		DefaultHandler.modifiers.fadeInNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FADE_BATTLE_MOD) #else false #end;
 		DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
 		DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
-		DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
 		DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
 	}
 

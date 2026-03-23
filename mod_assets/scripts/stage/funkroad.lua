@@ -20,19 +20,24 @@ local notDancing = false
 
 -- Constants
 local phaseTwo = 643
-local noteCurveStrength = 0.16
+local noteCurveFadeStrength = 1
 local noteCurveOriginY = 0.18
-local noteCurvePadding = 0.065
+local noteCurvePadding = 160 * 0.7 * 0.75
 local noteCurveSwagWidth = 160 * 0.7
+local noteCurveTravelDistance = 260
 local noteCurveFadeStart = 614
 local noteCurveFadeEnd = 640
-local sustainCurveEnabledKey = "useSustainCurveShader"
-local sustainCurveStrengthKey = "funkroadSustainCurveStrength"
 local sustainCurveShaderName = "funkroad_sustain_curve"
-local sustainCurveDebugSolid = false
-local noteCurveLaneCentersA = {0.125, 0.25, 0.375, 0.5}
-local noteCurveLaneCentersB = {0.625, 0.75, 0.875, 1.0}
-local noteCurveLaneCentersC = {2.0, 2.0, 2.0, 2.0}
+local sustainCurveCameraName = "camNoteSustain"
+local noteCurveLaneCentersA = {0, 0, 0, 0}
+local noteCurveLaneCentersB = {0, 0, 0, 0}
+local noteCurveLaneCentersC = {0, 0, 0, 0}
+local noteCurveLaneOffsetXA = {0, 0, 0, 0}
+local noteCurveLaneOffsetXB = {0, 0, 0, 0}
+local noteCurveLaneOffsetXC = {0, 0, 0, 0}
+local noteCurveLaneTravelYA = {1, 1, 1, 1}
+local noteCurveLaneTravelYB = {1, 1, 1, 1}
+local noteCurveLaneTravelYC = {1, 1, 1, 1}
 local noteCurveLaneCount = 8
 local jtcStrumAnims = {
     "singRIGHT",
@@ -116,19 +121,7 @@ local function cloudIncome()
     end
 end
 
-local function setSustainCurveActive(value)
-    if setGlobalVar ~= nil then
-        setGlobalVar(sustainCurveEnabledKey, value)
-    end
-end
-
-local function setSustainCurveStrength(value)
-    if setGlobalVar ~= nil then
-        setGlobalVar(sustainCurveStrengthKey, value)
-    end
-end
-
-local function updateSustainCurveStrength()
+local function getSustainCurveStrength()
     local stepValue = curStepFloat
 
     if stepValue == nil then
@@ -142,53 +135,37 @@ local function updateSustainCurveStrength()
     local strength = 0
 
     if stepValue < noteCurveFadeStart then
-        strength = noteCurveStrength
+        strength = noteCurveFadeStrength
     elseif stepValue < noteCurveFadeEnd then
         local progress = (stepValue - noteCurveFadeStart) / (noteCurveFadeEnd - noteCurveFadeStart)
         local eased = progress * progress * (3 - (2 * progress))
 
-        strength = noteCurveStrength * (1 - eased)
+        strength = noteCurveFadeStrength * (1 - eased)
     end
 
-    setSustainCurveStrength(strength)
+    return strength
 end
 
-local function updateSustainCurveFramebuffer()
-    if sustainCurveDebugSolid then
-        return
-    end
+local function updateSustainCurveShader()
+    local setFloat = nil
+    local setFloatArray = nil
+    local setInt = nil
 
-    local setFloat = setNoteCameraShaderFloat or nil
-    local setFloatArray = setNoteCameraShaderFloatArray or nil
-    local setInt = setNoteCameraShaderInt or nil
-
-    if setFloat == nil then
+    if setShaderFloat ~= nil then
         setFloat = function(property, value)
-            if setShaderFloat ~= nil then
-                return setShaderFloat("camNOTE", property, value)
-            end
-
-            return false
+            return setShaderFloat(sustainCurveCameraName, property, value)
         end
     end
 
-    if setFloatArray == nil then
+    if setShaderFloatArray ~= nil then
         setFloatArray = function(property, value)
-            if setShaderFloatArray ~= nil then
-                return setShaderFloatArray("camNOTE", property, value)
-            end
-
-            return false
+            return setShaderFloatArray(sustainCurveCameraName, property, value)
         end
     end
 
-    if setInt == nil then
+    if setShaderInt ~= nil then
         setInt = function(property, value)
-            if setShaderInt ~= nil then
-                return setShaderInt("camNOTE", property, value)
-            end
-
-            return false
+            return setShaderInt(sustainCurveCameraName, property, value)
         end
     end
 
@@ -214,22 +191,55 @@ local function updateSustainCurveFramebuffer()
 
     noteCurveLaneCount = laneCount
 
-    if getNotePosX ~= nil and windowWidth ~= nil and windowWidth > 0 then
+    for lane = 0, laneCount - 1 do
+        local defaultLaneX = 0
+        local defaultLaneY = 0
+
+        if lane < 4 then
+            defaultLaneX = _G["defaultOpponentStrumX" .. tostring(lane)] or 0
+            defaultLaneY = _G["defaultOpponentStrumY" .. tostring(lane)] or 0
+        else
+            defaultLaneX = _G["defaultPlayerStrumX" .. tostring(lane - 4)] or 0
+            defaultLaneY = _G["defaultPlayerStrumY" .. tostring(lane - 4)] or 0
+        end
+        local travelY = math.abs((windowHeight * 0.5) - defaultLaneY)
+
+        if lane < 4 then
+            noteCurveLaneTravelYA[lane + 1] = travelY
+        elseif lane < 8 then
+            noteCurveLaneTravelYB[(lane - 4) + 1] = travelY
+        else
+            noteCurveLaneTravelYC[(lane - 8) + 1] = travelY
+        end
+    end
+
+    if getNotePosX ~= nil then
         for lane = 0, laneCount - 1 do
             local laneX = getNotePosX(lane)
+            local defaultLaneX = 0
 
             if laneX == nil then
                 laneX = 0
             end
 
-            local centerX = (laneX + (noteCurveSwagWidth * 0.5)) / windowWidth
+            if lane < 4 then
+                defaultLaneX = _G["defaultOpponentStrumX" .. tostring(lane)] or 0
+            else
+                defaultLaneX = _G["defaultPlayerStrumX" .. tostring(lane - 4)] or 0
+            end
+
+            local centerX = laneX + (noteCurveSwagWidth * 0.5)
+            local xDistance = defaultLaneX - laneX
 
             if lane < 4 then
                 noteCurveLaneCentersA[lane + 1] = centerX
+                noteCurveLaneOffsetXA[lane + 1] = xDistance
             elseif lane < 8 then
                 noteCurveLaneCentersB[(lane - 4) + 1] = centerX
+                noteCurveLaneOffsetXB[(lane - 4) + 1] = xDistance
             else
                 noteCurveLaneCentersC[(lane - 8) + 1] = centerX
+                noteCurveLaneOffsetXC[(lane - 8) + 1] = xDistance
             end
         end
     end
@@ -239,6 +249,14 @@ local function updateSustainCurveFramebuffer()
         noteCurveLaneCentersC[2] = 2.0
         noteCurveLaneCentersC[3] = 2.0
         noteCurveLaneCentersC[4] = 2.0
+        noteCurveLaneOffsetXC[1] = 0
+        noteCurveLaneOffsetXC[2] = 0
+        noteCurveLaneOffsetXC[3] = 0
+        noteCurveLaneOffsetXC[4] = 0
+        noteCurveLaneTravelYC[1] = 1
+        noteCurveLaneTravelYC[2] = 1
+        noteCurveLaneTravelYC[3] = 1
+        noteCurveLaneTravelYC[4] = 1
     end
 
     if getNotePosY ~= nil and windowHeight ~= nil and windowHeight > 0 then
@@ -249,34 +267,32 @@ local function updateSustainCurveFramebuffer()
         end
     end
 
-        setFloat("curveStrength", getGlobalVar ~= nil and (getGlobalVar(sustainCurveStrengthKey) or 0) or 0)
-        setFloat("curveOriginY", noteCurveOriginY)
-        setFloat("curvePadding", noteCurvePadding)
-        setFloatArray("laneCentersA", noteCurveLaneCentersA)
-        setFloatArray("laneCentersB", noteCurveLaneCentersB)
-        setFloatArray("laneCentersC", noteCurveLaneCentersC)
-        setInt("laneCount", noteCurveLaneCount)
+    setFloat("curveStrength", getSustainCurveStrength())
+    setFloat("curveOriginY", noteCurveOriginY)
+    setFloatArray("laneCentersA", noteCurveLaneCentersA)
+    setFloatArray("laneCentersB", noteCurveLaneCentersB)
+    setFloatArray("laneCentersC", noteCurveLaneCentersC)
+    setFloatArray("laneOffsetXA", noteCurveLaneOffsetXA)
+    setFloatArray("laneOffsetXB", noteCurveLaneOffsetXB)
+    setFloatArray("laneOffsetXC", noteCurveLaneOffsetXC)
+    setFloatArray("laneTravelYA", noteCurveLaneTravelYA)
+    setFloatArray("laneTravelYB", noteCurveLaneTravelYB)
+    setFloatArray("laneTravelYC", noteCurveLaneTravelYC)
+    setInt("laneCount", noteCurveLaneCount)
 end
 
 --events
 function generatedStage()
     init()
     setEndVideo("post.mp4")
-    setSustainCurveActive(false)
-
-    if not sustainCurveDebugSolid then
-        updateSustainCurveStrength()
-    end
 
     if initLuaShader ~= nil then
         initLuaShader(sustainCurveShaderName, "feeshdata")
     end
 
-    if setNoteCameraShader ~= nil then
-        setNoteCameraShader(sustainCurveShaderName)
-    elseif setCameraShader ~= nil then
-        setCameraShader("camNOTE", sustainCurveShaderName)
-        updateSustainCurveFramebuffer()
+    if setCameraShader ~= nil then
+        setCameraShader(sustainCurveCameraName, sustainCurveShaderName)
+        updateSustainCurveShader()
     end
 
     createSprite("frostbiteCAR")
@@ -472,10 +488,7 @@ function onUpdate(elapsed)
         if frost_modchart.sectionTwo_REGULAR ~= nil then
             frost_modchart.sectionTwo_REGULAR()
         end
-        if not sustainCurveDebugSolid then
-            updateSustainCurveStrength()
-            updateSustainCurveFramebuffer()
-        end
+        updateSustainCurveShader()
 
         -- Cloud Incoming for transition
         cloudIncome()
@@ -558,15 +571,7 @@ function manageInputs()
 end
 
 function onDestroy()
-    setSustainCurveActive(false)
-
-    if not sustainCurveDebugSolid then
-        setSustainCurveStrength(0)
-    end
-
-    if removeNoteCameraShader ~= nil then
-        removeNoteCameraShader()
-    elseif removeCameraShader ~= nil then
-        removeCameraShader("camNOTE")
+    if removeCameraShader ~= nil then
+        removeCameraShader(sustainCurveCameraName)
     end
 end
