@@ -55,7 +55,6 @@ import openfl.events.KeyboardEvent;
 import feshixl.group.FeshEventGroup;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
-import feshixl.shaders.FeshShader;
 import lime.utils.Assets;
 import lime.system.ThreadPool;
 
@@ -145,8 +144,6 @@ class PlayState extends MusicBeatState
 	private var currentHoldCoverTimers:Array<Float> = [];
 	private var oppositeHoldCoverSprites:Array<HoldCoverSprite> = [];
 	private var oppositeHoldCoverTimers:Array<Float> = [];
-	private var sustainCurveShaderSource:Null<String> = null;
-	private static inline var SUSTAIN_CURVE_PADDING:Float = 0.28;
 
 	//Controls
 	private var keys2DArray:Array<Array<Int>> = [];
@@ -301,12 +298,14 @@ class PlayState extends MusicBeatState
 
 		camGame = new FeshCamera();
 		camNOTE = new CameraNote();
+		camNOTE.createSustainCam();
 		camHUD = new FeshCamera();
 		camHUD.bgColor.alpha = 0;
 		camNOTE.bgColor.alpha = 0;
 
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.add(camNOTE);
+		FlxG.cameras.add(camNOTE.camNoteSustain);
 		FlxG.cameras.add(camHUD);
 
 		FlxCamera.defaultCameras = [camGame];
@@ -574,7 +573,7 @@ class PlayState extends MusicBeatState
 
 		strumLineNotes.cameras = [camNOTE];
 		notes.cameras = [camNOTE];
-		grpHoldCover.cameras = [camNOTE];
+		grpHoldCover.cameras = [camNOTE.camNoteSustain];
 		grpSplash.cameras = [camNOTE];
 		healthBar.cameras = [camHUD];
 		healthBarBG.cameras = [camHUD];
@@ -874,7 +873,6 @@ class PlayState extends MusicBeatState
 		DefaultHandler.modifiers.fadeInNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FADE_BATTLE_MOD) #else false #end;
 		DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
 		DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
-		DefaultHandler.modifiers.wobbleNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.X_WOBBLE_MOD) #else false #end;
 		DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
 		DefaultHandler.modifiers.botMode.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BOT_MODE_MOD) #else false #end;
 
@@ -903,8 +901,6 @@ class PlayState extends MusicBeatState
 				return DefaultHandler.modifiers.safeBalls.enabled;
 			case "blind effect":
 				return DefaultHandler.modifiers.blindEffect.enabled;
-			case "note woggle":
-				return false;
 			case "camera move":
 				return DefaultHandler.modifiers.cameraMovement.enabled;
 			case "bot mode":
@@ -1191,7 +1187,7 @@ class PlayState extends MusicBeatState
 
 		loadSongVocals(PlayState.SONG.song);
 
-		notes = new NoteRenderGroup();
+		notes = new FlxTypedGroup<Note>();
 		add(notes);
 
 		grpHoldCover = new FlxTypedGroup<HoldCoverSprite>();
@@ -1260,7 +1256,6 @@ class PlayState extends MusicBeatState
 				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote, false, daNoteAbstract, false, true);
 				swagNote.sustainLength = songNotes[2];
 				swagNote.scrollFactor.set(0, 0);
-				swagNote.cameras = [camNOTE];
 				swagNote.refresh(SONG.fifthKey);
 				swagNote.refresh(SONG.fifthKey, true);
 
@@ -1329,9 +1324,6 @@ class PlayState extends MusicBeatState
 					if(SaveData.getData(PLAY_AS_OPPONENT)) {
 						sustainNote.mustPress = !sustainNote.mustPress;
 					}
-
-					sustainNote.cameras = [camNOTE];
-					configureSustainCurveShader(sustainNote);
 				}
 
 				swagNote.mustPress = gottaHitNote;
@@ -1667,88 +1659,6 @@ class PlayState extends MusicBeatState
 
 	function addToNoteX(alreadyX:Float, note:Note):Float {
 		return alreadyX;
-	}
-
-	function shouldUseSustainCurveShader():Bool {
-		return false;
-	}
-
-	function getSustainCurveStrength():Float {
-		var rawValue:Dynamic = ModLua.getSharedVariable("funkroadSustainCurveStrength", 0);
-		var parsedValue:Float = Std.parseFloat(Std.string(rawValue));
-
-		if(Math.isNaN(parsedValue)) {
-			return 0;
-		}
-
-		return parsedValue;
-	}
-
-	function getSustainCurveShaderSource():Null<String> {
-		if(sustainCurveShaderSource != null) {
-			return sustainCurveShaderSource;
-		}
-
-		var shaderPath:String = Paths.mora("funkroad_note_curve", "frag");
-
-		if(shaderPath == null || shaderPath.trim() == "") {
-			return null;
-		}
-
-		sustainCurveShaderSource = Assets.getText(shaderPath);
-		return sustainCurveShaderSource;
-	}
-
-	function configureSustainCurveShader(note:Note):Void {
-		if(note == null || !note.isSustainNote || note.sustainCurveShader != null || !shouldUseSustainCurveShader()) {
-			return;
-		}
-
-		var shaderSource:Null<String> = getSustainCurveShaderSource();
-
-		if(shaderSource == null || shaderSource.trim() == "") {
-			return;
-		}
-
-		note.applySustainCurveShader(new FeshShader(shaderSource));
-		updateSustainCurveShader(note);
-	}
-
-	function setSustainCurveShaderValue(shader:FeshShader, property:String, values:Array<Float>):Void {
-		if(shader == null) {
-			return;
-		}
-
-		var shaderField:Dynamic = Reflect.field(shader.data, property);
-
-		if(shaderField != null) {
-			Reflect.setProperty(shaderField, "value", cast values);
-		}
-	}
-
-	function updateSustainCurveShader(note:Note):Void {
-		if(note == null || !note.isSustainNote || !shouldUseSustainCurveShader()) {
-			return;
-		}
-
-		if(note.sustainCurveShader == null) {
-			configureSustainCurveShader(note);
-		}
-
-		var shader:FeshShader = note.sustainCurveShader;
-
-		if(shader == null) {
-			return;
-		}
-
-		var noteCenterX:Float = note.x + (note.width * 0.5);
-		var screenCenterX:Float = FlxG.width * 0.5;
-		var curveDirection:Float = noteCenterX <= screenCenterX ? 1 : -1;
-
-		setSustainCurveShaderValue(shader, "curveStrength", [getSustainCurveStrength()]);
-		setSustainCurveShaderValue(shader, "curveDirection", [curveDirection]);
-		setSustainCurveShaderValue(shader, "curveOriginY", [note.downscrollNote ? 1.0 : 0.0]);
-		setSustainCurveShaderValue(shader, "curvePadding", [SUSTAIN_CURVE_PADDING]);
 	}
 
 	private var paused:Bool = false;
@@ -2136,54 +2046,66 @@ class PlayState extends MusicBeatState
 				}
 
 				if (daNote.mustPress) {
-					daNote.setVisibility(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
+					final strumIndex = Math.floor(Math.abs(daNote.noteData));
+					final currentStrum = currentStrums.members[strumIndex];
+					final sustainDirectionAngle = currentStrum.directionAngle;
+					final sustainNoteAngle = currentStrum.directionAngle * -FeshMath.sec(daNote.yAngle);
+
+					daNote.setVisibility(currentStrum.onlyVisible);
 
 					daNote.setXaxis(
 						currentStrums.members,
-						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
-						addToNoteX(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote),
-						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+						currentStrum.x,
+						addToNoteX(currentStrum.x, daNote),
+						currentStrum.directionAngle
 					);
 
-					updateSustainCurveShader(daNote);
-					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
-					daNote.setNoteAlpha(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
+					daNote.setNoteAngle(currentStrum.angle, sustainNoteAngle);
+					daNote.setNoteAlpha(currentStrum.onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = currentStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
-					daNote.yAngle = currentStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
+					daNote.xAngle = currentStrum.xAngle;
+					daNote.yAngle = currentStrum.yAngle;
 
 					if (daNote.isSustainNote) {
-						daNote.setXaxisSustain(currentStrums.members, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].x + (Note.swagWidth / 3), currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+						daNote.setXaxisSustain(currentStrums.members, currentStrum.x, currentStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
 					}
 				}
 				else {
-					daNote.setVisibility(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyVisible);
+					final strumIndex = Math.floor(Math.abs(daNote.noteData));
+					final oppositeStrum = oppositeStrums.members[strumIndex];
+					final sustainDirectionAngle = oppositeStrum.directionAngle;
+					final sustainNoteAngle = oppositeStrum.directionAngle * -FeshMath.sec(daNote.yAngle);
+
+					daNote.setVisibility(oppositeStrum.onlyVisible);
 
 					daNote.setXaxis(
 						oppositeStrums.members,
-						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x,
-						addToNoteX(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, daNote),
-						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
+						oppositeStrum.x,
+						addToNoteX(oppositeStrum.x, daNote),
+						oppositeStrum.directionAngle
 					);
 
-					updateSustainCurveShader(daNote);
-					daNote.setNoteAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
-					daNote.setNoteAlpha(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
+					daNote.setNoteAngle(oppositeStrum.angle, sustainNoteAngle);
+					daNote.setNoteAlpha(oppositeStrum.onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].xAngle;
-					daNote.yAngle = oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].yAngle;
+					daNote.xAngle = oppositeStrum.xAngle;
+					daNote.yAngle = oppositeStrum.yAngle;
 
 					if (daNote.isSustainNote) {
-						daNote.setXaxisSustain(oppositeStrums.members, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].x + (Note.swagWidth / 3), oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle);
+						daNote.setXaxisSustain(oppositeStrums.members, oppositeStrum.x, oppositeStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
 					}
 				}
 
-				if(daNote.isSustainNote && !daNote.cameras.contains(camNOTE)) {
+				if(daNote.isSustainNote) {
+					if(!daNote.cameras.contains(camNOTE.camNoteSustain)) {
+						daNote.cameras = [camNOTE.camNoteSustain];
+					}
+				}else if(daNote.cameras.contains(camNOTE.camNoteSustain) && daNote.noteAbstract != "side note") {
 					daNote.cameras = [camNOTE];
 				}
-		 
+
 				var detector:Bool = Conductor.trackPosition > DefaultHandler.getNoteTime(daNote.strumTime) + 260;
 
 				if (detector) {
@@ -3326,6 +3248,7 @@ class PlayState extends MusicBeatState
 			timers.push(0);
 
 			if(cover != null) {
+				cover.cameras = [camNOTE.camNoteSustain];
 				grpHoldCover.add(cover);
 				updateHoldCoverPosition(index, currentSide);
 			}
@@ -3498,6 +3421,7 @@ class PlayState extends MusicBeatState
 		modifiableCameras.set("camHUD", camHUD);
 		modifiableCameras.set("camGAME", FlxG.camera);
 		modifiableCameras.set("camNOTE", camNOTE);
+		modifiableCameras.set("camNoteSustain", camNOTE.camNoteSustain);
 
 		setLua("songName", PlayState.SONG.song);
 		setLua("isStoryMode", PlayState.isStoryMode);
@@ -3856,20 +3780,6 @@ class PlayState extends MusicBeatState
 				return 0;
 			});
 
-			addCallback("getNoteCameraCenter", function(id:Int, ?axis:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				var point = strumOBJ.getMidpoint();
-				var value:Float = 0;
-
-				switch(axis.toLowerCase()) {
-                    case "x": value = point.x;
-                    case "y": value = point.y;
-                }
-
-				point.put();
-				return value;
-			});
-
 			addCallback("noteTweenX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 
@@ -4106,7 +4016,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function get_wobbleModPower():Float {
-		return 0;
+		return wobbleModPower;
 	}
 
 	override function stepHit()

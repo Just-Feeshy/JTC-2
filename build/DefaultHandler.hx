@@ -28,7 +28,6 @@ private typedef Modifiers = {
     var fadeInNotes:Modifier;
     var safeBalls:Modifier;
     var blindEffect:Modifier;
-    var wobbleNotes:Modifier;
     var cameraMovement:Modifier;
     var botMode:Modifier;
 }
@@ -108,7 +107,6 @@ class DefaultHandler {
             fadeInNotes: {enabled: false},
             safeBalls: {enabled: false},
             blindEffect: {enabled: false},
-            wobbleNotes: {enabled: false},
             cameraMovement: {enabled: false},
             botMode: {enabled: false}
         };

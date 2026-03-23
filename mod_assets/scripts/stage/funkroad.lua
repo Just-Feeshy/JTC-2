@@ -2,7 +2,7 @@
 -- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
 
 --variables of components
-local frost_modchart = nil
+local frost_modchart = {}
 local skater_boi = nil
 local string_utils = nil
 local inputs = nil
@@ -20,6 +20,25 @@ local notDancing = false
 
 -- Constants
 local phaseTwo = 643
+local noteCurveFadeStrength = 1
+local noteCurveOriginY = 0.18
+local noteCurvePadding = 160 * 0.7 * 0.75
+local noteCurveSwagWidth = 160 * 0.7
+local noteCurveTravelDistance = 260
+local noteCurveFadeStart = 614
+local noteCurveFadeEnd = 640
+local sustainCurveShaderName = "funkroad_sustain_curve"
+local sustainCurveCameraName = "camNoteSustain"
+local noteCurveLaneCentersA = {0, 0, 0, 0}
+local noteCurveLaneCentersB = {0, 0, 0, 0}
+local noteCurveLaneCentersC = {0, 0, 0, 0}
+local noteCurveLaneOffsetXA = {0, 0, 0, 0}
+local noteCurveLaneOffsetXB = {0, 0, 0, 0}
+local noteCurveLaneOffsetXC = {0, 0, 0, 0}
+local noteCurveLaneTravelYA = {1, 1, 1, 1}
+local noteCurveLaneTravelYB = {1, 1, 1, 1}
+local noteCurveLaneTravelYC = {1, 1, 1, 1}
+local noteCurveLaneCount = 8
 local jtcStrumAnims = {
     "singRIGHT",
     "singUP",
@@ -45,12 +64,14 @@ local jtcOffsets = {
 local daddyIsHere = false
 local daddyTrans = false
 local hasManageInputs = false
+local secondBaseX = 560
+local secondBaseY = 130
 
 -- local functions
 
 local function playAnimation(spriteName, animName)
     if animName == "idle" and notDancing then
-		setSpritePosition("second", 650, 100)
+		setSpritePosition("second", secondBaseX, secondBaseY)
 		notDancing = false
     end
 
@@ -58,10 +79,18 @@ local function playAnimation(spriteName, animName)
 	curAnimName = animName
 end
 
+local function startsWith(value, prefix)
+    if type(value) ~= "string" or type(prefix) ~= "string" then
+        return false
+    end
+
+    return value:sub(1, #prefix) == prefix
+end
+
 local function init()
 
 	-- Frostbite Car stuff
-    frost_modchart = nil
+    frost_modchart = {}
 	skater_boi = nil
 	string_utils = nil
 
@@ -92,10 +121,179 @@ local function cloudIncome()
     end
 end
 
+local function getSustainCurveStrength()
+    local stepValue = curStepFloat
+
+    if stepValue == nil then
+        stepValue = curStep or 0
+    end
+
+    if type(stepValue) ~= "number" then
+        stepValue = 0
+    end
+
+    local strength = 0
+
+    if stepValue < noteCurveFadeStart then
+        strength = noteCurveFadeStrength
+    elseif stepValue < noteCurveFadeEnd then
+        local progress = (stepValue - noteCurveFadeStart) / (noteCurveFadeEnd - noteCurveFadeStart)
+        local eased = progress * progress * (3 - (2 * progress))
+
+        strength = noteCurveFadeStrength * (1 - eased)
+    end
+
+    return strength
+end
+
+local function updateSustainCurveShader()
+    local setFloat = nil
+    local setFloatArray = nil
+    local setInt = nil
+
+    if setShaderFloat ~= nil then
+        setFloat = function(property, value)
+            return setShaderFloat(sustainCurveCameraName, property, value)
+        end
+    end
+
+    if setShaderFloatArray ~= nil then
+        setFloatArray = function(property, value)
+            return setShaderFloatArray(sustainCurveCameraName, property, value)
+        end
+    end
+
+    if setShaderInt ~= nil then
+        setInt = function(property, value)
+            return setShaderInt(sustainCurveCameraName, property, value)
+        end
+    end
+
+    if setFloat == nil or setFloatArray == nil or setInt == nil then
+        return
+    end
+
+    local stepValue = curStepFloat
+
+    if stepValue == nil then
+        stepValue = curStep or 0
+    end
+
+    if type(stepValue) ~= "number" then
+        stepValue = 0
+    end
+
+    local laneCount = 8
+
+    if defaultPlayerStrumX4 ~= nil then
+        laneCount = 10
+    end
+
+    noteCurveLaneCount = laneCount
+
+    for lane = 0, laneCount - 1 do
+        local defaultLaneX = 0
+        local defaultLaneY = 0
+
+        if lane < 4 then
+            defaultLaneX = _G["defaultOpponentStrumX" .. tostring(lane)] or 0
+            defaultLaneY = _G["defaultOpponentStrumY" .. tostring(lane)] or 0
+        else
+            defaultLaneX = _G["defaultPlayerStrumX" .. tostring(lane - 4)] or 0
+            defaultLaneY = _G["defaultPlayerStrumY" .. tostring(lane - 4)] or 0
+        end
+        local travelY = math.abs((windowHeight * 0.5) - defaultLaneY)
+
+        if lane < 4 then
+            noteCurveLaneTravelYA[lane + 1] = travelY
+        elseif lane < 8 then
+            noteCurveLaneTravelYB[(lane - 4) + 1] = travelY
+        else
+            noteCurveLaneTravelYC[(lane - 8) + 1] = travelY
+        end
+    end
+
+    if getNotePosX ~= nil then
+        for lane = 0, laneCount - 1 do
+            local laneX = getNotePosX(lane)
+            local defaultLaneX = 0
+
+            if laneX == nil then
+                laneX = 0
+            end
+
+            if lane < 4 then
+                defaultLaneX = _G["defaultOpponentStrumX" .. tostring(lane)] or 0
+            else
+                defaultLaneX = _G["defaultPlayerStrumX" .. tostring(lane - 4)] or 0
+            end
+
+            local centerX = laneX + (noteCurveSwagWidth * 0.5)
+            local xDistance = defaultLaneX - laneX
+
+            if lane < 4 then
+                noteCurveLaneCentersA[lane + 1] = centerX
+                noteCurveLaneOffsetXA[lane + 1] = xDistance
+            elseif lane < 8 then
+                noteCurveLaneCentersB[(lane - 4) + 1] = centerX
+                noteCurveLaneOffsetXB[(lane - 4) + 1] = xDistance
+            else
+                noteCurveLaneCentersC[(lane - 8) + 1] = centerX
+                noteCurveLaneOffsetXC[(lane - 8) + 1] = xDistance
+            end
+        end
+    end
+
+    if laneCount < 9 then
+        noteCurveLaneCentersC[1] = 2.0
+        noteCurveLaneCentersC[2] = 2.0
+        noteCurveLaneCentersC[3] = 2.0
+        noteCurveLaneCentersC[4] = 2.0
+        noteCurveLaneOffsetXC[1] = 0
+        noteCurveLaneOffsetXC[2] = 0
+        noteCurveLaneOffsetXC[3] = 0
+        noteCurveLaneOffsetXC[4] = 0
+        noteCurveLaneTravelYC[1] = 1
+        noteCurveLaneTravelYC[2] = 1
+        noteCurveLaneTravelYC[3] = 1
+        noteCurveLaneTravelYC[4] = 1
+    end
+
+    if getNotePosY ~= nil and windowHeight ~= nil and windowHeight > 0 then
+        local laneY = getNotePosY(0)
+
+        if laneY ~= nil then
+            noteCurveOriginY = laneY / windowHeight
+        end
+    end
+
+    setFloat("curveStrength", getSustainCurveStrength())
+    setFloat("curveOriginY", noteCurveOriginY)
+    setFloatArray("laneCentersA", noteCurveLaneCentersA)
+    setFloatArray("laneCentersB", noteCurveLaneCentersB)
+    setFloatArray("laneCentersC", noteCurveLaneCentersC)
+    setFloatArray("laneOffsetXA", noteCurveLaneOffsetXA)
+    setFloatArray("laneOffsetXB", noteCurveLaneOffsetXB)
+    setFloatArray("laneOffsetXC", noteCurveLaneOffsetXC)
+    setFloatArray("laneTravelYA", noteCurveLaneTravelYA)
+    setFloatArray("laneTravelYB", noteCurveLaneTravelYB)
+    setFloatArray("laneTravelYC", noteCurveLaneTravelYC)
+    setInt("laneCount", noteCurveLaneCount)
+end
+
 --events
 function generatedStage()
     init()
     setEndVideo("post.mp4")
+
+    if initLuaShader ~= nil then
+        initLuaShader(sustainCurveShaderName, "feeshdata")
+    end
+
+    if setCameraShader ~= nil then
+        setCameraShader(sustainCurveCameraName, sustainCurveShaderName)
+        updateSustainCurveShader()
+    end
 
     createSprite("frostbiteCAR")
 	setSpritePosition("frostbiteCAR", -170, -35)
@@ -109,7 +307,7 @@ function generatedStage()
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
 
 	createSprite("second")
-	setSpritePosition("second", 650, 100)
+	setSpritePosition("second", secondBaseX, secondBaseY)
 	createCombinedFrames("second-frames", "skater_assets", "skater_miss_notes", "sparrow", "sparrow")
 	addFramesToSprite("second", "second-frames")
 	addAnimationByPrefix("second", "idle", "skater dance IDLE0", 24, false)
@@ -132,9 +330,11 @@ function generatedStage()
     setSpriteX("cloud", -6736)
     addSpriteToState("cloud")
 
-    setupPunchHealth(3)
-    frost_modchart = require("mod_assets/scripts/modcharts/frostbeat")
-    frost_modchart.initStrumsAndNotes()
+	setupPunchHealth(3)
+	frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
+	if frost_modchart.initStrumsAndNotes ~= nil then
+		frost_modchart.initStrumsAndNotes()
+	end
 
 	string_utils = require("mod_assets/scripts/utils/stringTools")
     inputs = require("mod_assets/scripts/utils/inputs")
@@ -211,7 +411,7 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
     if daddyIsHere then
         if tag == "joul" or tag == "t" then
 		    playAnimation("second", jtcStrumAnims[noteData + 1])
-			setSpritePosition("second", 650 - jtcOffsets[noteData + 1][1], 100 - jtcOffsets[noteData + 1][2])
+			setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 1][1], secondBaseY - jtcOffsets[noteData + 1][2])
 			notDancing = true
         end
     end
@@ -223,7 +423,7 @@ function noteMiss(noteData, tag)
     if daddyIsHere then
 		if tag == "joul" or tag == "t" then
 		    playAnimation("second", jtcStrumAnims[noteData + 1] .. " miss")
-			setSpritePosition("second", 650 - jtcOffsets[noteData + 5][1], 100 - jtcOffsets[noteData + 5][2])
+			setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 5][1], secondBaseY - jtcOffsets[noteData + 5][2])
 			notDancing = true
 		end
     end
@@ -234,7 +434,7 @@ function onUpdate(elapsed)
 
 		-- Character update
 		do
-            if string_utils.starts_with(curAnimName, "sing") then
+            if startsWith(curAnimName, "sing") then
                 holdTimer = holdTimer + elapsed
             end
 
@@ -244,7 +444,7 @@ function onUpdate(elapsed)
             end
 
             if not stunned
-                and not string_utils.starts_with(curAnimName, "sing")
+                and not startsWith(curAnimName, "sing")
                 and sprAnimFinished("second") then
                     playAnimation("second", "idle")
             end
@@ -277,14 +477,18 @@ function onUpdate(elapsed)
 		    end
 		end
 
-        frost_modchart.updateStrumSpin()
+        if frost_modchart.updateStrumSpin ~= nil then
+            frost_modchart.updateStrumSpin()
+        end
 
-        --Modchart Section 1
-        frost_modchart.sectionOne(elapsed)
+        if frost_modchart.sectionOne ~= nil then
+            frost_modchart.sectionOne(elapsed)
+        end
 
-        --Modchart Section 2 (There is a HELL version, try it out if you want to suffer)
-		-- frost_modchart.sectionTwo_Hell(elapsed
-        frost_modchart.sectionTwo_REGULAR()
+        if frost_modchart.sectionTwo_REGULAR ~= nil then
+            frost_modchart.sectionTwo_REGULAR()
+        end
+        updateSustainCurveShader()
 
         -- Cloud Incoming for transition
         cloudIncome()
@@ -367,4 +571,7 @@ function manageInputs()
 end
 
 function onDestroy()
+    if removeCameraShader ~= nil then
+        removeCameraShader(sustainCurveCameraName)
+    end
 end

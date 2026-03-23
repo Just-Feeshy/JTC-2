@@ -34,6 +34,11 @@ class CheesyStage extends StorageStage {
 		"singLEFTmiss" => [-27, -15]
 	];
 
+	final funkroadDadPhaseOneOffset:Array<Float> = [-120, 30];
+	final funkroadDadPhaseTwoOffset:Array<Float> = [-220, 40];
+	final funkroadBoyfriendPhaseOneOffset:Array<Float> = [120, 60];
+	final funkroadBoyfriendPhaseTwoOffset:Array<Float> = [180, 70];
+
 	var tweenIndex:UInt = 0;
 
 	var allTweens:Array<FlxTween>;
@@ -43,6 +48,8 @@ class CheesyStage extends StorageStage {
 
 	var dadShouldDance:Bool = true;
 	var phase2_switch:Bool = false;
+	var funkroadBaseBoyfriendPos:BasicPoint;
+	var funkroadBaseDadPos:BasicPoint;
 
 	var curStep:Float = 0;
 	var curBeat:Float = 0;
@@ -168,6 +175,38 @@ class CheesyStage extends StorageStage {
 		boyfriend.animation.addByPrefix(anim, prefix, 24, false);
 	}
 
+	function cacheFunkroadBasePositions():Void {
+		if(stage != "funkroad" || dad == null || boyfriend == null) {
+			return;
+		}
+
+		if(funkroadBaseDadPos == null) {
+			funkroadBaseDadPos = {x: dad.x, y: dad.y};
+		}
+
+		if(funkroadBaseBoyfriendPos == null) {
+			funkroadBaseBoyfriendPos = {x: boyfriend.x, y: boyfriend.y};
+		}
+	}
+
+	function applyFunkroadLayout(phaseTwo:Bool = false):Void {
+		if(stage != "funkroad") {
+			return;
+		}
+
+		cacheFunkroadBasePositions();
+
+		if(dad != null && funkroadBaseDadPos != null) {
+			var dadOffset = phaseTwo ? funkroadDadPhaseTwoOffset : funkroadDadPhaseOneOffset;
+			dad.setPosition(funkroadBaseDadPos.x + dadOffset[0], funkroadBaseDadPos.y + dadOffset[1]);
+		}
+
+		if(boyfriend != null && funkroadBaseBoyfriendPos != null) {
+			var boyfriendOffset = phaseTwo ? funkroadBoyfriendPhaseTwoOffset : funkroadBoyfriendPhaseOneOffset;
+			boyfriend.setPosition(funkroadBaseBoyfriendPos.x + boyfriendOffset[0], funkroadBaseBoyfriendPos.y + boyfriendOffset[1]);
+		}
+	}
+
 	override function configStage():Void {
 		boyfriend = Register.getInGameCharacter(BOYFRIEND);
 		dad = Register.getInGameCharacter(OPPONENT);
@@ -192,6 +231,10 @@ class CheesyStage extends StorageStage {
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
 		}
+
+		if(stage == "funkroad") {
+			applyFunkroadLayout(false);
+		}
 	}
 
 	override function configIcons(iconP1:HealthIcon, iconP2:HealthIcon):Void {
@@ -213,7 +256,7 @@ class CheesyStage extends StorageStage {
 
 	override function setCamPos(camPos:FlxPoint):FlxPoint {
 		if(stage == "funkroad") {
-			return FlxPoint.get(751.5, 458.5);
+			return FlxPoint.get(785, 458.5);
 		}
 
 		return null;
@@ -251,7 +294,7 @@ class CheesyStage extends StorageStage {
 				}
 			});
 
-			boyfriend.x += 50;
+			applyFunkroadLayout(true);
 		}
 	}
 
@@ -270,8 +313,7 @@ class CheesyStage extends StorageStage {
 			dad.scale.set(1.1, 1.1);
 			dad.updateHitbox();
 			dad.shouldPlayDance = false;
-
-			boyfriend.x += 250;
+			applyFunkroadLayout(phase2_switch);
 		}
 
 		if(boyfriend.animation.curAnim != null) {

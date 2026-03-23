@@ -81,7 +81,6 @@ class ModLua {
     public var luaShaderSources(default, null):Map<String, LuaShaderSource> = new Map<String, LuaShaderSource>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameraShaderFilters(default, null):Map<String, ShaderFilter> = new Map<String, ShaderFilter>();
-    public var luaGameShaderFilters(default, null):Map<String, ShaderFilter> = new Map<String, ShaderFilter>();
 	public var luaBitmaps(default, null):Map<String, BitmapData> = new Map<String, BitmapData>();
 	public var luaFrameCollections(default, null):Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
 
@@ -89,18 +88,6 @@ class ModLua {
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
-    }
-
-    public static function setSharedVariable(name:String, value:Dynamic):Void {
-        sharedVariables.set(name, value);
-    }
-
-    public static function getSharedVariable(name:String, ?defaultValue:Dynamic = null):Dynamic {
-        if(sharedVariables.exists(name)) {
-            return sharedVariables.get(name);
-        }
-
-        return defaultValue;
     }
 
     public function execute() {
@@ -1441,18 +1428,6 @@ class ModLua {
             return removeShaderFromCamera(cameraName);
         });
 
-        Lua_helper.add_callback(lua, "setGameShader", function(shaderName:String, tag:String = "game") {
-            return attachShaderToGame(shaderName, tag);
-        });
-
-        Lua_helper.add_callback(lua, "removeGameShader", function(tag:String = "game") {
-            return removeShaderFromGame(tag);
-        });
-
-        Lua_helper.add_callback(lua, "attachShaderToGame", function(shaderName:String, tag:String = "game") {
-            return attachShaderToGame(shaderName, tag);
-        });
-
         Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, cameraName:String) {
             return attachShaderToCamera(name, cameraName);
         });
@@ -2020,23 +1995,6 @@ class ModLua {
     }
 
     function attachShaderToCamera(shaderName:String, cameraName:String):Bool {
-        if(cameraName == "camNOTE_SUSTAIN") {
-            if(PlayState.camNOTE == null) {
-                Log.error('Camera `$cameraName` could not be found!');
-                return false;
-            }
-
-            var noteShader:FeshShader = luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, cameraName);
-
-            if(noteShader == null) {
-                return false;
-            }
-
-            PlayState.camNOTE.setSustainCompositeShader(cast noteShader);
-            luaShaders.set(cameraName, noteShader);
-            return true;
-        }
-
         var cam:FlxCamera = getCamera(cameraName);
 
         if(cam == null) {
@@ -2066,39 +2024,6 @@ class ModLua {
         return true;
     }
 
-    function getGameFilters():Array<BitmapFilter> {
-        var filters:Dynamic = Reflect.getProperty(FlxG.game, "_filters");
-
-        if(filters == null) {
-            return [];
-        }
-
-        return (cast filters:Array<BitmapFilter>).concat([]);
-    }
-
-    function attachShaderToGame(shaderName:String, tag:String = "game"):Bool {
-        var shader:FeshShader = luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, tag);
-
-        if(shader == null) {
-            return false;
-        }
-
-        var filters:Array<BitmapFilter> = getGameFilters();
-        var previousFilter:ShaderFilter = luaGameShaderFilters.get(tag);
-
-        if(previousFilter != null) {
-            filters.remove(previousFilter);
-        }
-
-        var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
-        filters.push(shaderFilter);
-
-        FlxG.game.setFilters(filters);
-        luaGameShaderFilters.set(tag, shaderFilter);
-        luaShaders.set(tag, shader);
-        return true;
-    }
-
     function removeShaderFromSprite(spriteName:String):Bool {
         try {
         var spr:FlxSprite = getSprite(spriteName);
@@ -2119,16 +2044,6 @@ class ModLua {
     }
 
     function removeShaderFromCamera(cameraName:String):Bool {
-        if(cameraName == "camNOTE_SUSTAIN") {
-            if(PlayState.camNOTE == null) {
-                return false;
-            }
-
-            PlayState.camNOTE.clearSustainCompositeShader();
-            luaShaders.remove(cameraName);
-            return true;
-        }
-
         var cam:FlxCamera = getCamera(cameraName);
         var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
 
@@ -2142,22 +2057,6 @@ class ModLua {
         cam.setFilters(filters);
         luaCameraShaderFilters.remove(cameraName);
         luaShaders.remove(cameraName);
-        return true;
-    }
-
-    function removeShaderFromGame(tag:String = "game"):Bool {
-        var previousFilter:ShaderFilter = luaGameShaderFilters.get(tag);
-
-        if(previousFilter == null) {
-            return false;
-        }
-
-        var filters:Array<BitmapFilter> = getGameFilters();
-        filters.remove(previousFilter);
-
-        FlxG.game.setFilters(filters);
-        luaGameShaderFilters.remove(tag);
-        luaShaders.remove(tag);
         return true;
     }
 
@@ -2556,21 +2455,6 @@ class ModLua {
 
             luaCameraShaderFilters.clear();
             luaCameraShaderFilters = null;
-        }
-
-        if(luaGameShaderFilters != null) {
-            var gameShaderNames:Array<String> = [];
-
-            for(k in luaGameShaderFilters.keys()) {
-                gameShaderNames.push(k);
-            }
-
-            for(k in gameShaderNames) {
-                removeShaderFromGame(k);
-            }
-
-            luaGameShaderFilters.clear();
-            luaGameShaderFilters = null;
         }
 
         if(luaShaders != null) {
