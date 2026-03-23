@@ -29,7 +29,7 @@ vec4 sampleSustain(vec2 uv) {
         return vec4(0.0);
     }
 
-    return flixel_texture2D(bitmap, uv);
+    return texture2D(openfl_Texture, uv);
 }
 
 void getNearestLaneData(float x, out float laneCenter, out float curveDirection) {

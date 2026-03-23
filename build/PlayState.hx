@@ -56,6 +56,7 @@ import openfl.events.KeyboardEvent;
 import feshixl.group.FeshEventGroup;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
+import feshixl.shaders.FeshFilterShader;
 import feshixl.shaders.FeshShader;
 import lime.utils.Assets;
 import lime.system.ThreadPool;
@@ -214,6 +215,7 @@ class PlayState extends MusicBeatState
 	public var oppositeStrums(get, never):FlxTypedSpriteGroup<Strum>;
 
 	private static inline var NOTE_CAMERA_SHADER_KEY:String = "camNOTE";
+    private var noteCameraShader:FeshFilterShader;
 
 	/*
 	* When note is missed, player WON'T receive damage.
@@ -828,23 +830,14 @@ class PlayState extends MusicBeatState
 			return false;
 		}
 
-		var shader:FeshShader = lua.resolveLuaShader(shaderName, NOTE_CAMERA_SHADER_KEY);
+		var shader:FeshFilterShader = lua.createFilterShaderInstance(shaderName);
 
 		if(shader == null) {
 			return false;
 		}
 
-		var filters:Array<BitmapFilter> = lua.getCameraFiltersCopy(camNOTE);
-		var previousFilter:ShaderFilter = lua.luaCameraShaderFilters.get(NOTE_CAMERA_SHADER_KEY);
-
-		if(previousFilter != null) {
-			filters.remove(previousFilter);
-		}
-
-		var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
-		camNOTE.setSustainCompositeShader(cast shader);
-		lua.luaCameraShaderFilters.remove(NOTE_CAMERA_SHADER_KEY);
-		lua.luaShaders.set(NOTE_CAMERA_SHADER_KEY, shader);
+        noteCameraShader = shader;
+		camNOTE.setSustainCompositeShader(shader);
 		return true;
 	}
 
@@ -855,16 +848,68 @@ class PlayState extends MusicBeatState
 			return false;
 		}
 
-		var previousFilter:ShaderFilter = lua.luaCameraShaderFilters.get(NOTE_CAMERA_SHADER_KEY);
-
-		if(previousFilter != null) {
-			lua.luaCameraShaderFilters.remove(NOTE_CAMERA_SHADER_KEY);
-		}
-
 		camNOTE.clearSustainCompositeShader();
-		lua.luaShaders.remove(NOTE_CAMERA_SHADER_KEY);
+        noteCameraShader = null;
 		return true;
 	}
+
+    private function getNoteCameraShaderField(property:String):Dynamic {
+        if(noteCameraShader == null) {
+            return null;
+        }
+
+        return Reflect.field(noteCameraShader.data, property);
+    }
+
+    private function setNoteCameraShaderFloatValues(property:String, values:Array<Float>):Bool {
+        var shaderField:Dynamic = getNoteCameraShaderField(property);
+
+        if(shaderField == null) {
+            return false;
+        }
+
+        Reflect.setProperty(shaderField, "value", cast values);
+        return true;
+    }
+
+    private function setNoteCameraShaderIntValues(property:String, values:Array<Int>):Bool {
+        var shaderField:Dynamic = getNoteCameraShaderField(property);
+
+        if(shaderField == null) {
+            return false;
+        }
+
+        Reflect.setProperty(shaderField, "value", cast values);
+        return true;
+    }
+
+    private function normalizeNoteShaderFloatArray(values:Array<Dynamic>):Array<Float> {
+        var output:Array<Float> = [];
+
+        if(values == null) {
+            return output;
+        }
+
+        for(value in values) {
+            output.push(value == null ? 0 : Std.parseFloat(Std.string(value)));
+        }
+
+        return output;
+    }
+
+    private function normalizeNoteShaderIntArray(values:Array<Dynamic>):Array<Int> {
+        var output:Array<Int> = [];
+
+        if(values == null) {
+            return output;
+        }
+
+        for(value in values) {
+            output.push(value == null ? 0 : Std.int(Std.parseFloat(Std.string(value))));
+        }
+
+        return output;
+    }
 
 	function clearDialogue(dialogue:IDialogue) {
 		dialogue.destroyDialogue();
@@ -3595,6 +3640,22 @@ class PlayState extends MusicBeatState
 
         addCallback("removeNoteCameraShader", function() {
             return removeNoteCameraShader();
+        });
+
+        addCallback("setNoteCameraShaderFloat", function(property:String, value:Float) {
+            return setNoteCameraShaderFloatValues(property, [value]);
+        });
+
+        addCallback("setNoteCameraShaderFloatArray", function(property:String, values:Array<Dynamic>) {
+            return setNoteCameraShaderFloatValues(property, normalizeNoteShaderFloatArray(values));
+        });
+
+        addCallback("setNoteCameraShaderInt", function(property:String, value:Int) {
+            return setNoteCameraShaderIntValues(property, [value]);
+        });
+
+        addCallback("setNoteCameraShaderIntArray", function(property:String, values:Array<Dynamic>) {
+            return setNoteCameraShaderIntValues(property, normalizeNoteShaderIntArray(values));
         });
 
 		addCallback("callEvent", function(skill:String, value:String, value2:String) {

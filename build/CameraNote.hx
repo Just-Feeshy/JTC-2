@@ -7,6 +7,7 @@ import flixel.system.FlxAssets.FlxShader;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import feshixl.FeshCamera;
+import feshixl.shaders.FeshFilterShader;
 import openfl.display.BitmapData;
 import openfl.display.Bitmap;
 import openfl.display.BlendMode;
@@ -16,6 +17,7 @@ import openfl.display.ShaderParameter;
 import openfl.display.Shape;
 import openfl.display.Sprite;
 import openfl.display3D.Context3DTextureFilter;
+import openfl.filters.ShaderFilter;
 import openfl.geom.ColorTransform;
 import openfl.geom.Rectangle;
 
@@ -29,7 +31,8 @@ class CameraNote extends FeshCamera {
     private var sustainCompositeBitmap:Bitmap;
     private var blitSustainShape:Shape;
     private var noteLayerRect:Rectangle;
-    private var sustainCompositeShader:FlxShader;
+    private var sustainCompositeShader:FeshFilterShader;
+    private var sustainCompositeFilter:ShaderFilter;
 
     private var notePassActive:Bool = false;
     private var notePassDirty:Bool = false;
@@ -131,12 +134,14 @@ class CameraNote extends FeshCamera {
         currentNoteTarget = NOTE_TARGET_NONE;
     }
 
-    public function setSustainCompositeShader(shader:FlxShader):Void {
+    public function setSustainCompositeShader(shader:FeshFilterShader):Void {
         sustainCompositeShader = shader;
+        sustainCompositeFilter = shader != null ? new ShaderFilter(shader) : null;
     }
 
     public function clearSustainCompositeShader():Void {
         sustainCompositeShader = null;
+        sustainCompositeFilter = null;
     }
 
     public inline function hasSustainCompositeShader():Bool {
@@ -152,7 +157,6 @@ class CameraNote extends FeshCamera {
         if(currentNoteTarget != NOTE_TARGET_NONE) {
             ensureNoteTargets();
             drawPixelsToNoteBuffer(getTargetBuffer(), pixels, matrix, blend, smoothing);
-            return;
         }
 
         super.drawPixels(frame, pixels, matrix, transform, blend, smoothing, shader);
@@ -163,7 +167,6 @@ class CameraNote extends FeshCamera {
         if(currentNoteTarget != NOTE_TARGET_NONE) {
             ensureNoteTargets();
             copyPixelsToNoteBuffer(getTargetBuffer(), pixels, sourceRect, destPoint, blend, smoothing);
-            return;
         }
 
         super.copyPixels(frame, pixels, sourceRect, destPoint, transform, blend, smoothing, shader);
@@ -176,20 +179,26 @@ class CameraNote extends FeshCamera {
     }
 
     override function render():Void {
+        super.render();
+
         if(FlxG.renderTile) {
             if(sustainCompositeShader != null) {
                 ensureNoteTargets();
                 sustainCompositeBitmap.bitmapData = sustainNoteBuffer != null ? sustainNoteBuffer : dummyNoteBuffer;
                 sustainCompositeBitmap.smoothing = antialiasing;
-                sustainCompositeBitmap.shader = cast sustainCompositeShader;
+                sustainCompositeBitmap.shader = null;
+                sustainCompositeBitmap.filters = sustainCompositeFilter != null ? [sustainCompositeFilter] : null;
                 sustainCompositeBitmap.visible = true;
+
+                if(canvas != null && sustainCompositeBitmap.parent == canvas) {
+                    canvas.setChildIndex(sustainCompositeBitmap, canvas.numChildren - 1);
+                }
             } else {
                 sustainCompositeBitmap.visible = false;
                 sustainCompositeBitmap.shader = null;
+                sustainCompositeBitmap.filters = null;
             }
         }
-
-        super.render();
     }
 
     override function destroy() {
@@ -203,6 +212,7 @@ class CameraNote extends FeshCamera {
         blitSustainShape = null;
         noteLayerRect = null;
         sustainCompositeShader = null;
+        sustainCompositeFilter = null;
 
         super.destroy();
     }
@@ -359,15 +369,6 @@ class CameraNote extends FeshCamera {
 
     private function drawNoteBuffersToMainBuffer():Void {
         if(sustainNoteBuffer == null) {
-            return;
-        }
-
-        if(sustainCompositeShader != null) {
-            blitSustainShape.graphics.clear();
-            blitSustainShape.graphics.beginShaderFill(cast sustainCompositeShader);
-            blitSustainShape.graphics.drawRect(0, 0, noteLayerRect.width, noteLayerRect.height);
-            blitSustainShape.graphics.endFill();
-            buffer.draw(blitSustainShape);
             return;
         }
 

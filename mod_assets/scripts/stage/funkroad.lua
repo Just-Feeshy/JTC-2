@@ -158,7 +158,41 @@ local function updateSustainCurveFramebuffer()
         return
     end
 
-    if setShaderFloat == nil or setShaderFloatArray == nil or setShaderInt == nil then
+    local setFloat = setNoteCameraShaderFloat or nil
+    local setFloatArray = setNoteCameraShaderFloatArray or nil
+    local setInt = setNoteCameraShaderInt or nil
+
+    if setFloat == nil then
+        setFloat = function(property, value)
+            if setShaderFloat ~= nil then
+                return setShaderFloat("camNOTE", property, value)
+            end
+
+            return false
+        end
+    end
+
+    if setFloatArray == nil then
+        setFloatArray = function(property, value)
+            if setShaderFloatArray ~= nil then
+                return setShaderFloatArray("camNOTE", property, value)
+            end
+
+            return false
+        end
+    end
+
+    if setInt == nil then
+        setInt = function(property, value)
+            if setShaderInt ~= nil then
+                return setShaderInt("camNOTE", property, value)
+            end
+
+            return false
+        end
+    end
+
+    if setFloat == nil or setFloatArray == nil or setInt == nil then
         return
     end
 
@@ -215,13 +249,13 @@ local function updateSustainCurveFramebuffer()
         end
     end
 
-        setShaderFloat("camNOTE", "curveStrength", getGlobalVar ~= nil and (getGlobalVar(sustainCurveStrengthKey) or 0) or 0)
-        setShaderFloat("camNOTE", "curveOriginY", noteCurveOriginY)
-        setShaderFloat("camNOTE", "curvePadding", noteCurvePadding)
-        setShaderFloatArray("camNOTE", "laneCentersA", noteCurveLaneCentersA)
-        setShaderFloatArray("camNOTE", "laneCentersB", noteCurveLaneCentersB)
-        setShaderFloatArray("camNOTE", "laneCentersC", noteCurveLaneCentersC)
-        setShaderInt("camNOTE", "laneCount", noteCurveLaneCount)
+        setFloat("curveStrength", getGlobalVar ~= nil and (getGlobalVar(sustainCurveStrengthKey) or 0) or 0)
+        setFloat("curveOriginY", noteCurveOriginY)
+        setFloat("curvePadding", noteCurvePadding)
+        setFloatArray("laneCentersA", noteCurveLaneCentersA)
+        setFloatArray("laneCentersB", noteCurveLaneCentersB)
+        setFloatArray("laneCentersC", noteCurveLaneCentersC)
+        setInt("laneCount", noteCurveLaneCount)
 end
 
 --events

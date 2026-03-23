@@ -20,6 +20,7 @@ import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.system.FlxSound;
 import flixel.graphics.frames.FlxFramesCollection;
 import feshixl.shaders.FeshShader;
+import feshixl.shaders.FeshFilterShader;
 import openfl.display.BitmapData;
 import openfl.display.GradientType;
 import openfl.display.InterpolationMethod;
@@ -1715,6 +1716,17 @@ class ModLua {
 
     public function resolveLuaShader(shaderName:String, tag:String):FeshShader {
         return luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, tag);
+    }
+
+    public function createFilterShaderInstance(name:String):FeshFilterShader {
+        var shaderSource:LuaShaderSource = luaShaderSources.get(name);
+
+        if(shaderSource == null) {
+            Log.error('Shader `$name` was not initialized!');
+            return null;
+        }
+
+        return new FeshFilterShader(shaderSource.fragmentSource, shaderSource.vertexSource);
     }
 
     function getShaderInstance(name:String):FeshShader {
