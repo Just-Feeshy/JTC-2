@@ -48,7 +48,6 @@ import openfl.system.System;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
-import openfl.filters.BitmapFilter;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.events.Event;
@@ -56,8 +55,6 @@ import openfl.events.KeyboardEvent;
 import feshixl.group.FeshEventGroup;
 import feshixl.math.FeshMath;
 import feshixl.FeshCamera;
-import feshixl.shaders.FeshFilterShader;
-import feshixl.shaders.FeshShader;
 import lime.utils.Assets;
 import lime.system.ThreadPool;
 
@@ -147,8 +144,6 @@ class PlayState extends MusicBeatState
 	private var currentHoldCoverTimers:Array<Float> = [];
 	private var oppositeHoldCoverSprites:Array<HoldCoverSprite> = [];
 	private var oppositeHoldCoverTimers:Array<Float> = [];
-	private var sustainCurveShaderSource:Null<String> = null;
-	private static inline var SUSTAIN_CURVE_PADDING:Float = 0.28;
 
 	//Controls
 	private var keys2DArray:Array<Array<Int>> = [];
@@ -213,9 +208,6 @@ class PlayState extends MusicBeatState
 
 	public var currentStrums(get, never):FlxTypedSpriteGroup<Strum>;
 	public var oppositeStrums(get, never):FlxTypedSpriteGroup<Strum>;
-
-	private static inline var NOTE_CAMERA_SHADER_KEY:String = "camNOTE";
-    private var noteCameraShader:FeshFilterShader;
 
 	/*
 	* When note is missed, player WON'T receive damage.
@@ -448,7 +440,7 @@ class PlayState extends MusicBeatState
 		if (FlxG.save.data.helpme)
 			strumLine.y = FlxG.height - 175;
 
-		strumLineNotes = new CameraNoteRegularGroup<Strum>();
+		strumLineNotes = new FlxTypedGroup<Strum>();
 		add(strumLineNotes);
 
 		if(playerStrums != null) {
@@ -470,7 +462,7 @@ class PlayState extends MusicBeatState
 		playerStrums = new FlxTypedSpriteGroup<Strum>();
 		opponentStrums = new FlxTypedSpriteGroup<Strum>();
 
-		grpSplash = new CameraNoteRegularGroup<SplashSprite>();
+		grpSplash = new FlxTypedGroup<SplashSprite>();
 		add(grpSplash);
 
 		DefaultHandler.spawn();
@@ -823,94 +815,6 @@ class PlayState extends MusicBeatState
 		});
 	}
 
-	public function attachNoteCameraShader(shaderName:String):Bool {
-		var lua:ModLua = getModLua();
-
-		if(lua == null || camNOTE == null) {
-			return false;
-		}
-
-		var shader:FeshFilterShader = lua.createFilterShaderInstance(shaderName);
-
-		if(shader == null) {
-			return false;
-		}
-
-        noteCameraShader = shader;
-		camNOTE.setSustainCompositeShader(shader);
-		return true;
-	}
-
-	public function removeNoteCameraShader():Bool {
-		var lua:ModLua = getModLua();
-
-		if(lua == null || camNOTE == null) {
-			return false;
-		}
-
-		camNOTE.clearSustainCompositeShader();
-        noteCameraShader = null;
-		return true;
-	}
-
-    private function getNoteCameraShaderField(property:String):Dynamic {
-        if(noteCameraShader == null) {
-            return null;
-        }
-
-        return Reflect.field(noteCameraShader.data, property);
-    }
-
-    private function setNoteCameraShaderFloatValues(property:String, values:Array<Float>):Bool {
-        var shaderField:Dynamic = getNoteCameraShaderField(property);
-
-        if(shaderField == null) {
-            return false;
-        }
-
-        Reflect.setProperty(shaderField, "value", cast values);
-        return true;
-    }
-
-    private function setNoteCameraShaderIntValues(property:String, values:Array<Int>):Bool {
-        var shaderField:Dynamic = getNoteCameraShaderField(property);
-
-        if(shaderField == null) {
-            return false;
-        }
-
-        Reflect.setProperty(shaderField, "value", cast values);
-        return true;
-    }
-
-    private function normalizeNoteShaderFloatArray(values:Array<Dynamic>):Array<Float> {
-        var output:Array<Float> = [];
-
-        if(values == null) {
-            return output;
-        }
-
-        for(value in values) {
-            output.push(value == null ? 0 : Std.parseFloat(Std.string(value)));
-        }
-
-        return output;
-    }
-
-    private function normalizeNoteShaderIntArray(values:Array<Dynamic>):Array<Int> {
-        var output:Array<Int> = [];
-
-        if(values == null) {
-            return output;
-        }
-
-        for(value in values) {
-            output.push(value == null ? 0 : Std.int(Std.parseFloat(Std.string(value))));
-        }
-
-        return output;
-    }
-
 	function clearDialogue(dialogue:IDialogue) {
 		dialogue.destroyDialogue();
 
@@ -997,7 +901,7 @@ class PlayState extends MusicBeatState
 			case "blind effect":
 				return DefaultHandler.modifiers.blindEffect.enabled;
 			case "note woggle":
-				return false;
+				return DefaultHandler.modifiers.wobbleNotes.enabled;
 			case "camera move":
 				return DefaultHandler.modifiers.cameraMovement.enabled;
 			case "bot mode":
@@ -1284,10 +1188,10 @@ class PlayState extends MusicBeatState
 
 		loadSongVocals(PlayState.SONG.song);
 
-		notes = new NoteRenderGroup();
+		notes = new FlxTypedGroup<Note>();
 		add(notes);
 
-		grpHoldCover = new CameraNoteRegularGroup<HoldCoverSprite>();
+		grpHoldCover = new FlxTypedGroup<HoldCoverSprite>();
 		add(grpHoldCover);
 
 		var noteData:Array<SwagSection>;
@@ -1353,7 +1257,6 @@ class PlayState extends MusicBeatState
 				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote, false, daNoteAbstract, false, true);
 				swagNote.sustainLength = songNotes[2];
 				swagNote.scrollFactor.set(0, 0);
-				swagNote.cameras = [camNOTE];
 				swagNote.refresh(SONG.fifthKey);
 				swagNote.refresh(SONG.fifthKey, true);
 
@@ -1422,9 +1325,6 @@ class PlayState extends MusicBeatState
 					if(SaveData.getData(PLAY_AS_OPPONENT)) {
 						sustainNote.mustPress = !sustainNote.mustPress;
 					}
-
-					sustainNote.cameras = [camNOTE];
-					configureSustainCurveShader(sustainNote);
 				}
 
 				swagNote.mustPress = gottaHitNote;
@@ -1759,96 +1659,22 @@ class PlayState extends MusicBeatState
 	}
 
 	function addToNoteX(alreadyX:Float, note:Note):Float {
-		return alreadyX;
-	}
+		final noteCacurations:Float = Math.min(0, note.getNoteY());
 
-	function shouldUseSustainCurveShader():Bool {
-		var rawValue:Dynamic = ModLua.getSharedVariable("useSustainCurveShader", false);
+		var wobbleStrength:Int = 0;
+		var modWobble:Float = 0;
 
-		if(Std.isOfType(rawValue, Bool)) {
-			return cast rawValue;
+		if(note.hasCustomAddon != null)
+			wobbleStrength = note.hasCustomAddon.getWobblePower();
+		
+		if(modifierCheckList('note woggle') && Main.feeshmoraModifiers && wobbleStrength == 0 && !note.isSustainNote) {
+			modWobble = flipWiggle * (wobbleModPower * Math.sin(noteCacurations * Math.PI * 0.005));
 		}
 
-		var parsedValue:String = Std.string(rawValue).toLowerCase().trim();
-		return parsedValue == "true" || parsedValue == "1";
-	}
+		if(wobbleStrength > 0 && !note.isSustainNote)
+			modWobble = flipWiggle * (wobbleStrength * Math.sin(noteCacurations * Math.PI * 0.005));
 
-	function getSustainCurveStrength():Float {
-		var rawValue:Dynamic = ModLua.getSharedVariable("funkroadSustainCurveStrength", 0);
-		var parsedValue:Float = Std.parseFloat(Std.string(rawValue));
-
-		if(Math.isNaN(parsedValue)) {
-			return 0;
-		}
-
-		return parsedValue;
-	}
-
-	function getSustainCurveShaderSource():Null<String> {
-		if(sustainCurveShaderSource != null) {
-			return sustainCurveShaderSource;
-		}
-
-		var shaderPath:String = Paths.mora("funkroad_note_curve", "frag");
-
-		if(shaderPath == null || shaderPath.trim() == "") {
-			return null;
-		}
-
-		sustainCurveShaderSource = Assets.getText(shaderPath);
-		return sustainCurveShaderSource;
-	}
-
-	function configureSustainCurveShader(note:Note):Void {
-		if(note == null || !note.isSustainNote || note.sustainCurveShader != null || !shouldUseSustainCurveShader()) {
-			return;
-		}
-
-		var shaderSource:Null<String> = getSustainCurveShaderSource();
-
-		if(shaderSource == null || shaderSource.trim() == "") {
-			return;
-		}
-
-		note.applySustainCurveShader(new FeshShader(shaderSource));
-		updateSustainCurveShader(note);
-	}
-
-	function setSustainCurveShaderValue(shader:FeshShader, property:String, values:Array<Float>):Void {
-		if(shader == null) {
-			return;
-		}
-
-		var shaderField:Dynamic = Reflect.field(shader.data, property);
-
-		if(shaderField != null) {
-			Reflect.setProperty(shaderField, "value", cast values);
-		}
-	}
-
-	function updateSustainCurveShader(note:Note):Void {
-		if(note == null || !note.isSustainNote || !shouldUseSustainCurveShader()) {
-			return;
-		}
-
-		if(note.sustainCurveShader == null) {
-			configureSustainCurveShader(note);
-		}
-
-		var shader:FeshShader = note.sustainCurveShader;
-
-		if(shader == null) {
-			return;
-		}
-
-		var noteCenterX:Float = note.x + (note.width * 0.5);
-		var screenCenterX:Float = FlxG.width * 0.5;
-		var curveDirection:Float = noteCenterX <= screenCenterX ? 1 : -1;
-
-		setSustainCurveShaderValue(shader, "curveStrength", [getSustainCurveStrength()]);
-		setSustainCurveShaderValue(shader, "curveDirection", [curveDirection]);
-		setSustainCurveShaderValue(shader, "curveOriginY", [note.downscrollNote ? 1.0 : 0.0]);
-		setSustainCurveShaderValue(shader, "curvePadding", [SUSTAIN_CURVE_PADDING]);
+		return alreadyX + modWobble;
 	}
 
 	private var paused:Bool = false;
@@ -2245,7 +2071,6 @@ class PlayState extends MusicBeatState
 						currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 
-					updateSustainCurveShader(daNote);
 					daNote.setNoteAngle(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, currentStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
 					daNote.setNoteAlpha(currentStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
@@ -2267,7 +2092,6 @@ class PlayState extends MusicBeatState
 						oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle
 					);
 
-					updateSustainCurveShader(daNote);
 					daNote.setNoteAngle(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].angle, oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].directionAngle * -FeshMath.sec(daNote.yAngle));
 					daNote.setNoteAlpha(oppositeStrums.members[Math.floor(Math.abs(daNote.noteData))].onlyFans, fadeInValue);
 
@@ -2280,10 +2104,39 @@ class PlayState extends MusicBeatState
 					}
 				}
 
-				if(daNote.isSustainNote && !daNote.cameras.contains(camNOTE)) {
-					daNote.cameras = [camNOTE];
+				var noteShouldWobble:Bool = false;
+
+				if(modifierCheckList('note woggle') && Main.feeshmoraModifiers) {
+					noteShouldWobble = true;
 				}
-		 
+
+				if(daNote.hasCustomAddon != null) {
+					if(daNote.hasCustomAddon.getWobblePower() > 0) {
+						noteShouldWobble = true;
+					}
+				}
+
+				if(noteShouldWobble) {
+					if(daNote.isSustainNote) {
+						if(camNOTE.camNoteWOBBLE == null) {
+							camNOTE.createNoteCam(daNote.noteAbstract);
+
+							FlxG.cameras.remove(camNOTE, false);
+							FlxG.cameras.add(camNOTE);
+							FlxG.cameras.add(camNOTE.camNoteWOBBLE);
+							FlxG.cameras.remove(camHUD, false);
+							FlxG.cameras.add(camHUD);
+						}
+
+						if(!daNote.cameras.contains(camNOTE.camNoteWOBBLE)) {
+							daNote.cameras = [camNOTE.camNoteWOBBLE];
+						}
+					}
+				}else if(!noteShouldWobble) {
+					if(daNote.cameras.contains(camNOTE.camNoteWOBBLE) && daNote.noteAbstract != "side note")
+						daNote.cameras = [camNOTE];
+				}
+
 				var detector:Bool = Conductor.trackPosition > DefaultHandler.getNoteTime(daNote.strumTime) + 260;
 
 				if (detector) {
@@ -3634,30 +3487,6 @@ class PlayState extends MusicBeatState
 			videoSwitchState = Paths.video(path);
 		});
 
-        addCallback("setNoteCameraShader", function(shaderName:String) {
-            return attachNoteCameraShader(shaderName);
-        });
-
-        addCallback("removeNoteCameraShader", function() {
-            return removeNoteCameraShader();
-        });
-
-        addCallback("setNoteCameraShaderFloat", function(property:String, value:Float) {
-            return setNoteCameraShaderFloatValues(property, [value]);
-        });
-
-        addCallback("setNoteCameraShaderFloatArray", function(property:String, values:Array<Dynamic>) {
-            return setNoteCameraShaderFloatValues(property, normalizeNoteShaderFloatArray(values));
-        });
-
-        addCallback("setNoteCameraShaderInt", function(property:String, value:Int) {
-            return setNoteCameraShaderIntValues(property, [value]);
-        });
-
-        addCallback("setNoteCameraShaderIntArray", function(property:String, values:Array<Dynamic>) {
-            return setNoteCameraShaderIntValues(property, normalizeNoteShaderIntArray(values));
-        });
-
 		addCallback("callEvent", function(skill:String, value:String, value2:String) {
 			events.whenTriggered(skill, value, value2, this);
 			event_Extra(skill, value, value2);
@@ -3980,20 +3809,6 @@ class PlayState extends MusicBeatState
 				return 0;
 			});
 
-			addCallback("getNoteCameraCenter", function(id:Int, ?axis:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				var point = strumOBJ.getMidpoint();
-				var value:Float = 0;
-
-				switch(axis.toLowerCase()) {
-                    case "x": value = point.x;
-                    case "y": value = point.y;
-                }
-
-				point.put();
-				return value;
-			});
-
 			addCallback("noteTweenX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 
@@ -4189,6 +4004,7 @@ class PlayState extends MusicBeatState
 
 	function set_wobbleModPower(value:Float):Float {
 		wobbleModPower = value;
+		camNOTE.wobblePower = wobbleModPower * flipWiggle;
 		return wobbleModPower;
 	}
 
@@ -4230,7 +4046,11 @@ class PlayState extends MusicBeatState
 	}
 
 	function get_wobbleModPower():Float {
-		return 0;
+		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.wobbleNotes.enabled) {
+			return wobbleModPower;
+		}
+
+		return 30;
 	}
 
 	override function stepHit()

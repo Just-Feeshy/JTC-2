@@ -1,7 +1,6 @@
 package;
 
 import flixel.FlxG;
-import flixel.FlxCamera;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
 
@@ -198,35 +197,5 @@ class Strum extends feshixl.FeshSprite {
 		#end
 
 		super.update(elapsed);
-	}
-
-	override function drawSimple(camera:FlxCamera):Void
-	{
-		var noteCamera:CameraNote = Std.isOfType(camera, CameraNote) ? cast camera : null;
-
-		if(noteCamera != null && noteCamera.isNotePassActive()) {
-			noteCamera.beginNoteSpriteDraw(false);
-		}
-
-		super.drawSimple(camera);
-
-		if(noteCamera != null && noteCamera.isNotePassActive()) {
-			noteCamera.endNoteSpriteDraw();
-		}
-	}
-
-	override function drawComplex(camera:FlxCamera):Void
-	{
-		var noteCamera:CameraNote = Std.isOfType(camera, CameraNote) ? cast camera : null;
-
-		if(noteCamera != null && noteCamera.isNotePassActive()) {
-			noteCamera.beginNoteSpriteDraw(false);
-		}
-
-		super.drawComplex(camera);
-
-		if(noteCamera != null && noteCamera.isNotePassActive()) {
-			noteCamera.endNoteSpriteDraw();
-		}
 	}
 }
