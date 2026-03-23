@@ -133,6 +133,10 @@ class PlayState extends MusicBeatState
 	//Camera Shit
 	public static var camHUD:FeshCamera;
 	public static var camNOTE:CameraNote;
+	private var ownedCamHUD:FeshCamera;
+	private var ownedCamNOTE:CameraNote;
+	private var ownedCamNoteSustain:FeshCamera;
+	private var ownedLua:ModLua;
 
 	//Note Stuff Funk U
 	private var trippyWiggle:WiggleEffect = new WiggleEffect();
@@ -158,6 +162,7 @@ class PlayState extends MusicBeatState
 	private var defaultBlur:Float = 0;
 	private var playFPS:Null<Int> = Main.framerate;
 	private var counterTxt:FlxText;
+	private var luaDetachedForStateSwitch:Bool = false;
 
 	private var accTotal(get, never):Float;
 	private var totalRatingAcc:Float = 0;
@@ -300,6 +305,9 @@ class PlayState extends MusicBeatState
 		camNOTE = new CameraNote();
 		camNOTE.createSustainCam();
 		camHUD = new FeshCamera();
+		ownedCamNOTE = camNOTE;
+		ownedCamNoteSustain = camNOTE.camNoteSustain;
+		ownedCamHUD = camHUD;
 		camHUD.bgColor.alpha = 0;
 		camNOTE.bgColor.alpha = 0;
 
@@ -3403,7 +3411,8 @@ class PlayState extends MusicBeatState
 		if(Assets.exists(Paths.getPath('scripts/${"stage/" + curStage.toLowerCase()}.lua', TEXT, null))) {
 			Register.detachLuaFromState(PlayState);
 			Register.attachLuaToState(PlayState, Paths.lua("stage/" + curStage.toLowerCase()));
-			getModLua().execute();
+			ownedLua = getModLua();
+			ownedLua.execute();
 		}
 		#end
 	}
@@ -3418,10 +3427,10 @@ class PlayState extends MusicBeatState
 		modifiableCharacters.set("gf", gf);
 		modifiableCharacters.set("dad", dad);
 
-		modifiableCameras.set("camHUD", camHUD);
+		modifiableCameras.set("camHUD", ownedCamHUD);
 		modifiableCameras.set("camGAME", FlxG.camera);
-		modifiableCameras.set("camNOTE", camNOTE);
-		modifiableCameras.set("camNoteSustain", camNOTE.camNoteSustain);
+		modifiableCameras.set("camNOTE", ownedCamNOTE);
+		modifiableCameras.set("camNoteSustain", ownedCamNoteSustain);
 
 		setLua("songName", PlayState.SONG.song);
 		setLua("isStoryMode", PlayState.isStoryMode);
@@ -4136,7 +4145,7 @@ class PlayState extends MusicBeatState
 
 	@:access(flixel.FlxGame)
 	function clearCache():Void {
-		if(!(cast FlxG.game._requestedState is PlayState)) {
+		if(!((cast FlxG.game._requestedState is PlayState) || (cast FlxG.game._requestedState is CacheState))) {
 		    #if debug
 		    trace("Clearing Cache");
 		    #end
@@ -4145,11 +4154,87 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	public function prepareForStateSwitch():Void {
+		var stateCamNOTE:CameraNote = ownedCamNOTE;
+		var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
+		var stateLua:ModLua = ownedLua;
+
+		if(stateCamNOTE != null) {
+			if(notes != null) {
+				notes.cameras = [stateCamNOTE];
+
+				notes.forEachAlive(function(note:Note) {
+					if(note != null) {
+						note.cameras = [stateCamNOTE];
+					}
+				});
+			}
+
+			if(grpHoldCover != null) {
+				grpHoldCover.cameras = [stateCamNOTE];
+
+				grpHoldCover.forEachAlive(function(cover:HoldCoverSprite) {
+					if(cover != null) {
+						cover.cameras = [stateCamNOTE];
+					}
+				});
+			}
+
+			stateCamNOTE.setFilters([]);
+			stateCamNOTE.clearRenderState();
+			stateCamNOTE.visible = false;
+
+			if(stateCamNoteSustain != null) {
+				stateCamNoteSustain.setFilters([]);
+				stateCamNoteSustain.clearRenderState();
+				stateCamNoteSustain.visible = false;
+				FlxG.cameras.remove(stateCamNoteSustain, false);
+				stateCamNoteSustain.destroy();
+				ownedCamNoteSustain = null;
+				stateCamNOTE.camNoteSustain = null;
+			}
+		}
+
+		if(!luaDetachedForStateSwitch && stateLua != null) {
+			if(HelperStates.luaExist(PlayState) && HelperStates.getLua(PlayState) == stateLua) {
+				Register.detachLuaFromState(PlayState);
+			}else {
+				stateLua.close();
+			}
+			luaDetachedForStateSwitch = true;
+		}
+	}
+
 	override public function destroy() {
-		super.destroy();
+		var stateLua:ModLua = ownedLua;
+		var stateCamNOTE:CameraNote = ownedCamNOTE;
+		var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
+		var stateCamHUD:FeshCamera = ownedCamHUD;
 
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, getPressed);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, getReleased);
+
+		prepareForStateSwitch();
+
+		super.destroy();
+
+		if(stateCamNOTE != null) {
+			FlxG.cameras.remove(stateCamNOTE, false);
+			stateCamNOTE.destroy();
+		}
+
+		if(stateCamHUD != null) {
+			FlxG.cameras.remove(stateCamHUD, false);
+			stateCamHUD.destroy();
+		}
+
+		if(camNOTE == stateCamNOTE) {
+			camNOTE = null;
+		}
+
+		if(camHUD == stateCamHUD) {
+			camHUD = null;
+		}
 
 		FlxG.sound.destroy();
 
@@ -4159,9 +4244,12 @@ class PlayState extends MusicBeatState
 		keys2DArray = null;
 		eventInfo = null;
 
-		if(getModLua() != null) {
-			getModLua().close();
-			Register.detachLuaFromState(PlayState);
+		if(!luaDetachedForStateSwitch && stateLua != null) {
+			if(HelperStates.luaExist(PlayState) && HelperStates.getLua(PlayState) == stateLua) {
+				Register.detachLuaFromState(PlayState);
+			}else {
+				stateLua.close();
+			}
 		}
 
 		DefaultHandler.kill();

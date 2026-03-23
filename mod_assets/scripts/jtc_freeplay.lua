@@ -77,7 +77,7 @@ function onCreate()
     local backgroundBlur = menuBackgroundBlur or 0
 
     if initLuaShader ~= nil then
-        initLuaShader(FREEPLAY_REVEAL_SHADER, "feeshdata")
+        initLuaShader(FREEPLAY_REVEAL_SHADER, "shaders")
     end
 
     if backgroundBlur > 0 and setCameraBlur ~= nil then

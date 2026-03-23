@@ -196,7 +196,25 @@ class FeshCamera extends FlxCamera {
         flashSprite.filters = betterFiltersEnabled ? getFilters() : null;
     }
 
+    override function render():Void {
+        try {
+            super.render();
+        } catch(e:Dynamic) {
+            clearRenderState();
+        }
+    }
+
+    @:access(flixel.FlxCamera)
+    public function clearRenderState():Void {
+        clearDrawStack();
+
+        if(canvas != null) {
+            canvas.graphics.clear();
+        }
+    }
+
     override public function destroy():Void {
+        clearRenderState();
         super.destroy();
 
         if(lockedFilters != null)

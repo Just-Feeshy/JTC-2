@@ -123,7 +123,7 @@ class PauseSubState extends MusicBeatSubstate
                     FlxG.sound.list.remove(pauseMusic);
                     pauseMusic = null;
 
-					FlxG.resetState();
+					CacheState.loadAndSwitchState(new PlayState(), true, false);
 				case "Exit to menu":
 					FlxG.switchState(new MainMenuState());
 				case "Change Controls":
