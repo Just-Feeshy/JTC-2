@@ -48,6 +48,7 @@ import openfl.system.System;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
+import openfl.filters.BitmapFilter;
 import openfl.filters.BlurFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.events.Event;
@@ -211,6 +212,8 @@ class PlayState extends MusicBeatState
 
 	public var currentStrums(get, never):FlxTypedSpriteGroup<Strum>;
 	public var oppositeStrums(get, never):FlxTypedSpriteGroup<Strum>;
+
+	private static inline var NOTE_CAMERA_SHADER_KEY:String = "camNOTE";
 
 	/*
 	* When note is missed, player WON'T receive damage.
@@ -443,7 +446,7 @@ class PlayState extends MusicBeatState
 		if (FlxG.save.data.helpme)
 			strumLine.y = FlxG.height - 175;
 
-		strumLineNotes = new FlxTypedGroup<Strum>();
+		strumLineNotes = new CameraNoteRegularGroup<Strum>();
 		add(strumLineNotes);
 
 		if(playerStrums != null) {
@@ -465,7 +468,7 @@ class PlayState extends MusicBeatState
 		playerStrums = new FlxTypedSpriteGroup<Strum>();
 		opponentStrums = new FlxTypedSpriteGroup<Strum>();
 
-		grpSplash = new FlxTypedGroup<SplashSprite>();
+		grpSplash = new CameraNoteRegularGroup<SplashSprite>();
 		add(grpSplash);
 
 		DefaultHandler.spawn();
@@ -816,6 +819,51 @@ class PlayState extends MusicBeatState
 				remove(black);
 			}
 		});
+	}
+
+	public function attachNoteCameraShader(shaderName:String):Bool {
+		var lua:ModLua = getModLua();
+
+		if(lua == null || camNOTE == null) {
+			return false;
+		}
+
+		var shader:FeshShader = lua.resolveLuaShader(shaderName, NOTE_CAMERA_SHADER_KEY);
+
+		if(shader == null) {
+			return false;
+		}
+
+		var filters:Array<BitmapFilter> = lua.getCameraFiltersCopy(camNOTE);
+		var previousFilter:ShaderFilter = lua.luaCameraShaderFilters.get(NOTE_CAMERA_SHADER_KEY);
+
+		if(previousFilter != null) {
+			filters.remove(previousFilter);
+		}
+
+		var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
+		camNOTE.setSustainCompositeShader(cast shader);
+		lua.luaCameraShaderFilters.remove(NOTE_CAMERA_SHADER_KEY);
+		lua.luaShaders.set(NOTE_CAMERA_SHADER_KEY, shader);
+		return true;
+	}
+
+	public function removeNoteCameraShader():Bool {
+		var lua:ModLua = getModLua();
+
+		if(lua == null || camNOTE == null) {
+			return false;
+		}
+
+		var previousFilter:ShaderFilter = lua.luaCameraShaderFilters.get(NOTE_CAMERA_SHADER_KEY);
+
+		if(previousFilter != null) {
+			lua.luaCameraShaderFilters.remove(NOTE_CAMERA_SHADER_KEY);
+		}
+
+		camNOTE.clearSustainCompositeShader();
+		lua.luaShaders.remove(NOTE_CAMERA_SHADER_KEY);
+		return true;
 	}
 
 	function clearDialogue(dialogue:IDialogue) {
@@ -1194,7 +1242,7 @@ class PlayState extends MusicBeatState
 		notes = new NoteRenderGroup();
 		add(notes);
 
-		grpHoldCover = new FlxTypedGroup<HoldCoverSprite>();
+		grpHoldCover = new CameraNoteRegularGroup<HoldCoverSprite>();
 		add(grpHoldCover);
 
 		var noteData:Array<SwagSection>;
@@ -3540,6 +3588,14 @@ class PlayState extends MusicBeatState
 		addCallback("setEndVideo", function(path:String) {
 			videoSwitchState = Paths.video(path);
 		});
+
+        addCallback("setNoteCameraShader", function(shaderName:String) {
+            return attachNoteCameraShader(shaderName);
+        });
+
+        addCallback("removeNoteCameraShader", function() {
+            return removeNoteCameraShader();
+        });
 
 		addCallback("callEvent", function(skill:String, value:String, value2:String) {
 			events.whenTriggered(skill, value, value2, this);

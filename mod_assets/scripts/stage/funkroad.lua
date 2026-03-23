@@ -29,7 +29,7 @@ local noteCurveFadeEnd = 640
 local sustainCurveEnabledKey = "useSustainCurveShader"
 local sustainCurveStrengthKey = "funkroadSustainCurveStrength"
 local sustainCurveShaderName = "funkroad_sustain_curve"
-local sustainCurveDebugSolid = true
+local sustainCurveDebugSolid = false
 local noteCurveLaneCentersA = {0.125, 0.25, 0.375, 0.5}
 local noteCurveLaneCentersB = {0.625, 0.75, 0.875, 1.0}
 local noteCurveLaneCentersC = {2.0, 2.0, 2.0, 2.0}
@@ -238,7 +238,9 @@ function generatedStage()
         initLuaShader(sustainCurveShaderName, "feeshdata")
     end
 
-    if setCameraShader ~= nil then
+    if setNoteCameraShader ~= nil then
+        setNoteCameraShader(sustainCurveShaderName)
+    elseif setCameraShader ~= nil then
         setCameraShader("camNOTE", sustainCurveShaderName)
         updateSustainCurveFramebuffer()
     end
@@ -528,7 +530,9 @@ function onDestroy()
         setSustainCurveStrength(0)
     end
 
-    if removeCameraShader ~= nil then
+    if removeNoteCameraShader ~= nil then
+        removeNoteCameraShader()
+    elseif removeCameraShader ~= nil then
         removeCameraShader("camNOTE")
     end
 end

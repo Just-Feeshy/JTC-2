@@ -1713,6 +1713,10 @@ class ModLua {
         return shader;
     }
 
+    public function resolveLuaShader(shaderName:String, tag:String):FeshShader {
+        return luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, tag);
+    }
+
     function getShaderInstance(name:String):FeshShader {
         if(name == null) {
             return null;
@@ -1751,6 +1755,10 @@ class ModLua {
         }
 
         return (cast filters:Array<BitmapFilter>).concat([]);
+    }
+
+    public function getCameraFiltersCopy(camera:FlxCamera):Array<BitmapFilter> {
+        return getCameraFilters(camera);
     }
 
     function parseLuaColor(colorStr:String):Int {
@@ -2019,24 +2027,7 @@ class ModLua {
         }
     }
 
-	    function attachShaderToCamera(shaderName:String, cameraName:String):Bool {
-	        if(cameraName == "camNOTE_SUSTAIN") {
-	            if(PlayState.camNOTE == null) {
-                Log.error('Camera `$cameraName` could not be found!');
-                return false;
-            }
-
-            var noteShader:FeshShader = luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, cameraName);
-
-            if(noteShader == null) {
-                return false;
-            }
-
-            PlayState.camNOTE.setSustainCompositeShader(cast noteShader);
-            luaShaders.set(cameraName, noteShader);
-            return true;
-        }
-
+    function attachShaderToCamera(shaderName:String, cameraName:String):Bool {
         var cam:FlxCamera = getCamera(cameraName);
 
         if(cam == null) {
@@ -2061,9 +2052,6 @@ class ModLua {
 	        filters.push(shaderFilter);
 
 	        cam.setFilters(filters);
-	        if(cameraName == "camNOTE" && PlayState.camNOTE != null) {
-	            PlayState.camNOTE.setSustainCompositeShader(cast shader);
-	        }
 	        luaCameraShaderFilters.set(cameraName, shaderFilter);
 	        luaShaders.set(cameraName, shader);
 	        return true;
@@ -2122,15 +2110,6 @@ class ModLua {
     }
 
 	    function removeShaderFromCamera(cameraName:String):Bool {
-	        if(cameraName == "camNOTE_SUSTAIN") {
-            if(PlayState.camNOTE == null) {
-                return false;
-            }
-
-            PlayState.camNOTE.clearSustainCompositeShader();
-            luaShaders.remove(cameraName);
-            return true;
-        }
 
         var cam:FlxCamera = getCamera(cameraName);
         var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
@@ -2143,9 +2122,6 @@ class ModLua {
 	        filters.remove(previousFilter);
 
 	        cam.setFilters(filters);
-	        if(cameraName == "camNOTE" && PlayState.camNOTE != null) {
-	            PlayState.camNOTE.clearSustainCompositeShader();
-	        }
 	        luaCameraShaderFilters.remove(cameraName);
 	        luaShaders.remove(cameraName);
 	        return true;
