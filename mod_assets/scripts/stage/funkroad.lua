@@ -287,7 +287,7 @@ function generatedStage()
     setEndVideo("post.mp4")
 
     if initLuaShader ~= nil then
-        initLuaShader(sustainCurveShaderName, "feeshdata")
+        initLuaShader(sustainCurveShaderName, "shaders")
     end
 
     if setCameraShader ~= nil then
