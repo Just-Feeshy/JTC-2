@@ -3273,7 +3273,7 @@ class PlayState extends MusicBeatState
 
 		var cover:HoldCoverSprite = holdCoverSprites[lane];
 
-		if(cover == null || !cover.available) {
+		if(cover == null) {
 			return;
 		}
 

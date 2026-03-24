@@ -4,12 +4,18 @@ import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import haxe.io.Bytes;
-import haxe.io.Path;
 import openfl.display.BitmapData;
+import openfl.events.Event;
+import openfl.events.HTTPStatusEvent;
+import openfl.events.IOErrorEvent;
+import openfl.events.SecurityErrorEvent;
 import openfl.media.Sound;
-import lime.net.HTTPRequest;
+import openfl.net.URLLoader;
+import openfl.net.URLLoaderDataFormat;
+import openfl.net.URLRequest;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
+import openfl.utils.ByteArray;
 import lime.utils.Assets;
 import haxe.Json;
 
@@ -28,14 +34,17 @@ class Paths
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 	inline static var REMOTE_FUNKIN_ASSETS_REPO:String = "https://github.com/FunkinCrew/funkin.assets.git";
 	inline static var REMOTE_FUNKIN_ASSETS_MAIN:String = "https://raw.githubusercontent.com/FunkinCrew/funkin.assets/main/";
+	inline static var REMOTE_FUNKIN_ASSETS_DEVELOP:String = "https://raw.githubusercontent.com/FunkinCrew/funkin.assets/develop/";
 	inline static var REMOTE_FUNKIN_ASSETS_MASTER:String = "https://raw.githubusercontent.com/FunkinCrew/funkin.assets/master/";
-	inline static var REMOTE_CACHE_ROOT:String = ".funkin_asset_cache";
 
 	@:isVar public static var modJSON(get, never):ConfigDef;
 
 	static var currentLevel:String;
-	static var remoteAssetCache:Map<String, String> = [];
 	static var remoteAssetMisses:Map<String, Bool> = [];
+	static var remoteBytesCache:Map<String, Bytes> = [];
+	static var remoteBytesPending:Map<String, Array<Bytes->Void>> = [];
+	static var remoteSharedAtlasCache:Map<String, FlxAtlasFrames> = [];
+	static var remoteSharedAtlasPending:Map<String, Array<FlxAtlasFrames->Void>> = [];
 
 	static function get_modJSON():ConfigDef {
 		if(!OpenFlAssets.exists("config/mod.json")) {
@@ -88,17 +97,22 @@ class Paths
 		if (path == null || path == "")
 			return false;
 
-		return type != null ? OpenFlAssets.exists(path, type) : OpenFlAssets.exists(path);
+		if (type != null)
+			return OpenFlAssets.exists(path, type);
+
+		for (candidateType in [IMAGE, TEXT, SOUND, MUSIC, FONT, BINARY])
+		{
+			if (OpenFlAssets.exists(path, candidateType))
+				return true;
+		}
+
+		return false;
 	}
 
 	static function getRuntimePathCandidates(file:String, library:Null<String>):Array<String>
 	{
 		var normalizedLibrary = normalizeLibrary(library);
 		var candidates:Array<String> = ['mod_assets/$file'];
-		var remoteRelativeCandidates = getRemoteRelativeCandidates(file, library);
-
-		for (remoteRelativePath in remoteRelativeCandidates)
-			candidates.push('$REMOTE_CACHE_ROOT/$remoteRelativePath');
 
 		if (normalizedLibrary == "preload")
 		{
@@ -133,150 +147,7 @@ class Paths
 		return null;
 	}
 
-	static function getRemoteRelativeCandidates(file:String, library:Null<String>):Array<String>
-	{
-		var normalizedLibrary = normalizeLibrary(library);
-		var candidates:Array<String> = [];
-
-		if (normalizedLibrary == "preload")
-		{
-			if (file.startsWith("characters/"))
-				candidates.push('preload/data/$file');
-
-			if (file.startsWith("fonts/") || file.startsWith("videos/"))
-				candidates.push(file);
-			else
-				candidates.push('preload/$file');
-
-			candidates.push(file);
-		}
-		else
-		{
-			candidates.push('$normalizedLibrary/$file');
-		}
-
-		return candidates;
-	}
-
-	static function ensureDirectory(path:String):Void
-	{
-		#if sys
-		if (path == null || path == "" || path == "." || FileSystem.exists(path))
-			return;
-
-		ensureDirectory(Path.directory(path));
-		FileSystem.createDirectory(path);
-		#end
-	}
-
-	static function downloadRemoteAsset(file:String, library:Null<String>):String
-	{
-		#if sys
-		var relativeCandidates = getRemoteRelativeCandidates(file, library);
-
-		for (remoteRelativePath in relativeCandidates)
-		{
-			var cacheKey = remoteRelativePath;
-
-			if (remoteAssetCache.exists(cacheKey))
-			{
-				var cachedPath = remoteAssetCache.get(cacheKey);
-				if (cachedPath != null && FileSystem.exists(cachedPath))
-					return cachedPath;
-			}
-
-			if (remoteAssetMisses.exists(cacheKey))
-				continue;
-
-			var localPath = '$REMOTE_CACHE_ROOT/$remoteRelativePath';
-			if (FileSystem.exists(localPath))
-			{
-				remoteAssetCache.set(cacheKey, localPath);
-				return localPath;
-			}
-
-			ensureDirectory(Path.directory(localPath));
-
-			for (baseUrl in [REMOTE_FUNKIN_ASSETS_MAIN, REMOTE_FUNKIN_ASSETS_MASTER])
-			{
-				try
-				{
-					var request = new HTTPRequest<Bytes>(baseUrl + remoteRelativePath);
-					var bytes = request.load().result(request.timeout);
-
-					if (bytes != null)
-					{
-						File.saveBytes(localPath, bytes);
-						remoteAssetCache.set(cacheKey, localPath);
-						trace('Fetched missing asset from ' + REMOTE_FUNKIN_ASSETS_REPO + ' -> ' + remoteRelativePath);
-						return localPath;
-					}
-				}
-				catch (e:Dynamic)
-				{
-					trace('Remote asset fetch failed for ' + remoteRelativePath + ' from ' + baseUrl + ' -> ' + Std.string(e));
-				}
-			}
-
-			remoteAssetMisses.set(cacheKey, true);
-		}
-		#end
-
-		return null;
-	}
-
-	static function downloadDirectRemoteAsset(relativePath:String):String
-	{
-		#if sys
-		var cacheKey = relativePath;
-
-		if (remoteAssetCache.exists(cacheKey))
-		{
-			var cachedPath = remoteAssetCache.get(cacheKey);
-			if (cachedPath != null && FileSystem.exists(cachedPath))
-				return cachedPath;
-		}
-
-		if (remoteAssetMisses.exists(cacheKey))
-			return null;
-
-		var localPath = '$REMOTE_CACHE_ROOT/$relativePath';
-		if (FileSystem.exists(localPath))
-		{
-			remoteAssetCache.set(cacheKey, localPath);
-			return localPath;
-		}
-
-		ensureDirectory(Path.directory(localPath));
-
-		for (baseUrl in [REMOTE_FUNKIN_ASSETS_MAIN, REMOTE_FUNKIN_ASSETS_MASTER])
-		{
-			try
-			{
-				var request = new HTTPRequest<Bytes>(baseUrl + relativePath);
-				var bytes = request.load().result(request.timeout);
-
-				if (bytes != null)
-				{
-					File.saveBytes(localPath, bytes);
-					remoteAssetCache.set(cacheKey, localPath);
-					trace('Fetched missing asset from ' + REMOTE_FUNKIN_ASSETS_REPO + ' -> ' + relativePath);
-					return localPath;
-				}
-			}
-			catch (e:Dynamic)
-			{
-				trace('Remote asset fetch failed for ' + relativePath + ' from ' + baseUrl + ' -> ' + Std.string(e));
-			}
-		}
-
-		remoteAssetMisses.set(cacheKey, true);
-		#end
-
-		return null;
-	}
-
-	static function resolveRuntimePath(file:String, type:AssetType, library:Null<String>):String
+	static function resolveLocalOrBuiltInPath(file:String, type:AssetType, library:Null<String>):String
 	{
 		var localPath = resolveLocalPath(file, library);
 		if (localPath != null)
@@ -286,11 +157,13 @@ class Paths
 		if (builtInAssetExists(builtInAssetId, type))
 			return builtInAssetId;
 
-		var remotePath = downloadRemoteAsset(file, library);
-		if (remotePath != null)
-			return remotePath;
+		return null;
+	}
 
-		return builtInAssetId;
+	static function resolveRuntimePath(file:String, type:AssetType, library:Null<String>):String
+	{
+		var resolvedPath = resolveLocalOrBuiltInPath(file, type, library);
+		return resolvedPath != null ? resolvedPath : getBuiltInAssetId(file, library);
 	}
 
 	static public function assetExists(path:String, ?type:AssetType):Bool
@@ -356,6 +229,195 @@ class Paths
 		return null;
 	}
 
+	static function loadRemoteBytes(relativePath:String, onComplete:Bytes->Void):Void
+	{
+		#if sys
+		if (remoteBytesCache.exists(relativePath))
+		{
+			onComplete(remoteBytesCache.get(relativePath));
+			return;
+		}
+
+		if (remoteAssetMisses.exists(relativePath))
+		{
+			onComplete(null);
+			return;
+		}
+
+		if (remoteBytesPending.exists(relativePath))
+		{
+			remoteBytesPending.get(relativePath).push(onComplete);
+			return;
+		}
+
+		remoteBytesPending.set(relativePath, [onComplete]);
+
+		var baseUrls = [REMOTE_FUNKIN_ASSETS_MAIN, REMOTE_FUNKIN_ASSETS_DEVELOP, REMOTE_FUNKIN_ASSETS_MASTER];
+
+		function finish(bytes:Bytes):Void
+		{
+			var callbacks = remoteBytesPending.get(relativePath);
+			remoteBytesPending.remove(relativePath);
+
+			if (bytes != null)
+				remoteBytesCache.set(relativePath, bytes);
+			else
+				remoteAssetMisses.set(relativePath, true);
+
+			if (callbacks != null)
+			{
+				for (callback in callbacks)
+				{
+					callback(bytes);
+				}
+			}
+		}
+
+		function tryBase(index:Int):Void
+		{
+			if (index >= baseUrls.length)
+			{
+				trace('Remote asset fetch failed for ' + relativePath);
+				finish(null);
+				return;
+			}
+
+			var baseUrl = baseUrls[index];
+			var request = new URLRequest(baseUrl + relativePath);
+			var loader = new URLLoader();
+			var status:Int = 0;
+			var handleStatus:HTTPStatusEvent->Void = null;
+			var handleComplete:Event->Void = null;
+			var handleIOError:IOErrorEvent->Void = null;
+			var handleSecurityError:SecurityErrorEvent->Void = null;
+
+			function cleanup():Void
+			{
+				loader.removeEventListener(Event.COMPLETE, handleComplete);
+				loader.removeEventListener(IOErrorEvent.IO_ERROR, handleIOError);
+				loader.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, handleSecurityError);
+				loader.removeEventListener(HTTPStatusEvent.HTTP_STATUS, handleStatus);
+			}
+
+			handleStatus = function(event:HTTPStatusEvent):Void
+			{
+				status = event.status;
+			}
+
+			handleComplete = function(_):Void
+			{
+				cleanup();
+
+				var data:ByteArray = cast loader.data;
+				var bytes:Bytes = data;
+
+				if (bytes != null && bytes.length > 0)
+				{
+					finish(bytes);
+				}
+				else
+				{
+					trace('Remote asset fetch returned no data for ' + relativePath + ' from ' + baseUrl + ' (status ' + status + ')');
+					tryBase(index + 1);
+				}
+			}
+
+			handleIOError = function(event:IOErrorEvent):Void
+			{
+				cleanup();
+				trace('Remote asset fetch failed for ' + relativePath + ' from ' + baseUrl + ' -> ' + event.text);
+				tryBase(index + 1);
+			}
+
+			handleSecurityError = function(event:SecurityErrorEvent):Void
+			{
+				cleanup();
+				trace('Remote asset fetch failed for ' + relativePath + ' from ' + baseUrl + ' -> ' + event.text);
+				tryBase(index + 1);
+			}
+
+			loader.dataFormat = URLLoaderDataFormat.BINARY;
+			loader.addEventListener(Event.COMPLETE, handleComplete);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, handleIOError);
+			loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleSecurityError);
+			loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, handleStatus);
+			loader.load(request);
+		}
+
+		tryBase(0);
+		#else
+		onComplete(null);
+		#end
+	}
+
+	static public function loadRemoteSharedSparrowAtlas(key:String, onComplete:FlxAtlasFrames->Void):Void
+	{
+		#if sys
+		if (remoteSharedAtlasCache.exists(key))
+		{
+			onComplete(remoteSharedAtlasCache.get(key));
+			return;
+		}
+
+		if (remoteSharedAtlasPending.exists(key))
+		{
+			remoteSharedAtlasPending.get(key).push(onComplete);
+			return;
+		}
+
+		remoteSharedAtlasPending.set(key, [onComplete]);
+
+		function finish(frames:FlxAtlasFrames):Void
+		{
+			var callbacks = remoteSharedAtlasPending.get(key);
+			remoteSharedAtlasPending.remove(key);
+
+			if (frames != null)
+				remoteSharedAtlasCache.set(key, frames);
+
+			if (callbacks != null)
+			{
+				for (callback in callbacks)
+				{
+					callback(frames);
+				}
+			}
+		}
+
+		loadRemoteBytes('shared/images/$key.png', function(imageBytes) {
+			if (imageBytes == null)
+			{
+				finish(null);
+				return;
+			}
+
+			loadRemoteBytes('shared/images/$key.xml', function(xmlBytes) {
+				if (xmlBytes == null)
+				{
+					finish(null);
+					return;
+				}
+
+				try
+				{
+					var bitmap = BitmapData.fromBytes(ByteArray.fromBytes(imageBytes));
+					var graphic = FlxGraphic.fromBitmapData(bitmap, false, '__remote_shared__/$key');
+					graphic.persist = false;
+					var frames = FlxAtlasFrames.fromSparrow(graphic, xmlBytes.getString(0, xmlBytes.length));
+					finish(frames);
+				}
+				catch (e:Dynamic)
+				{
+					trace('Error: could not build remote shared atlas - ' + key + ' -> ' + Std.string(e));
+					finish(null);
+				}
+			});
+		});
+		#else
+		onComplete(null);
+		#end
+	}
+
 	static public function getPath(file:String, type:AssetType, library:Null<String>)
 	{
 		if (library != null)
@@ -363,12 +425,12 @@ class Paths
 
 		if (currentLevel != null)
 		{
-			var levelPath = getLibraryPathForce(file, currentLevel);
-			if (assetExists(levelPath, type))
+			var levelPath = resolveLocalOrBuiltInPath(file, type, currentLevel);
+			if (levelPath != null)
 				return levelPath;
 
-			levelPath = getLibraryPathForce(file, "shared");
-			if (assetExists(levelPath, type))
+			levelPath = resolveLocalOrBuiltInPath(file, type, "shared");
+			if (levelPath != null)
 				return levelPath;
 		}
 
@@ -535,7 +597,7 @@ class Paths
 		var builtInAssetId = 'songs:assets/$relativePath';
 
 		#if sys
-		for (path in ['mod_assets/$relativePath', '$REMOTE_CACHE_ROOT/$relativePath', 'funkin_assets/$relativePath'])
+		for (path in ['mod_assets/$relativePath', 'funkin_assets/$relativePath'])
 		{
 			if (FileSystem.exists(path))
 				return path;
@@ -544,10 +606,6 @@ class Paths
 
 		if (OpenFlAssets.exists(builtInAssetId, SOUND) || OpenFlAssets.exists(builtInAssetId, MUSIC))
 			return builtInAssetId;
-
-		var remotePath = downloadDirectRemoteAsset(relativePath);
-		if (remotePath != null)
-			return remotePath;
 
 		return builtInAssetId;
 	}

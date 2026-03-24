@@ -2,6 +2,8 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.graphics.frames.FlxAtlasFrames;
+import openfl.utils.AssetType;
 
 class HoldCoverSprite extends FlxSprite {
 	public var direction(default, null):String;
@@ -38,12 +40,22 @@ class HoldCoverSprite extends FlxSprite {
 			return;
 		}
 
-		frames = Paths.getSparrowAtlas('holdCover' + colorName, null, true);
+		var atlasKey = 'holdCover' + colorName;
+		var localDescriptionPath = Paths.file('images/' + atlasKey + '.xml', TEXT, "shared");
 
-		if(frames == null) {
+		if(Paths.assetExists(localDescriptionPath, AssetType.TEXT)) {
+			setupLoadedAnimations(Paths.getSparrowAtlas(atlasKey, "shared"));
+		}else {
+			Paths.loadRemoteSharedSparrowAtlas(atlasKey, setupLoadedAnimations);
+		}
+	}
+
+	function setupLoadedAnimations(loadedFrames:FlxAtlasFrames):Void {
+		if(loadedFrames == null || colorName == null) {
 			return;
 		}
 
+		frames = loadedFrames;
 		animation.addByPrefix('start', 'holdCoverStart' + colorName, 24, false);
 		animation.addByPrefix('hold', 'holdCover' + colorName, 24, true);
 		animation.addByPrefix('end', 'holdCoverEnd' + colorName, 24, false);
@@ -54,6 +66,12 @@ class HoldCoverSprite extends FlxSprite {
 			&& animation.getByName('end') != null;
 
 		updateHitbox();
+
+		if(activeHold) {
+			visible = true;
+			active = true;
+			playCoverAnim('start', true);
+		}
 	}
 
 	function playCoverAnim(name:String, force:Bool = false):Void {
@@ -86,15 +104,15 @@ class HoldCoverSprite extends FlxSprite {
 	}
 
 	public function beginHold():Void {
+		activeHold = true;
+		ending = false;
+		visible = available;
+		active = available;
+		alpha = 1;
+
 		if(!available) {
 			return;
 		}
-
-		activeHold = true;
-		ending = false;
-		visible = true;
-		active = true;
-		alpha = 1;
 
 		if(animation.curAnim == null || animation.curAnim.name == 'end' || ending) {
 			playCoverAnim('start', true);
@@ -102,6 +120,9 @@ class HoldCoverSprite extends FlxSprite {
 	}
 
 	public function refreshHold():Void {
+		activeHold = true;
+		ending = false;
+
 		if(!available) {
 			return;
 		}
@@ -116,7 +137,15 @@ class HoldCoverSprite extends FlxSprite {
 	}
 
 	public function endHold():Void {
-		if(!available || (!activeHold && !ending)) {
+		if(!activeHold && !ending) {
+			return;
+		}
+
+		if(!available) {
+			activeHold = false;
+			ending = false;
+			visible = false;
+			active = false;
 			return;
 		}
 
