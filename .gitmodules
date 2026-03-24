@@ -1,3 +1,6 @@
 [submodule "linc_luajit"]
 	path = linc_luajit
 	url = https://github.com/AndreiRudenko/linc_luajit.git
+[submodule "funkin_assets"]
+	path = funkin_assets
+	url = https://github.com/FunkinCrew/Funkin.assets/
