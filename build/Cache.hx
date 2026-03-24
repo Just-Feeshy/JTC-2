@@ -16,6 +16,7 @@ import SaveData.SaveType;
 //Basically a class like Path
 class Cache {
     @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
+    @:noCompletion private static var permanentAssets:Map<String, Bool> = new Map<String, Bool>();
 
     static public function cacheListedFormat(path:String, allowGPUCache:Bool = true):Void {
         var extensionIndex:Int = path.lastIndexOf(".");
@@ -92,14 +93,35 @@ class Cache {
     }
 
     static public function cacheFromByteArray(name:String, bytes:ByteArray):Void {
+        cacheByteArrayInternal(name, bytes, false);
+    }
+
+    static public function cachePermanentFromByteArray(name:String, bytes:ByteArray):FlxGraphic {
+        return cacheByteArrayInternal(name, bytes, true);
+    }
+
+    static function cacheByteArrayInternal(name:String, bytes:ByteArray, permanent:Bool):FlxGraphic {
         if(bytes == null)
-            return;
+            return null;
+
+        if(theseAssets.exists(name)) {
+            if(permanent) {
+                permanentAssets.set(name, true);
+            }
+
+            return theseAssets.get(name);
+        }
 
         var graphics:FlxGraphic = FlxG.bitmap.add(BitmapData.fromBytes(bytes), false, name);
         graphics.persist = true;
         graphics.destroyOnNoUse = false;
 
         theseAssets.set(name, graphics);
+        if(permanent) {
+            permanentAssets.set(name, true);
+        }
+
+        return graphics;
     }
 
     static public function getAssetDirectly(path:String):FlxGraphic {
@@ -136,6 +158,10 @@ class Cache {
         */
 
 		for(key in theseAssets.keys()) {
+            if(permanentAssets.exists(key)) {
+                continue;
+            }
+
 		    var graphic = theseAssets.get(key);
 
 			@:privateAccess if(graphic != null) {

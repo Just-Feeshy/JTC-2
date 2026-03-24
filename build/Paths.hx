@@ -400,9 +400,20 @@ class Paths
 
 				try
 				{
-					var bitmap = BitmapData.fromBytes(ByteArray.fromBytes(imageBytes));
-					var graphic = FlxGraphic.fromBitmapData(bitmap, false, '__remote_shared__/$key');
-					graphic.persist = false;
+					var graphicKey = '__remote_shared__/$key.png';
+					var graphic = Cache.getAssetDirectly(graphicKey);
+
+					if (graphic == null)
+					{
+						graphic = Cache.cachePermanentFromByteArray(graphicKey, ByteArray.fromBytes(imageBytes));
+					}
+
+					if (graphic == null)
+					{
+						finish(null);
+						return;
+					}
+
 					var frames = FlxAtlasFrames.fromSparrow(graphic, xmlBytes.getString(0, xmlBytes.length));
 					finish(frames);
 				}
