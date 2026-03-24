@@ -26,19 +26,24 @@ class Cache {
 
         switch(path.substr(extensionIndex + 1).toLowerCase()) {
             case "png":
-                if(OpenFlAssets.exists(path, IMAGE)) {
+                if(Paths.assetExists(path, IMAGE)) {
                     cacheAssetDirectly(path, allowGPUCache);
                 }
             case Paths.SOUND_EXT:
-                if(OpenFlAssets.exists(path, SOUND) || OpenFlAssets.exists(path, MUSIC)) {
-                    OpenFlAssets.getSound(path, true);
+                if(Paths.assetExists(path, SOUND) || Paths.assetExists(path, MUSIC)) {
+                    Paths.loadSoundAsset(path);
                 }
         }
     }
 
     static function cacheAssetDirectly(path:String, allowGPUCache:Bool = true):Void {
         if(getAssetDirectly(path) == null) {
-				var bitmap = OpenFlAssets.getBitmapData(path);
+				var bitmap = Paths.loadBitmap(path);
+
+                if(bitmap == null) {
+                    trace("Warning: could not locate asset - " + path);
+                    return;
+                }
 
 				if(allowGPUCache && SaveData.getData(SaveType.GPU_CACHE)) {
 				    var texture:RectangleTexture = FlxG.stage.context3D.createRectangleTexture(bitmap.width, bitmap.height, BGRA, true);
@@ -53,7 +58,7 @@ class Cache {
 				graphics.persist = true;
 				graphics.destroyOnNoUse = false;
 				theseAssets.set(path, graphics);
-        }else if(!OpenFlAssets.exists(path, IMAGE)) {
+        }else if(!Paths.assetExists(path, IMAGE)) {
             trace("Warning: could not locate asset - " + path);
         }
     }
@@ -66,7 +71,7 @@ class Cache {
     static public function cacheRemove(key:String, ?library:String = ""):Void {
         var path:String = Paths.getPath('images/$key.png', IMAGE, library);
 
-        if(OpenFlAssets.exists(path, IMAGE)) {
+        if(Paths.assetExists(path, IMAGE)) {
 
             /**
             * Use `@:privateAccess` to get keys cached.
@@ -98,7 +103,7 @@ class Cache {
     }
 
     static public function getAssetDirectly(path:String):FlxGraphic {
-        if (OpenFlAssets.exists(path, IMAGE)) {
+        if (Paths.assetExists(path, IMAGE)) {
             if(theseAssets.exists(path)) {
                 //trace("Retrieved file: " + path);
                 return theseAssets.get(path);

@@ -321,7 +321,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     public function parseJSON():DialogueInfo {
-        var dialogueData:DialogueInfo = cast Json.parse(Assets.getText(Paths.json(PlayState.SONG.song.toLowerCase() + "/dialogue")).trim());
+        var dialogueData:DialogueInfo = cast Json.parse(Paths.readText(Paths.json(PlayState.SONG.song.toLowerCase() + "/dialogue")).trim());
         return dialogueData;
     }
 

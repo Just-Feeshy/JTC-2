@@ -3,15 +3,15 @@
 	"artist": "Varsavi",
 	"charter": "DiFicuz",
 	"playData": {
-		"stage": "mainStage",
+		"stage": "funkstreet",
 		"noteStyle": "funkin",
-		"difficulties": ["hard"],
-		"characters": {"girlfriend": "gf", "opponent": "jtc", "player": "bf"}
+		"difficulties": null,
+		"characters": {"girlfriend": "gf", "opponent": "joul", "player": "bf-cool"}
 	},
-	"songName": "i-am-blue",
+	"songName": "I-Am-Blue",
 	"timeChanges": [
 		{"t": 0, "bpm": 135}
 	],
-	"generatedBy": "Psych Engine v1.0.4 - Chart Editor V-Slice Exporter",
+	"generatedBy": "Psych Engine v1.0 - Chart Editor V-Slice Exporter",
 	"version": "2.2.3"
 }

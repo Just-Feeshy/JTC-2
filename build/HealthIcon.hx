@@ -76,14 +76,14 @@ class HealthIcon extends FlxSprite
 		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
 		var jsonPath:String = Paths.getPreloadPath('characters/$character.json');
 
-		return parser.fromJson(Assets.getText(jsonPath), '$character.json').icon;
+		return parser.fromJson(Paths.readText(jsonPath), '$character.json').icon;
 	}
 
 	public function getIconFileJSON(character:String):String {
 		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
 		var jsonPath:String = Paths.getPreloadPath('characters/$character.json');
 
-		return parser.fromJson(Assets.getText(jsonPath), '$character.json').iconFile;
+		return parser.fromJson(Paths.readText(jsonPath), '$character.json').iconFile;
 	}
 
 	function set_bpm(value:UInt):UInt {

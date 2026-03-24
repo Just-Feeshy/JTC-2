@@ -3,8 +3,11 @@ package;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
+import haxe.io.Bytes;
+import haxe.io.Path;
 import openfl.display.BitmapData;
 import openfl.media.Sound;
+import lime.net.HTTPRequest;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
@@ -23,10 +26,16 @@ using StringTools;
 class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
+	inline static var REMOTE_FUNKIN_ASSETS_REPO:String = "https://github.com/FunkinCrew/funkin.assets.git";
+	inline static var REMOTE_FUNKIN_ASSETS_MAIN:String = "https://raw.githubusercontent.com/FunkinCrew/funkin.assets/main/";
+	inline static var REMOTE_FUNKIN_ASSETS_MASTER:String = "https://raw.githubusercontent.com/FunkinCrew/funkin.assets/master/";
+	inline static var REMOTE_CACHE_ROOT:String = ".funkin_asset_cache";
 
 	@:isVar public static var modJSON(get, never):ConfigDef;
 
 	static var currentLevel:String;
+	static var remoteAssetCache:Map<String, String> = [];
+	static var remoteAssetMisses:Map<String, Bool> = [];
 
 	static function get_modJSON():ConfigDef {
 		if(!OpenFlAssets.exists("config/mod.json")) {
@@ -56,6 +65,297 @@ class Paths
 		currentLevel = name.toLowerCase();
 	}
 
+	static function normalizeLibrary(library:Null<String>):String
+	{
+		if (library == null || library == "" || library == "default")
+			return "preload";
+
+		return library;
+	}
+
+	static function getBuiltInAssetId(file:String, library:Null<String>):String
+	{
+		var normalizedLibrary = normalizeLibrary(library);
+
+		if (normalizedLibrary == "preload")
+			return 'assets/$file';
+
+		return '$normalizedLibrary:assets/$normalizedLibrary/$file';
+	}
+
+	static function builtInAssetExists(path:String, type:AssetType):Bool
+	{
+		if (path == null || path == "")
+			return false;
+
+		return type != null ? OpenFlAssets.exists(path, type) : OpenFlAssets.exists(path);
+	}
+
+	static function getRuntimePathCandidates(file:String, library:Null<String>):Array<String>
+	{
+		var normalizedLibrary = normalizeLibrary(library);
+		var candidates:Array<String> = ['mod_assets/$file'];
+		var remoteRelativeCandidates = getRemoteRelativeCandidates(file, library);
+
+		for (remoteRelativePath in remoteRelativeCandidates)
+			candidates.push('$REMOTE_CACHE_ROOT/$remoteRelativePath');
+
+		if (normalizedLibrary == "preload")
+		{
+			if (file.startsWith("characters/"))
+				candidates.push('funkin_assets/preload/data/$file');
+
+			if (file.startsWith("fonts/") || file.startsWith("videos/"))
+				candidates.push('funkin_assets/$file');
+			else
+				candidates.push('funkin_assets/preload/$file');
+
+			candidates.push('funkin_assets/$file');
+		}
+		else
+		{
+			candidates.push('funkin_assets/$normalizedLibrary/$file');
+		}
+
+		return candidates;
+	}
+
+	static function resolveLocalPath(file:String, library:Null<String>):String
+	{
+		#if sys
+		for (path in getRuntimePathCandidates(file, library))
+		{
+			if (FileSystem.exists(path))
+				return path;
+		}
+		#end
+
+		return null;
+	}
+
+	static function getRemoteRelativeCandidates(file:String, library:Null<String>):Array<String>
+	{
+		var normalizedLibrary = normalizeLibrary(library);
+		var candidates:Array<String> = [];
+
+		if (normalizedLibrary == "preload")
+		{
+			if (file.startsWith("characters/"))
+				candidates.push('preload/data/$file');
+
+			if (file.startsWith("fonts/") || file.startsWith("videos/"))
+				candidates.push(file);
+			else
+				candidates.push('preload/$file');
+
+			candidates.push(file);
+		}
+		else
+		{
+			candidates.push('$normalizedLibrary/$file');
+		}
+
+		return candidates;
+	}
+
+	static function ensureDirectory(path:String):Void
+	{
+		#if sys
+		if (path == null || path == "" || path == "." || FileSystem.exists(path))
+			return;
+
+		ensureDirectory(Path.directory(path));
+		FileSystem.createDirectory(path);
+		#end
+	}
+
+	static function downloadRemoteAsset(file:String, library:Null<String>):String
+	{
+		#if sys
+		var relativeCandidates = getRemoteRelativeCandidates(file, library);
+
+		for (remoteRelativePath in relativeCandidates)
+		{
+			var cacheKey = remoteRelativePath;
+
+			if (remoteAssetCache.exists(cacheKey))
+			{
+				var cachedPath = remoteAssetCache.get(cacheKey);
+				if (cachedPath != null && FileSystem.exists(cachedPath))
+					return cachedPath;
+			}
+
+			if (remoteAssetMisses.exists(cacheKey))
+				continue;
+
+			var localPath = '$REMOTE_CACHE_ROOT/$remoteRelativePath';
+			if (FileSystem.exists(localPath))
+			{
+				remoteAssetCache.set(cacheKey, localPath);
+				return localPath;
+			}
+
+			ensureDirectory(Path.directory(localPath));
+
+			for (baseUrl in [REMOTE_FUNKIN_ASSETS_MAIN, REMOTE_FUNKIN_ASSETS_MASTER])
+			{
+				try
+				{
+					var request = new HTTPRequest<Bytes>(baseUrl + remoteRelativePath);
+					var bytes = request.load().result(request.timeout);
+
+					if (bytes != null)
+					{
+						File.saveBytes(localPath, bytes);
+						remoteAssetCache.set(cacheKey, localPath);
+						trace('Fetched missing asset from ' + REMOTE_FUNKIN_ASSETS_REPO + ' -> ' + remoteRelativePath);
+						return localPath;
+					}
+				}
+				catch (e:Dynamic)
+				{
+					trace('Remote asset fetch failed for ' + remoteRelativePath + ' from ' + baseUrl + ' -> ' + Std.string(e));
+				}
+			}
+
+			remoteAssetMisses.set(cacheKey, true);
+		}
+		#end
+
+		return null;
+	}
+
+	static function downloadDirectRemoteAsset(relativePath:String):String
+	{
+		#if sys
+		var cacheKey = relativePath;
+
+		if (remoteAssetCache.exists(cacheKey))
+		{
+			var cachedPath = remoteAssetCache.get(cacheKey);
+			if (cachedPath != null && FileSystem.exists(cachedPath))
+				return cachedPath;
+		}
+
+		if (remoteAssetMisses.exists(cacheKey))
+			return null;
+
+		var localPath = '$REMOTE_CACHE_ROOT/$relativePath';
+		if (FileSystem.exists(localPath))
+		{
+			remoteAssetCache.set(cacheKey, localPath);
+			return localPath;
+		}
+
+		ensureDirectory(Path.directory(localPath));
+
+		for (baseUrl in [REMOTE_FUNKIN_ASSETS_MAIN, REMOTE_FUNKIN_ASSETS_MASTER])
+		{
+			try
+			{
+				var request = new HTTPRequest<Bytes>(baseUrl + relativePath);
+				var bytes = request.load().result(request.timeout);
+
+				if (bytes != null)
+				{
+					File.saveBytes(localPath, bytes);
+					remoteAssetCache.set(cacheKey, localPath);
+					trace('Fetched missing asset from ' + REMOTE_FUNKIN_ASSETS_REPO + ' -> ' + relativePath);
+					return localPath;
+				}
+			}
+			catch (e:Dynamic)
+			{
+				trace('Remote asset fetch failed for ' + relativePath + ' from ' + baseUrl + ' -> ' + Std.string(e));
+			}
+		}
+
+		remoteAssetMisses.set(cacheKey, true);
+		#end
+
+		return null;
+	}
+
+	static function resolveRuntimePath(file:String, type:AssetType, library:Null<String>):String
+	{
+		var localPath = resolveLocalPath(file, library);
+		if (localPath != null)
+			return localPath;
+
+		var builtInAssetId = getBuiltInAssetId(file, library);
+		if (builtInAssetExists(builtInAssetId, type))
+			return builtInAssetId;
+
+		var remotePath = downloadRemoteAsset(file, library);
+		if (remotePath != null)
+			return remotePath;
+
+		return builtInAssetId;
+	}
+
+	static public function assetExists(path:String, ?type:AssetType):Bool
+	{
+		if (path == null || path == "")
+			return false;
+
+		if (OpenFlAssets.exists(path, type))
+			return true;
+
+		#if sys
+		return FileSystem.exists(path);
+		#else
+		return false;
+		#end
+	}
+
+	static public function readText(path:String):String
+	{
+		if (path == null || path == "")
+			return "";
+
+		if (OpenFlAssets.exists(path, TEXT))
+			return OpenFlAssets.getText(path);
+
+		#if sys
+		if (FileSystem.exists(path))
+			return File.getContent(path);
+		#end
+
+		return "";
+	}
+
+	static public function loadBitmap(path:String):BitmapData
+	{
+		if (path == null || path == "")
+			return null;
+
+		if (OpenFlAssets.exists(path, IMAGE))
+			return OpenFlAssets.getBitmapData(path);
+
+		#if sys
+		if (FileSystem.exists(path))
+			return BitmapData.fromFile(path);
+		#end
+
+		return null;
+	}
+
+	static public function loadSoundAsset(path:String):Sound
+	{
+		if (path == null || path == "")
+			return null;
+
+		if (OpenFlAssets.exists(path, SOUND) || OpenFlAssets.exists(path, MUSIC))
+			return OpenFlAssets.getSound(path, true);
+
+		#if sys
+		if (FileSystem.exists(path))
+			return Sound.fromFile(path);
+		#end
+
+		return null;
+	}
+
 	static public function getPath(file:String, type:AssetType, library:Null<String>)
 	{
 		if (library != null)
@@ -64,11 +364,11 @@ class Paths
 		if (currentLevel != null)
 		{
 			var levelPath = getLibraryPathForce(file, currentLevel);
-			if (OpenFlAssets.exists(levelPath, type))
+			if (assetExists(levelPath, type))
 				return levelPath;
 
 			levelPath = getLibraryPathForce(file, "shared");
-			if (OpenFlAssets.exists(levelPath, type))
+			if (assetExists(levelPath, type))
 				return levelPath;
 		}
 
@@ -77,23 +377,18 @@ class Paths
 
 	static public function getLibraryPath(file:String, library = "preload")
 	{
-		return if (library == "preload" || library == "default") getPreloadPath(file); else getLibraryPathForce(file, library);
+		var normalizedLibrary = normalizeLibrary(library);
+		return if (normalizedLibrary == "preload") getPreloadPath(file); else getLibraryPathForce(file, normalizedLibrary);
 	}
 
 	inline static function getLibraryPathForce(file:String, library:String)
 	{
-		if(OpenFlAssets.exists('mod_assets/$file'))
-			return 'mod_assets/$file';
-		else
-			return '$library:assets/$library/$file';
+		return resolveRuntimePath(file, null, library);
 	}
 
 	inline static public function getPreloadPath(file:String)
 	{
-		if(OpenFlAssets.exists('mod_assets/$file'))
-			return 'mod_assets/$file';
-		else
-			return 'assets/$file';
+		return resolveRuntimePath(file, null, "preload");
 	}
 
 	inline static public function file(file:String, type:AssetType = TEXT, ?library:String)
@@ -113,8 +408,9 @@ class Paths
 
 	inline static public function font(key:String)
 	{
-		if(OpenFlAssets.exists(getPreloadPath('fonts/$key'))) {
-			return getPreloadPath('fonts/$key');
+		var path = getPreloadPath('fonts/$key');
+		if(assetExists(path, FONT)) {
+			return path;
 		}else {
 			return "";
 		}
@@ -122,8 +418,9 @@ class Paths
 
 	inline static public function mora(key:String, type:String, ?library:String)
 	{
-		if(OpenFlAssets.exists(getPath('feeshdata/$key.$type', TEXT, library)))
-			return getPath('feeshdata/$key.$type', TEXT, library);
+		var path = getPath('feeshdata/$key.$type', TEXT, library);
+		if(assetExists(path, TEXT))
+			return path;
 		else {
 			trace("Error: could not locate file - " + '$key.$type');
 			return "";
@@ -132,8 +429,9 @@ class Paths
 
 	inline static public function txt(key:String, ?library:String)
 	{
-		if(OpenFlAssets.exists(getPath('data/$key.txt', TEXT, library)))
-			return getPath('data/$key.txt', TEXT, library);
+		var path = getPath('data/$key.txt', TEXT, library);
+		if(assetExists(path, TEXT))
+			return path;
 		else {
 			trace("Warning: could not locate text file - " + key);
 			return "";
@@ -142,8 +440,9 @@ class Paths
 
 	inline static public function pak(key:String,?library:String)
 	{
-		if(OpenFlAssets.exists(getPath('pakdata/$key.pak', TEXT, library)))
-			return getPath('pakdata/$key.pak', TEXT, library);
+		var path = getPath('pakdata/$key.pak', TEXT, library);
+		if(assetExists(path, TEXT))
+			return path;
 		else {
 			trace("Error: could not locate pak file - " + key);
 			return "";
@@ -152,19 +451,21 @@ class Paths
 
 	inline static public function json(key:String, ?library:String)
 	{
-		if(OpenFlAssets.exists(getPath('data/$key.json', TEXT, library)))
-			return getPath('data/$key.json', TEXT, library);
+		var path = getPath('data/$key.json', TEXT, library);
+		if(assetExists(path, TEXT))
+			return path;
 		else {
-			trace("Error: could not locate json file - " + getPath('data/$key.json', TEXT, library));
+			trace("Error: could not locate json file - " + path);
 			return "";
 		}
 	}
 
 	inline static public function shader(key:String, ?library:String) {
-		if(OpenFlAssets.exists(getPath('shaders/$key', TEXT, library)))
-			return getPath('shaders/$key', TEXT, library);
+		var path = getPath('shaders/$key', TEXT, library);
+		if(assetExists(path, TEXT))
+			return path;
 		else {
-			trace("Error: could not locate glsl file - " + getPath('shaders/$key', TEXT, library));
+			trace("Error: could not locate glsl file - " + path);
 			return "";
 		}
 	}
@@ -176,18 +477,19 @@ class Paths
 		if(cache)
 			cacheFile = "cache/";
 
-		if(OpenFlAssets.exists('mod_assets/images/$key.png')
-		&& OpenFlAssets.exists('mod_assets/images/$key.xml')) {
+		if(assetExists('mod_assets/images/$key.png', IMAGE)
+		&& assetExists('mod_assets/images/$key.xml', TEXT)) {
 			cacheFile = "";
 			library = "";
 		}
 
 		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key, library);
+		var descriptionPath = file('images/' + cacheFile + key + '.txt', library);
 
-		if(OpenFlAssets.exists(file('images/' + cacheFile + key + '.txt', library))) {
-			return FlxAtlasFrames.fromSpriteSheetPacker(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.txt', library));
+		if(assetExists(descriptionPath, TEXT)) {
+			return FlxAtlasFrames.fromSpriteSheetPacker(cachedImage != null ? cachedImage : image(cacheFile + key, library), readText(descriptionPath));
 		}else {
-			trace("Error: could not locate asset - " + file('images/' + cacheFile + key + '.txt', library));
+			trace("Error: could not locate asset - " + descriptionPath);
 			return null;
 		}
 	}
@@ -203,10 +505,11 @@ class Paths
 
 	inline static public function sound(key:String, ?library:String)
 	{
-		var getPath:String = getPath('sounds/$key.$SOUND_EXT', SOUND, library);
+		var path = getPath('sounds/$key.$SOUND_EXT', SOUND, library);
+		var sound = loadSoundAsset(path);
 
-		if(OpenFlAssets.exists(getPath)) {
-			return OpenFlAssets.getSound(getPath, true);
+		if(sound != null) {
+			return sound;
 		}else {
 			trace("Error: could not locate sound - " + key);
 			return null;
@@ -215,32 +518,52 @@ class Paths
 
 	inline static public function music(key:String, ?library:String)
 	{
-		var getPath:String = getPath('music/$key.$SOUND_EXT', MUSIC, library);
+		var path = getPath('music/$key.$SOUND_EXT', MUSIC, library);
+		var music = loadSoundAsset(path);
 
-		if(OpenFlAssets.exists(getPath)) {
-			return OpenFlAssets.getSound(getPath, true);
+		if(music != null) {
+			return music;
 		}else {
 			trace("Error: could not locate music - " + key);
 			return null;
 		}
 	}
 
-	inline static function getSongSoundPath(song:String, soundFile:String):String
+	static function getSongSoundPath(song:String, soundFile:String):String
 	{
-		return "songs:" + getPreloadPath('songs/${song.toLowerCase()}/$soundFile.$SOUND_EXT');
+		var relativePath = 'songs/${song.toLowerCase()}/$soundFile.$SOUND_EXT';
+		var builtInAssetId = 'songs:assets/$relativePath';
+
+		#if sys
+		for (path in ['mod_assets/$relativePath', '$REMOTE_CACHE_ROOT/$relativePath', 'funkin_assets/$relativePath'])
+		{
+			if (FileSystem.exists(path))
+				return path;
+		}
+		#end
+
+		if (OpenFlAssets.exists(builtInAssetId, SOUND) || OpenFlAssets.exists(builtInAssetId, MUSIC))
+			return builtInAssetId;
+
+		var remotePath = downloadDirectRemoteAsset(relativePath);
+		if (remotePath != null)
+			return remotePath;
+
+		return builtInAssetId;
 	}
 
 	inline static public function songSoundExists(song:String, soundFile:String):Bool
 	{
-		return OpenFlAssets.exists(getSongSoundPath(song, soundFile));
+		return assetExists(getSongSoundPath(song, soundFile), SOUND);
 	}
 
 	inline static public function songSound(song:String, soundFile:String)
 	{
-		var getPath:String = getSongSoundPath(song, soundFile);
+		var path = getSongSoundPath(song, soundFile);
+		var sound = loadSoundAsset(path);
 
-		if(OpenFlAssets.exists(getPath)) {
-			return OpenFlAssets.getSound(getPath, true);
+		if(sound != null) {
+			return sound;
 		}else {
 			trace("Error: could not locate song audio - " + song + "/" + soundFile + "." + SOUND_EXT);
 			return null;
@@ -268,18 +591,19 @@ class Paths
 			cacheFile = "cache/";
 		}
 
-		if(OpenFlAssets.exists('mod_assets/images/$key.png')
-		&& OpenFlAssets.exists('mod_assets/images/$key.xml')) {
+		if(assetExists('mod_assets/images/$key.png', IMAGE)
+		&& assetExists('mod_assets/images/$key.xml', TEXT)) {
 			cacheFile = "";
 			library = "";
 		}
 
 		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key, library);
+		var descriptionPath = file('images/' + cacheFile + key + '.xml', library);
 
-		if(OpenFlAssets.exists(file('images/' + cacheFile + key + '.xml', library))) {
-			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), file('images/' + cacheFile + key + '.xml', library));
+		if(assetExists(descriptionPath, TEXT)) {
+			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), readText(descriptionPath));
 		}else {
-			trace("Error: could not locate asset - " + file('images/' + cacheFile + key + '.xml', library));
+			trace("Error: could not locate asset - " + descriptionPath);
 			return null;
 		}
 	}
@@ -295,10 +619,11 @@ class Paths
 			return cachedImage;
 		}
 
-		if(OpenFlAssets.exists(getPath('images/$key.png', IMAGE, library))) {
-			var path:String = getPath('images/$key.png', IMAGE, library);
+		var path = getPath('images/$key.png', IMAGE, library);
+		var bitmap = loadBitmap(path);
 
-			var graphics:FlxGraphic = FlxG.bitmap.add(path, false, path);
+		if(bitmap != null) {
+			var graphics:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, path);
 			graphics.persist = false;
 			return graphics;
 		}else {
@@ -308,10 +633,11 @@ class Paths
 	}
 
 	static public function lua(key:String) {
-		if(OpenFlAssets.exists(getPath('scripts/$key.lua', TEXT, null))) {
-			return getPath('scripts/$key.lua', TEXT, null);
+		var path = getPath('scripts/$key.lua', TEXT, null);
+		if(assetExists(path, TEXT)) {
+			return path;
 		}else {
-			trace("Error: could not locate asset - " + getPath('scripts/$key.lua', TEXT, null));
+			trace("Error: could not locate asset - " + path);
 			return "";
 		}
 	}

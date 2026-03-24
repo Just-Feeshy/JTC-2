@@ -60,11 +60,20 @@ class DefaultHandler {
         #if sys
         var arrayer:Array<String> = new Array<String>();
 
-        for(i in 0...FileSystem.readDirectory("assets/characters").length)
-            arrayer.push(FileSystem.readDirectory("assets/characters")[i].split(".")[0]);
+        if (FileSystem.exists("assets/preload/characters")) {
+            for (entry in FileSystem.readDirectory("assets/preload/characters"))
+                arrayer.push(entry.split(".")[0]);
+        }
 
-        for(i in 0...FileSystem.readDirectory("mod_assets/characters").length)
-            arrayer.push(FileSystem.readDirectory("mod_assets/characters")[i].split(".")[0]);
+        if (FileSystem.exists("funkin_assets/preload/data/characters")) {
+            for (entry in FileSystem.readDirectory("funkin_assets/preload/data/characters"))
+                arrayer.push(entry.split(".")[0]);
+        }
+
+        if (FileSystem.exists("mod_assets/characters")) {
+            for (entry in FileSystem.readDirectory("mod_assets/characters"))
+                arrayer.push(entry.split(".")[0]);
+        }
         #else
         var arrayer:Array<String> = CoolUtil.coolTextFile("assets/data/characterList.txt");
 

@@ -3,12 +3,12 @@
 	"artist": "Varsavi",
 	"charter": "DiFicuz",
 	"playData": {
-		"stage": "mainStage",
+		"stage": "funkstreet",
 		"noteStyle": "funkin",
 		"difficulties": null,
-		"characters": {"girlfriend": "gf", "opponent": "jtc", "player": "bf"}
+		"characters": {"girlfriend": "gf", "opponent": "joul", "player": "bf-cool"}
 	},
-	"songName": "i-am-blue",
+	"songName": "I-Am-Blue",
 	"timeChanges": [
 		{"t": 0, "bpm": 135}
 	],
