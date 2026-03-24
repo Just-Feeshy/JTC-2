@@ -3408,9 +3408,20 @@ class PlayState extends MusicBeatState
 	
 	function getLuaScript():Void {
 		#if (USING_LUA && cpp)
-		if(Assets.exists(Paths.getPath('scripts/${"stage/" + curStage.toLowerCase()}.lua', TEXT, null))) {
-			Register.detachLuaFromState(PlayState);
-			Register.attachLuaToState(PlayState, Paths.lua("stage/" + curStage.toLowerCase()));
+		Register.detachLuaFromState(PlayState);
+
+		var songScript:String = "song/" + CoolUtil.readableSongDirectory(SONG.song.toLowerCase());
+		var stageScript:String = "stage/" + curStage.toLowerCase();
+		var scriptPath:String = null;
+
+		if(Assets.exists(Paths.getPath('scripts/${songScript}.lua', TEXT, null))) {
+			scriptPath = songScript;
+		}else if(Assets.exists(Paths.getPath('scripts/${stageScript}.lua', TEXT, null))) {
+			scriptPath = stageScript;
+		}
+
+		if(scriptPath != null) {
+			Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
 			ownedLua = getModLua();
 			ownedLua.execute();
 		}
