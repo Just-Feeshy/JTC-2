@@ -107,11 +107,22 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
 
         playState.vSliceCameraFocusEnabled = true;
 
-        if(easeName.toUpperCase() == "CLASSIC" || easeName.toUpperCase() == "INSTANT" || durationSeconds <= 0) {
+        if(easeName.toUpperCase() == "CLASSIC") {
             cancelTween(focusXTween);
             cancelTween(focusYTween);
             playState.vSliceCameraFocusX = targetX;
             playState.vSliceCameraFocusY = targetY;
+            playState.camFollow.setPosition(targetX, targetY);
+            return;
+        }
+
+        if(easeName.toUpperCase() == "INSTANT" || durationSeconds <= 0) {
+            cancelTween(focusXTween);
+            cancelTween(focusYTween);
+            playState.vSliceCameraFocusX = targetX;
+            playState.vSliceCameraFocusY = targetY;
+            playState.camFollow.setPosition(targetX, targetY);
+            FlxG.camera.focusOn(playState.camFollow.getPosition());
             return;
         }
 

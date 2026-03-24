@@ -125,6 +125,7 @@ class ChartingState extends MusicBeatState
 
 	var tempBpm:Int = 0;
 	var vocals:FlxSound;
+	var opponentVocals:FlxSound;
 
 	var leftIcon:HealthIcon;
 	var rightIcon:HealthIcon;
@@ -873,14 +874,12 @@ class ChartingState extends MusicBeatState
 				UI_box.x = FlxG.width / 2 + GRID_SIZE;
 				bpmTxt.x = 1050;
 				mainGrid = 10;
-
 				leftIcon.setPosition(30, -100);
 				rightIcon.setPosition((gridBG.width / 2) + (rightIcon.width/2.1), -100);
 			}else {
 				UI_box.x = FlxG.width / 2;
 				bpmTxt.x = 1000;
 				mainGrid = 8;
-
 				leftIcon.setPosition(0, -100);
 				rightIcon.setPosition((gridBG.width / 2) - 30, -100);	
 			}
@@ -1260,14 +1259,14 @@ class ChartingState extends MusicBeatState
 		if (FlxG.sound.music != null) {
 			FlxG.sound.music.stop();
 		}
-		
-		vocals = new FlxSound().loadEmbedded(Paths.voices(daSong));
-		FlxG.sound.list.add(vocals);
+
+		loadSongVocals(daSong);
 
 		setupSong(daSong);
 		FlxG.sound.music.pause();
 		Conductor.songPosition = sectionStartTime(curSection);
 		FlxG.sound.music.time = Conductor.songPosition;
+		setVocalsTime(Conductor.songPosition);
 	}
 
 	function setupSong(daSong:String):Void {
@@ -1281,17 +1280,132 @@ class ChartingState extends MusicBeatState
 			FlxG.sound.music.pause();
 			Conductor.songPosition = 0;
 
-			if(vocals != null) {
-				vocals.pause();
-				vocals.time = 0;
-			}
+			pauseVocals();
+			setVocalsTime(0);
 
 			changeSection();
 			curSection = 0;
 			updateGrid();
 			updateSectionUI();
-			vocals.play();
+			playVocals();
 		};
+	}
+
+	private function loadSongVocals(song:String):Void
+	{
+		destroyVocals();
+		opponentVocals = null;
+
+		if (_song.needsVoices)
+		{
+			var hasSplitVocals:Bool = Paths.songSoundExists(song, "1_Voices") && Paths.songSoundExists(song, "2_Voices");
+			var hasSingleVocals:Bool = Paths.songSoundExists(song, "Voices");
+
+			if (hasSplitVocals)
+			{
+				vocals = new FlxSound().loadEmbedded(Paths.songSound(song, "1_Voices"));
+				opponentVocals = new FlxSound().loadEmbedded(Paths.songSound(song, "2_Voices"));
+			}
+			else if (hasSingleVocals)
+			{
+				vocals = new FlxSound().loadEmbedded(Paths.voices(song));
+			}
+			else
+			{
+				trace("Warning: no vocals found for " + song + ", continuing without vocals.");
+				vocals = new FlxSound();
+			}
+		}
+		else
+		{
+			vocals = new FlxSound();
+		}
+
+		FlxG.sound.list.add(vocals);
+
+		if (opponentVocals != null)
+		{
+			FlxG.sound.list.add(opponentVocals);
+		}
+	}
+
+	private function destroyVocals():Void
+	{
+		destroyVocalTrack(vocals);
+		destroyVocalTrack(opponentVocals);
+
+		vocals = null;
+		opponentVocals = null;
+	}
+
+	private function destroyVocalTrack(track:FlxSound):Void
+	{
+		if (track == null)
+			return;
+
+		track.stop();
+		FlxG.sound.list.remove(track);
+		track.destroy();
+	}
+
+	private inline function pauseVocals():Void
+	{
+		if (vocals != null)
+			vocals.pause();
+
+		if (opponentVocals != null)
+			opponentVocals.pause();
+	}
+
+	private inline function playVocals():Void
+	{
+		if (vocals != null)
+			vocals.play();
+
+		if (opponentVocals != null)
+			opponentVocals.play();
+	}
+
+	private inline function stopVocals():Void
+	{
+		if (vocals != null)
+			vocals.stop();
+
+		if (opponentVocals != null)
+			opponentVocals.stop();
+	}
+
+	private inline function setVocalsTime(time:Float):Void
+	{
+		if (vocals != null)
+			vocals.time = time;
+
+		if (opponentVocals != null)
+			opponentVocals.time = time;
+	}
+
+	private function applyIconCharacter(icon:HealthIcon, character:String, isPlayer:Bool):Void
+	{
+		if (icon == null || character == null || character.trim() == "")
+			return;
+
+		var iconFile:String = icon.getIconFileJSON(character);
+		var iconAnimInfo:Array<Int> = icon.getIconJSON(character);
+
+		if (iconFile == null || iconFile.trim() == "")
+			iconFile = "iconGrid";
+
+		if (icon.character == character && icon.iconFile == iconFile && icon.animation.getByName(character) != null)
+		{
+			icon.animation.play(character);
+			return;
+		}
+
+		icon.animation.destroyAnimations();
+		icon.loadNewIcons(iconFile);
+		icon.createAnim(character, cast iconAnimInfo, isPlayer);
+		icon.setGraphicSize(0, 45);
+		icon.updateHitbox();
 	}
 
 	function generateUI():Void
@@ -1603,7 +1717,7 @@ class ChartingState extends MusicBeatState
 
 			PlayState.SONG = _song;
 			FlxG.sound.music.stop();
-			vocals.stop();
+			stopVocals();
 			
 			#if cpp
 			CacheState.loadAndSwitchState(new PlayState(muteInGame));
@@ -1667,14 +1781,12 @@ class ChartingState extends MusicBeatState
 				if (FlxG.sound.music.playing)
 				{
 					FlxG.sound.music.pause();
-					vocals.pause();
+					pauseVocals();
 				}
 				else
 				{
-					vocals.play();
-					vocals.pause();
-					vocals.time = FlxG.sound.music.time;
-					vocals.play();
+					setVocalsTime(FlxG.sound.music.time);
+					playVocals();
 
 					FlxG.sound.music.play();
 				}
@@ -1691,10 +1803,10 @@ class ChartingState extends MusicBeatState
 			if (FlxG.mouse.wheel != 0)
 			{
 				FlxG.sound.music.pause();
-				vocals.pause();
+				pauseVocals();
 
 				FlxG.sound.music.time -= FlxG.mouse.wheel * Conductor.stepCrochet * 0.4;
-				vocals.time = FlxG.sound.music.time;
+				setVocalsTime(FlxG.sound.music.time);
 			}
 
 			if (!FlxG.keys.pressed.SHIFT)
@@ -1702,7 +1814,7 @@ class ChartingState extends MusicBeatState
 				if (FlxG.keys.pressed.W || FlxG.keys.pressed.S)
 				{
 					FlxG.sound.music.pause();
-					vocals.pause();
+					pauseVocals();
 
 					var daTime:Float = 700 * FlxG.elapsed;
 
@@ -1713,7 +1825,7 @@ class ChartingState extends MusicBeatState
 					else
 						FlxG.sound.music.time += daTime;
 
-					vocals.time = FlxG.sound.music.time;
+					setVocalsTime(FlxG.sound.music.time);
 				}
 			}
 			else
@@ -1721,7 +1833,7 @@ class ChartingState extends MusicBeatState
 				if (FlxG.keys.justPressed.W || FlxG.keys.justPressed.S)
 				{
 					FlxG.sound.music.pause();
-					vocals.pause();
+					pauseVocals();
 
 					var daTime:Float = Conductor.stepCrochet * 2;
 
@@ -1732,7 +1844,7 @@ class ChartingState extends MusicBeatState
 					else
 						FlxG.sound.music.time += daTime;
 
-					vocals.time = FlxG.sound.music.time;
+					setVocalsTime(FlxG.sound.music.time);
 				}
 			}
 		}
@@ -1835,7 +1947,7 @@ class ChartingState extends MusicBeatState
 		updateGrid();
 
 		FlxG.sound.music.pause();
-		vocals.pause();
+		pauseVocals();
 
 		// Basically old shit from changeSection???
 		FlxG.sound.music.time = sectionStartTime(curSection);
@@ -1845,7 +1957,7 @@ class ChartingState extends MusicBeatState
 			curSection = 0;
 		}
 
-		vocals.time = FlxG.sound.music.time;
+		setVocalsTime(FlxG.sound.music.time);
 
 		updateCurStep();
 
@@ -1872,7 +1984,7 @@ class ChartingState extends MusicBeatState
 			if (updateMusic)
 			{
 				FlxG.sound.music.pause();
-				vocals.pause();
+				pauseVocals();
 
 				/*var daNum:Int = 0;
 					var daLength:Float = 0;
@@ -1883,7 +1995,7 @@ class ChartingState extends MusicBeatState
 				}*/
 
 				FlxG.sound.music.time = sectionStartTime(curSection);
-				vocals.time = FlxG.sound.music.time;
+				setVocalsTime(FlxG.sound.music.time);
 				updateCurStep();
 			}
 
@@ -2127,13 +2239,13 @@ class ChartingState extends MusicBeatState
 	{
 		if (check_mustHitSection.checked)
 		{
-			leftIcon.animation.play(_song.player1);
-			rightIcon.animation.play(_song.player2);
+			applyIconCharacter(leftIcon, _song.player1, true);
+			applyIconCharacter(rightIcon, _song.player2, false);
 		}
 		else
 		{
-			leftIcon.animation.play(_song.player2);
-			rightIcon.animation.play(_song.player1);
+			applyIconCharacter(leftIcon, _song.player2, false);
+			applyIconCharacter(rightIcon, _song.player1, true);
 		}
 	}
 
@@ -2561,6 +2673,12 @@ class ChartingState extends MusicBeatState
 			"song": _song
 		});
 		FlxG.save.flush();
+	}
+
+	override function destroy():Void
+	{
+		destroyVocals();
+		super.destroy();
 	}
 
 	private function saveLevel()

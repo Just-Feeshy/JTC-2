@@ -61,6 +61,8 @@ class HealthIcon extends FlxSprite
 	}
 
 	public function createAnim(character:String, iconAnimInfo:Array<UInt>, isPlayer:Bool = false):Void {
+		this.character = character;
+
 		if(!iconCharacters.contains(character)) {
 			iconCharacters.push(character);
 		}else {
@@ -69,7 +71,7 @@ class HealthIcon extends FlxSprite
 
 		this.iconAnimInfo = iconAnimInfo;
 		animation.add(character, iconAnimInfo, 0, false, isPlayer);
-		animation.play(this.character);
+		animation.play(character);
 	}
 
 	public function getIconJSON(character:String):Array<Int> {

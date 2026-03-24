@@ -5,6 +5,7 @@ import Discord.DiscordClient;
 #end
 import Section.SwagSection;
 import Song.SwagSong;
+import Conductor.BPMChangeEvent;
 import WiggleEffect.WiggleEffectType;
 import Controls.Control;
 import Controls.Device;
@@ -622,7 +623,17 @@ class PlayState extends MusicBeatState
 		else
 			eventInfo = [];
 
-		eventInfo.sort((a, b) -> Std.int(Reflect.field(a, "modGridY") - Reflect.field(b, "modGridY")));
+		eventInfo.sort(function(a:EventInfo, b:EventInfo):Int {
+			var aTime:Null<Float> = Reflect.field(a, "modTime");
+			var bTime:Null<Float> = Reflect.field(b, "modTime");
+
+			if(aTime != null && bTime != null)
+				return aTime < bTime ? -1 : (aTime > bTime ? 1 : 0);
+
+			var aGrid:Int = Reflect.field(a, "modGridY");
+			var bGrid:Int = Reflect.field(b, "modGridY");
+			return aGrid < bGrid ? -1 : (aGrid > bGrid ? 1 : 0);
+		});
 
 		startingSong = true;
 
@@ -1733,6 +1744,45 @@ class PlayState extends MusicBeatState
 				iconP1.animation.play('bf-old');
 		}
 
+		if (startingSong)
+		{
+			if (startedCountdown)
+			{
+				Conductor.songPosition += FlxG.elapsed * 1000;
+				Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
+
+				if (Conductor.trackPosition >= 0) {
+					startSong();
+				}
+			}
+		}
+		else
+		{
+			if(!paused) {
+				var prevTrackPos:Float = Conductor.trackPosition;
+
+				Conductor.songPosition += FlxG.elapsed * 1000;
+				Conductor.trackPosition += (Conductor.songPosition - prevTrackPos) * (1 - timeFreeze);
+			}
+
+			if (!paused)
+			{
+				songTime += FlxG.game.ticks - previousFrameTime;
+				previousFrameTime = FlxG.game.ticks;
+
+				// Interpolation type beat
+				if (Conductor.lastSongPos != Conductor.trackPosition)
+				{
+					songTime = (songTime + Conductor.trackPosition) / 2;
+					Conductor.lastSongPos = Conductor.trackPosition;
+					// Conductor.trackPosition += FlxG.elapsed * 1000;
+					// trace('MISSED FRAME');
+				}
+			}
+
+			// Conductor.lastSongPos = FlxG.sound.music.time;
+		}
+
 		super.update(elapsed);
 
 		noteBeat = curBeat;
@@ -1747,11 +1797,6 @@ class PlayState extends MusicBeatState
 			counterTxt.screenCenter(X);
 		}else
 			counterTxt.text = "Score: " + songScore;
-
-		if(prevEventStep != curStep) {
-			prevEventStep = curStep;
-			eventLoad();
-		}
 
 		#if windows
 		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength - FlxG.sound.music.time);
@@ -1840,48 +1885,20 @@ class PlayState extends MusicBeatState
 		else
 			iconP2.animation.curAnim.curFrame = 0;
 
-		if (startingSong)
-		{
-			if (startedCountdown)
-			{
-				Conductor.songPosition += FlxG.elapsed * 1000;
-				Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
+		var liveEventStep:Int = getStepFromTime(Conductor.songPosition);
 
-				if (Conductor.trackPosition >= 0) {
-					startSong();
-				}
-			}
-		}
-		else
-		{
-			if(!paused) {
-				var prevTrackPos:Float = Conductor.trackPosition;
-
-				Conductor.songPosition += FlxG.elapsed * 1000;
-				Conductor.trackPosition += (Conductor.songPosition - prevTrackPos) * (1 - timeFreeze);
-			}
-
-			if (!paused)
-			{
-				songTime += FlxG.game.ticks - previousFrameTime;
-				previousFrameTime = FlxG.game.ticks;
-
-				// Interpolation type beat
-				if (Conductor.lastSongPos != Conductor.trackPosition)
-				{
-					songTime = (songTime + Conductor.trackPosition) / 2;
-					Conductor.lastSongPos = Conductor.trackPosition;
-					// Conductor.trackPosition += FlxG.elapsed * 1000;
-					// trace('MISSED FRAME');
-				}
-			}
-
-			// Conductor.lastSongPos = FlxG.sound.music.time;
+		if(prevEventStep != liveEventStep) {
+			prevEventStep = liveEventStep;
+			eventLoad();
 		}
 
-		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
+		var cameraPlaybackTime:Float = Conductor.songPosition;
+		var cameraFollowStep:Int = Std.int(Math.max(getStepFromTime(cameraPlaybackTime) - 4, 0));
+		var cameraSectionIndex:Int = Std.int(cameraFollowStep / 16);
+
+		if (generatedMusic && SONG.notes[cameraSectionIndex] != null)
 		{
-			if (!SONG.notes[Std.int(curStep / 16)].mustHitSection)
+			if (!SONG.notes[cameraSectionIndex].mustHitSection)
 			{
 				var camFollowX:Float = dad.getMidpoint().x + 150;
 				var camFollowY:Float = dad.getMidpoint().y - 100;
@@ -1917,7 +1934,7 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			if(SONG.notes[Std.int(curStep / 16)].mustHitSection)
+			if(SONG.notes[cameraSectionIndex].mustHitSection)
 			{
 				var camFollowX:Float = boyfriend.getMidpoint().x - 100;
 				var camFollowY:Float = boyfriend.getMidpoint().y - 100;
@@ -3440,6 +3457,25 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	private function getStepFromTime(songTime:Float):Int
+	{
+		var lastChange:BPMChangeEvent = {
+			stepTime: 0,
+			songTime: 0,
+			bpm: 0
+		};
+
+		for (i in 0...Conductor.bpmChangeMap.length)
+		{
+			if (songTime >= Conductor.bpmChangeMap[i].songTime)
+				lastChange = Conductor.bpmChangeMap[i];
+		}
+
+		var lastBpm:Int = lastChange.bpm > 0 ? lastChange.bpm : Conductor.bpm;
+		var stepCrochet:Float = ((60 / lastBpm) * 1000) / 4;
+		return lastChange.stepTime + Math.floor((songTime - lastChange.songTime) / stepCrochet);
+	}
+
 	function removeNote(note:Note) {
 		note.active = false;
 
@@ -4009,12 +4045,26 @@ class PlayState extends MusicBeatState
 		if(eventInfo.length == 0)
 			return;
 
-		var gridY = Reflect.field(eventInfo[0], "modGridY");
+		var liveSongTime:Float = Conductor.songPosition;
+		var liveStep:Int = getStepFromTime(liveSongTime);
+		var liveGridY:Int = liveStep * 40;
 
-		if((curStep*40) == gridY)
-			return eventLoad_DefaultHandler();
-		else
-			return;
+		while(eventInfo.length > 0) {
+			var nextEvent:EventInfo = eventInfo[0];
+			var eventTime:Null<Float> = Reflect.field(nextEvent, "modTime");
+
+			if(eventTime != null) {
+				if(liveSongTime < eventTime)
+					return;
+			} else {
+				var gridY:Int = Reflect.field(nextEvent, "modGridY");
+
+				if(liveGridY < gridY)
+					return;
+			}
+
+			eventLoad_DefaultHandler();
+		}
 	}
 
 	function eventLoad_DefaultHandler():Void {

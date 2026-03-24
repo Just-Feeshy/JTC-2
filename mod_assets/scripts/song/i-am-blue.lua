@@ -125,14 +125,14 @@ end
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-    addPulseRange(80, 124, 4, 0.65)
-    addPulseRange(128, 316, 4, 0.95)
-    addPulseRange(320, 380, 4, 0.55)
-    addPulseRange(384, 460, 4, 0.85)
-    addPulseRange(464, 524, 4, 0.70)
-    addPulseRange(528, 588, 4, 0.95)
-    addPulseSteps({592, 596, 600, 604, 608, 612, 616, 620}, 1.15)
-    addPulseSteps({624, 628, 632, 636}, 0.80)
+    addPulseRange(60, 120, 4, 0.65)
+    addPulseRange(124, 312, 4, 0.95)
+    addPulseRange(316, 376, 4, 0.55)
+    addPulseRange(380, 456, 4, 0.85)
+    addPulseRange(460, 520, 4, 0.70)
+    addPulseRange(524, 584, 4, 0.95)
+    addPulseSteps({588, 592, 596, 600, 604, 608, 612, 616}, 1.15)
+    addPulseSteps({620, 624, 628, 632}, 0.80)
 end
 
 local function pulseCamera(stepValue)

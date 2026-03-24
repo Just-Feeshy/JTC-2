@@ -21,6 +21,7 @@ typedef EventInfo = {
     var modValue:String;
     var modValueTwo:String;
     var modDisplayName:String;
+    @:optional var modTime:Float;
 }
 
 /**

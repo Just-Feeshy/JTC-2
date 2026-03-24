@@ -201,7 +201,8 @@ class Song
 		if(isVSliceChart(parsed))
 			return parseVSliceChart(parsed, chartFolder, chartName, metadataRaw);
 
-		throw "Unsupported chart format.";
+		throw 'Unsupported chart format for "' + (chartName != null ? chartName : "unknown") + '" in "' + (chartFolder != null ? chartFolder : "unknown")
+			+ '" (keys: ' + Reflect.fields(parsed).join(", ") + ')';
 	}
 
 	static function isWrappedLegacyChart(parsed:Dynamic):Bool
@@ -219,7 +220,15 @@ class Song
 	static function isVSliceChart(parsed:Dynamic):Bool
 	{
 		var notes:Dynamic = Reflect.field(parsed, "notes");
-		return notes != null && Reflect.isObject(notes) && !Std.isOfType(notes, Array) && Reflect.hasField(parsed, "events");
+		return notes != null
+			&& Reflect.isObject(notes)
+			&& !Std.isOfType(notes, Array)
+			&& (
+				Reflect.hasField(parsed, "events")
+				|| Reflect.hasField(parsed, "scrollSpeed")
+				|| Reflect.hasField(parsed, "generatedBy")
+				|| Reflect.hasField(parsed, "version")
+			);
 	}
 
 	static function finalizeSwagSong(songData:SwagSong, ?chartFolder:String):SwagSong
@@ -501,11 +510,13 @@ class Song
 				continue;
 
 			var payload:Dynamic = readDynamic(event, "v");
-			var step:Int = Std.int(Math.round(timeToStep(readFloat(event, "t", 0), timeChanges)));
+			var eventTime:Float = readFloat(event, "t", 0);
+			var step:Int = Std.int(Math.round(timeToStep(eventTime, timeChanges)));
 
 			converted.push({
 				modSkill: "v-slice event",
 				modGridY: step * 40,
+				modTime: eventTime,
 				modValue: eventKind,
 				modValueTwo: payload == null ? "" : Json.stringify(payload),
 				modDisplayName: eventKind
@@ -513,6 +524,12 @@ class Song
 		}
 
 		converted.sort(function(a:EventInfo, b:EventInfo):Int {
+			var aTime:Null<Float> = Reflect.field(a, "modTime");
+			var bTime:Null<Float> = Reflect.field(b, "modTime");
+
+			if(aTime != null && bTime != null)
+				return aTime < bTime ? -1 : (aTime > bTime ? 1 : 0);
+
 			return a.modGridY < b.modGridY ? -1 : (a.modGridY > b.modGridY ? 1 : 0);
 		});
 
