@@ -141,8 +141,8 @@ class CharacterCreatorState extends MusicBeatState {
 
 		add(UI_thingy);
 
-        if(OpenFLAssets.getText(Paths.mora("skins", "json")).length > 48) {
-            mapEditor = cast parser.fromJson(OpenFLAssets.getText(Paths.mora("skins", "json")), "skins.json");
+        if(Paths.readText(Paths.mora("skins", "json")).length > 48) {
+            mapEditor = cast parser.fromJson(Paths.readText(Paths.mora("skins", "json")), "skins.json");
 		}
 
 		var characterList:Array<String> = [];
@@ -156,8 +156,9 @@ class CharacterCreatorState extends MusicBeatState {
 					}
 
 					if(character.startsWith("mod_assets/characters/")
-				    || character.startsWith("assets/characters/")) {
-						character = character.split("/")[2];
+				    || character.startsWith("assets/characters/")
+				    || character.startsWith("funkin_assets/preload/data/characters/")) {
+						character = character.split("/").pop();
 						characterList.push(character);
 					}
 				}
@@ -322,7 +323,7 @@ class CharacterCreatorState extends MusicBeatState {
         fileName.text = characterAutosave.get(character.curCharacter).file;
 
         fileName.textUpdateCallback = function(text:String) {
-            if(OpenFLAssets.exists(Paths.getPreloadPath("images/" + text))) {
+            if(Paths.assetExists(Paths.getPreloadPath("images/" + text), IMAGE)) {
                 return true;
             }
 

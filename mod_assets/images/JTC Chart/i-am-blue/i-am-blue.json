@@ -1,7 +1,7 @@
 {
 	"song": {
-		"player1": "bf",
-		"player2": "jtc",
+		"player1": "bf-cool",
+		"player2": "joul",
 		"events": [],
 		"notes": [
 			{
@@ -1991,7 +1991,7 @@
 			}
 		],
 		"gfVersion": "gf",
-		"song": "i-am-blue",
+		"song": "I-Am-Blue",
 		"needsVoices": true,
 		"stage": "stage",
 		"bpm": 135,

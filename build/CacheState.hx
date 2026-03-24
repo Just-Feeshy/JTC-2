@@ -68,7 +68,7 @@ class CacheState extends HelperStates {
         }
 
         for(candidate in candidates) {
-            if(Assets.exists(Paths.getPath('data/${candidate}/cache.json', TEXT, ""))) {
+            if(Paths.assetExists(Paths.getPath('data/${candidate}/cache.json', TEXT, ""), TEXT)) {
                 return candidate;
             }
         }
@@ -116,12 +116,12 @@ class CacheState extends HelperStates {
         var dialogueList:Array<DialogueData>;
         var songCacheDirectory:String = getSongCacheDirectory();
 
-        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/dialogue.json', TEXT, ""))) {
+        if(songCacheDirectory != "" && Paths.assetExists(Paths.getPath('data/${songCacheDirectory}/dialogue.json', TEXT, ""), TEXT)) {
             dialogueList = loadDialogue("dialogue");
         }
 
-        if(songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""))) {
-            cacheList = cast Json.parse(Assets.getText(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")));
+        if(songCacheDirectory != "" && Paths.assetExists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""), TEXT)) {
+            cacheList = cast Json.parse(Paths.readText(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")));
 
             for(i in 0...cacheList.length) {
                 // Cache from worker thread without creating Context3D textures.
@@ -142,7 +142,7 @@ class CacheState extends HelperStates {
         var parser:JsonParser<Array<DialogueData>> = new JsonParser<Array<DialogueData>>();
         var songCacheDirectory:String = getSongCacheDirectory();
 
-		return parser.fromJson(File.getContent(Paths.getPath('data/${songCacheDirectory}/$name.json', TEXT, "")), '${name}.json');
+		return parser.fromJson(Paths.readText(Paths.getPath('data/${songCacheDirectory}/$name.json', TEXT, "")), '${name}.json');
     }
 
     static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
@@ -157,7 +157,7 @@ class CacheState extends HelperStates {
         }
 
         var songCacheDirectory:String = getSongCacheDirectory();
-        var hasSongCache:Bool = songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""));
+        var hasSongCache:Bool = songCacheDirectory != "" && Paths.assetExists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""), TEXT);
 
         if(PlayState.SONG.video != null && !exception) {
             if(hasSongCache) {
@@ -189,7 +189,7 @@ class CacheState extends HelperStates {
         }
 
         var songCacheDirectory:String = getSongCacheDirectory();
-        var hasSongCache:Bool = songCacheDirectory != "" && Assets.exists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""));
+        var hasSongCache:Bool = songCacheDirectory != "" && Paths.assetExists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""), TEXT);
 
         if(hasSongCache && !exception) {
             FlxG.switchState(new CacheState(new PlayState(), true));

@@ -1,5 +1,7 @@
 package;
 
+import openfl.display.BitmapData;
+import openfl.utils.AssetType;
 import flixel.util.FlxStringUtil;
 
 using StringTools;
@@ -11,7 +13,8 @@ class ChartParser
 		var IMG_WIDTH:Int = 8;
 		var regex:EReg = new EReg("[ \t]*((\r\n)|\r|\n)[ \t]*", "g");
 
-		var csvData = FlxStringUtil.imageToCSV(Paths.file('data/' + songName + '/' + songName + '_section' + section + '.png'));
+		var bitmap:BitmapData = Paths.loadBitmap(Paths.file('data/' + songName + '/' + songName + '_section' + section + '.png', IMAGE));
+		var csvData = FlxStringUtil.bitmapToCSV(bitmap);
 
 		var lines:Array<String> = regex.split(csvData);
 		var rows:Array<String> = lines.filter(function(line) return line != "");

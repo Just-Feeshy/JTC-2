@@ -326,9 +326,9 @@ class PlayState extends MusicBeatState
 
 		readableSong = SONG.song.toLowerCase();
 
-		if(Assets.exists(Paths.getPath('data/warning.txt', TEXT, ""))) //WIP
-			if(Assets.getText(Paths.txt('${readableSong}/warning')) != "" 
-			&& Assets.getText(Paths.txt('${readableSong}/warning')) != null)
+		if(Paths.assetExists(Paths.getPath('data/warning.txt', TEXT, ""), TEXT)) //WIP
+			if(Paths.readText(Paths.txt('${readableSong}/warning')) != "" 
+			&& Paths.readText(Paths.txt('${readableSong}/warning')) != null)
 				hasWarning = true;
 			else
 				hasWarning = false;
@@ -704,7 +704,7 @@ class PlayState extends MusicBeatState
 					var dialogue:Array<String> = ['blah blah blah', 'coolswag'];
 					var file:String = Paths.txt(readableSong + '/' + readableSong + 'Dialogue');
 
-					if (Assets.exists(file)) {
+					if (Paths.assetExists(file, TEXT)) {
 						dialogue = CoolUtil.coolTextFile(file);
 					}
 
@@ -1725,7 +1725,7 @@ class PlayState extends MusicBeatState
 			persistentDraw = true;
 			hasWarning = false;
 
-			warningSprState = new WarningSubGroup([Assets.getText(Paths.txt('${SONG.song.toLowerCase()}/warning'))]);
+			warningSprState = new WarningSubGroup([Paths.readText(Paths.txt('${SONG.song.toLowerCase()}/warning'))]);
 			warningSprState.screenCenter();
 			add(warningSprState);
 		}else if(!hasWarning && warningSprState != null && !startedCountdown) {
@@ -2220,7 +2220,7 @@ class PlayState extends MusicBeatState
 		oppositeStrums.forEach(function(spr:Strum) {
 			if(Math.abs(note.noteData) == spr.ID) {
 				note.hit();
-				if(note.isSustainNote || note.sustainLength > 0) {
+				if(note.isSustainNote) {
 					refreshHoldCoverForLane(spr.ID, false);
 				}
 				playStrumConfirm(spr);
@@ -3134,7 +3134,7 @@ class PlayState extends MusicBeatState
 
 			note.hit();
 
-			if(spr != null && spr.keyHeld && (note.isSustainNote || note.sustainLength > 0)) {
+			if(spr != null && spr.keyHeld && note.isSustainNote) {
 				refreshHoldCoverForLane(note.noteData, true);
 			}
 
@@ -3273,7 +3273,7 @@ class PlayState extends MusicBeatState
 
 		var cover:HoldCoverSprite = holdCoverSprites[lane];
 
-		if(cover == null || !cover.available) {
+		if(cover == null) {
 			return;
 		}
 
@@ -3408,9 +3408,20 @@ class PlayState extends MusicBeatState
 	
 	function getLuaScript():Void {
 		#if (USING_LUA && cpp)
-		if(Assets.exists(Paths.getPath('scripts/${"stage/" + curStage.toLowerCase()}.lua', TEXT, null))) {
-			Register.detachLuaFromState(PlayState);
-			Register.attachLuaToState(PlayState, Paths.lua("stage/" + curStage.toLowerCase()));
+		Register.detachLuaFromState(PlayState);
+
+		var songScript:String = "song/" + CoolUtil.readableSongDirectory(SONG.song.toLowerCase());
+		var stageScript:String = "stage/" + curStage.toLowerCase();
+		var scriptPath:String = null;
+
+		if(Paths.assetExists(Paths.getPath('scripts/${songScript}.lua', TEXT, null), TEXT)) {
+			scriptPath = songScript;
+		}else if(Paths.assetExists(Paths.getPath('scripts/${stageScript}.lua', TEXT, null), TEXT)) {
+			scriptPath = stageScript;
+		}
+
+		if(scriptPath != null) {
+			Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
 			ownedLua = getModLua();
 			ownedLua.execute();
 		}
@@ -4112,9 +4123,9 @@ class PlayState extends MusicBeatState
 
 		if(bumpPerBeat > 0 && curBeat >= bumpOffset && (curBeat - bumpOffset) % bumpPerBeat == 0) {
 			if (camZooming && FlxG.camera.zoom < 1.35) {
-				FlxG.camera.zoom += 7 * bumpForce * FlxG.elapsed;
-				camHUD.zoom += 3 * bumpForce * FlxG.elapsed;
-				camNOTE.zoom += 3 * bumpForce * FlxG.elapsed;
+				FlxG.camera.zoom += 0.015 * bumpForce;
+				camHUD.zoom += 0.03 * bumpForce;
+				camNOTE.zoom += 0.03 * bumpForce;
 			}
 
 			#if (USING_LUA && cpp)
@@ -4154,10 +4165,11 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	public function prepareForStateSwitch():Void {
-		var stateCamNOTE:CameraNote = ownedCamNOTE;
-		var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
-		var stateLua:ModLua = ownedLua;
+		public function prepareForStateSwitch():Void {
+			var stateCamNOTE:CameraNote = ownedCamNOTE;
+			var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
+			var stateCamHUD:FeshCamera = ownedCamHUD;
+			var stateLua:ModLua = ownedLua;
 
 		if(stateCamNOTE != null) {
 			if(notes != null) {
@@ -4180,20 +4192,28 @@ class PlayState extends MusicBeatState
 				});
 			}
 
-			stateCamNOTE.setFilters([]);
-			stateCamNOTE.clearRenderState();
-			stateCamNOTE.visible = false;
+				stateCamNOTE.setFilters([]);
+				stateCamNOTE.clearRenderState();
+				stateCamNOTE.visible = false;
+				FlxG.cameras.remove(stateCamNOTE, false);
 
-			if(stateCamNoteSustain != null) {
-				stateCamNoteSustain.setFilters([]);
-				stateCamNoteSustain.clearRenderState();
-				stateCamNoteSustain.visible = false;
-				FlxG.cameras.remove(stateCamNoteSustain, false);
-				stateCamNoteSustain.destroy();
-				ownedCamNoteSustain = null;
-				stateCamNOTE.camNoteSustain = null;
+				if(stateCamNoteSustain != null) {
+					stateCamNoteSustain.setFilters([]);
+					stateCamNoteSustain.clearRenderState();
+					stateCamNoteSustain.visible = false;
+					FlxG.cameras.remove(stateCamNoteSustain, false);
+					stateCamNoteSustain.destroy();
+					ownedCamNoteSustain = null;
+					stateCamNOTE.camNoteSustain = null;
+				}
 			}
-		}
+
+			if(stateCamHUD != null) {
+				stateCamHUD.setFilters([]);
+				stateCamHUD.clearRenderState();
+				stateCamHUD.visible = false;
+				FlxG.cameras.remove(stateCamHUD, false);
+			}
 
 		if(!luaDetachedForStateSwitch && stateLua != null) {
 			if(HelperStates.luaExist(PlayState) && HelperStates.getLua(PlayState) == stateLua) {

@@ -86,7 +86,7 @@ class Song
 			return false;
 
 		var chartPath:String = getChartPath(chartName, folder);
-		return chartPath != null && chartPath != "" && OpenFlAssets.exists(chartPath, TEXT);
+		return chartPath != null && chartPath != "" && Paths.assetExists(chartPath, TEXT);
 	}
 
 	static function pushChartCandidate(candidates:Array<String>, chartName:String):Void
@@ -142,9 +142,9 @@ class Song
 		var metadataRaw:String = loadCompanionMetadata(chartFolder, resolvedJsonInput);
 
 		if(ifPlayState)
-			rawJson = Assets.getText(chartPath).trim();
+			rawJson = Paths.readText(chartPath).trim();
 		else
-			rawJson = Assets.getText(chartPath).trim();
+			rawJson = Paths.readText(chartPath).trim();
 
 		while (!rawJson.endsWith("}"))
 		{
@@ -158,7 +158,7 @@ class Song
 	public static function getRawJSON(jsonInput:String, ?folder:String):String {
 		var resolvedJsonInput:String = resolveChartJsonInput(jsonInput, folder);
 		var chartPath:String = getChartPath(resolvedJsonInput, getChartFolder(folder, jsonInput));
-		return Assets.getText(chartPath).trim();
+		return Paths.readText(chartPath).trim();
 	}
 
 	static function loadCompanionMetadata(chartFolder:String, chartName:String):Null<String>
@@ -178,8 +178,8 @@ class Song
 		for(base in metadataBases) {
 			var metadataPath:String = Paths.getPath('data/' + chartFolder + '/' + base + '-metadata.json', TEXT, null);
 
-			if(OpenFlAssets.exists(metadataPath, TEXT))
-				return Assets.getText(metadataPath).trim();
+			if(Paths.assetExists(metadataPath, TEXT))
+				return Paths.readText(metadataPath).trim();
 		}
 
 		return null;
