@@ -1,10 +1,11 @@
 #pragma header
 
 uniform float waveAmplitude;
-uniform float wavePhase;
-uniform float waveBandCenterY;
-uniform float waveBandHalfHeight;
-uniform float waveFrequency;
+uniform float waveTime;
+uniform float waveTravelSpeed;
+uniform float waveSeed;
+uniform float waveLengthMin;
+uniform float waveLengthMax;
 uniform float laneRadius;
 uniform float laneCentersA[4];
 uniform float laneCentersB[4];
@@ -22,9 +23,10 @@ float getLaneCenter(int index) {
     return 0.0;
 }
 
-float getNearestLaneCenter(float xPx) {
+void getNearestLaneData(float xPx, out float laneCenter, out float laneIndex) {
     float bestCenter = 0.0;
     float bestDistance = 999999.0;
+    float bestIndex = 0.0;
 
     for (int i = 0; i < 8; i++) {
         if (i >= laneCount) {
@@ -37,10 +39,12 @@ float getNearestLaneCenter(float xPx) {
         if (distanceToLane < bestDistance) {
             bestDistance = distanceToLane;
             bestCenter = center;
+            bestIndex = float(i);
         }
     }
 
-    return bestCenter;
+    laneCenter = bestCenter;
+    laneIndex = bestIndex;
 }
 
 vec4 sampleColor(vec2 uv) {
@@ -51,30 +55,52 @@ vec4 sampleColor(vec2 uv) {
     return flixel_texture2D(bitmap, uv);
 }
 
+float hash11(float p) {
+    return fract(sin(p * 127.1) * 43758.5453123);
+}
+
+float getSegmentLength(float segmentIndex) {
+    return mix(waveLengthMin, waveLengthMax, hash11(segmentIndex + (waveSeed * 17.0)));
+}
+
 void main() {
     vec2 uv = openfl_TextureCoordv;
 
-    if (waveAmplitude <= 0.001 || laneCount <= 0 || waveBandHalfHeight <= 0.0001) {
+    if (waveAmplitude <= 0.001 || laneCount <= 0) {
         gl_FragColor = sampleColor(uv);
         return;
     }
 
     vec2 posPx = uv * openfl_TextureSize;
-    float bandCenterPx = waveBandCenterY * openfl_TextureSize.y;
-    float bandHalfHeightPx = waveBandHalfHeight * openfl_TextureSize.y;
-    float laneCenterPx = getNearestLaneCenter(posPx.x);
-    float laneDistancePx = abs(posPx.x - laneCenterPx);
+    float laneCenterPx;
+    float laneIndex;
+    getNearestLaneData(posPx.x, laneCenterPx, laneIndex);
+    float headAnchor = smoothstep(0.035, 0.16, uv.y);
+    float waveCoord = max(posPx.y - (waveTime * waveTravelSpeed), 0.0);
 
-    float laneMask = 1.0 - smoothstep(laneRadius * 0.35, laneRadius, laneDistancePx);
-    float bandDistancePx = abs(posPx.y - bandCenterPx);
-    float bandMask = 1.0 - smoothstep(bandHalfHeightPx * 0.35, bandHalfHeightPx, bandDistancePx);
+    float accumulated = 0.0;
+    float segmentIndex = 0.0;
+    float segmentLength = waveLengthMin;
 
-    float wave = sin(((posPx.x - laneCenterPx) * waveFrequency) + wavePhase);
-    float offsetPx = wave * waveAmplitude * laneMask * bandMask;
+    for (int i = 0; i < 12; i++) {
+        segmentIndex = float(i);
+        segmentLength = getSegmentLength(segmentIndex);
+
+        if (waveCoord <= accumulated + segmentLength || i == 11) {
+            break;
+        }
+
+        accumulated += segmentLength;
+    }
+
+    float localT = clamp((waveCoord - accumulated) / max(segmentLength, 1.0), 0.0, 1.0);
+    float segmentAmplitude = mix(0.55, 0.95, hash11(segmentIndex + (waveSeed * 29.0)));
+    float segmentDirection = mod(segmentIndex, 2.0) < 1.0 ? 1.0 : -1.0;
+    float verticalWave = sin(localT * 3.14159265) * segmentAmplitude * segmentDirection;
+    float offsetPx = verticalWave * waveAmplitude * headAnchor;
 
     vec2 warpedUv = uv;
-    warpedUv.y -= offsetPx / max(openfl_TextureSize.y, 1.0);
-    warpedUv.x += (offsetPx * 0.15) / max(openfl_TextureSize.x, 1.0);
+    warpedUv.x += offsetPx / max(openfl_TextureSize.x, 1.0);
 
     gl_FragColor = sampleColor(warpedUv);
 }

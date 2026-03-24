@@ -152,6 +152,7 @@ class PlayState extends MusicBeatState
 	//Controls
 	private var keys2DArray:Array<Array<Int>> = [];
 	private var inputQueue:Array<QueuedLaneInput> = [];
+	private var heldLaneKeys:Array<Array<Int>> = [];
 
 	//Da Variables
 	private var hits:Int = 0;
@@ -176,6 +177,7 @@ class PlayState extends MusicBeatState
 	public static var storyPlaylist:Array<String> = [];
 	public static var storyDifficulty:Int = 2;
 	public static var noteBeat:Float;
+	private static var skipDialogueSongOnNextLoad:String = null;
 
 	var daRating:String = "sick";
 
@@ -284,6 +286,28 @@ class PlayState extends MusicBeatState
 
 		muteInst = muted;
 		super();
+	}
+
+	public static function skipDialogueOnNextLoad(?song:String):Void {
+		if(song == null || song.trim() == "") {
+			song = SONG != null ? SONG.song : null;
+		}
+
+		skipDialogueSongOnNextLoad = song != null ? song.toLowerCase() : null;
+	}
+
+	function consumeSkipDialogueOnLoad():Bool {
+		if(skipDialogueSongOnNextLoad == null || SONG == null || SONG.song == null) {
+			return false;
+		}
+
+		var shouldSkip = skipDialogueSongOnNextLoad == SONG.song.toLowerCase();
+
+		if(shouldSkip) {
+			skipDialogueSongOnNextLoad = null;
+		}
+
+		return shouldSkip;
 	}
 
 	override public function create() {
@@ -658,9 +682,23 @@ class PlayState extends MusicBeatState
 			keys2DArray[index] = controls.getInputsFor(laneControls[index], Keys, []);
 			index++;
 		}
+
+		resetHeldLaneKeys();
+	}
+
+	function resetHeldLaneKeys():Void {
+		heldLaneKeys = [];
+
+		var index:Int = 0;
+		while(index < getLaneCount()) {
+			heldLaneKeys.push([]);
+			index++;
+		}
 	}
 
 	function inDeBenigin() {
+		var skipDialogueForReload:Bool = consumeSkipDialogueOnLoad();
+
 		#if !(debug || USING_MOD_DEBUG)
 		if (isStoryMode) {
 		#end
@@ -697,6 +735,11 @@ class PlayState extends MusicBeatState
 						});
 					});
 				case 'senpai' | 'roses' | 'thorns':
+					if(skipDialogueForReload) {
+						startCountdown();
+						return;
+					}
+
 					if(curSong.toLowerCase() == 'roses') {
 						FlxG.sound.play(Paths.sound('ANGRY'));
 					}
@@ -717,7 +760,7 @@ class PlayState extends MusicBeatState
 				default:
 					var dialogueBox = Type.createInstance(cast Register.dialogues.get(curSong.toLowerCase()), []);
 
-					if(dialogueBox != null) {
+					if(dialogueBox != null && !skipDialogueForReload) {
 						inCutscene = true;
 						dialogueBox.finishCallback = clearDialogue;
 
@@ -2312,7 +2355,16 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		queueLaneInput(index, false, getCurrentInputSongTime());
+		var laneHeldKeys:Array<Int> = heldLaneKeys[index];
+
+		if(laneHeldKeys != null) {
+			laneHeldKeys.remove(getEvent.keyCode);
+
+			if(laneHeldKeys.length <= 0) {
+				queueLaneInput(index, false, getCurrentInputSongTime());
+			}
+		}
+
 		callLua('onKeyRelease', [getEvent.keyCode]);
 	}
 
@@ -2627,10 +2679,18 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		if(!FlxG.keys.checkStatus(getEvent.keyCode, JUST_PRESSED)) {
+		var laneHeldKeys:Array<Int> = heldLaneKeys[index];
+
+		if(laneHeldKeys == null) {
+			laneHeldKeys = [];
+			heldLaneKeys[index] = laneHeldKeys;
+		}
+
+		if(laneHeldKeys.contains(getEvent.keyCode)) {
 			return;
 		}
 
+		laneHeldKeys.push(getEvent.keyCode);
 		queueLaneInput(index, true, getCurrentInputSongTime());
 		callLua('onKeyPress', [getEvent.keyCode]);
 	}

@@ -2,8 +2,9 @@ local pulseStepIntensity = {}
 local baseGameZoom = 1
 local baseHudZoom = 1
 local baseNoteZoom = 1
-local strumWaveAmplitude = 0
-local strumWavePhase = 0
+local strumWavePulse = 0
+local strumWaveTime = 0
+local strumWaveSeed = 0
 local strumWaveShaderActive = false
 local strumWaveShaderInitialized = false
 local strumWaveLaneCount = 8
@@ -15,15 +16,15 @@ local BASE_GAME_BUMP = 0.015
 local BASE_HUD_BUMP = 0.03
 local BASE_NOTE_BUMP = 0.03
 local STRUM_WAVE_SHADER = "i_am_blue_strum_wave"
-local STRUM_WAVE_CAMERA = "camNOTE"
+local STRUM_WAVE_CAMERA = "camNoteSustain"
 local STRUM_WAVE_SIZE = 160 * 0.7
-local STRUM_WAVE_BAND_HEIGHT = STRUM_WAVE_SIZE * 1.1
-local STRUM_WAVE_LANE_RADIUS = STRUM_WAVE_SIZE * 0.95
-local STRUM_WAVE_FREQUENCY = 0.08
-local STRUM_WAVE_PHASE_SPEED = 12
-local STRUM_WAVE_DECAY_RATE = 7.5
-local STRUM_WAVE_MAX_AMPLITUDE = 18
-local STRUM_WAVE_KICK = 7.5
+local STRUM_WAVE_LANE_RADIUS = STRUM_WAVE_SIZE * 1.2
+local STRUM_WAVE_TRAVEL_SPEED = 160
+local STRUM_WAVE_LENGTH_MIN = STRUM_WAVE_SIZE * 1.5
+local STRUM_WAVE_LENGTH_MAX = STRUM_WAVE_SIZE * 4.5
+local STRUM_WAVE_DECAY_RATE = 4.2
+local STRUM_WAVE_MAX_PULSE = 36
+local STRUM_WAVE_KICK = 18
 
 local function addPulseStep(stepValue, intensity)
     pulseStepIntensity[stepValue] = intensity
@@ -109,21 +110,12 @@ local function updateStrumWaveShader()
 
     updateStrumWaveLaneCenters()
 
-    local bandCenterY = 0.16
-
-    if getNotePosY ~= nil and windowHeight ~= nil and windowHeight > 0 then
-        local strumY = getNotePosY(0)
-
-        if strumY ~= nil then
-            bandCenterY = (strumY + (STRUM_WAVE_SIZE * 0.5)) / windowHeight
-        end
-    end
-
-    setShaderFloat(STRUM_WAVE_CAMERA, "waveAmplitude", strumWaveAmplitude)
-    setShaderFloat(STRUM_WAVE_CAMERA, "wavePhase", strumWavePhase)
-    setShaderFloat(STRUM_WAVE_CAMERA, "waveBandCenterY", bandCenterY)
-    setShaderFloat(STRUM_WAVE_CAMERA, "waveBandHalfHeight", (STRUM_WAVE_BAND_HEIGHT * 0.5) / math.max(windowHeight or 1, 1))
-    setShaderFloat(STRUM_WAVE_CAMERA, "waveFrequency", STRUM_WAVE_FREQUENCY)
+    setShaderFloat(STRUM_WAVE_CAMERA, "waveAmplitude", strumWavePulse)
+    setShaderFloat(STRUM_WAVE_CAMERA, "waveTime", strumWaveTime)
+    setShaderFloat(STRUM_WAVE_CAMERA, "waveTravelSpeed", STRUM_WAVE_TRAVEL_SPEED)
+    setShaderFloat(STRUM_WAVE_CAMERA, "waveSeed", strumWaveSeed)
+    setShaderFloat(STRUM_WAVE_CAMERA, "waveLengthMin", STRUM_WAVE_LENGTH_MIN)
+    setShaderFloat(STRUM_WAVE_CAMERA, "waveLengthMax", STRUM_WAVE_LENGTH_MAX)
     setShaderFloat(STRUM_WAVE_CAMERA, "laneRadius", STRUM_WAVE_LANE_RADIUS)
     setShaderFloatArray(STRUM_WAVE_CAMERA, "laneCentersA", strumWaveLaneCentersA)
     setShaderFloatArray(STRUM_WAVE_CAMERA, "laneCentersB", strumWaveLaneCentersB)
@@ -160,7 +152,9 @@ local function pulseCamera(stepValue)
     doTweenZoom("i_am_blue_hud_zoom", "camHUD", baseHudZoom, tweenDuration, "quadOut")
     doTweenZoom("i_am_blue_note_zoom", "camNOTE", baseNoteZoom, tweenDuration, "quadOut")
 
-    strumWaveAmplitude = math.min(strumWaveAmplitude + (STRUM_WAVE_KICK * intensity), STRUM_WAVE_MAX_AMPLITUDE)
+    strumWavePulse = math.min(strumWavePulse + (STRUM_WAVE_KICK * intensity), STRUM_WAVE_MAX_PULSE)
+    strumWaveTime = 0
+    strumWaveSeed = strumWaveSeed + 1
 end
 
 function onCreate()
@@ -174,14 +168,17 @@ function onCreate()
     updateStrumWaveShader()
 end
 
-function onUpdatePost(elapsed)
+function onUpdate(elapsed)
     local safeElapsed = elapsed or 0
 
-    strumWavePhase = strumWavePhase + (safeElapsed * STRUM_WAVE_PHASE_SPEED)
-    strumWaveAmplitude = strumWaveAmplitude * math.exp(-safeElapsed * STRUM_WAVE_DECAY_RATE)
+    if strumWavePulse > 0 then
+        strumWaveTime = strumWaveTime + safeElapsed
+        strumWavePulse = strumWavePulse * math.exp(-safeElapsed * STRUM_WAVE_DECAY_RATE)
+    end
 
-    if strumWaveAmplitude < 0.01 then
-        strumWaveAmplitude = 0
+    if strumWavePulse < 0.01 then
+        strumWavePulse = 0
+        strumWaveTime = 0
     end
 
     updateStrumWaveShader()
