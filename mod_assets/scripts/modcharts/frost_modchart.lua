@@ -46,29 +46,53 @@ local bounceWheel = {
     0
 }
 
+local function cacheStrumPositions()
+    for lane = 0, 7 do
+        local x = nil
+        local y = nil
+
+        if getNotePosX ~= nil then
+            x = getNotePosX(lane)
+        end
+
+        if getNotePosY ~= nil then
+            y = getNotePosY(lane)
+        end
+
+        if x == nil then
+            if lane < 4 then
+                x = _G["defaultOpponentStrumX" .. tostring(lane)]
+            else
+                x = _G["defaultPlayerStrumX" .. tostring(lane - 4)]
+            end
+        end
+
+        if y == nil then
+            if lane < 4 then
+                y = _G["defaultOpponentStrumY" .. tostring(lane)]
+            else
+                y = _G["defaultPlayerStrumY" .. tostring(lane - 4)]
+            end
+        end
+
+        allStrumsX[lane + 1] = x
+        allStrumsY[lane + 1] = y
+    end
+end
+
+local function ensureStrumPositions()
+    if allStrumsX[1] == nil or allStrumsY[1] == nil or allStrumsX[8] == nil or allStrumsY[8] == nil then
+        cacheStrumPositions()
+    end
+
+    return allStrumsX[1] ~= nil and allStrumsY[1] ~= nil and allStrumsX[8] ~= nil and allStrumsY[8] ~= nil
+end
+
 --Initialize Strums And Notes Info
 function frost_modchart.initStrumsAndNotes()
-    allStrumsX = {
-        defaultOpponentStrumX0;
-        defaultOpponentStrumX1;
-        defaultOpponentStrumX2;
-        defaultOpponentStrumX3;
-        defaultPlayerStrumX0;
-        defaultPlayerStrumX1;
-        defaultPlayerStrumX2;
-        defaultPlayerStrumX3;
-    }
-
-    allStrumsY = {
-        defaultOpponentStrumY0;
-        defaultOpponentStrumY1;
-        defaultOpponentStrumY2;
-        defaultOpponentStrumY3;
-        defaultPlayerStrumY0;
-        defaultPlayerStrumY1;
-        defaultPlayerStrumY2;
-        defaultPlayerStrumY3;
-    }
+    allStrumsX = {}
+    allStrumsY = {}
+    cacheStrumPositions()
 
     noteWheelOffsetX = {
         -noteSwagWidth;
@@ -178,7 +202,7 @@ function frost_modchart.sectionTwo_REGULAR()
     end
 
     if wheelFinished then
-        bounceNormal(bounceStrength, 1)
+        frost_modchart.bounceNormal(bounceStrength, 1)
     end
 end
 
@@ -303,7 +327,7 @@ function bounceDaWheel(strength, d)
     end
 end
 
-function bounceNormal(strength, direction)
+function frost_modchart.bounceNormal(strength, direction)
     local curBeatM = curBeat * 2
     local curBeatFloatM = curBeatFloat * 2
 
@@ -325,6 +349,21 @@ function bounceNormal(strength, direction)
         for i = 0, 3 do
             bounceWheel[i + 1] = 0
         end
+    end
+end
+
+function frost_modchart.applyNormalBounce(strength, direction)
+    if not ensureStrumPositions() then
+        return
+    end
+
+    frost_modchart.bounceNormal(strength, direction)
+
+    for i = 1, 4 do
+        setNoteStrumPos(i - 1, allStrumsX[i], allStrumsY[i] - bounceWheel[i])
+        setNoteStrumPos((i - 1) + 4, allStrumsX[i + 4], allStrumsY[i + 4] - bounceWheel[i])
+        setNoteDirection(i - 1, 0)
+        setNoteDirection((i - 1) + 4, 0)
     end
 end
 

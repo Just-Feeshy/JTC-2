@@ -49,6 +49,12 @@ class BuiltInShaders extends FlxShader {
 
         void objSelect() {
             const float PI = 3.14159265358979323846;
+            vec4 baseColor = color();
+
+            if(baseColor.a == 0.0) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                return;
+            }
 
             vec2 pixelCoord = openfl_TextureCoordv;
 
@@ -58,12 +64,10 @@ class BuiltInShaders extends FlxShader {
 
             float box = drawRect(pixelCoord, vec2(0.45, -0.45));
 
-            if(color().a != 0.0) {
-                if(box == 0.0) {
-                    gl_FragColor = color();
-                } else {
-                    gl_FragColor = vec4(vec3(1.0), color().a);
-                }
+            if(box == 0.0) {
+                gl_FragColor = baseColor;
+            } else {
+                gl_FragColor = vec4(vec3(1.0), baseColor.a);
             }
         }
 

@@ -214,7 +214,7 @@ class Song
 	static function isTopLevelLegacyChart(parsed:Dynamic):Bool
 	{
 		var notes:Dynamic = Reflect.field(parsed, "notes");
-		return Std.isOfType(notes, Array) && !Reflect.isObject(Reflect.field(parsed, "song"));
+		return Std.isOfType(notes, Array);
 	}
 
 	static function isVSliceChart(parsed:Dynamic):Bool
@@ -233,6 +233,12 @@ class Song
 
 	static function finalizeSwagSong(songData:SwagSong, ?chartFolder:String):SwagSong
 	{
+		if((!Reflect.hasField(songData, "girlfriend") || Reflect.field(songData, "girlfriend") == null)
+			&& Reflect.hasField(songData, "gfVersion") && Reflect.field(songData, "gfVersion") != null)
+		{
+			Reflect.setField(songData, "girlfriend", Reflect.field(songData, "gfVersion"));
+		}
+
 		ensureField(songData, "song", chartFolder != null && chartFolder != "" ? chartFolder : "unknown");
 		ensureField(songData, "notes", []);
 		ensureField(songData, "modifiers", []);

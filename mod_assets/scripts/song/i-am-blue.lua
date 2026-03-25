@@ -1,3 +1,4 @@
+local frost_modchart = {}
 local pulseStepIntensity = {}
 local baseGameZoom = 1
 local baseHudZoom = 1
@@ -21,7 +22,7 @@ local STRUM_WAVE_SIZE = 160 * 0.7
 local STRUM_WAVE_LANE_RADIUS = STRUM_WAVE_SIZE * 1.2
 local STRUM_WAVE_TRAVEL_SPEED = 160
 local STRUM_WAVE_LENGTH_MIN = STRUM_WAVE_SIZE * 1.5
-local STRUM_WAVE_LENGTH_MAX = STRUM_WAVE_SIZE * 4.5
+local STRUM_WAVE_LENGTH_MAX = STRUM_WAVE_SIZE * 3.0
 local STRUM_WAVE_DECAY_RATE = 4.2
 local STRUM_WAVE_MAX_PULSE = 36
 local STRUM_WAVE_KICK = 18
@@ -158,6 +159,8 @@ local function pulseCamera(stepValue)
 end
 
 function onCreate()
+    frost_modchart = {}
+
     baseGameZoom = getCameraZoom("camGAME")
     baseHudZoom = getCameraZoom("camHUD")
     baseNoteZoom = getCameraZoom("camNOTE")
@@ -166,6 +169,11 @@ function onCreate()
     callEvent("setCameraBop", "0", "0")
 
     updateStrumWaveShader()
+
+	frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
+	if frost_modchart.initStrumsAndNotes ~= nil then
+		frost_modchart.initStrumsAndNotes()
+	end
 end
 
 function onUpdate(elapsed)
@@ -180,6 +188,10 @@ function onUpdate(elapsed)
         strumWavePulse = 0
         strumWaveTime = 0
     end
+
+	if curStep >= 240 then
+		frost_modchart.applyNormalBounce(9, 1)
+	end
 
     updateStrumWaveShader()
 end

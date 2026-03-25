@@ -42,6 +42,8 @@ class DeathNote extends CustomNoteTemplate {
 }
 
 class CheeseNote extends CustomNoteTemplate {
+    private var sourceWasPlayerSide:Bool = false;
+
     override function useCustomPrefix(animation:FlxAnimationController):Bool {
         animation.addByPrefix('greenScroll', 'CHEESEup', 24);
         animation.addByPrefix('redScroll', 'CHEESEright', 24);
@@ -51,18 +53,20 @@ class CheeseNote extends CustomNoteTemplate {
         return true;
     }
 
+    override function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void {
+        sourceWasPlayerSide = note.mustPress;
+    }
+
     override function createSpriteWhenHit():FlxSprite {
-        var ogSize:Int = FlxG.random.int(2, 3);
+        return new CheeseSliceSprite(sourceWasPlayerSide);
+    }
 
-        var sprite = new FlxSprite().loadGraphic(Paths.image("cheese slice"));
-        sprite.scale.x /= ogSize;
-        sprite.scale.y /= ogSize;
-        sprite.updateHitbox();
-        sprite.x = FlxG.random.int(0, Std.int(FlxG.width - sprite.width));
-        sprite.y = FlxG.random.int(0, Std.int(FlxG.height - sprite.height));
-        sprite.angle = FlxG.random.int(0, 360);
+	override function shouldBeIgnored():Bool {
+		return true;
+	}
 
-        return sprite;
+    override function playerShouldntHit():Bool {
+        return true;
     }
 
     override function cantHaveHold():Bool {

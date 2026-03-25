@@ -105,8 +105,8 @@ class ReverseNote extends CustomNoteTemplate {
     }
 
     override function setNoteAngle(note:Note, value:Float):Float {
-        if(note.getNoteStrumPosition(100) < 1) {
-            angle = FlxMath.lerp(180, 0, note.getNoteStrumPosition(100));
+        if(note.getNoteStrumPosition(500) < 1) {
+            angle = FlxMath.lerp(180, 0, note.getNoteStrumPosition(500));
 
             if(angle > 90 && note.animation.curAnim.name == Note.getColorFacing(oppositeID) + "Scroll") {
                 note.playAnim(Note.getColorFacing(note.noteData) + "Scroll");

@@ -9,6 +9,7 @@ import Conductor.BPMChangeEvent;
 import WiggleEffect.WiggleEffectType;
 import Controls.Control;
 import Controls.Device;
+import CheeseSliceSprite;
 import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -641,7 +642,6 @@ class PlayState extends MusicBeatState
 			inDeBenigin();
 
 		setupKeyStuff();
-		eventLoad();
 
 		if(FlxG.keys.enabled) {
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, getPressed);
@@ -1887,7 +1887,7 @@ class PlayState extends MusicBeatState
 
 		var liveEventStep:Int = getStepFromTime(Conductor.songPosition);
 
-		if(prevEventStep != liveEventStep) {
+		if(startedCountdown && !startingSong && !inCutscene && prevEventStep != liveEventStep) {
 			prevEventStep = liveEventStep;
 			eventLoad();
 		}
@@ -1896,7 +1896,7 @@ class PlayState extends MusicBeatState
 		var cameraFollowStep:Int = Std.int(Math.max(getStepFromTime(cameraPlaybackTime) - 4, 0));
 		var cameraSectionIndex:Int = Std.int(cameraFollowStep / 16);
 
-		if (generatedMusic && SONG.notes[cameraSectionIndex] != null)
+		if (generatedMusic && startedCountdown && !inCutscene && SONG.notes[cameraSectionIndex] != null)
 		{
 			if (!SONG.notes[cameraSectionIndex].mustHitSection)
 			{
@@ -3223,6 +3223,10 @@ class PlayState extends MusicBeatState
 				var noteSprite:FlxSprite = note.hasCustomAddon.createSpriteWhenHit();
 
 				if(noteSprite != null) {
+					if(Std.isOfType(noteSprite, CheeseSliceSprite) && camNOTE != null && camNOTE.camNoteSustain != null) {
+						noteSprite.cameras = [camNOTE.camNoteSustain];
+					}
+
 					customNoteSprites.add(noteSprite);
 				}
 			    if(note.hasCustomAddon.whenNoteIsHit(spr)) {
