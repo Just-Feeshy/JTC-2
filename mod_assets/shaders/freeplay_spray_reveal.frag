@@ -1,7 +1,7 @@
 #pragma header
 
-// From Just-Feeshy: I made this shader for FLX (aka. Erdene) since he needed a lua-based
-// runtime shader pipeline
+// From Just-Feeshy: I made this shader for FLX (aka. Erdene or Kira) since he needed a lua-based
+// runtime shader pipeline plus the shader to go with it
 
 uniform vec2 pathBase;
 uniform vec2 curveScale;

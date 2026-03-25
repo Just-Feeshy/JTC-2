@@ -572,20 +572,20 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 6) * 10), "Camera Movement", SaveType.CAMERA_MOVEMENT_MOD, function(option:Options, pressed:Bool) {
+							new Options(0, ((imNotSure + 6) * 10), "Skip Cutscenes", SaveType.SKIP_CUTSCENES, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure + 6;
 
 								if(pressed)
-									FlxG.save.data.camMove = !FlxG.save.data.camMove;
+									FlxG.save.data.skipCutscenes = !FlxG.save.data.skipCutscenes;
 
-								option.description = "The camera follows the direction of each singing pose.";
+								option.description = "Skip dialogue and pre-song video cutscenes.";
 
-								if(!SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD)) {
+								if(!SaveData.getData(SaveType.SKIP_CUTSCENES)) {
 									setting(option, "Off", option.ID);
 									option.optionIcon.animation.play("off");
 								}else {
 									setting(option, "On", option.ID);
-									option.optionIcon.animation.play("modifier");
+									option.optionIcon.animation.play("on");
 								}
 
 								if(pressed)

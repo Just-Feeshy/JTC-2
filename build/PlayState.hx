@@ -120,6 +120,8 @@ class PlayState extends MusicBeatState
 	public var singDrainValue:Float = 1;
 	public var fadeInValue:Int = 400;
 	public var cameraMovementInsensity:Float = 1;
+	inline static var CAMERA_MOVEMENT_OFFSET_SCALE:Float = 2.5;
+	inline static var CAMERA_MOVEMENT_EASE:Float = 0.32;
 	public var vSliceCameraFocusEnabled:Bool = false;
 	public var vSliceCameraFocusX:Float = 0;
 	public var vSliceCameraFocusY:Float = 0;
@@ -287,7 +289,7 @@ class PlayState extends MusicBeatState
 		Note.AFFECTED_STRUMTIME = 0;
 
 		muteInst = muted;
-		super();
+		super("sticker", "sticker");
 	}
 
 	public static function skipDialogueOnNextLoad(?song:String):Void {
@@ -708,7 +710,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function inDeBenigin() {
-		var skipDialogueForReload:Bool = consumeSkipDialogueOnLoad();
+		var skipDialogueForReload:Bool = consumeSkipDialogueOnLoad() || SaveData.getData(SaveType.SKIP_CUTSCENES);
 
 		#if !(debug || USING_MOD_DEBUG)
 		if (isStoryMode) {
@@ -935,7 +937,7 @@ class PlayState extends MusicBeatState
 		DefaultHandler.modifiers.fadeInNotes.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.FADE_BATTLE_MOD) #else false #end;
 		DefaultHandler.modifiers.safeBalls.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.NO_BLUE_BALLS_MOD) #else false #end;
 		DefaultHandler.modifiers.blindEffect.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BLIND_MOD) #else false #end;
-		DefaultHandler.modifiers.cameraMovement.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CAMERA_MOVEMENT_MOD) #else false #end;
+		DefaultHandler.modifiers.cameraMovement.enabled = true;
 		DefaultHandler.modifiers.botMode.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.BOT_MODE_MOD) #else false #end;
 
 		if(modifierCheckList('bot mode')) {
@@ -964,7 +966,7 @@ class PlayState extends MusicBeatState
 			case "blind effect":
 				return DefaultHandler.modifiers.blindEffect.enabled;
 			case "camera move":
-				return DefaultHandler.modifiers.cameraMovement.enabled;
+				return true;
 			case "bot mode":
 				return DefaultHandler.modifiers.botMode.enabled;
 			default: return false;
@@ -2432,7 +2434,7 @@ class PlayState extends MusicBeatState
 
 			if (storyPlaylist.length <= 0) {
 
-				if(videoSwitchState == "" || videoSwitchState == null) {
+				if(videoSwitchState == "" || videoSwitchState == null || SaveData.getData(SaveType.SKIP_CUTSCENES)) {
 				    FlxG.sound.playMusic(Paths.music('Main Menu'));
 				    FlxG.switchState(new StoryMenuState());
 				}else {
@@ -2469,7 +2471,7 @@ class PlayState extends MusicBeatState
 				PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + difficulty, PlayState.storyPlaylist[0]);
 				FlxG.sound.music.stop();
 
-				if(videoSwitchState == "" || videoSwitchState == null) {
+				if(videoSwitchState == "" || videoSwitchState == null || SaveData.getData(SaveType.SKIP_CUTSCENES)) {
 				    CacheState.loadAndSwitchState(new PlayState());
 				}else {
 				    CacheState.loadAndSwitchState(new VideoState(new PlayState(), videoSwitchState));
@@ -2954,6 +2956,7 @@ class PlayState extends MusicBeatState
 					spr.holdTimer = 0;
 				}
 				}else {
+					spr.keyHeld = true;
 					spr.sustainHeld = sustainHoldArray[spr.ID];
 
 					if(spr.animation.curAnim != null) {
@@ -3202,7 +3205,7 @@ class PlayState extends MusicBeatState
 
 			note.hit();
 
-			if(spr != null && spr.keyHeld && note.isSustainNote) {
+			if(spr != null && spr.sustainHeld && note.isSustainNote) {
 				refreshHoldCoverForLane(note.noteData, true);
 			}
 
@@ -3221,7 +3224,7 @@ class PlayState extends MusicBeatState
 					customNoteSprites.add(noteSprite);
 				}
 			    if(note.hasCustomAddon.whenNoteIsHit(spr)) {
-					if(note.isSustainNote && spr.keyHeld) {
+					if(note.isSustainNote && spr.sustainHeld) {
 						if(spr.hasDedicatedConfirmHold()) {
 							playStrumConfirmHold(spr);
 						}else {
@@ -3232,7 +3235,7 @@ class PlayState extends MusicBeatState
 					}
 			    }
 			}else {
-				if(note.isSustainNote && spr.keyHeld) {
+				if(note.isSustainNote && spr.sustainHeld) {
 					if(spr.hasDedicatedConfirmHold()) {
 						playStrumConfirmHold(spr);
 					}else {
@@ -3429,24 +3432,24 @@ class PlayState extends MusicBeatState
 	}
 
 	private function cameraMovement(noteCData:Int, isSus:Bool):Void {
-		if(modifierCheckList('camera move') && Main.feeshmoraModifiers && !isSus) {
+		if(Main.feeshmoraModifiers && !isSus) {
 			if(noteCData == 0) {
-				camMovementPos.x = (-SONG.bpm / 45) * 5 * cameraMovementInsensity;
+				camMovementPos.x = (-SONG.bpm / 45) * CAMERA_MOVEMENT_OFFSET_SCALE * cameraMovementInsensity;
 				camMovementPos.y = 0;
 			}
 
 			if(noteCData == (strumLineNotes.members.length / 2) - 1) {
-				camMovementPos.x = (SONG.bpm / 45) * 5 * cameraMovementInsensity;
+				camMovementPos.x = (SONG.bpm / 45) * CAMERA_MOVEMENT_OFFSET_SCALE * cameraMovementInsensity;
 				camMovementPos.y = 0;
 			}
 
 			if(noteCData == 1) {
-				camMovementPos.y = (SONG.bpm / 45) * 5 * cameraMovementInsensity;
+				camMovementPos.y = (SONG.bpm / 45) * CAMERA_MOVEMENT_OFFSET_SCALE * cameraMovementInsensity;
 				camMovementPos.x = 0;
 			}
 
 			if(noteCData == (strumLineNotes.members.length / 2) - 2) {
-				camMovementPos.y = (-SONG.bpm / 45) * 5 * cameraMovementInsensity;
+				camMovementPos.y = (-SONG.bpm / 45) * CAMERA_MOVEMENT_OFFSET_SCALE * cameraMovementInsensity;
 				camMovementPos.x = 0;
 			}
 		}

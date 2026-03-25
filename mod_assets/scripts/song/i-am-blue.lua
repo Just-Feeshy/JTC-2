@@ -11,6 +11,7 @@ local strumWaveShaderInitialized = false
 local strumWaveLaneCount = 8
 local strumWaveLaneCentersA = {0, 0, 0, 0}
 local strumWaveLaneCentersB = {0, 0, 0, 0}
+local bounceStoppedAtOutro = false
 
 local INTENSITY_MULTIPLIER = 1.5
 local BASE_GAME_BUMP = 0.015
@@ -189,8 +190,12 @@ function onUpdate(elapsed)
         strumWaveTime = 0
     end
 
-	if curStep >= 240 then
+	if curStep >= 240 and curStep < 632 then
 		frost_modchart.applyNormalBounce(9, 1)
+		bounceStoppedAtOutro = false
+	elseif not bounceStoppedAtOutro and frost_modchart.resetNormalStrums ~= nil then
+		frost_modchart.resetNormalStrums()
+		bounceStoppedAtOutro = true
 	end
 
     updateStrumWaveShader()

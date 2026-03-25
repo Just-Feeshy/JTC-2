@@ -43,8 +43,12 @@ class Paths
 	static var remoteAssetMisses:Map<String, Bool> = [];
 	static var remoteBytesCache:Map<String, Bytes> = [];
 	static var remoteBytesPending:Map<String, Array<Bytes->Void>> = [];
+	static var remoteSharedGraphicCache:Map<String, FlxGraphic> = [];
+	static var remoteSharedGraphicPending:Map<String, Array<FlxGraphic->Void>> = [];
 	static var remoteSharedAtlasCache:Map<String, FlxAtlasFrames> = [];
 	static var remoteSharedAtlasPending:Map<String, Array<FlxAtlasFrames->Void>> = [];
+	static var remoteSharedSoundCache:Map<String, Sound> = [];
+	static var remoteSharedSoundPending:Map<String, Array<Sound->Void>> = [];
 
 	static function get_modJSON():ConfigDef {
 		if(!OpenFlAssets.exists("config/mod.json")) {
@@ -423,6 +427,140 @@ class Paths
 					finish(null);
 				}
 			});
+		});
+		#else
+		onComplete(null);
+		#end
+	}
+
+	static public function loadRemoteSharedGraphic(key:String, onComplete:FlxGraphic->Void):Void
+	{
+		#if sys
+		if (remoteSharedGraphicCache.exists(key))
+		{
+			onComplete(remoteSharedGraphicCache.get(key));
+			return;
+		}
+
+		if (remoteSharedGraphicPending.exists(key))
+		{
+			remoteSharedGraphicPending.get(key).push(onComplete);
+			return;
+		}
+
+		remoteSharedGraphicPending.set(key, [onComplete]);
+
+		function finish(graphic:FlxGraphic):Void
+		{
+			var callbacks = remoteSharedGraphicPending.get(key);
+			remoteSharedGraphicPending.remove(key);
+
+			if (graphic != null)
+			{
+				remoteSharedGraphicCache.set(key, graphic);
+			}
+
+			if (callbacks != null)
+			{
+				for (callback in callbacks)
+				{
+					callback(graphic);
+				}
+			}
+		}
+
+		loadRemoteBytes('shared/images/$key.png', function(imageBytes) {
+			if (imageBytes == null)
+			{
+				finish(null);
+				return;
+			}
+
+			try
+			{
+				var graphicKey = '__remote_shared__/$key.png';
+				var graphic = Cache.cachePermanentFromByteArray(graphicKey, ByteArray.fromBytes(imageBytes));
+				finish(graphic);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Error: could not build remote shared graphic - ' + key + ' -> ' + Std.string(e));
+				finish(null);
+			}
+		});
+		#else
+		onComplete(null);
+		#end
+	}
+
+	static public function loadRemoteText(relativePath:String, onComplete:String->Void):Void
+	{
+		loadRemoteBytes(relativePath, function(bytes) {
+			if (bytes == null)
+			{
+				onComplete(null);
+				return;
+			}
+
+			onComplete(bytes.getString(0, bytes.length));
+		});
+	}
+
+	static public function loadRemoteSharedSound(key:String, onComplete:Sound->Void):Void
+	{
+		#if sys
+		if (remoteSharedSoundCache.exists(key))
+		{
+			onComplete(remoteSharedSoundCache.get(key));
+			return;
+		}
+
+		if (remoteSharedSoundPending.exists(key))
+		{
+			remoteSharedSoundPending.get(key).push(onComplete);
+			return;
+		}
+
+		remoteSharedSoundPending.set(key, [onComplete]);
+
+		function finish(sound:Sound):Void
+		{
+			var callbacks = remoteSharedSoundPending.get(key);
+			remoteSharedSoundPending.remove(key);
+
+			if (sound != null)
+			{
+				remoteSharedSoundCache.set(key, sound);
+			}
+
+			if (callbacks != null)
+			{
+				for (callback in callbacks)
+				{
+					callback(sound);
+				}
+			}
+		}
+
+		loadRemoteBytes('shared/sounds/$key.$SOUND_EXT', function(soundBytes) {
+			if (soundBytes == null)
+			{
+				finish(null);
+				return;
+			}
+
+			try
+			{
+				var sound = new Sound();
+				var byteArray = ByteArray.fromBytes(soundBytes);
+				sound.loadCompressedDataFromByteArray(byteArray, byteArray.length);
+				finish(sound);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Error: could not build remote shared sound - ' + key + ' -> ' + Std.string(e));
+				finish(null);
+			}
 		});
 		#else
 		onComplete(null);

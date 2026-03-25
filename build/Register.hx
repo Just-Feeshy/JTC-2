@@ -9,6 +9,7 @@ import example_code.TransitionSamples;
 import example_code.NoteSamples;
 import example_code.DefaultEvents;
 import example_code.DefaultStage;
+import FunkinTransitionState;
 
 import template.TransitionBuilder;
 import template.CustomNote;
@@ -70,6 +71,7 @@ class Register {
         addCustomTransition("fade", FadeTransition);
         addCustomTransition("tile", TileTransition);
         addCustomTransition("void", VoidTransition);
+        addCustomTransition("sticker", FunkinTransitionState);
 
         implementCustomNote("reverse", ReverseNote);
         implementCustomNote("poison", PoisonNote);

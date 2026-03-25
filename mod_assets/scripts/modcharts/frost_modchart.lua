@@ -367,6 +367,22 @@ function frost_modchart.applyNormalBounce(strength, direction)
     end
 end
 
+function frost_modchart.resetNormalStrums()
+    if not ensureStrumPositions() then
+        return
+    end
+
+    for i = 1, 4 do
+        bounceWheel[i] = 0
+        setNoteStrumPos(i - 1, allStrumsX[i], allStrumsY[i])
+        setNoteStrumPos((i - 1) + 4, allStrumsX[i + 4], allStrumsY[i + 4])
+        setNoteDirection(i - 1, 0)
+        setNoteDirection((i - 1) + 4, 0)
+        setNoteStrumAngle(i - 1, 0)
+        setNoteStrumAngle((i - 1) + 4, 0)
+    end
+end
+
 function defaultNoteMovement(i, var)
     return allStrumsX[i + 1] + (math.cos(var) * constant) * size
 end

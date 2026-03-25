@@ -115,5 +115,19 @@
         ],
 
         "loading_bar_alpha": 0.6
+    },
+
+    "transitions": {
+        "sticker": {
+            "assets": [
+                "transitionSwag/Stickers0001",
+                "transitionSwag/Stickers0002",
+                "transitionSwag/Stickers0003",
+                "transitionSwag/Stickers0011",
+                "transitionSwag/Stickers0012",
+                "transitionSwag/Stickers0013"
+            ],
+            "click_sound_indices": [1, 2, 3, 4, 5, 7, 8, 9]
+        }
     }
 }

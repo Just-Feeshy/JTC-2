@@ -15,6 +15,7 @@ typedef ConfigDef = {
     var game_over:Map<String, GameOverInfo>;
     var title_menu:Title_Menu;
     var loading_display:LoadingDisplay;
+    @:optional var transitions:TransitionConfigMap;
 
     var custom_notes:Array<String>;
     var weeks:Map<String, WeekInfo>;
@@ -113,4 +114,13 @@ typedef LoadingDisplay = {
     var show_loading_bar:Bool;
     var loading_bar_colors:Array<String>;
     var loading_bar_alpha:Float;
+}
+
+typedef TransitionConfigMap = {
+    @:optional var sticker:StickerTransitionConfig;
+}
+
+typedef StickerTransitionConfig = {
+    var assets:Array<String>;
+    @:optional var click_sound_indices:Array<Int>;
 }

@@ -1,5 +1,5 @@
 
--- From Just-Feeshy: Thank you so much FLX (aka. Erdene) for designing the Freeplay Menu
+-- From Just-Feeshy: Thank you so much FLX (aka. Erdene or Kira) for designing the Freeplay Menu
 -- Very talented UI/UX programmer, go check him out! (https://erdene.dev/)
 
 local menu_music = require("mod_assets/scripts/utils/menuMusic")

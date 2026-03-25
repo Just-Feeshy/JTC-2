@@ -10,7 +10,7 @@ import NotesJTC;
 
 class Mod {
     static function onInit() {
-        Register.setStageForMod(CheesyStage); //Remove unwanted data from the game.
+        Register.setStageForMod(CheesyStage); // Remove unwanted data from the game.
 
 		// Add the lua files to the game
         Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));

@@ -7,6 +7,7 @@ import sys.FileSystem;
 import sys.io.File;
 import lime.utils.Assets;
 import haxe.Json;
+import SaveData.SaveType;
 
 import IDialogue.DialogueData;
 import ModInitialize;
@@ -159,7 +160,7 @@ class CacheState extends HelperStates {
         var songCacheDirectory:String = getSongCacheDirectory();
         var hasSongCache:Bool = songCacheDirectory != "" && Paths.assetExists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""), TEXT);
 
-        if(PlayState.SONG.video != null && !exception) {
+        if(PlayState.SONG.video != null && !exception && !SaveData.getData(SaveType.SKIP_CUTSCENES)) {
             if(hasSongCache) {
                 FlxG.switchState(new VideoState(new CacheState(new PlayState(), true), PlayState.SONG.video));
             }else {
