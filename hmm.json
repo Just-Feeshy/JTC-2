@@ -35,7 +35,8 @@
     },
     {
       "name": "hxvlc",
-      "type": "haxelib"
+      "type": "haxelib",
+      "version": "2.2.4"
     }
   ]
 }
