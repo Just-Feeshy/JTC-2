@@ -1824,15 +1824,6 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if(#if debug FlxG.keys.justPressed.TAB #end && startedCountdown && canPause) {
-            #if debug
-			debugText.visible = !paused;
-            setLua("inDebugState", !paused);
-            #end
-
-            haveGamePaused();
-		}
-
 		if(FlxG.keys.justPressed.SEVEN) {
 			DefaultHandler.kill();
 
