@@ -1,9 +1,10 @@
 #pragma header
 
-uniform float pathBaseX;
-uniform float pathBaseY;
-uniform float curveScaleX;
-uniform float curveScaleY;
+// From Just-Feeshy: I made this shader for FLX (aka. Erdene) since he needed a lua-based
+// runtime shader pipeline
+
+uniform vec2 pathBase;
+uniform vec2 curveScale;
 uniform float sprayT;
 uniform float trailShift;
 uniform float trailRadius;
@@ -41,8 +42,8 @@ float sprayCurveY(float x)
 
 vec2 trailPoint(float t)
 {
-    float x = (t * exp(t / 8.0)) * curveScaleX + pathBaseX - trailShift;
-    float y = sprayCurveY(t) * curveScaleY + pathBaseY;
+    float x = (t * exp(t / 8.0)) * curveScale.x + pathBase.x - trailShift;
+    float y = sprayCurveY(t) * curveScale.y + pathBase.y;
     return vec2(x, y);
 }
 

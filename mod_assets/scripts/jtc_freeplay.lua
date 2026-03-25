@@ -1,3 +1,7 @@
+
+-- From Just-Feeshy: Thank you so much FLX (aka. Erdene) for designing the Freeplay Menu
+-- Very talented UI/UX programmer, go check him out! (https://erdene.dev/)
+
 local menu_music = require("mod_assets/scripts/utils/menuMusic")
 
 local graffitiSprites = {}
@@ -464,15 +468,13 @@ function prepareGraffitiRevealShader(index)
 
     if setShaderFloat ~= nil then
         setShaderFloat(sprName, "active", 0)
-        setShaderFloat(sprName, "curveScaleX", scaleX)
-        setShaderFloat(sprName, "curveScaleY", scaleY)
+        setShaderFloat2(sprName, "curveScale", scaleX, scaleY)
         setShaderFloat(sprName, "trailShift", SPRAY_TRAIL_SHIFT * scaleX)
         setShaderFloat(sprName, "trailRadius", SPRAY_TRAIL_START_RADIUS * ((scaleX + scaleY) * 0.5))
         setShaderFloat(sprName, "edgeSoftness", SPRAY_EDGE_SOFTNESS)
         setShaderFloat(sprName, "fullReveal", 0)
         setShaderFloat(sprName, "sprayT", -5)
-        setShaderFloat(sprName, "pathBaseX", 0)
-        setShaderFloat(sprName, "pathBaseY", 0)
+        setShaderFloat2(sprName, "pathBase", 0, 0)
     end
 end
 
@@ -569,10 +571,8 @@ function updateGraffitiRevealShader(index, canName)
     local trailRadius = (SPRAY_TRAIL_START_RADIUS + (SPRAY_TRAIL_RADIUS - SPRAY_TRAIL_START_RADIUS) * easedRadiusProgress) * ((scaleX + scaleY) * 0.5)
 
     setShaderFloat(sprName, "active", progress >= SPRAY_REVEAL_START and 1 or 0)
-    setShaderFloat(sprName, "pathBaseX", pathBaseX)
-    setShaderFloat(sprName, "pathBaseY", pathBaseY)
-    setShaderFloat(sprName, "curveScaleX", scaleX)
-    setShaderFloat(sprName, "curveScaleY", scaleY)
+    setShaderFloat2(sprName, "pathBase", pathBaseX, pathBaseY)
+    setShaderFloat2(sprName, "curveScale", scaleX, scaleY)
     setShaderFloat(sprName, "trailRadius", trailRadius)
     setShaderFloat(sprName, "fullReveal", 0)
     setShaderFloat(sprName, "sprayT", sprayT)

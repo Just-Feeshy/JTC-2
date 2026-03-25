@@ -7,7 +7,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 
 class CheeseSliceSprite extends FlxSprite {
-    private static inline var OPPOSITE_SIDE_WEIGHT:Float = 0.8;
+    private static inline var OPPOSITE_SIDE_WEIGHT:Float = 0.4;
 
     private var targetCenterX:Float = 0;
     private var targetCenterY:Float = 0;
