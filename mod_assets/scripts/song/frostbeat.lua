@@ -74,6 +74,7 @@ end
 function generatedStage()
     init()
     setEndVideo("post.mp4")
+    setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
     addSongTrack("jtcVocals", "JTC_Voices", "player", 1, false, "t,joul")
 

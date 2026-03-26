@@ -1333,6 +1333,16 @@ class ModLua {
             }
         });
 
+        Lua_helper.add_callback(lua, "setCountdownPresentation", function(showSprites:Bool = true, playSounds:Bool = true) {
+            var curState = cast FlxG.state;
+
+            if(curState is PlayState) {
+                var playState:PlayState = cast curState;
+                playState.showCountdownSprites = showSprites;
+                playState.playCountdownSounds = playSounds;
+            }
+        });
+
         Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Float) {
             var cam:FlxCamera = getCamera(name);
 
