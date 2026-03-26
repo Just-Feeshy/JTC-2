@@ -18,11 +18,12 @@ local defaultHiddenSprites = {
 jtc_camera.revealStep = nil
 jtc_camera.hidden = false
 jtc_camera.hiddenSprites = {}
+jtc_camera.showNoteCamerasOnReveal = true
 
-local function setGameplayVisibility(visible)
-    for _, cameraName in ipairs(gameplayCameras) do
-        setCameraVisible(cameraName, visible)
-    end
+local function setGameplayVisibility(gameVisible, noteVisible)
+    setCameraVisible("camGame", gameVisible)
+    setCameraVisible("camNOTE", noteVisible)
+    setCameraVisible("camNoteSustain", noteVisible)
 end
 
 local function setSpriteVisibility(spriteName, visible)
@@ -53,6 +54,7 @@ function jtc_camera.reset()
     jtc_camera.revealStep = nil
     jtc_camera.hidden = false
     jtc_camera.hiddenSprites = {}
+    jtc_camera.showNoteCamerasOnReveal = true
 end
 
 function jtc_camera.registerHiddenSprites(spriteNames)
@@ -73,28 +75,27 @@ end
 
 function jtc_camera.hideGameplayCameras()
     jtc_camera.hidden = true
-    setGameplayVisibility(false)
+    setGameplayVisibility(false, false)
     setManagedSpriteVisibility(false)
 end
 
 function jtc_camera.showGameplayCameras()
     jtc_camera.hidden = false
     jtc_camera.revealStep = nil
-    setGameplayVisibility(true)
+    setGameplayVisibility(true, jtc_camera.showNoteCamerasOnReveal)
     setManagedSpriteVisibility(true)
 end
 
-function jtc_camera.hideGameplayUntilStep(step)
+function jtc_camera.hideGameplayUntilStep(step, showNoteCamerasOnReveal)
     jtc_camera.revealStep = step
+    if showNoteCamerasOnReveal ~= nil then
+        jtc_camera.showNoteCamerasOnReveal = showNoteCamerasOnReveal
+    end
     jtc_camera.hideGameplayCameras()
 end
 
 function jtc_camera.onStepHit(step)
-    if not jtc_camera.hidden or jtc_camera.revealStep == nil then
-        return
-    end
-
-    if step >= jtc_camera.revealStep then
+    if jtc_camera.hidden and jtc_camera.revealStep ~= nil and step >= jtc_camera.revealStep then
         jtc_camera.showGameplayCameras()
     end
 end

@@ -161,7 +161,7 @@ class PlayState extends MusicBeatState
 	private var ownedCamHUD:FeshCamera;
 	private var ownedCamNOTE:CameraNote;
 	private var ownedCamNoteSustain:FeshCamera;
-	private var ownedLua:ModLua;
+	private var playLua:PlayLua;
 
 	//Note Stuff Funk U
 	private var trippyWiggle:WiggleEffect = new WiggleEffect();
@@ -188,7 +188,6 @@ class PlayState extends MusicBeatState
 	private var defaultBlur:Float = 0;
 	private var playFPS:Null<Int> = Main.framerate;
 	private var counterTxt:FlxText;
-	private var luaDetachedForStateSwitch:Bool = false;
 
 	private var accTotal(get, never):Float;
 	private var totalRatingAcc:Float = 0;
@@ -307,6 +306,7 @@ class PlayState extends MusicBeatState
 
 	override public function new(?muted:Bool) {
 		CustomNoteHandler.spawn();
+		playLua = new PlayLua(this);
 
 		Note.AFFECTED_SCROLLSPEED = 1;
 		Note.AFFECTED_STRUMTIME = 0;
@@ -613,7 +613,7 @@ class PlayState extends MusicBeatState
 		getLuaScript();
 
 		#if (USING_LUA && cpp)
-		if(HelperStates.luaExist(Type.getClass(this))) {
+		if(playLua.hasScript()) {
 			generateStaticLua();
 			updateLuaVars();
 		}
@@ -1008,8 +1008,8 @@ class PlayState extends MusicBeatState
 
 		makeNoteLua();
 
-		setLua("startedCountdown", true);
-		callLua("generatedStage", []);
+		playLua.set("startedCountdown", true);
+		playLua.call("generatedStage", []);
 
 		if (!showCountdownSprites && !playCountdownSounds)
 		{
@@ -1824,7 +1824,7 @@ class PlayState extends MusicBeatState
 
 			paused = false;
 
-			callLua('onResume', []);
+			playLua.call('onResume', []);
 
 			#if windows
 			if (startTimer.finished)
@@ -2439,7 +2439,7 @@ class PlayState extends MusicBeatState
 										}
 
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
-										callLua("noteMiss", [daNote.noteData, daNote.tag]);
+										playLua.call("noteMiss", [daNote.noteData, daNote.tag]);
 									}
 								}
 							}
@@ -2459,7 +2459,7 @@ class PlayState extends MusicBeatState
 										}
 
 										currentPlayer.playNoDanceAnim(singAnims[Std.int(Math.abs(daNote.noteData))] + "miss", true);
-										callLua("noteMiss", [daNote.noteData, daNote.tag]);
+										playLua.call("noteMiss", [daNote.noteData, daNote.tag]);
 									}
 								}
 							}
@@ -2474,7 +2474,7 @@ class PlayState extends MusicBeatState
 			});
 
 			#if (USING_LUA && cpp)
-			if(HelperStates.luaExist(Type.getClass(this))) {
+			if(playLua.hasScript()) {
 				updateLuaVars();
 			}
 			#end
@@ -2522,7 +2522,7 @@ class PlayState extends MusicBeatState
 		if (SONG.needsVoices)
 			setOpponentVocalsVolume(1, note.tag);
 
-		callLua("opponentNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
+		playLua.call("opponentNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
 		if(!note.isSustainNote) {
 			removeNote(note);
@@ -2581,12 +2581,12 @@ class PlayState extends MusicBeatState
 		while(index < getLaneCount()) {
 			if (controlPressArray[index]) {
 				queueLaneInput(index, true, getCurrentInputSongTime());
-				callLua('onKeyPress', [getPrimaryLaneKeyCode(index)]);
+				playLua.call('onKeyPress', [getPrimaryLaneKeyCode(index)]);
 			}
 
 			if (controlReleaseArray[index]) {
 				queueLaneInput(index, false, getCurrentInputSongTime());
-				callLua('onKeyRelease', [getPrimaryLaneKeyCode(index)]);
+				playLua.call('onKeyRelease', [getPrimaryLaneKeyCode(index)]);
 			}
 
 			index++;
@@ -2614,7 +2614,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		callLua('onKeyRelease', [getEvent.keyCode]);
+		playLua.call('onKeyRelease', [getEvent.keyCode]);
 	}
 
 	function gameOverScreen():Void {
@@ -2632,7 +2632,7 @@ class PlayState extends MusicBeatState
 
 		FlxG.camera.zoom = defaultCamZoom;
 
-		setLua("inGameOver", true);
+		playLua.set("inGameOver", true);
 
 		openSubState(new GameOverSubstate(currentPlayer.getScreenPosition().x, currentPlayer.getScreenPosition().y));
 
@@ -2940,7 +2940,7 @@ class PlayState extends MusicBeatState
 
 		laneHeldKeys.push(getEvent.keyCode);
 		queueLaneInput(index, true, getCurrentInputSongTime());
-		callLua('onKeyPress', [getEvent.keyCode]);
+		playLua.call('onKeyPress', [getEvent.keyCode]);
 	}
 
 	function getLaneCount():Int {
@@ -3372,7 +3372,7 @@ class PlayState extends MusicBeatState
 				if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 					songScore -= 30;
 				}else {
-					callLua("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
+					playLua.call("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 					songScore -= 10;
 				}
 			}
@@ -3496,7 +3496,7 @@ class PlayState extends MusicBeatState
 				hits++;
 			}
 
-			callLua("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
+			playLua.call("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
 			if (!note.isSustainNote) {
 				removeNote(note);
@@ -3695,6 +3695,63 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	public function setScriptedCameraFocus(x:Float, y:Float, snap:Bool = true):Void {
+		vSliceCameraFocusEnabled = true;
+		vSliceCameraFocusX = x;
+		vSliceCameraFocusY = y;
+
+		if(snap) {
+			camFollow.setPosition(x + camMovementPos.x, y + camMovementPos.y);
+			FlxG.camera.focusOn(camFollow.getPosition());
+		}
+	}
+
+	public function clearScriptedCameraFocus(snap:Bool = true):Void {
+		vSliceCameraFocusEnabled = false;
+
+		if(snap) {
+			camFollow.setPosition(camPos.x + camMovementPos.x, camPos.y + camMovementPos.y);
+			FlxG.camera.focusOn(camFollow.getPosition());
+		}
+	}
+
+	public function setScriptedCameraZoom(zoom:Float, direct:Bool = true, snap:Bool = true):Void {
+		if(direct) {
+			vSliceDirectZoomEnabled = true;
+			vSliceDirectZoomValue = zoom;
+		}else {
+			vSliceDirectZoomEnabled = false;
+			defaultCamZoom = zoom;
+		}
+
+		if(snap) {
+			FlxG.camera.zoom = zoom;
+		}
+	}
+
+	public function clearScriptedCameraZoom(snap:Bool = true):Void {
+		vSliceDirectZoomEnabled = false;
+
+		if(snap) {
+			FlxG.camera.zoom = defaultCamZoom;
+		}
+	}
+
+	public function focusGameplayCameraOnSprite(name:String, zoom:Float = 1, anchorX:Float = 0.5, anchorY:Float = 0.5,
+		offsetX:Float = 0, offsetY:Float = 0, direct:Bool = true, snap:Bool = true):Bool {
+		var spr:FlxSprite = playLua != null ? playLua.getSprite(name) : null;
+
+		if(spr == null) {
+			return false;
+		}
+
+		var focusX:Float = spr.x + (spr.width * anchorX) + offsetX;
+		var focusY:Float = spr.y + (spr.height * anchorY) + offsetY;
+		setScriptedCameraFocus(focusX, focusY, snap);
+		setScriptedCameraZoom(zoom, direct, snap);
+		return true;
+	}
+
 	private function getStepFromTime(songTime:Float):Int
 	{
 		var lastChange:BPMChangeEvent = {
@@ -3727,580 +3784,35 @@ class PlayState extends MusicBeatState
 	}
 
 	function addLuaToAngle(daAngle:Float, note:Note):Float {
-		var xLua:Null<Float> = callLua("addToNoteAngle", [daAngle, note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
-		var finalLuaVar:Float = daAngle;
-
-		if(xLua != null)
-			finalLuaVar = xLua + daAngle;
-
-		return finalLuaVar;
+		return playLua != null ? playLua.addToNoteAngle(daAngle, note) : daAngle;
 	}
 
 	/**
 	* Reason why the variables are named the same as Psych Engine is so transferring lua scripts can be easier.
 	*/
-	
 	function getLuaScript():Void {
-		#if (USING_LUA && cpp)
-		Register.detachLuaFromState(PlayState);
-
-		var songScript:String = "song/" + CoolUtil.readableSongDirectory(SONG.song.toLowerCase());
-		var stageScript:String = "stage/" + curStage.toLowerCase();
-		var scriptPath:String = null;
-
-		if(Paths.assetExists(Paths.getPath('scripts/${songScript}.lua', TEXT, null), TEXT)) {
-			scriptPath = songScript;
-		}else if(Paths.assetExists(Paths.getPath('scripts/${stageScript}.lua', TEXT, null), TEXT)) {
-			scriptPath = stageScript;
-		}
-
-		if(scriptPath != null) {
-			Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
-			ownedLua = getModLua();
-			ownedLua.execute();
-		}
-		#end
+		if(playLua != null)
+			playLua.loadScript();
 	}
 
 	function generateStaticLua():Void {
-		modifiableSprites.set("iconP1", iconP1);
-		modifiableSprites.set("iconP2", iconP2);
-		modifiableSprites.set("healthBarBG", healthBarBG);
-		modifiableSprites.set("healthBar", healthBar);
-
-		modifiableCharacters.set("boyfriend", boyfriend);
-		modifiableCharacters.set("gf", gf);
-		modifiableCharacters.set("dad", dad);
-
-		modifiableCameras.set("camHUD", ownedCamHUD);
-		modifiableCameras.set("camGAME", FlxG.camera);
-		modifiableCameras.set("camNOTE", ownedCamNOTE);
-		modifiableCameras.set("camNoteSustain", ownedCamNoteSustain);
-
-		setLua("songName", PlayState.SONG.song);
-		setLua("isStoryMode", PlayState.isStoryMode);
-		setLua("startedCountdown", false);
-		setLua("difficulty", PlayState.storyDifficulty);
-		setLua("difficultyName", CoolUtil.getDifficultyName(PlayState.storyDifficulty));
-		setLua("week", Paths.modJSON.weeks.get("week_" + PlayState.storyWeek).week_name.toUpperCase());
-		setLua("weekRaw", PlayState.storyWeek);
-		setLua("hasCutscene", PlayState.SONG.video != null ? true : false);
-		setLua("inGameOver", false);
-
-		setLua("defaultBoyfriendX", boyfriend.x);
-		setLua("defaultBoyfriendY", boyfriend.y);
-		setLua("defaultOpponentX", dad.x);
-		setLua("defaultOpponentY", dad.y);
-
-		if(gf != null) {
-			setLua("defaultGirlfriendX", gf.x);
-			setLua("defaultGirlfriendY", gf.y);
-		}else {
-			setLua("defaultGirlfriendX", 0);
-			setLua("defaultGirlfriendY", 0);
-		}
-
-        addCallback("checkKeyStatus", function(key:Int, status:Int) {
-            return FlxG.keys.checkStatus(key, status);
-        });
-
-        addCallback("freezeOrUnfreezeGame", function() {
-            haveGamePaused();
-        });
-
-		addCallback("setEndVideo", function(path:String) {
-			videoSwitchState = Paths.video(path);
-		});
-
-		addCallback("callEvent", function(skill:String, value:String, value2:String) {
-			events.whenTriggered(skill, value, value2, this);
-			event_Extra(skill, value, value2);
-		});
-
-		addCallback("addSongTrack", function(tag:String, fileName:String, side:String = SONG_TRACK_SIDE_EXTRA, volume:Float = 1,
-			looped:Bool = false, tagFilterList:String = "") {
-			return addSongTrack(tag, fileName, side, volume, looped, normalizeSongTrackFilters(tagFilterList));
-		});
-
-		addCallback("removeSongTrack", function(tag:String) {
-			destroySongTrack(tag);
-		});
-
-		addCallback("hasSongTrack", function(tag:String) {
-			return syncedSongTrackMap.exists(tag);
-		});
-
-		addCallback("setSongTrackBaseVolume", function(tag:String, volume:Float) {
-			var track = syncedSongTrackMap.get(tag);
-
-			if (track == null)
-				return false;
-
-			track.baseVolume = volume;
-			applySongTrackVolume(track);
-			return true;
-		});
-
-		addCallback("instaKillPlayer", function() {
-			gameOverScreen();
-		});
-
-		addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = false) {
-			if(modifiableCharacters.exists(name)) {
-                return;
-            }
-
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer);
-			characterSprite.refresh(characterName, camPos);
-			characterSprite.active = true;
-
-            modifiableCharacters.set(name, characterSprite);
-		});
-
-		/**
-		 * NFA - No Frame Adjustment.
-		 */
-		addCallback("createCharacterSpriteNFA", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = false) {
-			if(modifiableCharacters.exists(name)) {
-                return;
-            }
-
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer, null, false);
-			characterSprite.refresh(characterName, camPos);
-			characterSprite.active = true;
-
-            modifiableCharacters.set(name, characterSprite);
-		});
-
-		addCallback("characterDance", function(name:String) {
-            var character:Character = modifiableCharacters.get(name);
-
-            if(character == null) {
-                return false;
-            }
-
-            character.dance();
-            return true;
-        });
-
-		addCallback("setCharacterHoldTimer", function(name:String, value:Float) {
-            var character:Character = modifiableCharacters.get(name);
-
-            if(character == null) {
-                return;
-            }
-
-            character.holdTimer = value;
-        });
-
-		addCallback("getCharacterIsPlayer", function(name:String) {
-            var character:Character = modifiableCharacters.get(name);
-
-            if(character == null) {
-                return false;
-            }
-
-            return character.isPlayer;
-        });
-
-		addCallback("getCharacterDancing", function(name:String) {
-            var character:Character = modifiableCharacters.get(name);
-
-            if(character == null) {
-                return false;
-            }
-
-            return character.dancing;
-        });
-
-		addCallback("getCharacterStunned", function(name:String) {
-            var character:Character = modifiableCharacters.get(name);
-
-            if(character == null) {
-                return false;
-            }
-
-            return character.stunned;
-        });
-
-		addCallback("getCharacterHoldTimer", function(name:String) {
-            var character:Character = modifiableCharacters.get(name);
-
-            if(character != null) {
-                return character.holdTimer;
-            }
-
-            return 0;
-        });
-
-		addCallback("getSpriteIndexFromStage", function(name:String) {
-			var spr:FlxSprite = getModLua().getSprite(name);
-
-            if(spr == null) {
-                return -1;
-            }
-
-			return stage.members.indexOf(spr);
-		});
-
-		addCallback("insertSpriteToStage", function(position:Int, name:String) {
-            var spr:FlxSprite = getModLua().getSprite(name);
-
-            if(spr == null) {
-                return;
-            }
-
-            stage.insert(position, spr);
-        });
-
-
-		addCallback("addSpriteToStage", function(name:String) {
-			var spr:FlxSprite = getModLua().getSprite(name);
-
-            if(spr == null) {
-                return;
-            }
-
-			stage.add(spr);
-		});
-
-		addCallback("removeSpriteFromStage", function(name:String) {
-			var spr:FlxSprite = getModLua().getSprite(name);
-
-            if(spr == null) {
-                return;
-            }
-
-			stage.remove(spr);
-		});
-
-		addCallback("setHealthBarColors", function(opponentHex:String, playerHex:String) {
-			var opponentColor:FlxColor = 0;
-			var playerColor:FlxColor = 0;
-
-			if(!opponentHex.startsWith("0x")) {
-				opponentColor = Std.parseInt('0xff' + opponentHex);
-			}else {
-				opponentColor = Std.parseInt(opponentHex);
-			}
-
-			if(!playerHex.startsWith("0x")) {
-				playerColor = Std.parseInt('0x' + playerHex);
-			}else {
-				playerColor = Std.parseInt(playerHex);
-			}
-
-			healthBar.createFilledBar(opponentColor, playerColor);
-		});
-
-		addCallback("doTweenHealthBarColor", function(name:String, side:String, hex:String, duration:Float, ease:String) {
-			var barColor:FlxColor = 0;
-
-			if(!hex.startsWith("0x")) {
-				barColor = Std.parseInt('0xff' + hex);
-			}else {
-				barColor = Std.parseInt(hex);
-			}
-
-			if(side == "left" || side == "opponent") {
-				getModLua().luaTweens.set(name, FlxTween.color(healthBar.emptyBar, duration, healthBar.emptyColor, barColor, {ease: Register.getFlxEaseByString(ease),
-					onComplete: function(twn:FlxTween) {
-                        getModLua().luaTweens.remove(name);
-						callLua('onTweenCompleted', [name]);
-                    }
-				}));
-			}
-
-			if(side == "right" || side == "player") {
-				getModLua().luaTweens.set(name, FlxTween.color(healthBar.filledBar, duration, healthBar.filledColor, barColor, {ease: Register.getFlxEaseByString(ease),
-					onComplete: function(twn:FlxTween) {
-                        getModLua().luaTweens.remove(name);
-						callLua('onTweenCompleted', [name]);
-                    }
-				}));
-			}
-		});
-
-		addCallback("setHealthBarColor", function(hex:String, side:String) {
-			var hexColor:FlxColor = 0;
-
-			if(!hex.startsWith("0x")) {
-				hexColor = Std.parseInt('0xff' + hex);
-			}else {
-				hexColor = Std.parseInt(hex);
-			}
-
-			if(side == "left" || side == "opponent") {
-				healthBar.emptyColor = hexColor;
-			}
-
-			if(side == "right" || side == "player") {
-				healthBar.filledColor = hexColor;
-			}
-		});
-
-        addCallback("disableInputs", function(disable:Bool) {
-            disableInputs = disable;
-        });
+		if(playLua != null)
+			playLua.generateStaticBindings();
 	}
 
 	function makeNoteLua():Void {
-		#if (USING_LUA && cpp)
-		if(HelperStates.luaExist(Type.getClass(this))) {
-			for(i in 0...playerStrums.members.length) {
-				setLua('defaultPlayerStrumX' + i, playerStrums.members[i].x);
-				setLua('defaultPlayerStrumY' + i, playerStrums.members[i].y);
-				setLua('defaultPlayerStrumWidth' + i, playerStrums.members[i].scale.x);
-				setLua('defaultPlayerStrumHeight' + i, playerStrums.members[i].scale.y);
-			}
-
-			for (i in 0...opponentStrums.members.length) {
-				setLua('defaultOpponentStrumX' + i, opponentStrums.members[i].x);
-				setLua('defaultOpponentStrumY' + i, opponentStrums.members[i].y);
-				setLua('defaultOpponentStrumWidth' + i, opponentStrums.members[i].scale.x);
-				setLua('defaultOpponentStrumHeight' + i, opponentStrums.members[i].scale.y);
-			}
-
-			addCallback("setNoteStrumPos", function(id:Int, x:Float, y:Float) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				strumOBJ.x = x;
-				strumOBJ.y = y;
-			});
-
-			addCallback("setNoteStrumAngleX", function(id:Int, angle:Float) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				strumOBJ.xAngle = angle;
-			});
-
-			addCallback("setNoteStrumAngleY", function(id:Int, angle:Float) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				strumOBJ.yAngle = angle;
-			});
-
-			addCallback("setNoteStrumAngleZ", function(id:Int, angle:Float) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				strumOBJ.angle = angle;
-			});
-
-			addCallback("setNoteStrumAngle", function(id:Int, angle:Float) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				strumOBJ.angle = angle;
-			});
-
-			addCallback("setNoteDirection", function(id:Int, angle:Float) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				strumOBJ.directionAngle = angle;
-			});
-
-			addCallback("setNoteScale", function(id:Int, x:Float, y:Float, shouldUpdateHitbox:Bool = true) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				strumOBJ.scale.set(x, y);
-
-				if(shouldUpdateHitbox) {
-					strumOBJ.updateHitbox();
-				}
-			});
-
-			addCallback("getNoteStrumAngleX", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.xAngle;
-			});
-
-			addCallback("getNoteStrumAngleY", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.yAngle;
-			});
-
-			addCallback("getNoteStrumAngleZ", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.angle;
-			});
-
-			addCallback("getNoteStrumAngle", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.angle;
-			});
-	
-			addCallback("getNoteDirection", function(id:Int, angle:Float) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.directionAngle;
-			});
-
-			addCallback("getNoteScaleX", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.scale.x;
-			});
-
-			addCallback("getNoteScaleY", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.scale.y;
-			});
-
-			addCallback("getNotePosX", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.x;
-			});
-
-			addCallback("getNotePosY", function(id:Int) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-				return strumOBJ.y;
-			});
-
-			addCallback("getNoteScreenCenter", function(id:Int, ?axis:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				switch(axis.toLowerCase()) {
-                    case "x": return strumOBJ.getScreenCenter(X);
-                    case "y": return strumOBJ.getScreenCenter(Y);
-                }
-
-				return 0;
-			});
-
-			addCallback("noteTweenX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {x: value}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-
-			addCallback("noteTweenY", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {y: value}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-
-			addCallback("noteTweenAngle", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-
-			addCallback("noteTweenAngleX", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {xAngle: value}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-
-			addCallback("noteTweenAngleY", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {yAngle: value}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-
-			addCallback("noteTweenAngleZ", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {angle: value}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-
-			addCallback("noteTweenDirection", function(name:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ, {directionAngle: value}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-
-			addCallback("noteTweenScale", function(name:String, id:Int, value1:Float, value2:Float, duration:Float, ease:String) {
-				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-
-				if(strumOBJ != null) {
-					getModLua().luaTweens.set(name, FlxTween.tween(strumOBJ.scale, {x: value1, y: value2}, duration, {ease: Register.getFlxEaseByString(ease),
-						onComplete: function(twn:FlxTween) {
-							getModLua().luaTweens.remove(name);
-							callLua('onTweenCompleted', [name]);
-						}
-					}));
-				}
-			});
-		}
-		#end
+		if(playLua != null)
+			playLua.generateNoteBindings();
 	}
 
 	function updateLuaVars():Void {
-		setLua('cameraX', camFollow.x);
-		setLua('cameraY', camFollow.y);
-
-		setLua("score", songScore);
-		setLua("misses", misses);
-		setLua("hits", hits);
-
-		setLua("boyfriendName", boyfriend.curCharacter);
-		setLua("dadName", dad.curCharacter);
-
-		if(gf != null) {
-			setLua("gfName", gf.curCharacter);
-		}else {
-			setLua("gfName", "");
-		}
-
-		setLua('downscroll', SaveData.getData(DOWNSCROLL));
-		setLua('framerate', Lib.current.stage.frameRate);
-		setLua('ghostTapping', GhostTapping.ghostTap);
-		setLua("songLength", FlxG.sound.music.length);
-		setLua("trackPos", Conductor.trackPosition);
-
-		setLua("iconP1_ID_Regular", iconP1.iconAnimInfo[0]);
-		setLua("iconP2_ID_Regular", iconP2.iconAnimInfo[0]);
-		setLua("iconP1_ID_Dead", iconP1.iconAnimInfo[1]);
-		setLua("iconP2_ID_Dead", iconP2.iconAnimInfo[1]);
-		setLua("iconP1_ID_Winning", iconP1.iconAnimInfo[2]);
-		setLua("iconP2_ID_Winning", iconP2.iconAnimInfo[2]);
+		if(playLua != null)
+			playLua.updateDynamicVars();
 	}
 
 	function updatePerSectionLuaVars():Void {
-		setLua("bpm", PlayState.SONG.bpm);
-		setLua("scrollspeed", PlayState.SONG.speed);
-		setLua("mustHitSection", SONG.notes[Std.int(curStep / 16)].mustHitSection);
-		setLua("altAnim", SONG.notes[Math.floor(curStep / 16)].altAnim);
+		if(playLua != null)
+			playLua.updatePerSectionVars();
 	}
 
 	function eventLoad():Void {
@@ -4362,7 +3874,7 @@ class PlayState extends MusicBeatState
 	function event_Extra(skill:String, value:String, value2:String):Void {
 		stage.onEvent(skill, value, value2);
 
-		callLua("whenEventTriggered", [skill, value, value2]);
+		playLua.call("whenEventTriggered", [skill, value, value2]);
 	}
 
 	function set_wobbleModPower(value:Float):Float {
@@ -4503,7 +4015,7 @@ class PlayState extends MusicBeatState
 			}
 
 			#if (USING_LUA && cpp)
-			if(HelperStates.luaExist(Type.getClass(this))) {
+			if(playLua.hasScript()) {
 				updatePerSectionLuaVars();
 			}
 			#end
@@ -4543,7 +4055,6 @@ class PlayState extends MusicBeatState
 			var stateCamNOTE:CameraNote = ownedCamNOTE;
 			var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
 			var stateCamHUD:FeshCamera = ownedCamHUD;
-			var stateLua:ModLua = ownedLua;
 
 		if(stateCamNOTE != null) {
 			if(notes != null) {
@@ -4589,18 +4100,13 @@ class PlayState extends MusicBeatState
 				FlxG.cameras.remove(stateCamHUD, false);
 			}
 
-		if(!luaDetachedForStateSwitch && stateLua != null) {
-			if(HelperStates.luaExist(PlayState) && HelperStates.getLua(PlayState) == stateLua) {
-				Register.detachLuaFromState(PlayState);
-			}else {
-				stateLua.close();
-			}
-			luaDetachedForStateSwitch = true;
+		if(playLua != null) {
+			playLua.prepareForStateSwitch();
 		}
 	}
 
 	override public function destroy() {
-		var stateLua:ModLua = ownedLua;
+		var statePlayLua:PlayLua = playLua;
 		var stateCamNOTE:CameraNote = ownedCamNOTE;
 		var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
 		var stateCamHUD:FeshCamera = ownedCamHUD;
@@ -4639,12 +4145,9 @@ class PlayState extends MusicBeatState
 		keys2DArray = null;
 		eventInfo = null;
 
-		if(!luaDetachedForStateSwitch && stateLua != null) {
-			if(HelperStates.luaExist(PlayState) && HelperStates.getLua(PlayState) == stateLua) {
-				Register.detachLuaFromState(PlayState);
-			}else {
-				stateLua.close();
-			}
+		if(statePlayLua != null) {
+			statePlayLua.destroy();
+			playLua = null;
 		}
 
 		DefaultHandler.kill();

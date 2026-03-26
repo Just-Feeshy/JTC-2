@@ -14,6 +14,16 @@ local daddyTrans = false
 
 local secondBaseX = 560
 local secondBaseY = 130
+local baseFunkroadCameraX = 785
+local baseFunkroadCameraY = 458.5
+local baseFunkroadCameraZoom = 0.5
+local baseFrostbiteCarX = -170
+local baseFrostbiteCarY = -35
+local introOpponentFaceAnchorX = 0.53
+local introOpponentFaceAnchorY = 0.20
+local introOpponentFaceOffsetX = 6
+local introOpponentFaceOffsetY = -16
+local introOpponentFaceZoom = 1.95
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -74,16 +84,49 @@ local function cloudIncome()
     end
 end
 
+local function getIntroOpponentFaceFocus()
+    local opponentX = getSpriteX("opponent")
+    local opponentY = getSpriteY("opponent")
+    local opponentWidth = getSpriteWidth("opponent")
+    local opponentHeight = getSpriteHeight("opponent")
+
+    return opponentX + (opponentWidth * introOpponentFaceAnchorX) + introOpponentFaceOffsetX,
+        opponentY + (opponentHeight * introOpponentFaceAnchorY) + introOpponentFaceOffsetY
+end
+
+local function applyIntroOpponentFaceShot()
+    local focusX, focusY = getIntroOpponentFaceFocus()
+    setGameplayCameraFocus(focusX, focusY, true)
+    setGameplayCameraZoom(introOpponentFaceZoom, true, true)
+
+    local originalHalfWidth = windowWidth / (2 * baseFunkroadCameraZoom)
+    local originalHalfHeight = windowHeight / (2 * baseFunkroadCameraZoom)
+    local introHalfWidth = windowWidth / (2 * introOpponentFaceZoom)
+    local introHalfHeight = windowHeight / (2 * introOpponentFaceZoom)
+    local originalCarScreenX = baseFrostbiteCarX - baseFunkroadCameraX + originalHalfWidth
+    local originalCarScreenY = baseFrostbiteCarY - baseFunkroadCameraY + originalHalfHeight
+    local introCarX = originalCarScreenX + focusX - introHalfWidth
+    local introCarY = originalCarScreenY + focusY - introHalfHeight
+
+    setSpritePosition("frostbiteCAR", introCarX, introCarY)
+end
+
+local function clearIntroOpponentFaceShot()
+    clearGameplayCameraFocus(true)
+    clearGameplayCameraZoom(true)
+    setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
+end
+
 function generatedStage()
     init()
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
     addSongTrack("jtcVocals", "JTC_Voices", "player", 1, false, "t,joul")
-    jtc_camera.hideGameplayUntilStep(12)
+    jtc_camera.hideGameplayUntilStep(12, false)
 
     createSprite("frostbiteCAR")
-    setSpritePosition("frostbiteCAR", -170, -35)
+    setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
     createCombinedFrames("frostbiteCAR-frames", "daddycar", "daddycar2", "sparrow", "sparrow")
     addFramesToSprite("frostbiteCAR", "frostbiteCAR-frames")
     addAnimationByPrefix("frostbiteCAR", "transition", "car drive and dust0", 24, false)
@@ -91,6 +134,7 @@ function generatedStage()
     playAnimationByPrefix("frostbiteCAR", "drive", "daddycar", 24, false)
     setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
+    applyIntroOpponentFaceShot()
 
     createSprite("second")
     setSpritePosition("second", secondBaseX, secondBaseY)
@@ -121,6 +165,10 @@ end
 
 function onStepHit()
     jtc_camera.onStepHit(curStep)
+
+    if curStep == 18 then
+        clearIntroOpponentFaceShot()
+    end
 
     if curStep == 606 then
         daddyTrans = true
