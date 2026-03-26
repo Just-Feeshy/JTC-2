@@ -626,8 +626,6 @@ class PlayState extends MusicBeatState
 		}
 		#end
 
-		Cache.releaseSongCacheImages(SONG.song);
-
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
 
@@ -673,6 +671,7 @@ class PlayState extends MusicBeatState
 		super.create();
 
 		stage.finishedInitGame();
+		Cache.releaseSongCacheImages(SONG.song);
 	}
 
 	function updateCache():Void {
