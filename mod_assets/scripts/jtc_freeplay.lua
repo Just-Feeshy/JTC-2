@@ -274,6 +274,7 @@ function onFreeplaySelectionChange(index, change)
 
     bumpSectionCarets(change)
 
+    hideInactiveGraffiti(index)
     resetSprayCan()
 
     if not graffitiHas[index] then
@@ -294,6 +295,36 @@ function onFreeplaySelectionChange(index, change)
     end
 
     startGraffitiReveal(index)
+end
+
+function hideGraffiti(index, resetRevealState)
+    local sprName = graffitiSprites[index]
+
+    graffitiRevealActive[index] = false
+    graffitiFading[index] = false
+    graffitiRevealTime[index] = 0
+    graffitiFullRevealTime[index] = 0
+
+    if resetRevealState then
+        graffitiRevealed[index] = false
+    end
+
+    if sprName ~= nil then
+        clearGraffitiRevealShader(index)
+        setSpriteAlpha(sprName, 0)
+    end
+end
+
+function hideInactiveGraffiti(selectedIndex)
+    if songCount <= 0 then
+        return
+    end
+
+    for i = 0, songCount - 1 do
+        if graffitiHas[i] and i ~= selectedIndex then
+            hideGraffiti(i, true)
+        end
+    end
 end
 
 function onTweenCompleted(tag)
@@ -422,16 +453,7 @@ end
 function resetSprayCan()
     if activeGraffitiIndex ~= nil then
         local previousIndex = activeGraffitiIndex
-        graffitiRevealActive[previousIndex] = false
-        graffitiFading[previousIndex] = false
-
-        if not graffitiRevealed[previousIndex] then
-            clearGraffitiRevealShader(previousIndex)
-            local previousSprite = graffitiSprites[previousIndex]
-            if previousSprite ~= nil then
-                setSpriteAlpha(previousSprite, 0)
-            end
-        end
+        hideGraffiti(previousIndex, true)
     end
 
     if spriteExist(graffitiCanName) then
@@ -679,6 +701,24 @@ function updateGraffitiAnimation(elapsed)
 end
 
 function destroyStuff()
+    for i, sprName in pairs(graffitiSprites) do
+        if sprName ~= nil then
+            destroySprite(sprName)
+        end
+
+        graffitiSprites[i] = nil
+        graffitiHas[i] = nil
+        graffitiRevealed[i] = nil
+        graffitiRevealTime[i] = nil
+        graffitiRevealActive[i] = nil
+        graffitiFading[i] = nil
+        graffitiFullRevealTime[i] = nil
+        graffitiBitmapWidths[i] = nil
+        graffitiBitmapHeights[i] = nil
+    end
+
+    activeGraffitiIndex = nil
+
     destroySprite(FREEPLAY_SECTOR_NAME)
     destroySprite(graffitiCanName)
     destroySprite(TOP_SECTION_CARET)
