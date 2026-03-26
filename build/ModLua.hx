@@ -1343,15 +1343,26 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Float) {
-            var cam:FlxCamera = getCamera(name);
+	        Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Float) {
+	            var cam:FlxCamera = getCamera(name);
 
-            if(cam == null) {
-                return;
-            }
+	            if(cam == null) {
+	                return;
+	            }
 
-            cam.zoom = zoom;
-        });
+	            cam.zoom = zoom;
+	        });
+
+	        Lua_helper.add_callback(lua, "setCameraVisible", function(name:String, visible:Bool) {
+	            var cam:FlxCamera = getCamera(name);
+
+	            if(cam == null) {
+	                return false;
+	            }
+
+	            cam.visible = visible;
+	            return true;
+	        });
 
         Lua_helper.add_callback(lua, "getCameraZoom", function(name:String) {
             var cam:FlxCamera = getCamera(name);
@@ -2401,12 +2412,16 @@ class ModLua {
                 cam = curState.modifiableCameras.get(name);
         }
 
-        if(cam == null) {
-            switch(name.toLowerCase().trim()) {
-                case "camhud", "hud":
-                    cam = PlayState.camHUD;
-                case "camgame", "game":
-                    var reflectedCam:Dynamic = Reflect.getProperty(curState, "camGame");
+	        if(cam == null) {
+	            switch(name.toLowerCase().trim()) {
+	                case "camhud", "hud":
+	                    cam = PlayState.camHUD;
+	                case "camnote", "note":
+	                    cam = PlayState.camNOTE;
+	                case "camnotesustain", "notesustain", "sustain":
+	                    cam = PlayState.camNOTE != null ? PlayState.camNOTE.camNoteSustain : null;
+	                case "camgame", "game":
+	                    var reflectedCam:Dynamic = Reflect.getProperty(curState, "camGame");
 
                     if(isOfType(reflectedCam, FlxCamera)) {
                         cam = cast reflectedCam;

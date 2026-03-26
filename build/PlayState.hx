@@ -102,7 +102,6 @@ class PlayState extends MusicBeatState
 	private var createdCharacters:Bool;
 	private var testSprite:FlxSprite;
 	private var warningSprState:WarningSubGroup;
-	private var debugText:FlxText;
 	private var curChar:String = '';
 	private var camMovementPos:FlxPoint;
 	public var showCountdownSprites:Bool = true;
@@ -580,14 +579,6 @@ class PlayState extends MusicBeatState
 		healthBarBG.screenCenter(X);
 		healthBarBG.scrollFactor.set();
 
-        #if debug
-		debugText = new FlxText(0, 0, FlxG.width, "Debug Pause State", 32);
-		debugText.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		debugText.borderSize = 3;
-		debugText.visible = false;
-		add(debugText);
-        #end
-
 		counterTxt = new FlxText(healthBarBG.x + healthBarBG.width - 190, healthBarBG.y + 32, 0, "", 20);
 		counterTxt.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		counterTxt.antialiasing = FlxG.save.data.showAntialiasing;
@@ -640,10 +631,6 @@ class PlayState extends MusicBeatState
 		iconP1.cameras = [camHUD];
 		iconP2.cameras = [camHUD];
 		counterTxt.cameras = [camHUD];
-
-        #if debug
-		debugText.cameras = [camHUD];
-        #end
 
 		if(SONG.modifiers != null)
 			eventInfo = SONG.modifiers.copy();
@@ -1026,6 +1013,15 @@ class PlayState extends MusicBeatState
 
 		if (!showCountdownSprites && !playCountdownSounds)
 		{
+			iconP1.setGraphicSize(Std.int(iconP1.width + 30));
+
+			if(gf != null) {
+				gf.dance();
+			}
+
+			dad.dance();
+			boyfriend.dance();
+
 			Conductor.songPosition = 0;
 			Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
 			startSong();
@@ -3419,8 +3415,10 @@ class PlayState extends MusicBeatState
 			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
 
-			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract) &&
-			(currentPlayer.customAnimation && (currentPlayer.animation.curAnim.name.startsWith("sing") || currentPlayer.dancing))) {
+				var currentAnim = currentPlayer.animation != null ? currentPlayer.animation.curAnim : null;
+
+				if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract) &&
+				(currentPlayer.customAnimation && ((currentAnim != null && currentAnim.name.startsWith("sing")) || currentPlayer.dancing))) {
 				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + currentPlayer.hasBePlayer;
 
 				events.whenNoteIsPressed(note, this);

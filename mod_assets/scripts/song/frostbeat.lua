@@ -1,3 +1,5 @@
+local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
+
 local beatSection = 0
 
 local curAnimName = ""
@@ -49,6 +51,7 @@ local function init()
     notDancing = false
     daddyIsHere = false
     daddyTrans = false
+    jtc_camera.reset()
 end
 
 local function playAnimation(spriteName, animName)
@@ -77,6 +80,7 @@ function generatedStage()
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
     addSongTrack("jtcVocals", "JTC_Voices", "player", 1, false, "t,joul")
+    jtc_camera.hideGameplayUntilStep(12)
 
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", -170, -35)
@@ -116,6 +120,8 @@ function generatedStage()
 end
 
 function onStepHit()
+    jtc_camera.onStepHit(curStep)
+
     if curStep == 606 then
         daddyTrans = true
     end
@@ -228,6 +234,8 @@ function onUpdate(elapsed)
 end
 
 function setupPunchHealth(amount)
+    local punchIcons = {}
+
     for i = 1, amount do
         local iconX = getSpriteX("healthBarBG") + getSpriteWidth("healthBarBG") + 50
         local iconY = getMidpointY("healthBarBG") - 50
@@ -245,5 +253,8 @@ function setupPunchHealth(amount)
         setSpriteToCamera("punchIcon" .. i, "camHUD")
         scaleSprite("punchIcon" .. i, 0.7, 0.7)
         addSpriteToStage("punchIcon" .. i)
+        table.insert(punchIcons, "punchIcon" .. i)
     end
+
+    jtc_camera.registerHiddenSprites(punchIcons)
 end
