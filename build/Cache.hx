@@ -18,6 +18,27 @@ class Cache {
     @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
     @:noCompletion private static var permanentAssets:Map<String, Bool> = new Map<String, Bool>();
 
+    static inline function shouldUseGPUCache(allowGPUCache:Bool):Bool {
+        return allowGPUCache
+            && SaveData.getData(SaveType.GPU_CACHE)
+            && FlxG.stage != null
+            && FlxG.stage.context3D != null;
+    }
+
+    static function createGpuBackedBitmap(bitmap:BitmapData):BitmapData {
+        var texture:RectangleTexture = FlxG.stage.context3D.createRectangleTexture(bitmap.width, bitmap.height, BGRA, true);
+        texture.uploadFromBitmapData(bitmap);
+
+        if(bitmap.image != null) {
+            bitmap.image.data = null;
+        }
+
+        bitmap.dispose();
+        bitmap.disposeImage();
+
+        return BitmapData.fromTexture(texture);
+    }
+
     static public function cacheListedFormat(path:String, allowGPUCache:Bool = true):Void {
         var extensionIndex:Int = path.lastIndexOf(".");
 
@@ -39,20 +60,18 @@ class Cache {
 
     static function cacheAssetDirectly(path:String, allowGPUCache:Bool = true):Void {
         if(getAssetDirectly(path) == null) {
-				var bitmap = Paths.loadBitmap(path);
+				var useGPUCache = shouldUseGPUCache(allowGPUCache);
+				var bitmap = Paths.loadBitmap(path, !useGPUCache);
 
                 if(bitmap == null) {
                     trace("Warning: could not locate asset - " + path);
                     return;
                 }
 
-				if(allowGPUCache && SaveData.getData(SaveType.GPU_CACHE)) {
-				    var texture:RectangleTexture = FlxG.stage.context3D.createRectangleTexture(bitmap.width, bitmap.height, BGRA, true);
-					texture.uploadFromBitmapData(bitmap);
-					bitmap.image.data = null;
-					bitmap.dispose();
-					bitmap.disposeImage();
-					bitmap = BitmapData.fromTexture(texture);
+				if(useGPUCache) {
+					// Avoid leaving a second CPU-side copy alive in the OpenFL asset cache.
+					OpenFlAssets.cache.removeBitmapData(path);
+					bitmap = createGpuBackedBitmap(bitmap);
 				}else {
 					// Keep CPU caching on a private bitmap copy so later atlas/frame mutations
 					// don't alias the original asset bitmap returned by OpenFL.
@@ -116,7 +135,17 @@ class Cache {
             return theseAssets.get(name);
         }
 
-        var graphics:FlxGraphic = FlxG.bitmap.add(BitmapData.fromBytes(bytes), false, name);
+        var bitmap:BitmapData = BitmapData.fromBytes(bytes);
+
+        if(bitmap == null) {
+            return null;
+        }
+
+        if(shouldUseGPUCache(true)) {
+            bitmap = createGpuBackedBitmap(bitmap);
+        }
+
+        var graphics:FlxGraphic = FlxG.bitmap.add(bitmap, false, name);
         graphics.persist = true;
         graphics.destroyOnNoUse = false;
 

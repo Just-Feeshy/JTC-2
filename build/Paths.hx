@@ -201,13 +201,13 @@ class Paths
 		return "";
 	}
 
-	static public function loadBitmap(path:String):BitmapData
+	static public function loadBitmap(path:String, useCache:Bool = true):BitmapData
 	{
 		if (path == null || path == "")
 			return null;
 
 		if (OpenFlAssets.exists(path, IMAGE))
-			return OpenFlAssets.getBitmapData(path);
+			return OpenFlAssets.getBitmapData(path, useCache);
 
 		#if sys
 		if (FileSystem.exists(path))

@@ -24,6 +24,16 @@ local introOpponentFaceAnchorY = 0.20
 local introOpponentFaceOffsetX = 6
 local introOpponentFaceOffsetY = -16
 local introOpponentFaceZoom = 1.95
+local introGirlfriendFaceAnchorX = 0.29
+local introGirlfriendFaceAnchorY = 0.24
+local introGirlfriendFaceOffsetX = 10
+local introGirlfriendFaceOffsetY = 60
+local introGirlfriendFaceZoom = 1.9
+local introBoyfriendFaceAnchorX = 0.29
+local introBoyfriendFaceAnchorY = 0.24
+local introBoyfriendFaceOffsetX = 10
+local introBoyfriendFaceOffsetY = 60
+local introBoyfriendFaceZoom = 1.9
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -94,24 +104,67 @@ local function getIntroOpponentFaceFocus()
         opponentY + (opponentHeight * introOpponentFaceAnchorY) + introOpponentFaceOffsetY
 end
 
+local function getIntroBoyfriendFaceFocus()
+    local boyfriendX = getSpriteX("boyfriend")
+    local boyfriendY = getSpriteY("boyfriend")
+    local boyfriendWidth = getSpriteWidth("boyfriend")
+    local boyfriendHeight = getSpriteHeight("boyfriend")
+
+    return boyfriendX + (boyfriendWidth * introBoyfriendFaceAnchorX) + introBoyfriendFaceOffsetX,
+        boyfriendY + (boyfriendHeight * introBoyfriendFaceAnchorY) + introBoyfriendFaceOffsetY
+end
+
+local function getIntroGirlfriendFaceFocus()
+    local girlfriendX = getSpriteX("boyfriend")
+    local girlfriendY = getSpriteY("boyfriend")
+    local girlfriendWidth = getSpriteWidth("boyfriend")
+    local girlfriendHeight = getSpriteHeight("boyfriend")
+
+    return girlfriendX + (girlfriendWidth * introGirlfriendFaceAnchorX) + introGirlfriendFaceOffsetX,
+        girlfriendY + (girlfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
+end
+
+local function getIntroCompensatedCarPosition(focusX, focusY, zoom)
+    local originalHalfWidth = windowWidth / (2 * baseFunkroadCameraZoom)
+    local originalHalfHeight = windowHeight / (2 * baseFunkroadCameraZoom)
+    local introHalfWidth = windowWidth / (2 * zoom)
+    local introHalfHeight = windowHeight / (2 * zoom)
+    local originalCarScreenX = baseFrostbiteCarX - baseFunkroadCameraX + originalHalfWidth
+    local originalCarScreenY = baseFrostbiteCarY - baseFunkroadCameraY + originalHalfHeight
+
+    return originalCarScreenX + focusX - introHalfWidth,
+        originalCarScreenY + focusY - introHalfHeight
+end
+
 local function applyIntroOpponentFaceShot()
     local focusX, focusY = getIntroOpponentFaceFocus()
     setGameplayCameraFocus(focusX, focusY, true)
     setGameplayCameraZoom(introOpponentFaceZoom, true, true)
 
-    local originalHalfWidth = windowWidth / (2 * baseFunkroadCameraZoom)
-    local originalHalfHeight = windowHeight / (2 * baseFunkroadCameraZoom)
-    local introHalfWidth = windowWidth / (2 * introOpponentFaceZoom)
-    local introHalfHeight = windowHeight / (2 * introOpponentFaceZoom)
-    local originalCarScreenX = baseFrostbiteCarX - baseFunkroadCameraX + originalHalfWidth
-    local originalCarScreenY = baseFrostbiteCarY - baseFunkroadCameraY + originalHalfHeight
-    local introCarX = originalCarScreenX + focusX - introHalfWidth
-    local introCarY = originalCarScreenY + focusY - introHalfHeight
+    local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introOpponentFaceZoom)
 
     setSpritePosition("frostbiteCAR", introCarX, introCarY)
 end
 
-local function clearIntroOpponentFaceShot()
+local function applyIntroGirfriendFaceShot()
+    local focusX, focusY = getIntroBoyfriendFaceFocus()
+    setGameplayCameraFocus(focusX, focusY, true)
+    setGameplayCameraZoom(introGirlfriendFaceZoom, true, true)
+
+    local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introGirlfriendFaceZoom)
+    setSpritePosition("frostbiteCAR", introCarX, introCarY)
+end
+
+local function applyIntroBoyfriendFaceShot()
+    local focusX, focusY = getIntroBoyfriendFaceFocus()
+    setGameplayCameraFocus(focusX, focusY, true)
+    setGameplayCameraZoom(introBoyfriendFaceZoom, true, true)
+
+    local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introBoyfriendFaceZoom)
+    setSpritePosition("frostbiteCAR", introCarX, introCarY)
+end
+
+local function clearIntroCameraShot()
     clearGameplayCameraFocus(true)
     clearGameplayCameraZoom(true)
     setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
@@ -167,8 +220,16 @@ function onStepHit()
     jtc_camera.onStepHit(curStep)
 
     if curStep == 18 then
-        clearIntroOpponentFaceShot()
+        clearIntroCameraShot()
     end
+
+    if curStep == 24 then
+        applyIntroGirfriendFaceShot()
+    end
+
+    --if curStep == 24 then
+    --    applyIntroBoyfriendFaceShot()
+    --end
 
     if curStep == 606 then
         daddyTrans = true
