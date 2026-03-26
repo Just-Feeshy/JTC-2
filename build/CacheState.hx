@@ -36,9 +36,13 @@ class CacheState extends HelperStates {
         loadingScene = new LoadingScene();
         add(loadingScene);
 
-		Thread.create(() -> {
-			cacheStuff();
-		});
+		if(SaveData.getData(SaveType.GPU_CACHE)) {
+			cacheStuff(true);
+		}else {
+			Thread.create(() -> {
+				cacheStuff(false);
+			});
+		}
 
         super.create();
     }
@@ -77,7 +81,7 @@ class CacheState extends HelperStates {
         return candidates.length > 0 ? candidates[0] : "";
     }
 
-    static function cacheAssetEntry(entry:Dynamic):Void {
+    static function cacheAssetEntry(entry:Dynamic, allowGPUCache:Bool):Void {
         if(entry == null) {
             return;
         }
@@ -107,10 +111,10 @@ class CacheState extends HelperStates {
             return;
         }
 
-        Cache.cacheAsset(key, library, false);
+        Cache.cacheAsset(key, library, allowGPUCache);
     }
 
-    function cacheStuff():Void {
+    function cacheStuff(allowGPUCache:Bool):Void {
         Cache.clear();
 
         var cacheList:Array<Dynamic> = [];
@@ -125,9 +129,10 @@ class CacheState extends HelperStates {
             cacheList = cast Json.parse(Paths.readText(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")));
 
             for(i in 0...cacheList.length) {
-                // Cache from worker thread without creating Context3D textures.
                 // Entries may optionally use "library:key" for non-mod assets.
-                cacheAssetEntry(cacheList[i]);
+                // When GPU cache is enabled, this path runs on the main thread so
+                // textures can be uploaded immediately instead of keeping CPU bitmaps.
+                cacheAssetEntry(cacheList[i], allowGPUCache);
                 loadingScene.setCacheValue(i / cacheList.length);
             }
 
@@ -146,8 +151,14 @@ class CacheState extends HelperStates {
 		return parser.fromJson(Paths.readText(Paths.getPath('data/${songCacheDirectory}/$name.json', TEXT, "")), '${name}.json');
     }
 
-    static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
+	static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
         Paths.setCurrentLevel("week" + PlayState.storyWeek);
+
+		if(Std.isOfType(FlxG.state, FreeplayState)) {
+			FlxG.signals.preStateSwitch.addOnce(function() {
+				Cache.clearFreeplay();
+			});
+		}
 
 		if(Std.isOfType(FlxG.state, PlayState)) {
 			cast(FlxG.state, PlayState).prepareForStateSwitch();
@@ -180,6 +191,12 @@ class CacheState extends HelperStates {
 
     static public function loadAndSwitchStateF(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
         Paths.setCurrentLevel("week" + PlayState.storyWeek);
+
+		if(Std.isOfType(FlxG.state, FreeplayState)) {
+			FlxG.signals.preStateSwitch.addOnce(function() {
+				Cache.clearFreeplay();
+			});
+		}
 
 		if(Std.isOfType(FlxG.state, PlayState)) {
 			cast(FlxG.state, PlayState).prepareForStateSwitch();

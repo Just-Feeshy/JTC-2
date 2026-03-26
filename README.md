@@ -91,3 +91,13 @@ That is the recommended way to test changes locally on macOS, since the mod asse
 - Main dependency versions are pinned in [hmm.json](/hmm.json).
 - The project classpaths live in [Project.xml](/Project.xml), including `build`, `mod_source`, and `linc_luajit`.
 - If you update submodules or dependency versions, rerun `haxelib run hmm install` before rebuilding.
+- Asset handling now matches upstream Funkin outside ASTC:
+  - native builds package `.ogg` audio
+  - web builds package `.mp3` audio
+  - hidden files, hashes, and Markdown files are excluded from asset libraries
+- To generate web-side `.mp3` mirrors from existing `.ogg` files, run:
+
+```sh
+cd art
+./convertOGGToMP3.sh
+```

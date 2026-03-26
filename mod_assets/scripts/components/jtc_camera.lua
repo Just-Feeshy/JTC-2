@@ -100,7 +100,7 @@ local function moveStrumsOffscreenTop()
         local defaultPos = jtc_camera.strumDefaults[id + 1]
 
         if defaultPos ~= nil then
-            setNoteStrumPos(id, defaultPos.x, -getNotePosY(id))
+            setNoteStrumPos(id, defaultPos.x, -getNotePosY(id) / 2.0)
             setNoteAlpha(id, 0)
         end
     end

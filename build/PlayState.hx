@@ -90,6 +90,8 @@ typedef SongTrackInfo =
 
 class PlayState extends MusicBeatState
 {
+	private static inline var GAMEPLAY_CAMERA_FOLLOW_LERP_60FPS:Float = 0.08;
+
 	//Cache Stuff
 	var precacheList:Map<String, String> = new Map<String, String>();
 
@@ -117,6 +119,11 @@ class PlayState extends MusicBeatState
 
 	public var healthTween:FlxTween;
 	public var prevHealth:Float = 0;
+
+	inline function getGameplayCameraFollowLerp():Float
+	{
+		return GAMEPLAY_CAMERA_FOLLOW_LERP_60FPS * 60 / FlxG.updateFramerate;
+	}
 
 	public var opponentAltAnim:String = "";
 	public var playerAltAnim:String = "";
@@ -559,7 +566,7 @@ class PlayState extends MusicBeatState
 
 		add(camFollow);
 
-		FlxG.camera.follow(camFollow, LOCKON, 0.04);
+		FlxG.camera.follow(camFollow, LOCKON, getGameplayCameraFollowLerp());
 		// FlxG.camera.setScrollBounds(0, FlxG.width, 0, FlxG.height);
 		FlxG.camera.zoom = defaultCamZoom;
 		vSliceDirectZoomValue = defaultCamZoom;
@@ -618,6 +625,8 @@ class PlayState extends MusicBeatState
 			updateLuaVars();
 		}
 		#end
+
+		Cache.releaseSongCacheImages(SONG.song);
 
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
@@ -1970,6 +1979,8 @@ class PlayState extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
+		FlxG.camera.followLerp = getGameplayCameraFollowLerp();
+
 		#if !debug
 		perfectMode = false;
 		#end

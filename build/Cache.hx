@@ -1,22 +1,32 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
 import openfl.display.BitmapData;
-import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
 import openfl.utils.ByteArray;
-import openfl.system.System;
-import openfl.display3D.textures.RectangleTexture;
 import openfl.utils.Assets as OpenFlAssets;
 import lime.utils.Assets;
+import haxe.Json;
 
 import SaveData.SaveType;
+
+using StringTools;
 
 //Basically a class like Path
 class Cache {
     @:noCompletion private static var theseAssets:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
     @:noCompletion private static var permanentAssets:Map<String, Bool> = new Map<String, Bool>();
+
+    static inline function isFreeplayAssetKey(key:String):Bool {
+        if(key == null) {
+            return false;
+        }
+
+        var normalized = key.toLowerCase();
+        return normalized.indexOf("freeplay") >= 0 || normalized.indexOf("graffiti") >= 0;
+    }
 
     static inline function shouldUseGPUCache(allowGPUCache:Bool):Bool {
         return allowGPUCache
@@ -25,18 +35,18 @@ class Cache {
             && FlxG.stage.context3D != null;
     }
 
-    static function createGpuBackedBitmap(bitmap:BitmapData):BitmapData {
-        var texture:RectangleTexture = FlxG.stage.context3D.createRectangleTexture(bitmap.width, bitmap.height, BGRA, true);
-        texture.uploadFromBitmapData(bitmap);
-
-        if(bitmap.image != null) {
-            bitmap.image.data = null;
+    static function warmGraphicTexture(graphic:FlxGraphic):Void {
+        if(graphic == null || graphic.bitmap == null || FlxG.stage == null || FlxG.stage.context3D == null) {
+            return;
         }
 
-        bitmap.dispose();
-        bitmap.disposeImage();
-
-        return BitmapData.fromTexture(texture);
+        // Match upstream Funkin's approach: keep the bitmap readable,
+        // but force a GPU upload so gameplay doesn't stall on first draw.
+        var sprite:FlxSprite = new FlxSprite();
+        sprite.loadGraphic(graphic);
+        sprite.draw();
+        graphic.bitmap.getTexture(FlxG.stage.context3D);
+        sprite.destroy();
     }
 
     static public function cacheListedFormat(path:String, allowGPUCache:Bool = true):Void {
@@ -69,9 +79,9 @@ class Cache {
                 }
 
 				if(useGPUCache) {
-					// Avoid leaving a second CPU-side copy alive in the OpenFL asset cache.
+					// Avoid leaving a second CPU-side copy alive in the OpenFL asset cache,
+					// but keep the bitmap itself readable for atlas/frame math and color sampling.
 					OpenFlAssets.cache.removeBitmapData(path);
-					bitmap = createGpuBackedBitmap(bitmap);
 				}else {
 					// Keep CPU caching on a private bitmap copy so later atlas/frame mutations
 					// don't alias the original asset bitmap returned by OpenFL.
@@ -82,6 +92,10 @@ class Cache {
 				graphics.persist = true;
 				graphics.destroyOnNoUse = false;
 				theseAssets.set(path, graphics);
+
+				if(useGPUCache) {
+					warmGraphicTexture(graphics);
+				}
         }else if(!Paths.assetExists(path, IMAGE)) {
             trace("Warning: could not locate asset - " + path);
         }
@@ -141,10 +155,6 @@ class Cache {
             return null;
         }
 
-        if(shouldUseGPUCache(true)) {
-            bitmap = createGpuBackedBitmap(bitmap);
-        }
-
         var graphics:FlxGraphic = FlxG.bitmap.add(bitmap, false, name);
         graphics.persist = true;
         graphics.destroyOnNoUse = false;
@@ -152,6 +162,10 @@ class Cache {
         theseAssets.set(name, graphics);
         if(permanent) {
             permanentAssets.set(name, true);
+        }
+
+        if(shouldUseGPUCache(true)) {
+            warmGraphicTexture(graphics);
         }
 
         return graphics;
@@ -209,14 +223,150 @@ class Cache {
 		}
 
         clearSongSoundCache();
+        collectNow();
+    }
 
-        System.gc();
+    static public function collectNow():Void {
+        MemoryUtil.collect(true);
+        MemoryUtil.compact();
     }
 
     static public function clearSongSoundCache():Void {
         for(prefix in ["songs", "assets/music/", "shared:assets/shared/music/", "preload:assets/preload/music/"]) {
             OpenFlAssets.cache.clear(prefix);
         }
+    }
+
+    static public function clearFreeplay():Void {
+        var keysToRemove:Array<String> = [];
+
+        @:privateAccess
+        for(key in FlxG.bitmap._cache.keys()) {
+            if(!isFreeplayAssetKey(key)) {
+                continue;
+            }
+
+            if(permanentAssets.exists(key)) {
+                continue;
+            }
+
+            keysToRemove.push(key);
+        }
+
+        @:privateAccess
+        for(key in keysToRemove) {
+            var graphic:FlxGraphic = FlxG.bitmap.get(key);
+
+            if(graphic != null) {
+                graphic.persist = false;
+                graphic.destroyOnNoUse = true;
+                graphic.destroy();
+            }
+
+            FlxG.bitmap.removeKey(key);
+            OpenFlAssets.cache.clear(key);
+            theseAssets.remove(key);
+        }
+
+        collectNow();
+    }
+
+    static function resolveImagePathFromCacheEntry(entry:Dynamic):String {
+        if(entry == null) {
+            return null;
+        }
+
+        var key:String = null;
+        var library:String = "";
+
+        if(Std.isOfType(entry, String)) {
+            var text:String = cast entry;
+            var separatorIndex:Int = text.indexOf(":");
+
+            if(separatorIndex > 0) {
+                library = text.substr(0, separatorIndex).trim();
+                key = text.substr(separatorIndex + 1).trim();
+            }else {
+                key = text.trim();
+            }
+        }else {
+            key = Std.string(Reflect.field(entry, "key")).trim();
+
+            if(Reflect.hasField(entry, "library")) {
+                library = Std.string(Reflect.field(entry, "library")).trim();
+            }
+        }
+
+        if(key == null || key == "") {
+            return null;
+        }
+
+        var path:String = Paths.getPath('images/$key.png', IMAGE, library);
+        return Paths.assetExists(path, IMAGE) ? path : null;
+    }
+
+    static function releaseCachedImagePath(path:String):Void {
+        if(!shouldUseGPUCache(true) || path == null) {
+            return;
+        }
+
+        var graphic:FlxGraphic = theseAssets.get(path);
+        if(graphic == null || graphic.bitmap == null || graphic.bitmap.image == null) {
+            return;
+        }
+
+        graphic.bitmap.getTexture(FlxG.stage.context3D);
+        graphic.bitmap.disposeImage();
+        OpenFlAssets.cache.removeBitmapData(path);
+    }
+
+    static function getSongCacheDirectory(song:String):String {
+        var candidates:Array<String> = [];
+
+        inline function pushCandidate(name:String):Void {
+            if(name == null) {
+                return;
+            }
+
+            var value:String = name.toLowerCase().trim();
+            if(value != "" && !candidates.contains(value)) {
+                candidates.push(value);
+            }
+        }
+
+        pushCandidate(song);
+        pushCandidate(CoolUtil.readableSongDirectory(song));
+
+        for(candidate in candidates) {
+            if(Paths.assetExists(Paths.getPath('data/${candidate}/cache.json', TEXT, ""), TEXT)) {
+                return candidate;
+            }
+        }
+
+        return candidates.length > 0 ? candidates[0] : "";
+    }
+
+    static public function releaseSongCacheImages(song:String):Void {
+        if(song == null || song.trim() == "" || !shouldUseGPUCache(true)) {
+            return;
+        }
+
+        var songCacheDirectory:String = getSongCacheDirectory(song);
+        if(songCacheDirectory == "") {
+            return;
+        }
+
+        var cachePath:String = Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "");
+        if(!Paths.assetExists(cachePath, TEXT)) {
+            return;
+        }
+
+        var cacheList:Array<Dynamic> = cast Json.parse(Paths.readText(cachePath));
+        for(entry in cacheList) {
+            releaseCachedImagePath(resolveImagePathFromCacheEntry(entry));
+        }
+
+        collectNow();
     }
 
     static public function clearNoneCachedAssets() {

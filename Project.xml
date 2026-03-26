@@ -52,8 +52,8 @@
     <!-- Disable Deprecation Warnings -->
     <haxedef name="no-deprecation-warnings" />
 
-	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
-	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
+	<assets path="assets/preload" rename="assets" exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/preload" rename="assets" exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
 
 	<!-- <define name="PRELOAD_ALL" /> -->
 	<define name="PRELOAD_ALL" unless="web" />
@@ -84,31 +84,31 @@
 		<library name="week6"    preload="false" />
 	</section>
 
-	<assets path="assets/songs"    library="songs"    exclude="*.ogg" if="web"/>
-	<assets path="assets/songs"    library="songs"    exclude="*.mp3" unless="web"/>
-	<assets path="assets/shared"   library="shared"   exclude="*.ogg" if="web"/>
-	<assets path="assets/shared"   library="shared"   exclude="*.mp3" unless="web"/>
-	<assets path="assets/tutorial" library="tutorial" exclude="*.ogg" if="web"/>
-	<assets path="assets/tutorial" library="tutorial" exclude="*.mp3" unless="web"/>
-	<assets path="assets/week1"    library="week1"    exclude="*.ogg" if="web"/>
-	<assets path="assets/week1"    library="week1"    exclude="*.mp3" unless="web"/>
-	<assets path="assets/week2"    library="week2"    exclude="*.ogg" if="web"/>
-	<assets path="assets/week2"    library="week2"    exclude="*.mp3" unless="web"/>
-	<assets path="assets/week3"    library="week3"    exclude="*.ogg" if="web"/>
-	<assets path="assets/week3"    library="week3"    exclude="*.mp3" unless="web"/>
-	<assets path="assets/week4"    library="week4"    exclude="*.ogg" if="web"/>
-	<assets path="assets/week4"    library="week4"    exclude="*.mp3" unless="web"/>
-	<assets path="assets/week5"    library="week5"    exclude="*.ogg" if="web"/>
-	<assets path="assets/week5"    library="week5"    exclude="*.mp3" unless="web"/>
-	<assets path="assets/week6"    library="week6"    exclude="*.ogg" if="web"/>
-	<assets path="assets/week6"    library="week6"    exclude="*.mp3" unless="web"/>
+	<assets path="assets/songs"    library="songs"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/songs"    library="songs"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/shared"   library="shared"   exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/shared"   library="shared"   exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/tutorial" library="tutorial" exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/tutorial" library="tutorial" exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/week1"    library="week1"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/week1"    library="week1"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/week2"    library="week2"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/week2"    library="week2"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/week3"    library="week3"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/week3"    library="week3"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/week4"    library="week4"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/week4"    library="week4"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/week5"    library="week5"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/week5"    library="week5"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
+	<assets path="assets/week6"    library="week6"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="assets/week6"    library="week6"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
 
 	<assets path='config' embed='false' />
 	<assets path='mod_assets' embed='false'/>
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
 
-	<assets path="mod_assets/songs"    library="songs"    exclude="*.ogg" if="web"/>
-	<assets path="mod_assets/songs"    library="songs"    exclude="*.mp3" unless="web"/>
+	<assets path="mod_assets/songs"    library="songs"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
+	<assets path="mod_assets/songs"    library="songs"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
 
 	<!-- <template path='mods' /> -->
 
