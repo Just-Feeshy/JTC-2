@@ -42,6 +42,9 @@ import flixel.tweens.FlxTween;
 import feshixl.math.FeshMath;
 import openfl.display.FPS;
 import openfl.Lib;
+#if sys
+import sys.FileSystem;
+#end
 
 import example_code.DefaultStage;
 
@@ -126,6 +129,7 @@ class ChartingState extends MusicBeatState
 	var tempBpm:Int = 0;
 	var vocals:FlxSound;
 	var opponentVocals:FlxSound;
+	var extraVocals:Array<FlxSound> = [];
 
 	var leftIcon:HealthIcon;
 	var rightIcon:HealthIcon;
@@ -876,18 +880,18 @@ class ChartingState extends MusicBeatState
 			updateGrid();
 		};
 
-		var metronome_check:FlxUICheckBox = new FlxUICheckBox(145, check_fifth.y, null, null, "Metronome", 70);
-		metronome_check.checked = false;
-		metronome_check.callback = function() {
-			metronome = metronome_check.checked;
-		}
-
 		var check_mute_inst_game:FlxUICheckBox = new FlxUICheckBox(10, 145+(check_mute_inst.height*1.5), null, null, "Mute Instrumental (in game)", 100);
 		check_mute_inst_game.checked = PlayState.muteInst;
 		check_mute_inst_game.callback = function()
 		{
 			muteInGame = check_mute_inst_game.checked;
 		};
+
+		var metronome_check:FlxUICheckBox = new FlxUICheckBox(check_mute_inst_game.x + check_mute_inst_game.width + 10, check_fifth.y, null, null, "Metronome", 70);
+		metronome_check.checked = false;
+		metronome_check.callback = function() {
+			metronome = metronome_check.checked;
+		}
 
 		var check_hit_right:FlxUICheckBox = new FlxUICheckBox(check_mute_inst_game.x + check_mute_inst_game.width + 10, 145, null, null, "OSU Hit Sounds (Right)", 100);
 		check_hit_right.checked = false;
@@ -1269,6 +1273,7 @@ class ChartingState extends MusicBeatState
 	{
 		destroyVocals();
 		opponentVocals = null;
+		extraVocals = [];
 
 		if (_song.needsVoices)
 		{
@@ -1301,15 +1306,68 @@ class ChartingState extends MusicBeatState
 		{
 			FlxG.sound.list.add(opponentVocals);
 		}
+
+		for (extraVoiceFile in discoverExtraVoiceFiles(song))
+		{
+			var extraTrack = new FlxSound().loadEmbedded(Paths.songSound(song, extraVoiceFile));
+			extraVocals.push(extraTrack);
+			FlxG.sound.list.add(extraTrack);
+		}
+	}
+
+	private function discoverExtraVoiceFiles(song:String):Array<String>
+	{
+		var results:Array<String> = [];
+
+		#if sys
+		var normalizedSong = song.toLowerCase();
+		var candidateDirectories:Array<String> = [
+			Paths.getCoreAssets() + 'mod_assets/songs/$normalizedSong',
+			'mod_assets/songs/$normalizedSong',
+			Paths.getCoreAssets() + 'funkin_assets/songs/$normalizedSong',
+			'funkin_assets/songs/$normalizedSong'
+		];
+
+		for (directory in candidateDirectories)
+		{
+			if (!FileSystem.exists(directory) || !FileSystem.isDirectory(directory))
+				continue;
+
+			for (entry in FileSystem.readDirectory(directory))
+			{
+				var normalizedEntry = entry.toLowerCase();
+				var extension = '.${Paths.SOUND_EXT}';
+
+				if (!normalizedEntry.endsWith(extension))
+					continue;
+
+				var fileName = entry.substr(0, entry.length - extension.length);
+				if (!fileName.endsWith("_Voices"))
+					continue;
+
+				if (fileName == "1_Voices" || fileName == "2_Voices" || fileName == "Voices")
+					continue;
+
+				if (!results.contains(fileName) && Paths.songSoundExists(song, fileName))
+					results.push(fileName);
+			}
+		}
+		#end
+
+		results.sort(Reflect.compare);
+		return results;
 	}
 
 	private function destroyVocals():Void
 	{
 		destroyVocalTrack(vocals);
 		destroyVocalTrack(opponentVocals);
+		for (track in extraVocals)
+			destroyVocalTrack(track);
 
 		vocals = null;
 		opponentVocals = null;
+		extraVocals = [];
 	}
 
 	private function destroyVocalTrack(track:FlxSound):Void
@@ -1329,6 +1387,9 @@ class ChartingState extends MusicBeatState
 
 		if (opponentVocals != null)
 			opponentVocals.pause();
+
+		for (track in extraVocals)
+			track.pause();
 	}
 
 	private inline function playVocals():Void
@@ -1338,6 +1399,9 @@ class ChartingState extends MusicBeatState
 
 		if (opponentVocals != null)
 			opponentVocals.play();
+
+		for (track in extraVocals)
+			track.play();
 	}
 
 	private inline function stopVocals():Void
@@ -1347,6 +1411,9 @@ class ChartingState extends MusicBeatState
 
 		if (opponentVocals != null)
 			opponentVocals.stop();
+
+		for (track in extraVocals)
+			track.stop();
 	}
 
 	private inline function setVocalsTime(time:Float):Void
@@ -1356,6 +1423,9 @@ class ChartingState extends MusicBeatState
 
 		if (opponentVocals != null)
 			opponentVocals.time = time;
+
+		for (track in extraVocals)
+			track.time = time;
 	}
 
 	private function applyIconCharacter(icon:HealthIcon, character:String, isPlayer:Bool):Void

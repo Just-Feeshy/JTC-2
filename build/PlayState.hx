@@ -76,6 +76,18 @@ typedef QueuedLaneInput =
 	var songTime:Float;
 }
 
+typedef SongTrackInfo =
+{
+	var tag:String;
+	var fileName:String;
+	var sound:FlxSound;
+	var side:String;
+	var baseVolume:Float;
+	var stateVolume:Float;
+	var looped:Bool;
+	var tagFilters:Array<String>;
+}
+
 class PlayState extends MusicBeatState
 {
 	//Cache Stuff
@@ -115,6 +127,14 @@ class PlayState extends MusicBeatState
 
 	public var eventCounter:Int = 0;
 	public var prevEventStep:Int = 0;
+	private static inline var SONG_TRACK_SIDE_PLAYER:String = "player";
+	private static inline var SONG_TRACK_SIDE_OPPONENT:String = "opponent";
+	private static inline var SONG_TRACK_SIDE_EXTRA:String = "extra";
+	private static inline var SONG_TRACK_SIDE_SHARED:String = "shared";
+	private static inline var PLAYER_VOCALS_TRACK_TAG:String = "__player_vocals";
+	private static inline var OPPONENT_VOCALS_TRACK_TAG:String = "__opponent_vocals";
+	private static inline var SHARED_VOCALS_TRACK_TAG:String = "__shared_vocals";
+	private static inline var SONG_TRACK_DESYNC_TOLERANCE:Float = 20;
 
 	//Modifier Values
 	public var singDrainValue:Float = 1;
@@ -189,6 +209,8 @@ class PlayState extends MusicBeatState
 
 	private var vocals:FlxSound;
 	private var opponentVocals:FlxSound;
+	private var syncedSongTracks:Array<SongTrackInfo> = [];
+	private var syncedSongTrackMap:Map<String, SongTrackInfo> = new Map<String, SongTrackInfo>();
 
 	public var dad:Character;
 	public var gf:Character;
@@ -1104,8 +1126,206 @@ class PlayState extends MusicBeatState
 	var lastReportedPlayheadPosition:Int = 0;
 	var songTime:Float = 0;
 
+	private function parseSongTrackSide(side:String):String
+	{
+		if (side == null)
+			return SONG_TRACK_SIDE_EXTRA;
+
+		var normalizedSide = side.trim().toLowerCase();
+
+		return switch (normalizedSide)
+		{
+			case SONG_TRACK_SIDE_PLAYER, SONG_TRACK_SIDE_OPPONENT, SONG_TRACK_SIDE_SHARED:
+				normalizedSide;
+			default:
+				SONG_TRACK_SIDE_EXTRA;
+		}
+	}
+
+	private function normalizeSongTrackFilters(filterString:String):Array<String>
+	{
+		var filters:Array<String> = [];
+
+		if (filterString == null)
+			return filters;
+
+		for (entry in filterString.split(","))
+		{
+			var normalizedEntry = entry.trim().toLowerCase();
+
+			if (normalizedEntry != "")
+				filters.push(normalizedEntry);
+		}
+
+		return filters;
+	}
+
+	private function sanitizeSongTrackFilters(filters:Array<String>):Array<String>
+	{
+		var normalizedFilters:Array<String> = [];
+
+		if (filters == null)
+			return normalizedFilters;
+
+		for (entry in filters)
+		{
+			if (entry == null)
+				continue;
+
+			var normalizedEntry = entry.trim().toLowerCase();
+
+			if (normalizedEntry != "")
+				normalizedFilters.push(normalizedEntry);
+		}
+
+		return normalizedFilters;
+	}
+
+	private inline function isSongTrackInSoundList(sound:FlxSound):Bool
+	{
+		return sound != null
+			&& FlxG.sound.list != null
+			&& FlxG.sound.list.members != null
+			&& FlxG.sound.list.members.contains(sound);
+	}
+
+	private inline function applySongTrackVolume(track:SongTrackInfo):Void
+	{
+		if (track != null && track.sound != null)
+			track.sound.volume = track.baseVolume * track.stateVolume;
+	}
+
+	private function songTrackMatchesTag(track:SongTrackInfo, noteTag:String):Bool
+	{
+		if (track == null || track.tagFilters == null || track.tagFilters.length == 0)
+			return true;
+
+		if (noteTag == null)
+			return false;
+
+		return track.tagFilters.contains(noteTag.trim().toLowerCase());
+	}
+
+	private function registerSongTrack(tag:String, fileName:String, sound:FlxSound, side:String, baseVolume:Float = 1,
+		looped:Bool = false, ?tagFilters:Array<String>):SongTrackInfo
+	{
+		if (tag == null || tag.trim() == "" || sound == null)
+			return null;
+
+		var normalizedTag = tag.trim();
+
+		if (syncedSongTrackMap.exists(normalizedTag))
+			destroySongTrack(normalizedTag);
+
+		var track:SongTrackInfo = {
+			tag: normalizedTag,
+			fileName: fileName,
+			sound: sound,
+			side: parseSongTrackSide(side),
+			baseVolume: baseVolume,
+			stateVolume: 1,
+			looped: looped,
+			tagFilters: sanitizeSongTrackFilters(tagFilters)
+		};
+
+		syncedSongTracks.push(track);
+		syncedSongTrackMap.set(track.tag, track);
+
+		if (!isSongTrackInSoundList(sound))
+			FlxG.sound.list.add(sound);
+
+		applySongTrackVolume(track);
+		return track;
+	}
+
+	private function destroySongTrack(tag:String):Void
+	{
+		if (tag == null || !syncedSongTrackMap.exists(tag))
+			return;
+
+		var track = syncedSongTrackMap.get(tag);
+		syncedSongTrackMap.remove(tag);
+		syncedSongTracks.remove(track);
+
+		if (track.sound != null)
+		{
+			track.sound.stop();
+
+			if (isSongTrackInSoundList(track.sound))
+				FlxG.sound.list.remove(track.sound, true);
+
+			track.sound.destroy();
+		}
+
+		if (vocals == track.sound)
+			vocals = new FlxSound();
+
+		if (opponentVocals == track.sound)
+			opponentVocals = null;
+	}
+
+	private function destroyAllSongTracks():Void
+	{
+		for (track in syncedSongTracks.copy())
+			destroySongTrack(track.tag);
+
+		syncedSongTracks = [];
+		syncedSongTrackMap = new Map<String, SongTrackInfo>();
+		vocals = new FlxSound();
+		opponentVocals = null;
+	}
+
+	private function playSongTrack(track:SongTrackInfo, ?startTime:Null<Float>):Void
+	{
+		if (track == null || track.sound == null)
+			return;
+
+		if (startTime != null)
+			track.sound.time = startTime;
+
+		track.sound.play(false, startTime != null ? startTime : track.sound.time);
+
+		applySongTrackVolume(track);
+	}
+
+	private function addSongTrack(tag:String, fileName:String, side:String = SONG_TRACK_SIDE_EXTRA, baseVolume:Float = 1,
+		looped:Bool = false, ?tagFilters:Array<String>):Bool
+	{
+		if (tag == null || tag.trim() == "" || fileName == null || fileName.trim() == "")
+			return false;
+
+		if (!Paths.songSoundExists(PlayState.SONG.song, fileName))
+			return false;
+
+		var sound = new FlxSound().loadEmbedded(Paths.songSound(PlayState.SONG.song, fileName), looped);
+		var track = registerSongTrack(tag, fileName, sound, side, baseVolume, looped, tagFilters);
+
+		if (track == null)
+			return false;
+
+		if (FlxG.sound.music != null && FlxG.sound.music.playing && !paused)
+		{
+			track.sound.time = FlxG.sound.music.time;
+			playSongTrack(track, FlxG.sound.music.time);
+		}
+
+		return true;
+	}
+
+	private function hasSongTrackDesync(baseTime:Float):Bool
+	{
+		for (track in syncedSongTracks)
+		{
+			if (track.sound != null && Math.abs(track.sound.time - baseTime) > SONG_TRACK_DESYNC_TOLERANCE)
+				return true;
+		}
+
+		return false;
+	}
+
 	private function loadSongVocals(song:String):Void
 	{
+		destroyAllSongTracks();
 		opponentVocals = null;
 
 		if (SONG.needsVoices)
@@ -1117,10 +1337,13 @@ class PlayState extends MusicBeatState
 			{
 				vocals = new FlxSound().loadEmbedded(Paths.songSound(song, "1_Voices"));
 				opponentVocals = new FlxSound().loadEmbedded(Paths.songSound(song, "2_Voices"));
+				registerSongTrack(PLAYER_VOCALS_TRACK_TAG, "1_Voices", vocals, SONG_TRACK_SIDE_PLAYER);
+				registerSongTrack(OPPONENT_VOCALS_TRACK_TAG, "2_Voices", opponentVocals, SONG_TRACK_SIDE_OPPONENT);
 			}
 			else if (hasSingleVocals)
 			{
 				vocals = new FlxSound().loadEmbedded(Paths.voices(song));
+				registerSongTrack(SHARED_VOCALS_TRACK_TAG, "Voices", vocals, SONG_TRACK_SIDE_SHARED);
 			}
 			else
 			{
@@ -1132,79 +1355,62 @@ class PlayState extends MusicBeatState
 		{
 			vocals = new FlxSound();
 		}
-
-		FlxG.sound.list.add(vocals);
-
-		if (opponentVocals != null)
-		{
-			FlxG.sound.list.add(opponentVocals);
-		}
 	}
 
 	private inline function pauseVocals():Void
 	{
-		vocals.pause();
-
-		if (opponentVocals != null)
-		{
-			opponentVocals.pause();
-		}
+		for (track in syncedSongTracks)
+			track.sound.pause();
 	}
 
-	private inline function playVocals():Void
+	private inline function playVocals(?startTime:Null<Float>):Void
 	{
-		vocals.play();
-
-		if (opponentVocals != null)
-		{
-			opponentVocals.play();
-		}
+		for (track in syncedSongTracks)
+			playSongTrack(track, startTime);
 	}
 
 	private inline function stopVocals():Void
 	{
-		vocals.stop();
-
-		if (opponentVocals != null)
-		{
-			opponentVocals.stop();
-		}
+		for (track in syncedSongTracks)
+			track.sound.stop();
 	}
 
 	private inline function setVocalsTime(time:Float):Void
 	{
-		vocals.time = time;
-
-		if (opponentVocals != null)
-		{
-			opponentVocals.time = time;
-		}
+		for (track in syncedSongTracks)
+			track.sound.time = time;
 	}
 
 	private inline function setAllVocalsVolume(volume:Float):Void
 	{
-		vocals.volume = volume;
-
-		if (opponentVocals != null)
+		for (track in syncedSongTracks)
 		{
-			opponentVocals.volume = volume;
+			track.stateVolume = volume;
+			applySongTrackVolume(track);
 		}
 	}
 
-	private inline function setPlayerVocalsVolume(volume:Float):Void
+	private inline function setPlayerVocalsVolume(volume:Float, ?noteTag:String):Void
 	{
-		vocals.volume = volume;
+		for (track in syncedSongTracks)
+		{
+			if ((track.side == SONG_TRACK_SIDE_PLAYER || track.side == SONG_TRACK_SIDE_SHARED) && songTrackMatchesTag(track, noteTag))
+			{
+				track.stateVolume = volume;
+				applySongTrackVolume(track);
+			}
+		}
 	}
 
-	private inline function setOpponentVocalsVolume(volume:Float):Void
+	private inline function setOpponentVocalsVolume(volume:Float, ?noteTag:String):Void
 	{
-		if (opponentVocals != null)
+		for (track in syncedSongTracks)
 		{
-			opponentVocals.volume = volume;
-		}
-		else
-		{
-			vocals.volume = volume;
+			if ((track.side == SONG_TRACK_SIDE_OPPONENT || track.side == SONG_TRACK_SIDE_SHARED) && songTrackMatchesTag(track, noteTag))
+			{
+				track.stateVolume = volume;
+				applySongTrackVolume(track);
+			}
 		}
 	}
 
@@ -1219,7 +1425,7 @@ class PlayState extends MusicBeatState
 			FlxG.sound.playMusic(Paths.inst(PlayState.SONG.song), 1, false);
 
 		FlxG.sound.music.onComplete = whenSongFinished.bind();
-		playVocals();
+		playVocals(FlxG.sound.music != null ? FlxG.sound.music.time : 0);
 
 		if(paused) {
 			FlxG.sound.music.pause();
@@ -1661,7 +1867,7 @@ class PlayState extends MusicBeatState
 		FlxG.sound.music.play();
 		setSongPosition(FlxG.sound.music.time);
 		setVocalsTime(FlxG.sound.music.time);
-		playVocals();
+		playVocals(FlxG.sound.music.time);
 	}
 
 	function setSongPosition(time:Float):Void {
@@ -2181,7 +2387,7 @@ class PlayState extends MusicBeatState
 								setHealth(health - daNote.missDamage());
 							}
 
-							setPlayerVocalsVolume(0);
+							setPlayerVocalsVolume(0, daNote.tag);
 						}
 
 						if(SONG.notes[Math.floor(curStep / 16)].bpm <= 130) {
@@ -2281,7 +2487,7 @@ class PlayState extends MusicBeatState
 		});
 
 		if (SONG.needsVoices)
-			setOpponentVocalsVolume(1);
+			setOpponentVocalsVolume(1, note.tag);
 
 		callLua("opponentNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
@@ -2489,10 +2695,10 @@ class PlayState extends MusicBeatState
 
 	var endingSong:Bool = false;
 
-	private function popUpScore(strumtime:Float, id:Int, abby:String, ?judgeSongPosition:Float):Void
+	private function popUpScore(strumtime:Float, id:Int, abby:String, ?judgeSongPosition:Float, ?noteTag:String):Void
 	{
 		var noteDiff:Float = Math.abs(strumtime - (judgeSongPosition == null ? Conductor.trackPosition : judgeSongPosition));
-		setPlayerVocalsVolume(1);
+		setPlayerVocalsVolume(1, noteTag);
 
 		var placement:String = Std.string(combo);
 
@@ -3168,7 +3374,7 @@ class PlayState extends MusicBeatState
 		{
 			if (!note.isSustainNote && !CustomNoteHandler.dontHitNotes.contains(note.noteAbstract))
 			{
-				popUpScore(note.getNoteTime(), note.noteData, note.noteAbstract, hitSongTime);
+				popUpScore(note.getNoteTime(), note.noteData, note.noteAbstract, hitSongTime, note.tag);
 				combo += 1;
 			}
 
@@ -3250,7 +3456,7 @@ class PlayState extends MusicBeatState
 				note.wasGoodHit = true;
 
 				if(SONG.needsVoices && !currentPlayer.stunned) {
-					setPlayerVocalsVolume(1);
+					setPlayerVocalsVolume(1, note.tag);
 				}
 
 				hits++;
@@ -3575,6 +3781,30 @@ class PlayState extends MusicBeatState
 		addCallback("callEvent", function(skill:String, value:String, value2:String) {
 			events.whenTriggered(skill, value, value2, this);
 			event_Extra(skill, value, value2);
+		});
+
+		addCallback("addSongTrack", function(tag:String, fileName:String, side:String = SONG_TRACK_SIDE_EXTRA, volume:Float = 1,
+			looped:Bool = false, tagFilterList:String = "") {
+			return addSongTrack(tag, fileName, side, volume, looped, normalizeSongTrackFilters(tagFilterList));
+		});
+
+		addCallback("removeSongTrack", function(tag:String) {
+			destroySongTrack(tag);
+		});
+
+		addCallback("hasSongTrack", function(tag:String) {
+			return syncedSongTrackMap.exists(tag);
+		});
+
+		addCallback("setSongTrackBaseVolume", function(tag:String, volume:Float) {
+			var track = syncedSongTrackMap.get(tag);
+
+			if (track == null)
+				return false;
+
+			track.baseVolume = volume;
+			applySongTrackVolume(track);
+			return true;
 		});
 
 		addCallback("instaKillPlayer", function() {
@@ -4151,7 +4381,9 @@ class PlayState extends MusicBeatState
 	{
 		super.stepHit();
 
-		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20) && !paused)
+		if (((FlxG.sound.music.time > Conductor.songPosition + SONG_TRACK_DESYNC_TOLERANCE
+			|| FlxG.sound.music.time < Conductor.songPosition - SONG_TRACK_DESYNC_TOLERANCE)
+			|| hasSongTrackDesync(FlxG.sound.music.time)) && !paused)
 		{
 			resyncVocals();
 		}
@@ -4343,6 +4575,7 @@ class PlayState extends MusicBeatState
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, getReleased);
 
 		prepareForStateSwitch();
+		destroyAllSongTracks();
 
 		super.destroy();
 

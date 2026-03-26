@@ -135,9 +135,11 @@ class FunkinTransitionState extends TransitionBuilder {
 		return -1;
 	}
 
-	function markStickerCoverage(graphic:FlxGraphic, stickerX:Float, stickerY:Float, stickerAngle:Float, coverage:Array<Bool>, gridWidth:Int, gridHeight:Int, cellSize:Int):Void {
+	function getStickerCoverageStats(graphic:FlxGraphic, stickerX:Float, stickerY:Float, stickerAngle:Float, coverage:Array<Bool>,
+		gridWidth:Int, gridHeight:Int, cellSize:Int, ?markCoverage:Bool = false):Int
+	{
 		if (graphic == null || graphic.bitmap == null) {
-			return;
+			return 0;
 		}
 
 		var bitmap = graphic.bitmap;
@@ -156,6 +158,7 @@ class FunkinTransitionState extends TransitionBuilder {
 		var endCellY = Std.int(Math.min(gridHeight - 1, Math.ceil((boundY + rotatedHeight) / cellSize)));
 		var inverseCos = Math.cos(-radians);
 		var inverseSin = Math.sin(-radians);
+		var uncoveredCellsCovered:Int = 0;
 
 		for (cellY in startCellY...endCellY + 1) {
 			for (cellX in startCellX...endCellX + 1) {
@@ -171,10 +174,126 @@ class FunkinTransitionState extends TransitionBuilder {
 				}
 
 				var alpha = (bitmap.getPixel32(Std.int(localX), Std.int(localY)) >> 24) & 0xFF;
-				if (alpha > 32) {
-					coverage[(cellY * gridWidth) + cellX] = true;
+				if (alpha <= 32) {
+					continue;
+				}
+
+				var coverageIndex = (cellY * gridWidth) + cellX;
+
+				if (!coverage[coverageIndex]) {
+					uncoveredCellsCovered++;
+
+					if (markCoverage) {
+						coverage[coverageIndex] = true;
+					}
 				}
 			}
+		}
+
+		return uncoveredCellsCovered;
+	}
+
+	function markStickerCoverage(graphic:FlxGraphic, stickerX:Float, stickerY:Float, stickerAngle:Float, coverage:Array<Bool>, gridWidth:Int, gridHeight:Int, cellSize:Int):Void {
+		getStickerCoverageStats(graphic, stickerX, stickerY, stickerAngle, coverage, gridWidth, gridHeight, cellSize, true);
+	}
+
+	function findBestStickerPlacement(uncoveredIndex:Int, coverage:Array<Bool>, gridWidth:Int, gridHeight:Int, cellSize:Int, candidateCount:Int):StickerTransitionSprite
+	{
+		var bestGraphic:FlxGraphic = null;
+		var bestCoverage:Int = -1;
+		var bestX:Float = 0;
+		var bestY:Float = 0;
+		var bestAngle:Float = 0;
+		var cellX = uncoveredIndex % gridWidth;
+		var cellY = Std.int(uncoveredIndex / gridWidth);
+		var targetX = (cellX * cellSize) + (cellSize * 0.5);
+		var targetY = (cellY * cellSize) + (cellSize * 0.5);
+		for (candidateIndex in 0...candidateCount) {
+			var candidateGraphic = getRandomStickerGraphic();
+			if (candidateGraphic == null || candidateGraphic.bitmap == null) {
+				continue;
+			}
+
+			var width = candidateGraphic.bitmap.width;
+			var height = candidateGraphic.bitmap.height;
+			var offsetRangeX = Math.max(cellSize * 0.5, width * 0.35);
+			var offsetRangeY = Math.max(cellSize * 0.5, height * 0.35);
+			var candidateAngle = FlxG.random.int(-60, 70);
+			var placementX = targetX - (width * 0.5);
+			var placementY = targetY - (height * 0.5);
+
+			if (candidateIndex > 0) {
+				placementX += FlxG.random.float(-offsetRangeX, offsetRangeX);
+				placementY += FlxG.random.float(-offsetRangeY, offsetRangeY);
+			}
+
+			placementX = FlxMath.bound(placementX, -width * 0.45, FlxG.width - (width * 0.55));
+			placementY = FlxMath.bound(placementY, -height * 0.45, FlxG.height - (height * 0.55));
+			var candidateCoverage = getStickerCoverageStats(candidateGraphic, placementX, placementY, candidateAngle, coverage,
+				gridWidth, gridHeight, cellSize, false);
+
+			if (candidateCoverage > bestCoverage) {
+				bestGraphic = candidateGraphic;
+				bestCoverage = candidateCoverage;
+				bestX = placementX;
+				bestY = placementY;
+				bestAngle = candidateAngle;
+			}
+		}
+
+		if (bestGraphic == null || bestCoverage <= 0) {
+			return null;
+		}
+
+		var bestSticker = createStickerSprite(bestGraphic);
+		if (bestSticker == null) {
+			return null;
+		}
+
+		bestSticker.visible = false;
+		bestSticker.x = bestX;
+		bestSticker.y = bestY;
+		bestSticker.angle = bestAngle;
+		markStickerCoverage(bestGraphic, bestSticker.x, bestSticker.y, bestSticker.angle, coverage, gridWidth, gridHeight, cellSize);
+		return bestSticker;
+	}
+
+	function rebuildCoverageFromCurrentStickers(coverage:Array<Bool>, gridWidth:Int, gridHeight:Int, cellSize:Int):Void
+	{
+		if (grpStickers == null || grpStickers.members == null) {
+			return;
+		}
+
+		for (sticker in grpStickers.members) {
+			if (sticker == null || sticker.sourceGraphic == null) {
+				continue;
+			}
+
+			markStickerCoverage(sticker.sourceGraphic, sticker.x, sticker.y, sticker.angle, coverage, gridWidth, gridHeight, cellSize);
+		}
+	}
+
+	function runCoveragePass(cellSize:Int, candidateCount:Int, maxNewStickers:Int):Void
+	{
+		var coverageGridWidth = Std.int(Math.ceil(FlxG.width / cellSize)) + 1;
+		var coverageGridHeight = Std.int(Math.ceil(FlxG.height / cellSize)) + 1;
+		var coverage:Array<Bool> = [for (_ in 0...(coverageGridWidth * coverageGridHeight)) false];
+		rebuildCoverageFromCurrentStickers(coverage, coverageGridWidth, coverageGridHeight, cellSize);
+
+		var addedStickers = 0;
+		while (addedStickers < maxNewStickers) {
+			var uncoveredIndex = findFirstUncoveredCell(coverage);
+			if (uncoveredIndex == -1) {
+				break;
+			}
+
+			var sticker = findBestStickerPlacement(uncoveredIndex, coverage, coverageGridWidth, coverageGridHeight, cellSize, candidateCount);
+			if (sticker == null) {
+				break;
+			}
+
+			grpStickers.add(sticker);
+			addedStickers++;
 		}
 	}
 
@@ -263,42 +382,18 @@ class FunkinTransitionState extends TransitionBuilder {
 		}
 
 		var minStickerSize = getMinimumStickerSize();
-		var coverageCellSize = Std.int(Math.max(12, Math.min(minStickerSize.width, minStickerSize.height) * 0.18));
-		var coverageGridWidth = Std.int(Math.ceil(FlxG.width / coverageCellSize)) + 1;
-		var coverageGridHeight = Std.int(Math.ceil(FlxG.height / coverageCellSize)) + 1;
-		var coverage:Array<Bool> = [for (_ in 0...(coverageGridWidth * coverageGridHeight)) false];
-		var attempts = 0;
-		var maxAttempts = coverage.length * 4;
+		var smallestStickerDimension = Math.min(minStickerSize.width, minStickerSize.height);
+		var estimatedStickerCoverage = Math.max(1, minStickerSize.width * minStickerSize.height * 0.18);
+		var estimatedStickerCount = Std.int(Math.ceil((FlxG.width * FlxG.height) / estimatedStickerCoverage));
+		var broadCellSize = Std.int(Math.max(10, smallestStickerDimension * 0.18));
+		var mediumCellSize = Std.int(Math.max(4, broadCellSize * 0.5));
+		var fineCellSize = Std.int(Math.max(2, mediumCellSize * 0.5));
 
-		while (attempts < maxAttempts) {
-			var uncoveredIndex = findFirstUncoveredCell(coverage);
-			if (uncoveredIndex == -1) {
-				break;
-			}
+		runCoveragePass(broadCellSize, 18, Std.int(Math.max(64, estimatedStickerCount)));
+		runCoveragePass(mediumCellSize, 28, Std.int(Math.max(48, estimatedStickerCount * 0.6)));
 
-			var stickerGraphic = getRandomStickerGraphic();
-			if (stickerGraphic == null || stickerGraphic.bitmap == null) {
-				break;
-			}
-
-			var sticker = createStickerSprite(stickerGraphic);
-			if (sticker == null) {
-				break;
-			}
-
-			var cellX = uncoveredIndex % coverageGridWidth;
-			var cellY = Std.int(uncoveredIndex / coverageGridWidth);
-			var targetX = (cellX * coverageCellSize) + (coverageCellSize * 0.5);
-			var targetY = (cellY * coverageCellSize) + (coverageCellSize * 0.5);
-
-			sticker.visible = false;
-			sticker.x = targetX - (sticker.frameWidth * 0.5);
-			sticker.y = targetY - (sticker.frameHeight * 0.5);
-			sticker.angle = FlxG.random.int(-60, 70);
-			grpStickers.add(sticker);
-
-			markStickerCoverage(stickerGraphic, sticker.x, sticker.y, sticker.angle, coverage, coverageGridWidth, coverageGridHeight, coverageCellSize);
-			attempts++;
+		if (fineCellSize < mediumCellSize) {
+			runCoveragePass(fineCellSize, 40, Std.int(Math.max(32, estimatedStickerCount * 0.4)));
 		}
 
 		FlxG.random.shuffle(grpStickers.members);
@@ -386,9 +481,11 @@ class FunkinTransitionState extends TransitionBuilder {
 
 class StickerTransitionSprite extends FlxSprite {
 	public var timing:Float = 0;
+	public var sourceGraphic:FlxGraphic;
 
 	public function new(x:Float, y:Float, graphic:FlxGraphic) {
 		super(x, y);
+		sourceGraphic = graphic;
 		loadGraphic(graphic);
 		updateHitbox();
 		scrollFactor.set();
