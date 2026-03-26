@@ -266,9 +266,7 @@ local function updateIntroWarmup()
         applyIntroOpponentFaceShot()
     end
 
-    if finishGPUCommands ~= nil then
-        finishGPUCommands()
-    end
+    finishGPUCommands()
 
     introWarmupIndex = introWarmupIndex + 1
 
