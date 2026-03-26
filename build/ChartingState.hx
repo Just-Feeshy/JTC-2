@@ -2744,6 +2744,7 @@ class ChartingState extends MusicBeatState
 	override function destroy():Void
 	{
 		destroyVocals();
+		Cache.clearSongSoundCache();
 		super.destroy();
 	}
 

@@ -41,6 +41,7 @@ local introBoyfriendFaceAnchorY = 0.48
 local introBoyfriendFaceOffsetX = 10
 local introBoyfriendFaceOffsetY = 310
 local introBoyfriendFaceZoom = 2.15
+local introBeginStep = 18
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -252,7 +253,7 @@ local function ensureIntroWarmupCover()
 end
 
 local function updateIntroWarmup()
-    if introWarmupDone or curStep >= 12 then
+    if introWarmupDone or curStep >= introBeginStep then
         return
     end
 
@@ -266,7 +267,7 @@ local function updateIntroWarmup()
         applyIntroOpponentFaceShot()
     end
 
-    finishGPUCommands()
+	finishGPUCommands() -- This clears up the tiny lag spike
 
     introWarmupIndex = introWarmupIndex + 1
 
@@ -365,12 +366,12 @@ end
 function onStepHit()
     jtc_camera.onStepHit(curStep)
 
-    if curStep == 12 and spriteExist("introWarmupCover") then
+    if curStep == introBeginStep and spriteExist("introWarmupCover") then
         removeSpriteFromState("introWarmupCover")
         destroySprite("introWarmupCover")
     end
 
-    if curStep == 24 then
+    if curStep == 26 then
         applyIntroGirfriendFaceShot()
     end
 

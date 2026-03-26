@@ -50,6 +50,7 @@ private class StupidVibeShader extends FlxShader {
 
 class FreeplayState extends MusicBeatState
 {
+	private static var songCharacterCache:Map<String, String> = [];
 	private var songs:Array<SongMetadata> = [];
 
 	var selector:FlxText;
@@ -99,13 +100,10 @@ class FreeplayState extends MusicBeatState
 
 		while(Paths.modJSON.weeks.get("week_" + index) != null) {
 			for(v in 0...Paths.modJSON.weeks.get("week_" + index).week_data.length) {
-				var peepeepoopoo:SwagSong = Song.loadFromJson(
-					Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase(),
-					Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase()
-				);
+				var songId:String = Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase();
 
 				if(Paths.modJSON.weeks.get("week_" + index).week_unlocked)
-					addSong(Paths.modJSON.weeks.get("week_" + index).week_data[v].toLowerCase(), index, peepeepoopoo.player2);
+					addSong(songId, index, resolveSongCharacter(songId));
 			}
 
 			index++;
@@ -248,6 +246,61 @@ class FreeplayState extends MusicBeatState
 		songs.push(new SongMetadata(songName, weekNum, songCharacter));
 	}
 
+	function resolveSongCharacter(songName:String):String
+	{
+		var normalizedSong:String = songName != null ? songName.toLowerCase().trim() : "";
+
+		if(normalizedSong == "")
+			return "dad";
+
+		if(songCharacterCache.exists(normalizedSong))
+			return songCharacterCache.get(normalizedSong);
+
+		var resolvedCharacter:String = readSongCharacterFromMetadata(normalizedSong);
+
+		if(resolvedCharacter == null || resolvedCharacter.trim() == "") {
+			var chart:SwagSong = Song.loadFromJson(normalizedSong, normalizedSong, false);
+			resolvedCharacter = chart != null && chart.player2 != null && chart.player2.trim() != "" ? chart.player2 : "dad";
+		}
+
+		songCharacterCache.set(normalizedSong, resolvedCharacter);
+		return resolvedCharacter;
+	}
+
+	function readSongCharacterFromMetadata(songName:String):Null<String>
+	{
+		var metadataPath:String = Paths.getPath('data/' + songName + '/' + songName + '-metadata.json', TEXT, null);
+		if(!Paths.assetExists(metadataPath, TEXT))
+			return null;
+
+		try {
+			var metadata:Dynamic = Json.parse(Paths.readText(metadataPath));
+
+			if(metadata != null) {
+				var playData:Dynamic = Reflect.field(metadata, "playData");
+				var characters:Dynamic = playData != null ? Reflect.field(playData, "characters") : null;
+				var opponent:Dynamic = characters != null ? Reflect.field(characters, "opponent") : null;
+
+				if(opponent != null) {
+					var value:String = Std.string(opponent).trim();
+					if(value != "")
+						return value;
+				}
+
+				var legacyOpponent:Dynamic = Reflect.field(metadata, "player2");
+				if(legacyOpponent != null) {
+					var legacyValue:String = Std.string(legacyOpponent).trim();
+					if(legacyValue != "")
+						return legacyValue;
+				}
+			}
+		}catch(e) {
+			trace('Warning: could not parse metadata for Freeplay song "' + songName + '" -> ' + Std.string(e));
+		}
+
+		return null;
+	}
+
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
@@ -308,9 +361,6 @@ class FreeplayState extends MusicBeatState
 			PlayState.storyDifficulty = curDifficulty;
 
 			PlayState.storyWeek = songs[curSelected].week;
-			//FlxG.switchState(new InGameOptions("StoryMenuState", PlayState.SONG));
-
-			var peepeepoopoo:SwagSong = Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase());
 		    #if debug
 			CacheState.loadAndSwitchState(new PlayState());
 		    #else

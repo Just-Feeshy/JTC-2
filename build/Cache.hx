@@ -208,7 +208,15 @@ class Cache {
 			}
 		}
 
+        clearSongSoundCache();
+
         System.gc();
+    }
+
+    static public function clearSongSoundCache():Void {
+        for(prefix in ["songs", "assets/music/", "shared:assets/shared/music/", "preload:assets/preload/music/"]) {
+            OpenFlAssets.cache.clear(prefix);
+        }
     }
 
     static public function clearNoneCachedAssets() {

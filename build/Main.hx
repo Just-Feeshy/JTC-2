@@ -21,7 +21,7 @@ class Main extends Sprite
 	var startFullscreen:Bool = false; // Whether to start the game in fullscreen on desktop targets.
 
 	public static var feeshmoraModifiers:Bool = true; //Add Feeshmora modifiers to your mod. Side Note: This also affects other menu stuff.
-	public static var framerate:Int = 120; // How many frames per second the game should run at.
+	public static var framerate:Int = 60; // How many frames per second the game should run at.
 
 	public static var trueFramerate = framerate;
 

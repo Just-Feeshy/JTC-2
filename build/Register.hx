@@ -189,8 +189,13 @@ class Register {
             FlxG.updateFramerate = fps;
         }
 
-        FlxG.game.focusLostFramerate = fps;
-        openfl.Lib.current.stage.frameRate = fps;
+        if(FlxG.game != null) {
+            FlxG.game.focusLostFramerate = Std.int(Math.max(10, Math.min(fps, 30)));
+        }
+
+        if(openfl.Lib.current != null && openfl.Lib.current.stage != null) {
+            openfl.Lib.current.stage.frameRate = fps;
+        }
     }
 
     public inline static function getFlxEaseByString(ease:String) {

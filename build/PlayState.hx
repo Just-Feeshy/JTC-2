@@ -2039,10 +2039,6 @@ class PlayState extends MusicBeatState
 		}else
 			counterTxt.text = "Score: " + songScore;
 
-		#if windows
-		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength - FlxG.sound.music.time);
-		#end
-
 		events.whenGameIsRunning(eventStorage, this);
 
 		if (controls.PAUSE && startedCountdown && canPause){

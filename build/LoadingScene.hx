@@ -7,6 +7,7 @@ import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.group.FlxSpriteGroup;
 import flixel.ui.FlxBar;
+import SaveData.SaveType;
 
 using StringTools;
 
@@ -136,6 +137,12 @@ class LoadingScene extends FlxSpriteGroup {
     public function cacheNecessaries():Void {
         bootSongCachesReady = false;
 
+        if(!SaveData.getData(SaveType.CACHE_ASSETS)) {
+            bootSongCachesReady = true;
+            setCacheValue(1, false);
+            return;
+        }
+
         Thread.create(() -> {
             var songAudioEntries:Array<Array<String>> = collectBootSongAudioEntries(collectBootSongDirectories());
             var totalEntries:Int = songAudioEntries.length;
@@ -143,7 +150,7 @@ class LoadingScene extends FlxSpriteGroup {
 
             if(totalEntries <= 0) {
                 bootSongCachesReady = true;
-                setCacheValue(1);
+                setCacheValue(1, false);
                 return;
             }
 
@@ -154,7 +161,7 @@ class LoadingScene extends FlxSpriteGroup {
             }
 
             bootSongCachesReady = true;
-            setCacheValue(1);
+            setCacheValue(1, false);
         });
     }
     #end

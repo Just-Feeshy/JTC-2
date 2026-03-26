@@ -66,7 +66,9 @@ class Preloader extends HelperStates {
         Highscore.load();
 
         Main.trueFramerate = FlxG.save.data.lowFps;
-        Lib.current.stage.frameRate = Main.trueFramerate * fpsMulti;
+        Main.framerate = Main.trueFramerate;
+        Register.updateFramerate(Main.trueFramerate * fpsMulti);
+        FlxG.autoPause = true;
 
         var gammaShaders = new BuiltInShaders();
         gammaShaders.shader = GAMMA;

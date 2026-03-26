@@ -264,7 +264,6 @@ function setupGraffiti()
 end
 
 function onUpdate(elapsed)
-    updateGraffitiPositions()
     updateGraffitiAnimation(elapsed)
 end
 
@@ -343,6 +342,21 @@ function updateGraffitiPositions()
     end
 end
 
+function positionGraffiti(index)
+    local sprName = graffitiSprites[index]
+
+    if sprName == nil then
+        return
+    end
+
+    local width = getSpriteWidth(sprName)
+    local height = getSpriteHeight(sprName)
+    local x = (windowWidth - width) / 2
+    local y = (windowHeight - height) / 2 + GRAFFITI_Y_OFFSET
+
+    setSpritePosition(sprName, x, y)
+end
+
 function startGraffitiReveal(index)
     if not graffitiHas[index] then
         activeGraffitiIndex = nil
@@ -359,6 +373,7 @@ function startGraffitiReveal(index)
         return
     end
 
+    positionGraffiti(index)
     setSpriteAlpha(sprName, 1)
     graffitiRevealTime[index] = 0
 

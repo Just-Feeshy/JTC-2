@@ -257,10 +257,12 @@ class SaveData {
 
                 return FlxG.save.data.menuBinds;
             case FPS_MULTIPLIER:
-                if(FlxG.save.data.fpsMulti == null)
-                    FlxG.save.data.fpsMulti = 2;
+                // This multiplier is not user-facing anymore; keep gameplay on the
+                // configured cap instead of doubling the whole app to 120 FPS by default.
+                if(FlxG.save.data.fpsMulti == null || FlxG.save.data.fpsMulti != 1)
+                    FlxG.save.data.fpsMulti = 1;
 
-                return FlxG.save.data.fpsMulti;
+                return 1;
             case GAMMA:
                 if(FlxG.save.data.gamma == null)
                     FlxG.save.data.gamma = 1;
