@@ -388,6 +388,10 @@ class PlayLua
 			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].directionAngle = angle;
 		});
 
+		playState.addCallback("setNoteAlpha", function(id:Int, alpha:Float) {
+			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].alpha = alpha;
+		});
+
 		playState.addCallback("setNoteScale", function(id:Int, x:Float, y:Float, shouldUpdateHitbox:Bool = true) {
 			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];
 			strumOBJ.scale.set(x, y);
@@ -432,6 +436,10 @@ class PlayLua
 			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].y;
 		});
 
+		playState.addCallback("getNoteAlpha", function(id:Int) {
+			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].alpha;
+		});
+
 		playState.addCallback("getNoteScreenCenter", function(id:Int, ?axis:String) {
 			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];
 
@@ -450,6 +458,7 @@ class PlayLua
 		registerNoteTweenCallback("noteTweenAngleY", function(strumOBJ:Strum, value:Dynamic) return {yAngle: value});
 		registerNoteTweenCallback("noteTweenAngleZ", function(strumOBJ:Strum, value:Dynamic) return {angle: value});
 		registerNoteTweenCallback("noteTweenDirection", function(strumOBJ:Strum, value:Dynamic) return {directionAngle: value});
+		registerNoteTweenCallback("noteTweenAlpha", function(strumOBJ:Strum, value:Dynamic) return {alpha: value});
 
 		playState.addCallback("noteTweenScale", function(name:String, id:Int, value1:Float, value2:Float, duration:Float, ease:String) {
 			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];

@@ -17,6 +17,13 @@ local secondBaseY = 130
 local baseFunkroadCameraX = 785
 local baseFunkroadCameraY = 458.5
 local baseFunkroadCameraZoom = 0.5
+local introNoteRevealStartStep = 36
+local introNoteRevealEndStep = 54
+local introBaseCameraStep = 40
+local introClearStep = 50
+local introBaseCameraZoom = 0.9
+local introClearDuration = 0.35
+local introNoteRevealLanePairs = 4
 local baseFrostbiteCarX = -170
 local baseFrostbiteCarY = -35
 local introOpponentFaceAnchorX = 0.53
@@ -27,13 +34,13 @@ local introOpponentFaceZoom = 1.95
 local introGirlfriendFaceAnchorX = 0.29
 local introGirlfriendFaceAnchorY = 0.24
 local introGirlfriendFaceOffsetX = 10
-local introGirlfriendFaceOffsetY = 60
-local introGirlfriendFaceZoom = 1.9
+local introGirlfriendFaceOffsetY = 30
+local introGirlfriendFaceZoom = 2.15
 local introBoyfriendFaceAnchorX = 0.29
-local introBoyfriendFaceAnchorY = 0.24
+local introBoyfriendFaceAnchorY = 0.48
 local introBoyfriendFaceOffsetX = 10
-local introBoyfriendFaceOffsetY = 60
-local introBoyfriendFaceZoom = 1.9
+local introBoyfriendFaceOffsetY = 310
+local introBoyfriendFaceZoom = 2.15
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -54,12 +61,28 @@ local jtcOffsets = {
     {5, 23}
 }
 
+local currentIntroFocusX = baseFunkroadCameraX
+local currentIntroFocusY = baseFunkroadCameraY
+local currentIntroZoom = baseFunkroadCameraZoom
+local currentIntroCarX = baseFrostbiteCarX
+local currentIntroCarY = baseFrostbiteCarY
+local introClearTween = nil
+
 local function startsWith(value, prefix)
     if type(value) ~= "string" or type(prefix) ~= "string" then
         return false
     end
 
     return value:sub(1, #prefix) == prefix
+end
+
+local function easeOutCubic(value)
+    local inverse = 1 - value
+    return 1 - (inverse * inverse * inverse)
+end
+
+local function lerp(a, b, t)
+    return a + ((b - a) * t)
 end
 
 local function init()
@@ -71,6 +94,12 @@ local function init()
     notDancing = false
     daddyIsHere = false
     daddyTrans = false
+    currentIntroFocusX = baseFunkroadCameraX
+    currentIntroFocusY = baseFunkroadCameraY
+    currentIntroZoom = baseFunkroadCameraZoom
+    currentIntroCarX = baseFrostbiteCarX
+    currentIntroCarY = baseFrostbiteCarY
+    introClearTween = nil
     jtc_camera.reset()
 end
 
@@ -136,38 +165,112 @@ local function getIntroCompensatedCarPosition(focusX, focusY, zoom)
         originalCarScreenY + focusY - introHalfHeight
 end
 
+local function applyIntroCameraState(focusX, focusY, zoom, carX, carY)
+    introClearTween = nil
+    currentIntroFocusX = focusX
+    currentIntroFocusY = focusY
+    currentIntroZoom = zoom
+    currentIntroCarX = carX
+    currentIntroCarY = carY
+
+    setGameplayCameraFocus(focusX, focusY, true)
+    setGameplayCameraZoom(zoom, true, true)
+    setSpritePosition("frostbiteCAR", carX, carY)
+end
+
 local function applyIntroOpponentFaceShot()
     local focusX, focusY = getIntroOpponentFaceFocus()
-    setGameplayCameraFocus(focusX, focusY, true)
-    setGameplayCameraZoom(introOpponentFaceZoom, true, true)
-
     local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introOpponentFaceZoom)
-
-    setSpritePosition("frostbiteCAR", introCarX, introCarY)
+    applyIntroCameraState(focusX, focusY, introOpponentFaceZoom, introCarX, introCarY)
 end
 
 local function applyIntroGirfriendFaceShot()
-    local focusX, focusY = getIntroBoyfriendFaceFocus()
-    setGameplayCameraFocus(focusX, focusY, true)
-    setGameplayCameraZoom(introGirlfriendFaceZoom, true, true)
-
+    local focusX, focusY = getIntroGirlfriendFaceFocus()
     local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introGirlfriendFaceZoom)
-    setSpritePosition("frostbiteCAR", introCarX, introCarY)
+    applyIntroCameraState(focusX, focusY, introGirlfriendFaceZoom, introCarX, introCarY)
 end
 
 local function applyIntroBoyfriendFaceShot()
     local focusX, focusY = getIntroBoyfriendFaceFocus()
-    setGameplayCameraFocus(focusX, focusY, true)
-    setGameplayCameraZoom(introBoyfriendFaceZoom, true, true)
-
     local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introBoyfriendFaceZoom)
-    setSpritePosition("frostbiteCAR", introCarX, introCarY)
+    applyIntroCameraState(focusX, focusY, introBoyfriendFaceZoom, introCarX, introCarY)
+end
+
+local function applyIntroBaseCameraShot()
+    applyIntroCameraState(
+        baseFunkroadCameraX,
+        baseFunkroadCameraY,
+        introBaseCameraZoom,
+        baseFrostbiteCarX,
+        baseFrostbiteCarY
+    )
+end
+
+local function applyIntroNoteReveal()
+    local totalRevealWindow = math.max(introClearDuration, ((introNoteRevealEndStep - introNoteRevealStartStep) * stepCrochet) / 1000)
+    local revealDuration = totalRevealWindow * 0.89
+    local revealDelay = 0
+
+    if introNoteRevealLanePairs > 1 then
+        revealDelay = math.max(0, (totalRevealWindow - revealDuration) / (introNoteRevealLanePairs - 1))
+    end
+
+    jtc_camera.revealNoteCameras(revealDuration, revealDelay)
 end
 
 local function clearIntroCameraShot()
-    clearGameplayCameraFocus(true)
-    clearGameplayCameraZoom(true)
-    setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
+    introClearTween = {
+        elapsed = 0,
+        duration = introClearDuration,
+        startFocusX = currentIntroFocusX,
+        startFocusY = currentIntroFocusY,
+        startZoom = currentIntroZoom,
+        startCarX = currentIntroCarX,
+        startCarY = currentIntroCarY,
+        targetFocusX = baseFunkroadCameraX,
+        targetFocusY = baseFunkroadCameraY,
+        targetZoom = baseFunkroadCameraZoom,
+        targetCarX = baseFrostbiteCarX,
+        targetCarY = baseFrostbiteCarY
+    }
+end
+
+local function updateIntroClearTween(elapsed)
+    if introClearTween == nil then
+        return
+    end
+
+    introClearTween.elapsed = introClearTween.elapsed + elapsed
+    local t = math.min(introClearTween.elapsed / introClearTween.duration, 1)
+    local eased = easeOutCubic(t)
+
+    local focusX = lerp(introClearTween.startFocusX, introClearTween.targetFocusX, eased)
+    local focusY = lerp(introClearTween.startFocusY, introClearTween.targetFocusY, eased)
+    local zoom = lerp(introClearTween.startZoom, introClearTween.targetZoom, eased)
+    local carX = lerp(introClearTween.startCarX, introClearTween.targetCarX, eased)
+    local carY = lerp(introClearTween.startCarY, introClearTween.targetCarY, eased)
+
+    currentIntroFocusX = focusX
+    currentIntroFocusY = focusY
+    currentIntroZoom = zoom
+    currentIntroCarX = carX
+    currentIntroCarY = carY
+
+    setGameplayCameraFocus(focusX, focusY, true)
+    setGameplayCameraZoom(zoom, true, true)
+    setSpritePosition("frostbiteCAR", carX, carY)
+
+    if t >= 1 then
+        introClearTween = nil
+        clearGameplayCameraFocus(true)
+        clearGameplayCameraZoom(true)
+        setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
+        currentIntroFocusX = baseFunkroadCameraX
+        currentIntroFocusY = baseFunkroadCameraY
+        currentIntroZoom = baseFunkroadCameraZoom
+        currentIntroCarX = baseFrostbiteCarX
+        currentIntroCarY = baseFrostbiteCarY
+    end
 end
 
 function generatedStage()
@@ -219,17 +322,25 @@ end
 function onStepHit()
     jtc_camera.onStepHit(curStep)
 
-    if curStep == 18 then
-        clearIntroCameraShot()
-    end
-
     if curStep == 24 then
         applyIntroGirfriendFaceShot()
     end
 
-    --if curStep == 24 then
-    --    applyIntroBoyfriendFaceShot()
-    --end
+    if curStep == 34 then
+        applyIntroBoyfriendFaceShot()
+    end
+
+    if curStep == introNoteRevealStartStep then
+        applyIntroNoteReveal()
+    end
+
+    if curStep == introBaseCameraStep then
+        applyIntroBaseCameraShot()
+    end
+
+    if curStep == introClearStep then
+        clearIntroCameraShot()
+    end
 
     if curStep == 606 then
         daddyTrans = true
@@ -245,31 +356,6 @@ function onStepHit()
     if curStep == 631 then
         insertSpriteToStage("dad")
         addSpriteToStage("second")
-    end
-
-    if curStep == 147 and beatSection == 0 then
-        callEvent("bump per beat", "2", "1.025")
-        beatSection = beatSection + 1
-    end
-
-    if curStep == 210 and beatSection == 1 then
-        callEvent("bump per beat", "1", "1.05")
-        beatSection = beatSection + 1
-    end
-
-    if curStep == 475 and beatSection == 2 then
-        callEvent("bump per beat", "4", "1")
-        beatSection = beatSection + 1
-    end
-
-    if curStep == 652 and beatSection == 3 then
-        callEvent("bump per beat", "2", "1.025")
-        beatSection = beatSection + 1
-    end
-
-    if curStep == 772 and beatSection == 4 then
-        callEvent("bump per beat", "1", "1.05")
-        beatSection = beatSection + 1
     end
 
     if curStep == 903 then
@@ -314,6 +400,9 @@ function onUpdate(elapsed)
     if not startedCountdown then
         return
     end
+
+    jtc_camera.onUpdate(elapsed)
+    updateIntroClearTween(elapsed)
 
     if startsWith(curAnimName, "sing") then
         holdTimer = holdTimer + elapsed
