@@ -1024,6 +1024,14 @@ class PlayState extends MusicBeatState
 		setLua("startedCountdown", true);
 		callLua("generatedStage", []);
 
+		if (!showCountdownSprites && !playCountdownSounds)
+		{
+			Conductor.songPosition = 0;
+			Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
+			startSong();
+			return;
+		}
+
 		var swagCounter:Int = 0;
 
 		startTimer = new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer)
@@ -1431,6 +1439,21 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	private function startInstrumentTrack(?startTime:Null<Float>):Void
+	{
+		if (FlxG.sound.music == null)
+			FlxG.sound.music = new FlxSound();
+		else
+			FlxG.sound.music.stop();
+
+		FlxG.sound.music.loadEmbedded(Paths.inst(PlayState.SONG.song), false);
+		FlxG.sound.music.persist = true;
+		FlxG.sound.music.group = FlxG.sound.defaultMusicGroup;
+		FlxG.sound.music.volume = muteInst ? 0 : 1;
+		FlxG.sound.music.play(false, startTime == null ? 0 : startTime);
+		FlxG.sound.music.onComplete = whenSongFinished.bind();
+	}
+
 	function startSong():Void
 	{
 		startingSong = false;
@@ -1438,10 +1461,7 @@ class PlayState extends MusicBeatState
 		previousFrameTime = FlxG.game.ticks;
 		lastReportedPlayheadPosition = 0;
 
-		if (!muteInst)
-			FlxG.sound.playMusic(Paths.inst(PlayState.SONG.song), 1, false);
-
-		FlxG.sound.music.onComplete = whenSongFinished.bind();
+		startInstrumentTrack(0);
 		playVocals(FlxG.sound.music != null ? FlxG.sound.music.time : 0);
 
 		if(paused) {
@@ -2619,7 +2639,7 @@ class PlayState extends MusicBeatState
 		setLua("inGameOver", true);
 
 		openSubState(new GameOverSubstate(currentPlayer.getScreenPosition().x, currentPlayer.getScreenPosition().y));
-		
+
 		#if windows
 		// Game Over doesn't get his own variable because it's only used here
 		DiscordClient.changePresence("Game Over - " + detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
@@ -2766,7 +2786,6 @@ class PlayState extends MusicBeatState
 
 		var pixelShitPart1:String = "";
 		var pixelShitPart2:String = '';
-		
 		var comboUCM:String = '';
 
 		if(combo > 50)
@@ -4046,11 +4065,11 @@ class PlayState extends MusicBeatState
 
 			addCallback("setNoteStrumPos", function(id:Int, x:Float, y:Float) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
-	
+
 				strumOBJ.x = x;
 				strumOBJ.y = y;
 			});
-	
+
 			addCallback("setNoteStrumAngleX", function(id:Int, angle:Float) {
 				var strumOBJ:Strum = strumLineNotes.members[Std.int(Math.abs(id)) % strumLineNotes.length];
 				strumOBJ.xAngle = angle;

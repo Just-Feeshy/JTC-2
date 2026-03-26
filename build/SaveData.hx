@@ -327,7 +327,7 @@ class SaveData {
                 return FlxG.save.data.missVolume;
 		    case GPU_CACHE:
 				if(FlxG.save.data.gpuCache == null) {
-					FlxG.save.data.gpuCache = false;
+					FlxG.save.data.gpuCache = true;
 				}
 
 				return FlxG.save.data.gpuCache;

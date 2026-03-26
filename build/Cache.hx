@@ -53,6 +53,10 @@ class Cache {
 					bitmap.dispose();
 					bitmap.disposeImage();
 					bitmap = BitmapData.fromTexture(texture);
+				}else {
+					// Keep CPU caching on a private bitmap copy so later atlas/frame mutations
+					// don't alias the original asset bitmap returned by OpenFL.
+					bitmap = bitmap.clone();
 				}
 
 				var graphics:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, path);
