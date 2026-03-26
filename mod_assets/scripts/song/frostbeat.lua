@@ -208,7 +208,7 @@ end
 
 local function applyIntroNoteReveal()
     local totalRevealWindow = math.max(introClearDuration, ((introNoteRevealEndStep - introNoteRevealStartStep) * stepCrochet) / 1000)
-    local revealDuration = totalRevealWindow * 0.89
+    local revealDuration = totalRevealWindow * 0.67 -- Just-Feeshy: AAAAAYYYYYYY 6 7!!!!!
     local revealDelay = 0
 
     if introNoteRevealLanePairs > 1 then

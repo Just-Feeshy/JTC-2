@@ -8,7 +8,6 @@ local gameplayCameras = {
 
 local defaultStrumRevealDuration = 0.35
 local defaultStrumRevealDelay = 0.02
-local strumRevealOffscreenPadding = 240
 local strumCount = 8
 local strumLaneCount = 4
 
@@ -87,6 +86,7 @@ local function restoreStrumDefaults()
 
         if defaultPos ~= nil then
             setNoteStrumPos(id, defaultPos.x, defaultPos.y)
+            setNoteAlpha(id, 1)
         end
     end
 end
@@ -100,7 +100,8 @@ local function moveStrumsOffscreenTop()
         local defaultPos = jtc_camera.strumDefaults[id + 1]
 
         if defaultPos ~= nil then
-            setNoteStrumPos(id, defaultPos.x, defaultPos.y - windowHeight - strumRevealOffscreenPadding)
+            setNoteStrumPos(id, defaultPos.x, -getNotePosY(id))
+            setNoteAlpha(id, 0)
         end
     end
 end
@@ -122,6 +123,7 @@ local function revealStrum(id, duration)
 
     if defaultPos ~= nil then
         noteTweenY("jtcCameraStrumRevealY" .. tostring(id), id, defaultPos.y, duration, "cubeOut")
+        noteTweenAlpha("jtcCameraStrumRevealAlpha" .. tostring(id), id, 1, duration, "cubeOut")
     end
 end
 
