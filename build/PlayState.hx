@@ -185,6 +185,7 @@ class PlayState extends MusicBeatState
 	private var keys2DArray:Array<Array<Int>> = [];
 	private var inputQueue:Array<QueuedLaneInput> = [];
 	private var heldLaneKeys:Array<Array<Int>> = [];
+	private var previousHeldInputSongTime:Null<Float> = null;
 
 	//Da Variables
 	private var hits:Int = 0;
@@ -1010,6 +1011,7 @@ class PlayState extends MusicBeatState
 
 		talking = false;
 		startedCountdown = true;
+		previousHeldInputSongTime = null;
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;
 		Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
@@ -1461,6 +1463,7 @@ class PlayState extends MusicBeatState
 	function startSong():Void
 	{
 		startingSong = false;
+		previousHeldInputSongTime = null;
 
 		previousFrameTime = FlxG.game.ticks;
 		lastReportedPlayheadPosition = 0;
@@ -1901,6 +1904,7 @@ class PlayState extends MusicBeatState
 			return;
 
 		pauseVocals();
+		previousHeldInputSongTime = null;
 
 		if(muteInst)
 			FlxG.sound.music.volume = 0;
@@ -2911,7 +2915,7 @@ class PlayState extends MusicBeatState
 
 		processInputQueue(controlHoldArray);
 		refreshHeldStrums(controlHoldArray);
-		processHeldNotes(controlHoldArray);
+		processHeldNotes(controlHoldArray, getCurrentInputSongTime());
 		updateHoldCoverSprites(true, controlHoldArray);
 		updateHoldCoverSprites(false);
 
@@ -3230,13 +3234,30 @@ class PlayState extends MusicBeatState
 			});
 		}
 
-	function processHeldNotes(controlHoldArray:Array<Bool>):Void {
+	function shouldCatchHeldSustainNote(daNote:Note, currentSongTime:Float):Bool {
+		if(previousHeldInputSongTime == null || currentSongTime <= previousHeldInputSongTime) {
+			return false;
+		}
+
+		if(daNote.prevNote != null && !daNote.prevNote.wasGoodHit && !daNote.prevNote.shouldBeDead) {
+			return false;
+		}
+
+		var noteTime:Float = daNote.getNoteTime();
+
+		return noteTime > previousHeldInputSongTime && noteTime <= currentSongTime;
+	}
+
+	function processHeldNotes(controlHoldArray:Array<Bool>, songTime:Float):Void {
 		notes.forEachAlive(function(daNote:Note) {
 			if (daNote.mustPress && daNote.isSustainNote && !daNote.wasGoodHit
-				&& controlHoldArray[daNote.noteData] && daNote.canHoldHit() && !disableInputs) {
-				goodNoteHit(daNote);
+				&& controlHoldArray[daNote.noteData] && !disableInputs
+				&& (daNote.canHoldHit(songTime) || shouldCatchHeldSustainNote(daNote, songTime))) {
+				goodNoteHit(daNote, daNote.getNoteTime());
 			}
 		});
+
+		previousHeldInputSongTime = songTime;
 	}
 
 	function handleLanePress(lane:Int, hitSongTime:Float):Void {
