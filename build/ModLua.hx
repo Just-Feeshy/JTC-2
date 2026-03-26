@@ -144,6 +144,15 @@ class ModLua {
 			return image.height;
 		});
 
+		Lua_helper.add_callback(lua, "finishGPUCommands", function() {
+			try {
+				GL.finish();
+				return true;
+			}catch(e) {
+				return false;
+			}
+		});
+
 		Lua_helper.add_callback(lua, "createBitmapData", function(name:String, width:Int, height:Int) {
 		    if(luaBitmaps.exists(name)) {
 		        return;

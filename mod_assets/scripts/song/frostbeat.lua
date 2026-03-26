@@ -67,6 +67,8 @@ local currentIntroZoom = baseFunkroadCameraZoom
 local currentIntroCarX = baseFrostbiteCarX
 local currentIntroCarY = baseFrostbiteCarY
 local introClearTween = nil
+local introWarmupIndex = 0
+local introWarmupDone = false
 
 local function startsWith(value, prefix)
     if type(value) ~= "string" or type(prefix) ~= "string" then
@@ -100,6 +102,8 @@ local function init()
     currentIntroCarX = baseFrostbiteCarX
     currentIntroCarY = baseFrostbiteCarY
     introClearTween = nil
+    introWarmupIndex = 0
+    introWarmupDone = false
     jtc_camera.reset()
 end
 
@@ -235,6 +239,45 @@ local function clearIntroCameraShot()
     }
 end
 
+local function ensureIntroWarmupCover()
+    if spriteExist("introWarmupCover") then
+        return
+    end
+
+    createSprite("introWarmupCover")
+    makeGraphic("introWarmupCover", windowWidth, windowHeight, "0xFF000000")
+    setSpriteToCamera("introWarmupCover", "camHUD")
+    setSpritePosition("introWarmupCover", 0, 0)
+    addSpriteToState("introWarmupCover")
+end
+
+local function updateIntroWarmup()
+    if introWarmupDone or curStep >= 12 then
+        return
+    end
+
+    if introWarmupIndex == 0 then
+        applyIntroGirfriendFaceShot()
+    elseif introWarmupIndex == 1 then
+        applyIntroBoyfriendFaceShot()
+    elseif introWarmupIndex == 2 then
+        applyIntroBaseCameraShot()
+    elseif introWarmupIndex == 3 then
+        applyIntroOpponentFaceShot()
+    end
+
+    if finishGPUCommands ~= nil then
+        finishGPUCommands()
+    end
+
+    introWarmupIndex = introWarmupIndex + 1
+
+    if introWarmupIndex >= 4 then
+        introWarmupDone = true
+        applyIntroOpponentFaceShot()
+    end
+end
+
 local function updateIntroClearTween(elapsed)
     if introClearTween == nil then
         return
@@ -280,6 +323,8 @@ function generatedStage()
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
     addSongTrack("jtcVocals", "JTC_Voices", "player", 1, false, "t,joul")
     jtc_camera.hideGameplayUntilStep(12, false)
+    setCameraVisible("camGame", true)
+    ensureIntroWarmupCover()
 
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
@@ -321,6 +366,11 @@ end
 
 function onStepHit()
     jtc_camera.onStepHit(curStep)
+
+    if curStep == 12 and spriteExist("introWarmupCover") then
+        removeSpriteFromState("introWarmupCover")
+        destroySprite("introWarmupCover")
+    end
 
     if curStep == 24 then
         applyIntroGirfriendFaceShot()
@@ -401,6 +451,7 @@ function onUpdate(elapsed)
         return
     end
 
+    updateIntroWarmup()
     jtc_camera.onUpdate(elapsed)
     updateIntroClearTween(elapsed)
 
