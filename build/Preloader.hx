@@ -62,6 +62,7 @@ class Preloader extends HelperStates {
         if(fpsMulti < 1)
             fpsMulti = 1;
 
+        SaveData.ensureGPUCacheDefault();
         SaveData.saveClient();
         Highscore.load();
 

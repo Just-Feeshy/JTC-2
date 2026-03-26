@@ -6,6 +6,11 @@ import flixel.util.FlxDestroyUtil;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
 import openfl.display.FPS;
+#if lime
+import lime.graphics.opengl.GL;
+#end
+
+using StringTools;
 
 enum SaveType {
     NONE;
@@ -94,6 +99,77 @@ class SaveData {
         FlxG.save.flush();
 
         refreshData();
+    }
+
+    static public function ensureGPUCacheDefault():Void {
+        if(FlxG.save == null || FlxG.save.data == null || FlxG.save.data.gpuCache != null) {
+            return;
+        }
+
+        FlxG.save.data.gpuCache = shouldEnableGPUCacheByDefault();
+
+        var rendererInfo = getRendererInfo();
+        trace('GPU cache default set to ${FlxG.save.data.gpuCache}' + (rendererInfo != null ? ' [' + rendererInfo + ']' : ''));
+    }
+
+    static function shouldEnableGPUCacheByDefault():Bool {
+        var rendererInfo = getRendererInfo();
+
+        if(rendererInfo == null || rendererInfo.length == 0) {
+            return true;
+        }
+
+        var normalized = rendererInfo.toLowerCase();
+        var disabledKeywords = [
+            "swiftshader",
+            "llvmpipe",
+            "softpipe",
+            "software",
+            "basic render",
+            "gdi generic",
+            "mesa offscreen",
+            "rasterizer"
+        ];
+
+        for(keyword in disabledKeywords) {
+            if(normalized.contains(keyword)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static function getRendererInfo():Null<String> {
+        #if lime
+        if(FlxG.stage == null || FlxG.stage.context3D == null) {
+            return null;
+        }
+
+        try {
+            var vendor = GL.getString(GL.VENDOR);
+            var renderer = GL.getString(GL.RENDERER);
+            var info = "";
+
+            if(vendor != null && vendor.length > 0) {
+                info = vendor;
+            }
+
+            if(renderer != null && renderer.length > 0) {
+                if(info.length > 0) {
+                    info += " / ";
+                }
+
+                info += renderer;
+            }
+
+            return info.length > 0 ? info : null;
+        } catch(e) {
+            return null;
+        }
+        #else
+        return null;
+        #end
     }
 
     inline static public function getData(data:SaveType):Dynamic {
@@ -328,6 +404,8 @@ class SaveData {
 
                 return FlxG.save.data.missVolume;
 		    case GPU_CACHE:
+                ensureGPUCacheDefault();
+
 				if(FlxG.save.data.gpuCache == null) {
 					FlxG.save.data.gpuCache = true;
 				}
