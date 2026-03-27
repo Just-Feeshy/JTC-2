@@ -1,45 +1,71 @@
 {
-    "file": "school_house/JTC sit.xml",
-    "animations": {
-        "idle": {
-            "prefix": "JTC SITTING IDLE",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 0]
-        },
-        "singUP": {
-            "prefix": "JTC SITTING UP",
-            "framerate": 24,
-            "looped": false,
-            "offset": [4, -22]
-        },
-        "singRIGHT": {
-            "prefix": "JTC SITTING RIGHT",
-            "framerate": 24,
-            "looped": false,
-            "offset": [-77, 28]
-        },
-        "singLEFT": {
-            "prefix": "JTC SITTING LEFT",
-            "framerate": 24,
-            "looped": false,
-            "offset": [3, -78]
-        },
-        "singDOWN": {
-            "prefix": "JTC SITTING DOWN",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 1]
-        }
-    },
-    "position": {
-        "x": 0,
-        "y": 0,
-        "camPosX": 67,
-        "camPosY": 210
-    },
-    "icon": [24, 25, 30],
-    "playAnim": "idle",
-    "isPlayer": false,
-    "pixel": false
+	"animations": {
+		"idle": {
+			"prefix": "JTC SITTING IDLE",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "JTC SITTING RIGHT",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				-34
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "JTC SITTING DOWN",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				-1
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "JTC SITTING LEFT",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				102
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "JTC SITTING UP",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				22
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": 0,
+		"camPosY": 210,
+		"y": 0,
+		"camPosX": 67
+	},
+	"clippingAdjustment": {},
+	"playAnim": "idle",
+	"file": "school_house/JTC sit.xml",
+	"icon": [
+		24,
+		25,
+		30
+	],
+	"iconFile": "iconGrid"
 }

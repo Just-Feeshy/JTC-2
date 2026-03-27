@@ -1,99 +1,161 @@
 {
-    "file": "school_house/Dearest_BF_.xml",
-    "animations": {
-        "idle": {
-            "prefix": "BF idle dance",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 0]
-        },
-        "singUP": {
-            "prefix": "BF NOTE UP0",
-            "framerate": 24,
-            "looped": false,
-            "offset": [-20, 32]
-        },
-        "singRIGHT": {
-            "prefix": "BF NOTE RIGHT0",
-            "framerate": 24,
-            "looped": false,
-            "offset": [-28, 12]
-        },
-        "singLEFT": {
-            "prefix": "BF NOTE LEFT0",
-            "framerate": 24,
-            "looped": false,
-            "offset": [16, -1]
-        },
-        "singDOWN": {
-            "prefix": "BF NOTE DOWN0",
-            "framerate": 24,
-            "looped": false,
-            "offset": [-15, -30]
-        },
-        "singUPmiss": {
-            "prefix": "BF NOTE UP MISS",
-            "framerate": 24,
-            "looped": false,
-            "offset": [-20, 32]
-        },
-        "singRIGHTmiss": {
-            "prefix": "BF NOTE RIGHT MISS",
-            "framerate": 24,
-            "looped": false,
-            "offset": [-28, 12]
-        },
-        "singLEFTmiss": {
-            "prefix": "BF NOTE LEFT MISS",
-            "framerate": 24,
-            "looped": false,
-            "offset": [16, -1]
-        },
-        "singDOWNmiss": {
-            "prefix": "BF NOTE DOWN MISS",
-            "framerate": 24,
-            "looped": false,
-            "offset": [-15, -42]
-        },
-        "hey": {
-            "prefix": "BF HEY!!",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 4]
-        },
-        "firstDeath": {
-            "prefix": "BF dies",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 9]
-        },
-        "deathLoop": {
-            "prefix": "BF Dead Loop",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 5]
-        },
-        "deathConfirm": {
-            "prefix": "BF Dead confirm",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 5]
-        },
-        "scared": {
-            "prefix": "BF idle shaking",
-            "framerate": 24,
-            "looped": false,
-            "offset": [0, 10]
-        }
-    },
-    "position": {
-        "x": 0,
-        "y": 0,
-        "camPosX": 0,
-        "camPosY": -90
-    },
-    "icon": [26, 1, 26],
-    "playAnim": "idle",
-    "isPlayer": true,
-    "pixel": false
+	"animations": {
+		"deathLoop": {
+			"prefix": "BF Dead Loop",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				5
+			],
+			"looped": false
+		},
+		"scared": {
+			"prefix": "BF idle shaking",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				10
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "BF NOTE DOWN0",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-15,
+				-54
+			],
+			"looped": false
+		},
+		"singRIGHTmiss": {
+			"prefix": "BF NOTE RIGHT MISS",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-41,
+				-2
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "BF NOTE UP0",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-40,
+				20
+			],
+			"looped": false
+		},
+		"singLEFTmiss": {
+			"prefix": "BF NOTE LEFT MISS",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				2,
+				-13
+			],
+			"looped": false
+		},
+		"idle": {
+			"prefix": "BF idle dance",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"hey": {
+			"prefix": "BF HEY!!",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				4
+			],
+			"looped": false
+		},
+		"deathConfirm": {
+			"prefix": "BF Dead confirm",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				5
+			],
+			"looped": false
+		},
+		"firstDeath": {
+			"prefix": "BF dies",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				9
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "BF NOTE RIGHT0",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-45,
+				-3
+			],
+			"looped": false
+		},
+		"singDOWNmiss": {
+			"prefix": "BF NOTE DOWN MISS",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-15,
+				-56
+			],
+			"looped": false
+		},
+		"singUPmiss": {
+			"prefix": "BF NOTE UP MISS",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-47,
+				20
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "BF NOTE LEFT0",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				1,
+				-16
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": true,
+	"pixel": false,
+	"position": {
+		"x": 0,
+		"camPosY": -90,
+		"y": 0,
+		"camPosX": 0
+	},
+	"clippingAdjustment": {},
+	"playAnim": "idle",
+	"file": "school_house/Dearest_BF_.xml",
+	"icon": [
+		26,
+		1,
+		26
+	],
+	"iconFile": "iconGrid"
 }

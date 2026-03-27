@@ -553,6 +553,54 @@ class CharacterCreatorState extends MusicBeatState {
 
     var playCustomAnim:Bool = false;
 
+    function syncSelectedAnimationOffsetFromInputs():Void {
+        var animName = animationDrop != null ? animationDrop.selectedLabel : null;
+        if(animName == null || animName.length == 0 || !character.animations.contains(animName)) {
+            return;
+        }
+
+        var animData = character._info.animations.get(animName);
+        if(animData == null || !character.animOffsets.exists(animName)) {
+            return;
+        }
+
+        var nextOffsetX:Int = Std.int(offsetXInput.value);
+        var nextOffsetY:Int = Std.int(offsetYInput.value);
+        var offsetChanged:Bool = false;
+
+        if(animData.offset[0] != nextOffsetX) {
+            animData.offset[0] = nextOffsetX;
+            character.animOffsets[animName][0] = nextOffsetX;
+            character.changeOffsets(animName, nextOffsetX, X);
+            offsetChanged = true;
+        }
+
+        if(animData.offset[1] != nextOffsetY) {
+            animData.offset[1] = nextOffsetY;
+            character.animOffsets[animName][1] = nextOffsetY;
+            character.changeOffsets(animName, nextOffsetY, Y);
+            offsetChanged = true;
+        }
+
+        if(offsetChanged) {
+            characterAutosave.set(character.curCharacter, character._info);
+            previewSelectedAnimation(false);
+        }
+    }
+
+    function previewSelectedAnimation(forcePlay:Bool = false):Void {
+        var animName = animationDrop != null ? animationDrop.selectedLabel : null;
+        if(animName == null || animName.length == 0 || !character.animations.contains(animName)) {
+            return;
+        }
+
+        if(forcePlay || character.animation.curAnim == null || character.animation.curAnim.name != animName) {
+            character.playAnim(animName, true);
+        }else if(character.animOffsets.exists(animName)) {
+            character.offset.set(character.animOffsets[animName][0], character.animOffsets[animName][1]);
+        }
+    }
+
     function addAnimationsUI():Void {
         var tab_group_animations = new FlxUI(null, UI_thingy);
         tab_group_animations.name = 'E Animations';
@@ -577,6 +625,7 @@ class CharacterCreatorState extends MusicBeatState {
 
         animationDrop = new FlxUIDropDownMenu(240, 20, FlxUIDropDownMenu.makeStrIdLabelArray(character.animations, true), function(choose:String) {
             updateStuff();
+            previewSelectedAnimation(true);
         });
 
         if(character.animations.length > 0) {
@@ -587,8 +636,7 @@ class CharacterCreatorState extends MusicBeatState {
 
         var playAnimButton:FlxUIButton = new FlxUIButton(40, 70, "Play Animation", function() {
             playCustomAnim = true;
-
-            character.playAnim(animationDrop.selectedLabel);
+            previewSelectedAnimation(true);
         });
 
         var stopAnimButton:FlxUIButton = new FlxUIButton(40, playAnimButton.y + 20, "Stop Animation", function() {
@@ -957,17 +1005,13 @@ class CharacterCreatorState extends MusicBeatState {
                 characterAutosave.set(character.curCharacter, character._info);
                 character.animOffsets[animationDrop.selectedLabel][0] = Std.int(nums.value);
                 character.changeOffsets(animationDrop.selectedLabel, Std.int(nums.value), X);
-
-                if(animationDrop.selectedLabel == character.animation.curAnim.name)
-                    character.offset.set(character.animOffsets[animationDrop.selectedLabel][0], character.animOffsets[animationDrop.selectedLabel][1]);
+                previewSelectedAnimation(false);
             }else if(wname == 'y_offset') {
                 character._info.animations.get(animationDrop.selectedLabel).offset[1] = Std.int(nums.value);
                 characterAutosave.set(character.curCharacter, character._info);
                 character.animOffsets[animationDrop.selectedLabel][1] = Std.int(nums.value);
                 character.changeOffsets(animationDrop.selectedLabel, Std.int(nums.value), Y);
-
-                if(animationDrop.selectedLabel == character.animation.curAnim.name)
-                    character.offset.set(character.animOffsets[animationDrop.selectedLabel][0], character.animOffsets[animationDrop.selectedLabel][1]);
+                previewSelectedAnimation(false);
             }else if(wname == 'framerate') {
                 character._info.animations.get(animationDrop.selectedLabel).framerate = Std.int(nums.value);
                 characterAutosave.set(character.curCharacter, character._info);
@@ -1064,26 +1108,43 @@ class CharacterCreatorState extends MusicBeatState {
 			controls.RIGHT
 		];
 
-        if(playCustomAnim && character.animation.finished && !lockAnimCheck.checked) {
-            playCustomAnim = false;
-        }
+        syncSelectedAnimationOffsetFromInputs();
 
-        if(!playCustomAnim && character.animation.curAnim != null) {
-            if (controlArray[0] && character.animations.contains('singLEFT'))
-                character.playAnim('singLEFT');
-            if (controlArray[1] && character.animations.contains('singDOWN'))
-                character.playAnim('singDOWN');
-            if (controlArray[2] && character.animations.contains('singUP'))
-                character.playAnim('singUP');
-            if (controlArray[3] && character.animations.contains('singRIGHT'))
-                character.playAnim('singRIGHT');
+        var lockSelectedAnimation:Bool = lockAnimCheck != null
+            && lockAnimCheck.checked
+            && animationDrop != null
+            && character.animations.contains(animationDrop.selectedLabel);
 
-            if(character.animations.contains('idle')
-            || character.animations.contains('danceRight')
-            || character.animations.contains('danceLeft')) {
-                if((!controlHoldArray.contains(true) && character.animation.curAnim.name.startsWith("sing"))
-                || (!character.animation.curAnim.name.startsWith("sing") && character.animation.finished))
-                    character.dance();
+        if(lockSelectedAnimation) {
+            if(character.animation.curAnim == null
+            || character.animation.curAnim.name != animationDrop.selectedLabel
+            || character.animation.finished) {
+                previewSelectedAnimation(true);
+            }else {
+                previewSelectedAnimation(false);
+            }
+        }else {
+            if(playCustomAnim && character.animation.finished) {
+                playCustomAnim = false;
+            }
+
+            if(!playCustomAnim && character.animation.curAnim != null) {
+                if (controlArray[0] && character.animations.contains('singLEFT'))
+                    character.playAnim('singLEFT');
+                if (controlArray[1] && character.animations.contains('singDOWN'))
+                    character.playAnim('singDOWN');
+                if (controlArray[2] && character.animations.contains('singUP'))
+                    character.playAnim('singUP');
+                if (controlArray[3] && character.animations.contains('singRIGHT'))
+                    character.playAnim('singRIGHT');
+
+                if(character.animations.contains('idle')
+                || character.animations.contains('danceRight')
+                || character.animations.contains('danceLeft')) {
+                    if((!controlHoldArray.contains(true) && character.animation.curAnim.name.startsWith("sing"))
+                    || (!character.animation.curAnim.name.startsWith("sing") && character.animation.finished))
+                        character.dance();
+                }
             }
         }
 
