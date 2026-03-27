@@ -35,25 +35,25 @@
             "prefix": "BF NOTE UP MISS",
             "framerate": 24,
             "looped": false,
-            "offset": [-18, 32]
+            "offset": [-20, 32]
         },
         "singRIGHTmiss": {
             "prefix": "BF NOTE RIGHT MISS",
             "framerate": 24,
             "looped": false,
-            "offset": [-24, 12]
+            "offset": [-28, 12]
         },
         "singLEFTmiss": {
             "prefix": "BF NOTE LEFT MISS",
             "framerate": 24,
             "looped": false,
-            "offset": [14, -1]
+            "offset": [16, -1]
         },
         "singDOWNmiss": {
             "prefix": "BF NOTE DOWN MISS",
             "framerate": 24,
             "looped": false,
-            "offset": [-12, -30]
+            "offset": [-15, -42]
         },
         "hey": {
             "prefix": "BF HEY!!",

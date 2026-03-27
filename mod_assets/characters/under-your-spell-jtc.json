@@ -11,32 +11,32 @@
             "prefix": "JTC SITTING UP",
             "framerate": 24,
             "looped": false,
-            "offset": [4, 27]
+            "offset": [4, -22]
         },
         "singRIGHT": {
             "prefix": "JTC SITTING RIGHT",
             "framerate": 24,
             "looped": false,
-            "offset": [-72, -35]
+            "offset": [-77, 28]
         },
         "singLEFT": {
             "prefix": "JTC SITTING LEFT",
             "framerate": 24,
             "looped": false,
-            "offset": [8, 100]
+            "offset": [3, -78]
         },
         "singDOWN": {
             "prefix": "JTC SITTING DOWN",
             "framerate": 24,
             "looped": false,
-            "offset": [0, -1]
+            "offset": [0, 1]
         }
     },
     "position": {
         "x": 0,
         "y": 0,
-        "camPosX": 10,
-        "camPosY": -210
+        "camPosX": 67,
+        "camPosY": 210
     },
     "icon": [24, 25, 30],
     "playAnim": "idle",

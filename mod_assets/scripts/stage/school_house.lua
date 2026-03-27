@@ -1,9 +1,10 @@
 local ARTBOARD_WIDTH = 2362
 local ARTBOARD_HEIGHT = 1496
-local STAGE_LAYOUT_SCALE_MULTIPLIER = 1.2
-local DEFAULT_STAGE_CAMERA_ZOOM = 0.52
+local STAGE_LAYOUT_SCALE_MULTIPLIER = 2.15
+local DEFAULT_STAGE_CAMERA_ZOOM = 0.67
 local STAGE_SAFE_FRAME_MULTIPLIER = 1.0
 local DEFAULT_STAGE_CAMERA_FOCUS = {x = ARTBOARD_WIDTH * 0.5, y = ARTBOARD_HEIGHT * 0.505}
+local DEFAULT_STAGE_CAMERA_FOCUS_LERP = 0.09
 local DAD_LAYOUT = {x = 238, y = 520}
 local GF_LAYOUT = {x = 1012, y = 744}
 local BOYFRIEND_LAYOUT = {x = 1452, y = 908}
@@ -69,7 +70,7 @@ end
 
 local function setupStageMetrics()
     stageScale = math.min(windowWidth / ARTBOARD_WIDTH, windowHeight / ARTBOARD_HEIGHT)
-    stageScale = stageScale * ((1 / DEFAULT_STAGE_CAMERA_ZOOM) * STAGE_SAFE_FRAME_MULTIPLIER)
+    stageScale = stageScale * STAGE_SAFE_FRAME_MULTIPLIER
     stageScale = stageScale * STAGE_LAYOUT_SCALE_MULTIPLIER
     stageOriginX = (windowWidth - (ARTBOARD_WIDTH * stageScale)) * 0.5
     stageOriginY = (windowHeight - (ARTBOARD_HEIGHT * stageScale)) * 0.5
@@ -149,6 +150,7 @@ function generatedStage()
     setupStageMetrics()
     applyCharacterLayout()
     setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y), true)
+    setGameplayCameraFocusLerp(DEFAULT_STAGE_CAMERA_FOCUS_LERP)
     setGameplayCameraZoom(DEFAULT_STAGE_CAMERA_ZOOM, false, true)
 
     addStaticLayer("schoolHouseBG", "school_house/BG/BG", 0, 0, nil, 1.0, true)
@@ -183,10 +185,6 @@ function onStepHit()
     if spriteExist("schoolGirlfriendProp") then
         characterDance("schoolGirlfriendProp")
     end
-
-	if curStep == 640 then
-		print("Yup")
-	end
 end
 
 function onBeatHit()

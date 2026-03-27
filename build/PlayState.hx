@@ -153,6 +153,7 @@ class PlayState extends MusicBeatState
 	public var vSliceCameraFocusEnabled:Bool = false;
 	public var vSliceCameraFocusX:Float = 0;
 	public var vSliceCameraFocusY:Float = 0;
+	public var vSliceCameraFocusLerp:Float = 0;
 	public var vSliceDirectZoomEnabled:Bool = false;
 	public var vSliceDirectZoomValue:Float = 1;
 
@@ -573,6 +574,7 @@ class PlayState extends MusicBeatState
 		vSliceDirectZoomValue = defaultCamZoom;
 		vSliceCameraFocusX = camPos.x;
 		vSliceCameraFocusY = camPos.y;
+		vSliceCameraFocusLerp = 0;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -2272,13 +2274,14 @@ class PlayState extends MusicBeatState
 				camPos = newCamPos;
 			}
 
-			var followX:Float = camPos.x + camMovementPos.x;
-			var followY:Float = camPos.y + camMovementPos.y;
+				var followX:Float = camPos.x + camMovementPos.x;
+				var followY:Float = camPos.y + camMovementPos.y;
 
-			if(vSliceCameraFocusEnabled) {
-				followX = vSliceCameraFocusX + camMovementPos.x;
-				followY = vSliceCameraFocusY + camMovementPos.y;
-			}
+				if(vSliceCameraFocusEnabled) {
+					var focusLerp:Float = FlxMath.bound(vSliceCameraFocusLerp, 0, 1);
+					followX = FlxMath.lerp(vSliceCameraFocusX, camPos.x, focusLerp) + camMovementPos.x;
+					followY = FlxMath.lerp(vSliceCameraFocusY, camPos.y, focusLerp) + camMovementPos.y;
+				}
 
 			camFollow.setPosition(followX, followY);
 		}
@@ -3753,6 +3756,7 @@ class PlayState extends MusicBeatState
 
 	public function clearScriptedCameraFocus(snap:Bool = true):Void {
 		vSliceCameraFocusEnabled = false;
+		vSliceCameraFocusLerp = 0;
 
 		if(snap) {
 			camFollow.setPosition(camPos.x + camMovementPos.x, camPos.y + camMovementPos.y);
@@ -3760,8 +3764,13 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	public function setScriptedCameraFocusLerp(lerp:Float):Void {
+		vSliceCameraFocusLerp = FlxMath.bound(lerp, 0, 1);
+	}
+
 	public function resetScriptedCameraState(snap:Bool = true):Void {
 		vSliceCameraFocusEnabled = false;
+		vSliceCameraFocusLerp = 0;
 		vSliceDirectZoomEnabled = false;
 
 		if(camMovementPos != null) {

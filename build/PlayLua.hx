@@ -159,13 +159,17 @@ class PlayLua
 			playState.setScriptedCameraFocus(x, y, snap);
 		});
 
-		playState.addCallback("clearGameplayCameraFocus", function(snap:Bool = true) {
-			playState.clearScriptedCameraFocus(snap);
-		});
+			playState.addCallback("clearGameplayCameraFocus", function(snap:Bool = true) {
+				playState.clearScriptedCameraFocus(snap);
+			});
 
-		playState.addCallback("setGameplayCameraZoom", function(zoom:Float, direct:Bool = true, snap:Bool = true) {
-			playState.setScriptedCameraZoom(zoom, direct, snap);
-		});
+			playState.addCallback("setGameplayCameraFocusLerp", function(lerp:Float) {
+				playState.setScriptedCameraFocusLerp(lerp);
+			});
+
+			playState.addCallback("setGameplayCameraZoom", function(zoom:Float, direct:Bool = true, snap:Bool = true) {
+				playState.setScriptedCameraZoom(zoom, direct, snap);
+			});
 
 		playState.addCallback("clearGameplayCameraZoom", function(snap:Bool = true) {
 			playState.clearScriptedCameraZoom(snap);
