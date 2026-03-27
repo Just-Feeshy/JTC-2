@@ -115,7 +115,7 @@ class CacheState extends HelperStates {
     }
 
     function cacheStuff(allowGPUCache:Bool):Void {
-        Cache.clear();
+        Cache.preparePurgeCache();
 
         var cacheList:Array<Dynamic> = [];
         var dialogueList:Array<DialogueData>;
@@ -140,6 +140,7 @@ class CacheState extends HelperStates {
         }
 
         loadingScene.callback = function() {
+            Cache.purgeCache(true);
             CacheState.loadAndSwitchState(target, stopMusic, true);
         }
 	}

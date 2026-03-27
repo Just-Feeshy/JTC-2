@@ -1,3 +1,7 @@
+local school_mechanics = require("mod_assets/scripts/components/school_mechanics")
+
+-- Ok to touch variable
+local BF_AND_GF_POS = {x = 0, y = 0}
 
 -- Broken Variables (Don't touch)
 local ARTBOARD_WIDTH = 2362
@@ -54,18 +58,13 @@ local function applyCharacterLayout()
         setSpritePosition("dad", placeX(DAD_LAYOUT.x), placeY(DAD_LAYOUT.y))
     end
 
-    if spriteExist("gf") then
-        setSpritePosition("gf", placeX(GF_LAYOUT.x), placeY(GF_LAYOUT.y))
-        setSpriteVisible("gf", false)
-    end
-
     if spriteExist("boyfriend") then
         setSpritePosition("boyfriend", placeX(BOYFRIEND_LAYOUT.x), placeY(BOYFRIEND_LAYOUT.y))
     end
 end
 
 local function buildCharacterProps()
-    createCharacterSprite("schoolGirlfriendProp", "under-your-spell-gf", placeX(GF_LAYOUT.x), placeY(GF_LAYOUT.y), false)
+    createCharacterSprite("schoolGirlfriendProp", "under-your-spell-gf", placeX(GF_LAYOUT.x + BF_AND_GF_POS.x), placeY(GF_LAYOUT.y + BF_AND_GF_POS.y), false)
 
     createCharacterSprite("schoolPicoProp", "under-your-spell-pico", placeX(PICO_PROP_LAYOUT.x), placeY(PICO_PROP_LAYOUT.y), false)
 end
@@ -188,9 +187,7 @@ function onStepHit()
         characterDance("schoolGirlfriendProp")
     end
 
-	if curStep == 640 then
-		callEvent("jumpspeed", "0.75", "3")
-	end
+	school_mechanics.onStep(curStep)
 end
 
 function onBeatHit()

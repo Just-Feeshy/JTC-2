@@ -735,7 +735,7 @@ class Note extends FeshSprite {
 		if(hasCustomAddon != null) {
 			return hasCustomAddon.giveHealth(isSustainNote);
 		}else {
-			return 0.023;
+			return 0.03;
 		}
 	}
 
@@ -743,7 +743,7 @@ class Note extends FeshSprite {
 		if(hasCustomAddon != null) {
 			return hasCustomAddon.missNoteDamage();
 		}else {
-			return 0.069;
+			return 0.08;
 		}
 	}
 

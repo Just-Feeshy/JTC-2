@@ -822,11 +822,21 @@ class Paths
 	static public function image(key:String, ?library:String):FlxGraphic {
 		var cachedImage:FlxGraphic = ifImageCached(key, library);
 
-		if(cachedImage != null) {
+		if(cachedImage != null && cachedImage.bitmap != null) {
 			return cachedImage;
+		}else if(cachedImage != null) {
+			FlxG.bitmap.removeByKey(cachedImage.key);
 		}
 
 		var path = getPath('images/$key.png', IMAGE, library);
+		var bitmapGraphic:FlxGraphic = FlxG.bitmap.get(path);
+
+		if(bitmapGraphic != null && bitmapGraphic.bitmap != null) {
+			return bitmapGraphic;
+		}else if(bitmapGraphic != null) {
+			FlxG.bitmap.removeByKey(path);
+		}
+
 		var bitmap = loadBitmap(path);
 
 		if(bitmap != null) {

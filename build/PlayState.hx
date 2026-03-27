@@ -112,13 +112,14 @@ class PlayState extends MusicBeatState
     private var disableInputs:Bool = false;
 	private var videoSwitchState:String = "";
 
-	public var camPos:FlxPoint;
-	public var flipWiggle:Int = 1;
-	public var timeFreeze:Float = 0;
-	public var health:Float = 1;
+		public var camPos:FlxPoint;
+		public var flipWiggle:Int = 1;
+		public var timeFreeze:Float = 0;
+		public var health:Float = 1;
+		public var healthLerp:Float = 1;
 
-	public var healthTween:FlxTween;
-	public var prevHealth:Float = 0;
+		public var healthTween:FlxTween;
+		public var prevHealth:Float = 0;
 
 	inline function getGameplayCameraFollowLerp():Float
 	{
@@ -611,8 +612,8 @@ class PlayState extends MusicBeatState
 			iconP1.bpm = SONG.bpm;
 		}
 
-		healthBar = new HealthBar(healthBarBG.x + 4, healthBarBG.y + 4, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
-			'health', 0, 2);
+			healthBar = new HealthBar(healthBarBG.x + 4, healthBarBG.y + 4, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+				'healthLerp', 0, 2);
 		healthBar.subtractIt = SaveData.getData(PLAY_AS_OPPONENT);
 		healthBar.scrollFactor.set();
 
@@ -674,10 +675,6 @@ class PlayState extends MusicBeatState
 		super.create();
 
 		stage.finishedInitGame();
-
-		if(playLua == null || !playLua.hasScript()) {
-			playLua.releaseSongCacheImages(SONG.song);
-		}
 	}
 
 	function updateCache():Void {
@@ -915,23 +912,24 @@ class PlayState extends MusicBeatState
 		startCountdown();
 	}
 
-	function setHealth(hp:Float, shouldTween:Bool = true) {
-		if(healthTween != null) {
-			healthTween.cancel();
-			healthTween.destroy();
+		function setHealth(hp:Float, shouldTween:Bool = true) {
+			if(healthTween != null) {
+				healthTween.cancel();
+				healthTween.destroy();
+				healthTween = null;
+			}
 
-			health = prevHealth;
-		}
-
-		final tempHealth:Float = health;
-		prevHealth = hp;
-
-		if(Math.abs(hp - tempHealth) > 0.02) {
-			healthTween = FlxTween.tween(this, {health: hp}, Math.abs(hp - tempHealth) * 2, {ease: FlxEase.quadOut});
-		}else {
+			prevHealth = hp;
 			health = hp;
 		}
-	}
+
+		function updateHealthBar():Void {
+			if(modifierCheckList('bot mode')) {
+				healthLerp = 2;
+			}else {
+				healthLerp = FlxMath.lerp(healthLerp, health, 0.15);
+			}
+		}
 
 	function createScene(?setup:Bool = true) {
 		if(setup) {
@@ -2152,23 +2150,24 @@ class PlayState extends MusicBeatState
 		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
 		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
 
-		iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.width, 150, 0.1/(Main.framerate/100))));
-		iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.width, 150, 0.1/(Main.framerate/100))));
+			iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.width, 150, 0.1/(Main.framerate/100))));
+			iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.width, 150, 0.1/(Main.framerate/100))));
 
-		iconP1.updateHitbox();
-		iconP2.updateHitbox();
+			iconP1.updateHitbox();
+			iconP2.updateHitbox();
 
-		var iconOffset:Int = 26;
+			if (health > 2)
+				health = 2;
 
-		iconP1.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset);
-		iconP2.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - iconOffset);
+			updateHealthBar();
+			healthBar.updateValueFromParent();
 
-		healthBar.updateValueFromParent();
+			var iconOffset:Int = 26;
 
-		if (health > 2)
-			health = 2;
+			iconP1.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset);
+			iconP2.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - iconOffset);
 
-		if (healthBar.percent < 20) {
+			if (healthBar.percent < 20) {
 			iconP1.animation.curAnim.curFrame = 1;
 		} else {
 			if((iconP1.animation.curAnim.name != 'bf-old' || iconP1.animation.curAnim.name != 'bf-pixel') && iconP1.animation.curAnim.name.split('-')[0] == 'bf' && combo >= 100)
@@ -2548,7 +2547,7 @@ class PlayState extends MusicBeatState
 		cameraMovement(note.noteData, note.isSustainNote);
 
 		if(modifierCheckList('sing drain') && health > 0.2) {
-			setHealth(health - (0.02 * singDrainValue));
+			setHealth(health - (0.04 * singDrainValue));
 		}
 
 		oppositeStrums.forEach(function(spr:Strum) {
@@ -2796,7 +2795,7 @@ class PlayState extends MusicBeatState
 			totalRatingAcc -= 0.75 * GhostTapping.consequence;
 			combo = 0;
 
-			setHealth(health - 0.005);
+			setHealth(health - 0.05);
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 0.75)
 		{
@@ -2809,13 +2808,14 @@ class PlayState extends MusicBeatState
 			totalRatingAcc -= 0.50 * GhostTapping.consequence;
 			combo = 0;
 
-			setHealth(health - 0.002);
+			setHealth(health - 0.03);
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 0.2)
 		{
 			daRating = 'good';
 			score = 200;
 			totalRatingAcc -= 0.10 * GhostTapping.consequence;
+			setHealth(health - 0.015);
 		}else {
 			daRating = 'sick';
 		}
@@ -3308,7 +3308,7 @@ class PlayState extends MusicBeatState
 				breakComboOnMiss();
 				takeDamage(lane, true);
 				songScore -= 10;
-				setHealth(health - 0.04);
+				setHealth(health - 0.08);
 				missClicks++;
 			}
 	}

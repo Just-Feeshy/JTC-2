@@ -263,7 +263,7 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function hasGirlfriend():Bool {
-		if(stage == "funkroad") {
+		if(stage == "funkroad" || stage == "school_house") {
 			return false;
 		}
 
