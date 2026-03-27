@@ -536,11 +536,13 @@ class Note extends FeshSprite {
 	}
 
 	public function getNoteY():Float {
-		return ((Conductor.trackPosition - DefaultHandler.getNoteTime(strumTime)) * Note.AFFECTED_SCROLLSPEED) * (0.45 * FlxMath.roundDecimal(howSpeed, 2));
+		return PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(strumTime), Conductor.trackPosition)
+			* (0.45 * FlxMath.roundDecimal(howSpeed, 2));
 	}
 
 	public function getNoteStrumPosition(offset:Int = 0):Float {
-		return Math.max(0, (((Conductor.trackPosition - strumTime) * (-0.45 * FlxMath.roundDecimal(howSpeed * AFFECTED_SCROLLSPEED, 2))) - offset)/100);
+		return Math.max(0, (((PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(strumTime), Conductor.trackPosition))
+			* (-0.45 * FlxMath.roundDecimal(howSpeed, 2))) - offset)/100);
 	}
 
 	public function setVisibility(visibility:Bool) {

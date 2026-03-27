@@ -107,11 +107,26 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 else
                     playState.opponentAltAnim = eventValue;
             case "jumpspeed":
-                storeTween(eventName, FlxTween.tween(Note, {AFFECTED_SCROLLSPEED : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/1000) * Std.parseFloat(eventValue2), {
-                    onComplete: function(tween:FlxTween) {
-                        cancelTween(eventName);
-                    }
-                }));
+                var targetScrollSpeed:Float = Std.parseFloat(eventValue);
+                var transitionSteps:Float = Std.parseFloat(eventValue2);
+
+                if(Math.isNaN(targetScrollSpeed)) {
+                    targetScrollSpeed = 1;
+                }
+
+                if(Math.isNaN(transitionSteps)) {
+                    transitionSteps = 0;
+                }
+
+                if(playState.playScrollSpeed != null) {
+                    playState.playScrollSpeed.tweenTo(
+                        targetScrollSpeed,
+                        Conductor.trackPosition,
+                        (Conductor.stepCrochet / 1000) * transitionSteps
+                    );
+                } else {
+                    Note.AFFECTED_SCROLLSPEED = targetScrollSpeed;
+                }
             case "sicko shake":
                 DefaultHandler.shakeCamTimer = Std.parseInt(eventValue);
 			    DefaultHandler.shakeCamTimerHUD = Std.parseInt(eventValue2);
@@ -189,13 +204,25 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 if(playState.eventStorage.contains(eventValue)) {
                     playState.eventStorage.remove(eventValue);
                     setModifierToDefault(eventValue);
+
+                    if(eventValue == "jumpspeed" && playState.playScrollSpeed != null) {
+                        playState.playScrollSpeed.snapTo(1, Conductor.trackPosition);
+                    }
                 }
 
                 if(playState.eventStorage.contains(eventValue2)) {
                     playState.eventStorage.remove(eventValue2);
                     setModifierToDefault(eventValue2);
+
+                    if(eventValue2 == "jumpspeed" && playState.playScrollSpeed != null) {
+                        playState.playScrollSpeed.snapTo(1, Conductor.trackPosition);
+                    }
                 }
             case "clear all":
+                if(playState.playScrollSpeed != null) {
+                    playState.playScrollSpeed.snapTo(1, Conductor.trackPosition);
+                }
+
                 reflushModifiers();
                 playState.eventStorage.splice(0, playState.eventStorage.length);
                 playState.eventStorage = [];
@@ -238,6 +265,10 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
     }
 
     function cancelTween(name:String):Void {
+        if(eventTweens == null || !eventTweens.exists(name)) {
+            return;
+        }
+
         eventTweens.get(name).cancel();
         eventTweens.get(name).destroy();
         eventTweens.remove(name);

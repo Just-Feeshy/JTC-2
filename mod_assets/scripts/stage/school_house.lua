@@ -1,3 +1,5 @@
+
+-- Broken Variables (Don't touch)
 local ARTBOARD_WIDTH = 2362
 local ARTBOARD_HEIGHT = 1496
 local STAGE_LAYOUT_SCALE_MULTIPLIER = 2.15
@@ -185,6 +187,10 @@ function onStepHit()
     if spriteExist("schoolGirlfriendProp") then
         characterDance("schoolGirlfriendProp")
     end
+
+	if curStep == 640 then
+		callEvent("jumpspeed", "0.75", "3")
+	end
 end
 
 function onBeatHit()

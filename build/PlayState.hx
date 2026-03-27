@@ -170,6 +170,7 @@ class PlayState extends MusicBeatState
 	private var ownedCamNOTE:CameraNote;
 	private var ownedCamNoteSustain:FeshCamera;
 	private var playLua:PlayLua;
+	public var playScrollSpeed:PlayScrollSpeed;
 
 	//Note Stuff Funk U
 	private var trippyWiggle:WiggleEffect = new WiggleEffect();
@@ -316,6 +317,8 @@ class PlayState extends MusicBeatState
 	override public function new(?muted:Bool) {
 		CustomNoteHandler.spawn();
 		playLua = new PlayLua(this);
+		playScrollSpeed = new PlayScrollSpeed();
+		PlayScrollSpeed.active = playScrollSpeed;
 
 		Note.AFFECTED_SCROLLSPEED = 1;
 		Note.AFFECTED_STRUMTIME = 0;
@@ -1993,7 +1996,9 @@ class PlayState extends MusicBeatState
 	}
 
 	function calculateNoteY(note:Note, downscroll:Bool):Float {
-		var noteCacurations:Float = ((-0.45 * (downscroll ? -1 : 1)) * (Conductor.trackPosition - DefaultHandler.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * FlxMath.roundDecimal(note.howSpeed, 2));
+		var noteCacurations:Float = (-0.45 * (downscroll ? -1 : 1))
+			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.trackPosition)
+			* FlxMath.roundDecimal(note.howSpeed, 2);
 		var yAddon:Float = 0;
 		
 		if(note.height < 50 && note.isSustainNote) {
@@ -2011,7 +2016,9 @@ class PlayState extends MusicBeatState
 	}
 
 	function cutOff(note:Note, downscroll:Bool):Float {
-		var noteCacurations:Float = ((-0.45 * (downscroll ? -1 : 1)) * (Conductor.trackPosition - DefaultHandler.getNoteTime(note.strumTime)) * Note.AFFECTED_SCROLLSPEED * FlxMath.roundDecimal(note.howSpeed, 2));
+		var noteCacurations:Float = (-0.45 * (downscroll ? -1 : 1))
+			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.trackPosition)
+			* FlxMath.roundDecimal(note.howSpeed, 2);
 		var yAddon:Float = 0;
 		
 		if(note.height < 50 && note.isSustainNote) {
@@ -4222,6 +4229,11 @@ class PlayState extends MusicBeatState
 		}
 
 		DefaultHandler.kill();
+
+		if(playScrollSpeed != null) {
+			playScrollSpeed.destroy();
+			playScrollSpeed = null;
+		}
 
 		clearCache();
 
