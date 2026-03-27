@@ -20,7 +20,9 @@ import openfl.net.FileReference;
 import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
 import sys.FileSystem;
+import sys.io.File;
 import haxe.io.Bytes;
+import haxe.io.Path;
 import haxe.Json;
 
 #if json2object
@@ -939,13 +941,93 @@ class DialogueCreatorState extends MusicBeatState {
     function safelyGetAssetInfo(value:String, file:DialogueFileData):Bytes {
         if(file != null) {
             if(value == "sprite") {
-                return file.spriteData;
+                if(file.spriteData != null) {
+                    return file.spriteData;
+                }
+
+                if(file.spritePath != null && file.spritePath.trim() != "") {
+                    return loadDialogueAssetBytes(file.spritePath);
+                }
             }else {
-                return file.xmlData;
+                if(file.xmlData != null) {
+                    return file.xmlData;
+                }
+
+                if(file.xmlPath != null && file.xmlPath.trim() != "") {
+                    return loadDialogueAssetBytes(file.xmlPath);
+                }
             }
         }
 
         return null;
+    }
+
+    function loadDialogueAssetBytes(path:String):Bytes {
+        if(path == null || path.trim() == "") {
+            return null;
+        }
+
+        var normalizedPath = normalizeDialogueAssetPath(path);
+
+        if(FileSystem.exists(normalizedPath)) {
+            return File.getBytes(normalizedPath);
+        }
+
+        return null;
+    }
+
+    function normalizeDialogueAssetPath(path:String):String {
+        if(path == null || path.trim() == "") {
+            return "";
+        }
+
+        var normalizedPath = Path.normalize(path);
+        var cwd = Path.normalize(Sys.getCwd());
+
+        if(normalizedPath.startsWith(cwd)) {
+            normalizedPath = normalizedPath.substr(cwd.length);
+
+            while(normalizedPath.startsWith("/") || normalizedPath.startsWith("\\")) {
+                normalizedPath = normalizedPath.substr(1);
+            }
+        }
+
+        return normalizedPath;
+    }
+
+    function getSelectedDialogueAssetPath():String {
+        #if sys
+        var selectedPath:String = @:privateAccess _file.__path;
+        return normalizeDialogueAssetPath(selectedPath);
+        #else
+        return null;
+        #end
+    }
+
+    function serializeDialogueSprites():Array<Dynamic> {
+        var output:Array<Dynamic> = [];
+
+        for(entry in totalSprites) {
+            var serialized:Dynamic = {
+                name: entry.name
+            };
+
+            if(entry.spritePath != null && entry.spritePath.trim() != "") {
+                Reflect.setField(serialized, "spritePath", normalizeDialogueAssetPath(entry.spritePath));
+            } else if(entry.spriteData != null) {
+                Reflect.setField(serialized, "spriteData", entry.spriteData);
+            }
+
+            if(entry.xmlPath != null && entry.xmlPath.trim() != "") {
+                Reflect.setField(serialized, "xmlPath", normalizeDialogueAssetPath(entry.xmlPath));
+            } else if(entry.xmlData != null) {
+                Reflect.setField(serialized, "xmlData", entry.xmlData);
+            }
+
+            output.push(serialized);
+        }
+
+        return output;
     }
 
     function attachKeysToEditor(event:KeyboardEvent):Void {
@@ -957,9 +1039,15 @@ class DialogueCreatorState extends MusicBeatState {
     }
 
     function saveLevel():Void {
-        var json = {
+        var json:Dynamic = {
 			"info": _info.info
 		};
+
+        var serializedSprites = serializeDialogueSprites();
+
+        if(serializedSprites.length > 0) {
+            Reflect.setField(json, "totalSprites", serializedSprites);
+        }
 
         var data:String = Json.stringify(json, "\t");
 
@@ -1014,14 +1102,16 @@ class DialogueCreatorState extends MusicBeatState {
                 if(fileType.contains(".xml")) {
                     for(i in 0...totalSprites.length) {
                         if(spriteSelector.selectedLabel == totalSprites[i].name) {
-                            totalSprites[i].xmlData = FeshBytesHandler.bytesFromArray(_file.data);
+                            totalSprites[i].xmlPath = getSelectedDialogueAssetPath();
+                            totalSprites[i].xmlData = null;
                             break;
                         }
                     }
                 }else if(fileType.contains(".png")) {
                     for(i in 0...totalSprites.length) {
                         if(spriteSelector.selectedLabel == totalSprites[i].name) {
-                            totalSprites[i].spriteData = FeshBytesHandler.bytesFromArray(_file.data);
+                            totalSprites[i].spritePath = getSelectedDialogueAssetPath();
+                            totalSprites[i].spriteData = null;
                             break;
                         }
                     }

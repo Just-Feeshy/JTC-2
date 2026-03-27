@@ -21,6 +21,10 @@ import lime.utils.AssetType; //I got bored.
 import lime.utils.Assets;
 import haxe.io.Bytes;
 import haxe.Json;
+#if sys
+import sys.FileSystem;
+import sys.io.File;
+#end
 
 import SaveData.SaveType;
 import IDialogue;
@@ -93,8 +97,8 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     function refreshDisplay():Void {
         if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info.info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
             if(totalExist(_info.info[dialogueScene].leftPortrait.assetID, IMAGE)) {
-                leftPortrait.implementXML(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID].xmlData);
-                leftPortrait.implementBitmap(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID].spriteData);
+                leftPortrait.implementXML(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID], false));
+                leftPortrait.implementBitmap(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID], true));
                 leftPortrait.compileSprite();
             }else {
                 leftPortrait.animation.destroyAnimations();
@@ -106,8 +110,8 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
         if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info.info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
             if(totalExist(_info.info[dialogueScene].rightPortrait.assetID, IMAGE)) {
-                rightPortrait.implementXML(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID].xmlData);
-                rightPortrait.implementBitmap(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID].spriteData);
+                rightPortrait.implementXML(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID], false));
+                rightPortrait.implementBitmap(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID], true));
                 rightPortrait.compileSprite();
             }else {
                 rightPortrait.animation.destroyAnimations();
@@ -119,8 +123,8 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
         if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info.info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
             if(totalExist(_info.info[dialogueScene].speechBubble.assetID, IMAGE)) {
-                speechBubble.implementXML(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID].xmlData);
-                speechBubble.implementBitmap(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID].spriteData);
+                speechBubble.implementXML(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID], false));
+                speechBubble.implementBitmap(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID], true));
                 speechBubble.compileSprite();
             }else {
                 speechBubble.animation.destroyAnimations();
@@ -161,6 +165,40 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         dialogueScene++;
     }
 
+    function resolveDialogueAssetBytes(file:DialogueFileData, isSprite:Bool):Bytes {
+        if(file == null) {
+            return null;
+        }
+
+        if(isSprite) {
+            if(file.spriteData != null) {
+                return file.spriteData;
+            }
+
+            if(file.spritePath != null && file.spritePath.trim() != "") {
+                #if sys
+                if(FileSystem.exists(file.spritePath)) {
+                    return File.getBytes(file.spritePath);
+                }
+                #end
+            }
+        } else {
+            if(file.xmlData != null) {
+                return file.xmlData;
+            }
+
+            if(file.xmlPath != null && file.xmlPath.trim() != "") {
+                #if sys
+                if(FileSystem.exists(file.xmlPath)) {
+                    return File.getBytes(file.xmlPath);
+                }
+                #end
+            }
+        }
+
+        return null;
+    }
+
     function totalExist(id:Int, type:AssetType):Bool {
         if(type == IMAGE && _info.totalSprites == null) {
             return false;
@@ -171,7 +209,13 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
 
         if(type == IMAGE && _info.totalSprites[id] != null) {
-            return true;
+            var file = _info.totalSprites[id];
+
+            if((file.spriteData != null && file.xmlData != null)
+            || ((file.spritePath != null && file.spritePath.trim() != "")
+                && (file.xmlPath != null && file.xmlPath.trim() != ""))) {
+                return true;
+            }
         }
 
         if(type == SOUND && _info.totalSounds[id] != null) {

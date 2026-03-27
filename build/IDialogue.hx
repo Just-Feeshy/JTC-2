@@ -17,8 +17,10 @@ interface IDialogue extends IFlxDestroyable {
 
 typedef DialogueFileData = {
     var name:String;
-    var spriteData:Bytes;
-    var xmlData:Bytes;
+    @:optional var spriteData:Bytes;
+    @:optional var xmlData:Bytes;
+    @:optional var spritePath:String;
+    @:optional var xmlPath:String;
 }
 
 typedef DialogueSpriteData = {

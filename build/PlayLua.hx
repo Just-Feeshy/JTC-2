@@ -22,12 +22,22 @@ class PlayLua
 		this.playState = playState;
 	}
 
-	public function hasScript():Bool
+	public inline function hasScript():Bool
 	{
 		#if (USING_LUA && cpp)
 		return !luaDetachedForStateSwitch && getLua() != null;
 		#else
 		return false;
+		#end
+	}
+
+	public inline function releaseSongCacheImages(song:String):Void {
+		#if (USING_LUA && cpp)
+		if(!hasScript()) {
+			Cache.releaseSongCacheImages(song);
+		}
+		#else
+		Cache.releaseSongCacheImages(song);
 		#end
 	}
 

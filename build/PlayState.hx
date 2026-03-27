@@ -613,7 +613,6 @@ class PlayState extends MusicBeatState
 
 		healthBar = new HealthBar(healthBarBG.x + 4, healthBarBG.y + 4, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
 			'health', 0, 2);
-			
 		healthBar.subtractIt = SaveData.getData(PLAY_AS_OPPONENT);
 		healthBar.scrollFactor.set();
 
@@ -625,12 +624,10 @@ class PlayState extends MusicBeatState
 
 		getLuaScript();
 
-		#if (USING_LUA && cpp)
 		if(playLua.hasScript()) {
 			generateStaticLua();
 			updateLuaVars();
 		}
-		#end
 
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
@@ -678,13 +675,9 @@ class PlayState extends MusicBeatState
 
 		stage.finishedInitGame();
 
-		#if (USING_LUA && cpp)
 		if(playLua == null || !playLua.hasScript()) {
-			Cache.releaseSongCacheImages(SONG.song);
+			playLua.releaseSongCacheImages(SONG.song);
 		}
-		#else
-		Cache.releaseSongCacheImages(SONG.song);
-		#end
 	}
 
 	function updateCache():Void {
@@ -2524,11 +2517,9 @@ class PlayState extends MusicBeatState
 				}
 			});
 
-			#if (USING_LUA && cpp)
 			if(playLua.hasScript()) {
 				updateLuaVars();
 			}
-			#end
 		}
 	}
 
@@ -4090,11 +4081,9 @@ class PlayState extends MusicBeatState
 				camNOTE.zoom += 0.03 * bumpForce;
 			}
 
-			#if (USING_LUA && cpp)
 			if(playLua.hasScript()) {
 				updatePerSectionLuaVars();
 			}
-			#end
 		}
 
 		iconP1.setGraphicSize(Std.int(iconP1.width + 30));
