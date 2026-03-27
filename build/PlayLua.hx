@@ -276,14 +276,14 @@ class PlayLua
 		playState.addCallback("insertSpriteToStage", function(position:Int, name:String) {
 			var spr:FlxSprite = getSprite(name);
 
-			if(spr != null)
+			if(spr != null && playState.stage.members.indexOf(spr) < 0)
 				playState.stage.insert(position, spr);
 		});
 
 		playState.addCallback("addSpriteToStage", function(name:String) {
 			var spr:FlxSprite = getSprite(name);
 
-			if(spr != null)
+			if(spr != null && playState.stage.members.indexOf(spr) < 0)
 				playState.stage.add(spr);
 		});
 

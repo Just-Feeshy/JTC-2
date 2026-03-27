@@ -1,0 +1,99 @@
+{
+    "file": "school_house/Dearest_BF_.xml",
+    "animations": {
+        "idle": {
+            "prefix": "BF idle dance",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 0]
+        },
+        "singUP": {
+            "prefix": "BF NOTE UP0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-20, 32]
+        },
+        "singRIGHT": {
+            "prefix": "BF NOTE RIGHT0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-28, 12]
+        },
+        "singLEFT": {
+            "prefix": "BF NOTE LEFT0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [16, -1]
+        },
+        "singDOWN": {
+            "prefix": "BF NOTE DOWN0",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-15, -30]
+        },
+        "singUPmiss": {
+            "prefix": "BF NOTE UP MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-18, 32]
+        },
+        "singRIGHTmiss": {
+            "prefix": "BF NOTE RIGHT MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-24, 12]
+        },
+        "singLEFTmiss": {
+            "prefix": "BF NOTE LEFT MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [14, -1]
+        },
+        "singDOWNmiss": {
+            "prefix": "BF NOTE DOWN MISS",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-12, -30]
+        },
+        "hey": {
+            "prefix": "BF HEY!!",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 4]
+        },
+        "firstDeath": {
+            "prefix": "BF dies",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 9]
+        },
+        "deathLoop": {
+            "prefix": "BF Dead Loop",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 5]
+        },
+        "deathConfirm": {
+            "prefix": "BF Dead confirm",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 5]
+        },
+        "scared": {
+            "prefix": "BF idle shaking",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 10]
+        }
+    },
+    "position": {
+        "x": 0,
+        "y": 0,
+        "camPosX": 0,
+        "camPosY": -90
+    },
+    "icon": [26, 1, 26],
+    "playAnim": "idle",
+    "isPlayer": true,
+    "pixel": false
+}

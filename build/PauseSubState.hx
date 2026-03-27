@@ -124,7 +124,14 @@ class PauseSubState extends MusicBeatSubstate
                     pauseMusic = null;
 
 					PlayState.skipDialogueOnNextLoad();
-					CacheState.loadAndSwitchState(new PlayState(), true, false);
+
+					var playState:PlayState = Std.isOfType(FlxG.state, PlayState) ? cast FlxG.state : null;
+
+					if(playState != null) {
+						playState.resetScriptedCameraState(false);
+					}
+
+					FlxG.resetState();
 				case "Exit to menu":
 					FlxG.switchState(new MainMenuState());
 				case "Change Controls":

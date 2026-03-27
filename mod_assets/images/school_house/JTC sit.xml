@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="JTC sit.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="JTC SITTING DOWN0000" x="10" y="10" width="1014" height="969" frameX="0" frameY="-5" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0001" x="10" y="10" width="1014" height="969" frameX="0" frameY="-5" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0002" x="1074" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0003" x="1074" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0004" x="2132" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0005" x="2132" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0006" x="2132" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0007" x="2132" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0008" x="2132" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0009" x="2132" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING DOWN0010" x="2132" y="10" width="1008" height="974" frameX="0" frameY="0" frameWidth="1014" frameHeight="974"/>
+	<SubTexture name="JTC SITTING IDLE0000" x="3190" y="10" width="1014" height="970" frameX="0" frameY="-5" frameWidth="1014" frameHeight="975"/>
+	<SubTexture name="JTC SITTING IDLE0001" x="3190" y="10" width="1014" height="970" frameX="0" frameY="-5" frameWidth="1014" frameHeight="975"/>
+	<SubTexture name="JTC SITTING IDLE0002" x="4254" y="10" width="1014" height="970" frameX="0" frameY="-5" frameWidth="1014" frameHeight="975"/>
+	<SubTexture name="JTC SITTING IDLE0003" x="5318" y="10" width="1014" height="970" frameX="0" frameY="-5" frameWidth="1014" frameHeight="975"/>
+	<SubTexture name="JTC SITTING IDLE0004" x="6382" y="10" width="1014" height="973" frameX="0" frameY="-2" frameWidth="1014" frameHeight="975"/>
+	<SubTexture name="JTC SITTING IDLE0005" x="10" y="1034" width="1014" height="973" frameX="0" frameY="-2" frameWidth="1014" frameHeight="975"/>
+	<SubTexture name="JTC SITTING IDLE0006" x="1074" y="1034" width="1014" height="975"/>
+	<SubTexture name="JTC SITTING IDLE0007" x="2138" y="1034" width="1014" height="975"/>
+	<SubTexture name="JTC SITTING IDLE0008" x="3202" y="1034" width="1014" height="975"/>
+	<SubTexture name="JTC SITTING IDLE0009" x="4266" y="1034" width="1014" height="975"/>
+	<SubTexture name="JTC SITTING IDLE0010" x="4266" y="1034" width="1014" height="975"/>
+	<SubTexture name="JTC SITTING LEFT0000" x="5330" y="1034" width="1006" height="1070" frameX="0" frameY="-7" frameWidth="1009" frameHeight="1077"/>
+	<SubTexture name="JTC SITTING LEFT0001" x="5330" y="1034" width="1006" height="1070" frameX="0" frameY="-7" frameWidth="1009" frameHeight="1077"/>
+	<SubTexture name="JTC SITTING LEFT0002" x="6386" y="1034" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0003" x="6386" y="1034" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0004" x="10" y="2161" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0005" x="10" y="2161" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0006" x="10" y="2161" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0007" x="10" y="2161" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0008" x="10" y="2161" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0009" x="10" y="2161" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING LEFT0010" x="10" y="2161" width="1009" height="1077"/>
+	<SubTexture name="JTC SITTING RIGHT0000" x="1069" y="2161" width="1154" height="935" frameX="0" frameY="-6" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0001" x="1069" y="2161" width="1154" height="935" frameX="0" frameY="-6" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0002" x="2273" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0003" x="2273" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0004" x="3463" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0005" x="3463" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0006" x="3463" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0007" x="3463" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0008" x="3463" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING RIGHT0009" x="3463" y="2161" width="1140" height="941" frameX="0" frameY="0" frameWidth="1154" frameHeight="941"/>
+	<SubTexture name="JTC SITTING UP0000" x="4653" y="2161" width="1002" height="997" frameX="0" frameY="0" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0001" x="4653" y="2161" width="1002" height="997" frameX="0" frameY="0" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0002" x="5705" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0003" x="5705" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0004" x="6762" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0005" x="6762" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0006" x="6762" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0007" x="6762" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0008" x="6762" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0009" x="6762" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+	<SubTexture name="JTC SITTING UP0010" x="6762" y="2161" width="1007" height="984" frameX="0" frameY="-13" frameWidth="1007" frameHeight="997"/>
+</TextureAtlas>

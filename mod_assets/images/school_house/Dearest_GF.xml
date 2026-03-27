@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Dearest_GF.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="gf full idle0000" x="10" y="10" width="758" height="670" frameX="-2" frameY="-16" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0001" x="10" y="10" width="758" height="670" frameX="-2" frameY="-16" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0002" x="818" y="10" width="759" height="678" frameX="-1" frameY="-10" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0003" x="818" y="10" width="759" height="678" frameX="-1" frameY="-10" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0004" x="1627" y="10" width="758" height="687" frameX="0" frameY="-3" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0005" x="1627" y="10" width="758" height="687" frameX="0" frameY="-3" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0006" x="2435" y="10" width="757" height="689" frameX="0" frameY="-1" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0007" x="2435" y="10" width="757" height="689" frameX="0" frameY="-1" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0008" x="3242" y="10" width="757" height="682" frameX="-1" frameY="-6" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0009" x="10" y="749" width="759" height="670" frameX="-3" frameY="-15" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0010" x="10" y="749" width="759" height="670" frameX="-3" frameY="-15" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0011" x="819" y="749" width="757" height="678" frameX="-3" frameY="-9" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0012" x="819" y="749" width="757" height="678" frameX="-3" frameY="-9" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0013" x="1626" y="749" width="757" height="687" frameX="-2" frameY="-2" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0014" x="1626" y="749" width="757" height="687" frameX="-2" frameY="-2" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0015" x="2433" y="749" width="757" height="690" frameX="-1" frameY="0" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0016" x="2433" y="749" width="757" height="690" frameX="-1" frameY="0" frameWidth="762" frameHeight="690"/>
+	<SubTexture name="gf full idle0017" x="3240" y="749" width="758" height="683" frameX="-2" frameY="-3" frameWidth="762" frameHeight="690"/>
+</TextureAtlas>

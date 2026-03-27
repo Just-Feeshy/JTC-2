@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Smoke.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="bg smoke_ring_animation0000" x="10" y="10" width="1936" height="772" frameX="-3" frameY="-1" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0001" x="10" y="10" width="1936" height="772" frameX="-3" frameY="-1" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0002" x="10" y="10" width="1936" height="772" frameX="-3" frameY="-1" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0003" x="10" y="10" width="1936" height="772" frameX="-3" frameY="-1" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0004" x="1996" y="10" width="1938" height="772" frameX="-2" frameY="-4" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0005" x="1996" y="10" width="1938" height="772" frameX="-2" frameY="-4" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0006" x="1996" y="10" width="1938" height="772" frameX="-2" frameY="-4" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0007" x="1996" y="10" width="1938" height="772" frameX="-2" frameY="-4" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0008" x="10" y="832" width="1943" height="773" frameX="0" frameY="0" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0009" x="10" y="832" width="1943" height="773" frameX="0" frameY="0" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0010" x="10" y="832" width="1943" height="773" frameX="0" frameY="0" frameWidth="1943" frameHeight="776"/>
+	<SubTexture name="bg smoke_ring_animation0011" x="10" y="832" width="1943" height="773" frameX="0" frameY="0" frameWidth="1943" frameHeight="776"/>
+</TextureAtlas>

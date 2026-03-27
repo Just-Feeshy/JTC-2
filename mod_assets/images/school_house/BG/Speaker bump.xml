@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Speaker bump.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="speaker bump0000" x="10" y="10" width="394" height="294" frameX="-7" frameY="-9" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0001" x="10" y="10" width="394" height="294" frameX="-7" frameY="-9" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0002" x="454" y="10" width="433" height="303" frameX="-3" frameY="0" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0003" x="454" y="10" width="433" height="303" frameX="-3" frameY="0" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0004" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0005" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0006" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0007" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0008" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0009" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0010" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0011" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0012" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+	<SubTexture name="speaker bump0013" x="10" y="363" width="408" height="294" frameX="0" frameY="-8" frameWidth="436" frameHeight="303"/>
+</TextureAtlas>

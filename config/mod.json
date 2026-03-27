@@ -7,7 +7,8 @@
         "stages": [
             "stage",
             "funkstreet",
-            "funkroad"
+            "funkroad",
+            "school_house"
         ],
 
         "events": [
@@ -72,7 +73,8 @@
                 "Funk-Off",
                 "Ping-Pong",
                 "I-Am-Blue",
-				"Frostbeat"
+				"Frostbeat",
+                "Under-Your-Spell"
             ]
         }
     },

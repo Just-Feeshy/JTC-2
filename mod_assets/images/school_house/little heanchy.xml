@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="little heanchy.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="3 little guys0000" x="10" y="10" width="1932" height="601" frameX="0" frameY="-5" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0001" x="10" y="10" width="1932" height="601" frameX="0" frameY="-5" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0002" x="1992" y="10" width="1932" height="600" frameX="0" frameY="-6" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0003" x="1992" y="10" width="1932" height="600" frameX="0" frameY="-6" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0004" x="10" y="661" width="1932" height="599" frameX="0" frameY="-7" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0005" x="1992" y="661" width="1932" height="599" frameX="0" frameY="-7" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0006" x="10" y="1310" width="1932" height="600" frameX="0" frameY="-6" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0007" x="1992" y="1310" width="1932" height="600" frameX="0" frameY="-6" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0008" x="10" y="1960" width="1932" height="605" frameX="0" frameY="-1" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0009" x="1992" y="1960" width="1932" height="605" frameX="0" frameY="-1" frameWidth="1932" frameHeight="606"/>
+	<SubTexture name="3 little guys0010" x="10" y="2615" width="1932" height="606"/>
+	<SubTexture name="3 little guys0011" x="10" y="2615" width="1932" height="606"/>
+	<SubTexture name="3 little guys0012" x="1992" y="2615" width="1932" height="606"/>
+	<SubTexture name="3 little guys0013" x="1992" y="2615" width="1932" height="606"/>
+</TextureAtlas>

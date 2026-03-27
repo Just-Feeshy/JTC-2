@@ -1,7 +1,7 @@
 {
 	"song": {
-		"player1": "bf",
-		"gfVersion": "gf",
+		"player1": "under-your-spell-bf",
+		"gfVersion": "under-your-spell-gf",
 		"notes": [
 			{
 				"sectionBeats": 4,
@@ -3937,10 +3937,11 @@
 			}
 		],
 		"events": [],
-		"player2": "dad",
+		"player2": "under-your-spell-jtc",
+		"girlfriend": "under-your-spell-gf",
 		"song": "Under-Your-Spell",
 		"needsVoices": true,
-		"stage": "stage",
+		"stage": "school_house",
 		"speed": 3.70000000000001,
 		"bpm": 135
 	}

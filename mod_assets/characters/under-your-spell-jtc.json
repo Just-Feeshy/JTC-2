@@ -1,0 +1,45 @@
+{
+    "file": "school_house/JTC sit.xml",
+    "animations": {
+        "idle": {
+            "prefix": "JTC SITTING IDLE",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 0]
+        },
+        "singUP": {
+            "prefix": "JTC SITTING UP",
+            "framerate": 24,
+            "looped": false,
+            "offset": [4, 27]
+        },
+        "singRIGHT": {
+            "prefix": "JTC SITTING RIGHT",
+            "framerate": 24,
+            "looped": false,
+            "offset": [-72, -35]
+        },
+        "singLEFT": {
+            "prefix": "JTC SITTING LEFT",
+            "framerate": 24,
+            "looped": false,
+            "offset": [8, 100]
+        },
+        "singDOWN": {
+            "prefix": "JTC SITTING DOWN",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, -1]
+        }
+    },
+    "position": {
+        "x": 0,
+        "y": 0,
+        "camPosX": 10,
+        "camPosY": -210
+    },
+    "icon": [24, 25, 30],
+    "playAnim": "idle",
+    "isPlayer": false,
+    "pixel": false
+}

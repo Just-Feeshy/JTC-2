@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Smoke2.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="fg smoke_ring_animation copy0000" x="10" y="10" width="1656" height="276" frameX="-2" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0001" x="10" y="10" width="1656" height="276" frameX="-2" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0002" x="10" y="10" width="1656" height="276" frameX="-2" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0003" x="10" y="10" width="1656" height="276" frameX="-2" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0004" x="10" y="336" width="1662" height="273" frameX="0" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0005" x="10" y="336" width="1662" height="273" frameX="0" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0006" x="10" y="336" width="1662" height="273" frameX="0" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0007" x="10" y="336" width="1662" height="273" frameX="0" frameY="-1" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0008" x="10" y="659" width="1656" height="277" frameX="-1" frameY="0" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0009" x="10" y="659" width="1656" height="277" frameX="-1" frameY="0" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0010" x="10" y="659" width="1656" height="277" frameX="-1" frameY="0" frameWidth="1662" frameHeight="277"/>
+	<SubTexture name="fg smoke_ring_animation copy0011" x="10" y="659" width="1656" height="277" frameX="-1" frameY="0" frameWidth="1662" frameHeight="277"/>
+</TextureAtlas>

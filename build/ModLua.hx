@@ -775,6 +775,16 @@ class ModLua {
             spr.alpha = alpha;
         });
 
+        Lua_helper.add_callback(lua, "setSpriteVisible", function(name:String, visible:Bool) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return;
+            }
+
+            spr.visible = visible;
+        });
+
         Lua_helper.add_callback(lua, "setScrollFactorToSprite", function(name:String, x:Int, y:Int) {
             var spr:FlxSprite = getSprite(name);
 
@@ -933,7 +943,9 @@ class ModLua {
                 return;
             }
 
-            FlxG.state.add(spr);
+            if(FlxG.state.members.indexOf(spr) < 0) {
+                FlxG.state.add(spr);
+            }
         });
 
         Lua_helper.add_callback(lua, "insertSpriteToState", function(position:Int, name:String) {
@@ -943,7 +955,9 @@ class ModLua {
                 return;
             }
 
-            FlxG.state.insert(position, spr);
+            if(FlxG.state.members.indexOf(spr) < 0) {
+                FlxG.state.insert(position, spr);
+            }
         });
 
         Lua_helper.add_callback(lua, "destroySprite", function(name:String) {
@@ -2285,7 +2299,29 @@ class ModLua {
 
     public function addCallback(name:String, method:Dynamic):Void {
         #if (USING_LUA && cpp)
-        Lua_helper.add_callback(lua, name, method);
+        Lua_helper.add_callback(lua, name, Reflect.makeVarArgs(function(args:Array<Dynamic>) {
+            try {
+                return Reflect.callMethod(null, method, args);
+            }catch(e:haxe.Exception) {
+                var errorMessage:String = formatLuaCallbackError(e.message, haxe.CallStack.toString(e.stack));
+
+                if(lua != null) {
+                    Lua.pushstring(lua, errorMessage);
+                    Lua.error(lua);
+                }
+
+                throw e;
+            }catch(e:Dynamic) {
+                var errorMessage:String = formatLuaCallbackError(Std.string(e), null);
+
+                if(lua != null) {
+                    Lua.pushstring(lua, errorMessage);
+                    Lua.error(lua);
+                }
+
+                throw e;
+            }
+        }));
         #end
     }
 
@@ -2592,6 +2628,22 @@ class ModLua {
     * because I don't wanna make my own.
     */
     #if (USING_LUA && cpp)
+    function formatLuaCallbackError(message:String, stackTrace:String):String {
+        if(message == null || message.trim() == "") {
+            message = "Unknown callback error";
+        }
+
+        if(stackTrace != null) {
+            stackTrace = stackTrace.trim();
+        }
+
+        if(stackTrace != null && stackTrace != "" && stackTrace.indexOf(message) == -1) {
+            return message + "\n" + stackTrace;
+        }
+
+        return message;
+    }
+
     function getErrorMessage(status:Int):String {
 		#if USING_LUA
 		var v:String = Lua.tostring(lua, -1);

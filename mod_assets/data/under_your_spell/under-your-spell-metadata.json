@@ -1,0 +1,22 @@
+{
+    "timeFormat": "ms",
+    "artist": "",
+    "charter": "",
+    "playData": {
+        "stage": "school_house",
+        "noteStyle": "funkin",
+        "difficulties": ["hard"],
+        "characters": {
+            "girlfriend": "under-your-spell-gf",
+            "opponent": "under-your-spell-jtc",
+            "player": "under-your-spell-bf"
+        }
+    },
+    "songName": "Under Your Spell",
+    "timeChanges": [
+        {"t": 0, "bpm": 150},
+        {"t": 117333.333333333, "bpm": 135}
+    ],
+    "generatedBy": "Codex",
+    "version": "2.2.3"
+}

@@ -1,0 +1,21 @@
+{
+    "file": "school_house/Dearest_GF.xml",
+    "animations": {
+        "idle": {
+            "prefix": "gf full idle",
+            "framerate": 24,
+            "looped": false,
+            "offset": [0, 0]
+        }
+    },
+    "position": {
+        "x": 0,
+        "y": 0,
+        "camPosX": 0,
+        "camPosY": -140
+    },
+    "icon": [28, 29, 28],
+    "playAnim": "idle",
+    "isPlayer": false,
+    "pixel": false
+}
