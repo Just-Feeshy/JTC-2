@@ -1,21 +1,21 @@
 local school_mechanics = require("mod_assets/scripts/components/school_mechanics")
 
 -- Ok to touch variable
-local BF_AND_GF_POS = {x = 0, y = 0}
+local BF_AND_GF_POS = {x = 0, y = -100}
 
 -- Broken Variables (Don't touch)
 local ARTBOARD_WIDTH = 2362
 local ARTBOARD_HEIGHT = 1496
 local STAGE_LAYOUT_SCALE_MULTIPLIER = 2.15
-local DEFAULT_STAGE_CAMERA_ZOOM = 0.67
+local DEFAULT_STAGE_CAMERA_ZOOM = 0.6
 local STAGE_SAFE_FRAME_MULTIPLIER = 1.0
 local DEFAULT_STAGE_CAMERA_FOCUS = {x = ARTBOARD_WIDTH * 0.5, y = ARTBOARD_HEIGHT * 0.505}
 local DEFAULT_STAGE_CAMERA_FOCUS_LERP = 0.09
 local DAD_LAYOUT = {x = 238, y = 520}
 local GF_LAYOUT = {x = 1102, y = 786}
 local BOYFRIEND_LAYOUT = {x = 1452, y = 908}
-local PICO_PROP_LAYOUT = {x = 1778, y = 122}
-local LITTLE_HEANCHY_LAYOUT = {x = 690, y = 430}
+local PICO_PROP_LAYOUT = {x = 1478, y = 122}
+local LITTLE_HEANCHY_LAYOUT = {x = 390, y = 430}
 
 local stageScale = 1
 local stageOriginX = 0
@@ -59,12 +59,15 @@ local function applyCharacterLayout()
     end
 
     if spriteExist("boyfriend") then
-        setSpritePosition("boyfriend", placeX(BOYFRIEND_LAYOUT.x), placeY(BOYFRIEND_LAYOUT.y))
+        setSpritePosition("boyfriend", placeX(BOYFRIEND_LAYOUT.x + BF_AND_GF_POS.x), placeY(BOYFRIEND_LAYOUT.y + BF_AND_GF_POS.y))
+        scaleSprite("boyfriend", 1.2, 1.2)
     end
+
 end
 
 local function buildCharacterProps()
     createCharacterSprite("schoolGirlfriendProp", "under-your-spell-gf", placeX(GF_LAYOUT.x + BF_AND_GF_POS.x), placeY(GF_LAYOUT.y + BF_AND_GF_POS.y), false)
+    scaleSprite("schoolGirlfriendProp", 1.0, 1.0)
 
     createCharacterSprite("schoolPicoProp", "under-your-spell-pico", placeX(PICO_PROP_LAYOUT.x), placeY(PICO_PROP_LAYOUT.y), false)
 end
@@ -118,7 +121,7 @@ local function addLittleHeanchy()
     compileSpriteSheet("schoolLittleHeanchy", "school_house/little heanchy", "sparrow")
     addAnimationByPrefix("schoolLittleHeanchy", "idle", "3 little guys", 14, true)
     playAnim("schoolLittleHeanchy", "idle", true)
-    scaleSprite("schoolLittleHeanchy", stageScale * 0.26, stageScale * 0.26)
+    scaleSprite("schoolLittleHeanchy", stageScale * 0.82, stageScale * 0.82)
     setSpritePosition("schoolLittleHeanchy", placeX(LITTLE_HEANCHY_LAYOUT.x), placeY(LITTLE_HEANCHY_LAYOUT.y))
     addBackSprite("schoolLittleHeanchy")
 end
@@ -154,6 +157,7 @@ function generatedStage()
     setGameplayCameraFocusLerp(DEFAULT_STAGE_CAMERA_FOCUS_LERP)
     setGameplayCameraZoom(DEFAULT_STAGE_CAMERA_ZOOM, false, true)
 
+
     addStaticLayer("schoolHouseBG", "school_house/BG/BG", 0, 0, nil, 1.0, true)
     addStaticLayer("schoolWindowOutline", "school_house/BG/window outline", 953, 238)
     addAnimatedLayer("schoolEyes", "school_house/BG/Wood crack eyes", "idle", "wood crack eyes", 10, 724, 1, 0.82, true, 18)
@@ -163,7 +167,7 @@ function generatedStage()
     addAnimatedLayer("schoolSmokeBack", "school_house/BG/Smoke", "idle", "bg smoke_ring_animation", 210, 736, 1, 0.72, true, 16)
     buildCharacterProps()
     addBackSprite("schoolGirlfriendProp")
-    addSpriteToStage("schoolPicoProp")
+    addBackSprite("schoolPicoProp")
 
     createSprite("schoolSmokeFront")
     compileSpriteSheet("schoolSmokeFront", "school_house/BG/Smoke2", "sparrow")
@@ -182,15 +186,22 @@ function generatedStage()
     addSpriteToStage("schoolVignette")
 end
 
-function onStepHit()
-    if spriteExist("schoolGirlfriendProp") then
-        characterDance("schoolGirlfriendProp")
+function onCreatePost()
+    if spriteExist("gf") then
+        setSpritePosition("gf", -9999, -9999)
+        scaleSprite("gf", 0, 0)
     end
+end
 
+function onStepHit()
 	school_mechanics.onStep(curStep)
 end
 
 function onBeatHit()
+    if spriteExist("schoolGirlfriendProp") then
+        playAnim("schoolGirlfriendProp", "idle", true)
+    end
+
     if spriteExist("schoolPicoProp") then
         characterDance("schoolPicoProp")
     end
@@ -198,7 +209,9 @@ function onBeatHit()
     local i = 1
 
     while i <= #schoolSpeakerNames do
-        playAnim(schoolSpeakerNames[i], "bump", true)
+        if spriteExist(schoolSpeakerNames[i]) then
+            playAnim(schoolSpeakerNames[i], "bump", true)
+        end
         i = i + 1
     end
 end
