@@ -157,14 +157,18 @@ local function buildSpeakers()
     end
 end
 
+local function applyGameplayCameraSetup()
+    setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y), true)
+    setGameplayCameraFocusLerp(DEFAULT_STAGE_CAMERA_FOCUS_LERP)
+    setGameplayCameraZoom(DEFAULT_STAGE_CAMERA_ZOOM, false, true)
+end
+
 function generatedStage()
 	school_mechanics.onCreate()
 
     setupStageMetrics()
     applyCharacterLayout()
-    setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y), true)
-    setGameplayCameraFocusLerp(DEFAULT_STAGE_CAMERA_FOCUS_LERP)
-    setGameplayCameraZoom(DEFAULT_STAGE_CAMERA_ZOOM, false, true)
+    applyGameplayCameraSetup()
 
 
     addStaticLayer("schoolHouseBG", "school_house/BG/BG", 0, 0, nil, 1.0, true)
@@ -215,4 +219,5 @@ end
 
 function onSongRestart()
     school_mechanics.onSongRestart()
+    applyGameplayCameraSetup()
 end
