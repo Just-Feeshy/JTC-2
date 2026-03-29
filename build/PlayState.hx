@@ -62,6 +62,12 @@ import lime.system.ThreadPool;
 
 import example_code.DefaultEvents;
 import example_code.DefaultStage;
+import play.DefaultHandler;
+import play.GameOverSubstate;
+import play.GitarooPause;
+import play.PauseSubState;
+import play.PlayLua;
+import play.PlayScrollSpeed;
 import template.CustomNote;
 import template.StageBuilder;
 
@@ -118,6 +124,7 @@ class PlayState extends MusicBeatState
 		public var health:Float = 1;
 		public var healthLerp:Float = 1;
 		public var hudIconsStatic:Bool = false;
+		public var needsReset:Bool = false;
 
 		public var healthTween:FlxTween;
 		public var prevHealth:Float = 0;
@@ -1013,6 +1020,10 @@ class PlayState extends MusicBeatState
 		generateStaticArrows(1);
 		setupHoldCoverSprites();
 
+		beginCountdownSequence(true);
+	}
+
+	function beginCountdownSequence(callGeneratedStage:Bool = true):Void {
 		talking = false;
 		startedCountdown = true;
 		previousHeldInputSongTime = null;
@@ -1022,8 +1033,13 @@ class PlayState extends MusicBeatState
 
 		makeNoteLua();
 
-		playLua.set("startedCountdown", true);
-		playLua.call("generatedStage", []);
+		if(playLua != null) {
+			playLua.set("startedCountdown", true);
+
+			if(callGeneratedStage) {
+				playLua.call("generatedStage", []);
+			}
+		}
 
 		if (!showCountdownSprites && !playCountdownSounds)
 		{
@@ -1040,6 +1056,11 @@ class PlayState extends MusicBeatState
 			Conductor.trackPosition = Conductor.songPosition + SaveData.getData(NOTE_OFFSET);
 			startSong();
 			return;
+		}
+
+		if(startTimer != null) {
+			startTimer.cancel();
+			startTimer.destroy();
 		}
 
 		var swagCounter:Int = 0;
@@ -1155,6 +1176,321 @@ class PlayState extends MusicBeatState
 			swagCounter += 1;
 			// generateSong('fresh');
 		}, 5);
+	}
+
+	function rebuildEventInfo():Void {
+		if(SONG.modifiers != null) {
+			eventInfo = SONG.modifiers.copy();
+		}else {
+			eventInfo = [];
+		}
+
+		eventInfo.sort(function(a:EventInfo, b:EventInfo):Int {
+			var aTime:Null<Float> = Reflect.field(a, "modTime");
+			var bTime:Null<Float> = Reflect.field(b, "modTime");
+
+			if(aTime != null && bTime != null)
+				return aTime < bTime ? -1 : (aTime > bTime ? 1 : 0);
+
+			var aGrid:Int = Reflect.field(a, "modGridY");
+			var bGrid:Int = Reflect.field(b, "modGridY");
+			return aGrid < bGrid ? -1 : (aGrid > bGrid ? 1 : 0);
+		});
+	}
+
+	function rebuildEvents():Void {
+		if(events != null) {
+			events.destroy();
+		}
+
+		events = new FeshEventGroup();
+
+		for(i in 0...Register.events.length) {
+			events.add(cast Type.createInstance(Register.events[i], []));
+		}
+	}
+
+	function clearGeneratedSongState():Void {
+		if(startTimer != null) {
+			startTimer.cancel();
+			startTimer.destroy();
+			startTimer = null;
+		}
+
+		if(notes != null) {
+			for(note in notes.members) {
+				if(note != null && note.trail != null) {
+					remove(note.trail);
+					note.trail.destroy();
+				}
+			}
+
+			remove(notes, true);
+			notes.destroy();
+			notes = null;
+		}
+
+		if(unspawnNotes != null) {
+			for(note in unspawnNotes) {
+				if(note != null && note.trail != null) {
+					remove(note.trail);
+					note.trail.destroy();
+				}
+
+				if(note != null) {
+					note.destroy();
+				}
+			}
+		}
+
+		unspawnNotes = [];
+
+		if(customNoteSprites != null) {
+			remove(customNoteSprites, true);
+			customNoteSprites.destroy();
+			customNoteSprites = null;
+		}
+
+		if(grpHoldCover != null) {
+			remove(grpHoldCover, true);
+			grpHoldCover.destroy();
+			grpHoldCover = null;
+		}
+
+		currentHoldCoverSprites = [];
+		currentHoldCoverTimers = [];
+		oppositeHoldCoverSprites = [];
+		oppositeHoldCoverTimers = [];
+
+		if(grpSplash != null) {
+			for(splash in grpSplash.members.copy()) {
+				if(splash != null) {
+					grpSplash.remove(splash, true);
+					splash.destroy();
+				}
+			}
+		}
+
+		generatedMusic = false;
+		totalNotesLoaded = 0;
+	}
+
+	function resetStrumVisualState():Void {
+		if(playerStrums != null) {
+			playerStrums.forEachAlive(function(strum:Strum) {
+				if(strum != null) {
+					strum.playAnim('static');
+				}
+			});
+		}
+
+		if(opponentStrums != null) {
+			opponentStrums.forEachAlive(function(strum:Strum) {
+				if(strum != null) {
+					strum.playAnim('static');
+				}
+			});
+		}
+	}
+
+	function resetHealthUi():Void {
+		if(boyfriend.curCharacter != "none") {
+			iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
+		}
+
+		if(dad.curCharacter != "none") {
+			iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
+		}
+
+		stage.configIcons(iconP1, iconP2);
+
+		playerIconColor = CoolUtil.calculateAverageColor(iconP1.updateFramePixels());
+		opponentIconColor = CoolUtil.calculateAverageColor(iconP2.updateFramePixels());
+		healthBar.createFilledBar(opponentIconColor, playerIconColor);
+		healthBar.updateValueFromParent();
+
+		iconP1.setGraphicSize(150, 150);
+		iconP2.setGraphicSize(150, 150);
+		iconP1.updateHitbox();
+		iconP2.updateHitbox();
+		iconP1.y = healthBar.y - (iconP1.height / 2);
+		iconP2.y = healthBar.y - (iconP2.height / 2);
+	}
+
+	function refreshGeneratedSongCameras():Void {
+		if(notes != null) {
+			notes.cameras = [camNOTE];
+		}
+
+		if(customNoteSprites != null) {
+			customNoteSprites.cameras = [camNOTE];
+		}
+
+		if(grpHoldCover != null) {
+			grpHoldCover.cameras = [camNOTE.camNoteSustain];
+		}
+
+		if(grpSplash != null) {
+			grpSplash.cameras = [camNOTE];
+		}
+	}
+
+	function regenNoteData(?reloadVocals:Bool = true):Void {
+		clearGeneratedSongState();
+		generateSong(SONG.song, reloadVocals);
+		resetStrumVisualState();
+		setupHoldCoverSprites();
+		refreshGeneratedSongCameras();
+	}
+
+	function restartSongInPlace():Void {
+		needsReset = false;
+
+		persistentUpdate = true;
+		persistentDraw = true;
+		paused = false;
+		canPause = true;
+		inCutscene = false;
+		talking = false;
+		startingSong = true;
+		startedCountdown = false;
+		waitForFinishPlayer = false;
+		waitForFinishOpponent = false;
+		hasWarning = false;
+		previousHeldInputSongTime = null;
+		previousFrameTime = FlxG.game.ticks;
+		lastReportedPlayheadPosition = 0;
+		songTime = 0;
+		curSection = 0;
+		eventCounter = 0;
+		prevEventStep = 0;
+		eventStorage = [];
+		hits = 0;
+		misses = 0;
+		missesHold = 0;
+		missClicks = 0;
+		combo = 0;
+		songScore = 0;
+		totalRatingAcc = 0;
+		daRating = "sick";
+		health = 1;
+		healthLerp = health;
+		prevHealth = health;
+		bumpPerBeat = 4;
+		bumpForce = 1;
+		bumpOffset = 0;
+		singDrainValue = 1;
+		fadeInValue = 400;
+		cameraMovementInsensity = 1;
+		opponentAltAnim = "";
+		playerAltAnim = "";
+		flipWiggle = 1;
+		timeFreeze = 0;
+		wobbleModPower = 30;
+
+		CustomNoteHandler.spawn();
+		Note.AFFECTED_STRUMTIME = 0;
+
+		if(playScrollSpeed != null) {
+			playScrollSpeed.reset(1);
+		}else {
+			Note.AFFECTED_SCROLLSPEED = 1;
+		}
+
+		stage.resetStage();
+		resetHeldLaneKeys();
+		setupModifiers();
+		DefaultHandler.sizeTimer = 0;
+		DefaultHandler.shakeCamTimer = 0;
+		DefaultHandler.shakeCamTimerHUD = 0;
+		DefaultHandler.strumOffsetEvent = [0, 0];
+		DefaultHandler.tempNoteAbstracts = [];
+		DefaultHandler.preloadAddon = false;
+
+		if(healthTween != null) {
+			healthTween.cancel();
+			healthTween.destroy();
+			healthTween = null;
+		}
+
+		if(boyfriend != null) {
+			boyfriend.stunned = false;
+			boyfriend.holdTimer = 0;
+			boyfriend.customAnimation = false;
+		}
+
+		if(dad != null) {
+			dad.stunned = false;
+			dad.holdTimer = 0;
+			dad.customAnimation = false;
+		}
+
+		if(gf != null) {
+			gf.stunned = false;
+			gf.holdTimer = 0;
+			gf.customAnimation = false;
+		}
+
+		rebuildEvents();
+		rebuildEventInfo();
+
+		if(startTimer != null) {
+			startTimer.cancel();
+			startTimer.destroy();
+			startTimer = null;
+		}
+
+		Conductor.mapBPMChanges(SONG);
+		Conductor.changeBPM(SONG.bpm);
+
+		if(FlxG.sound.music != null) {
+			FlxG.sound.music.pause();
+			FlxG.sound.music.time = 0;
+			FlxG.sound.music.volume = muteInst ? 0 : 1;
+		}
+
+		stopVocals();
+		setVocalsTime(0);
+		setAllVocalsVolume(1);
+		regenNoteData(false);
+
+		resetHealthUi();
+
+		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
+		resetScriptedCameraState(false);
+
+		if(camFollow != null) {
+			camFollow.setPosition(camPos.x, camPos.y);
+			FlxG.camera.followLerp = getGameplayCameraFollowLerp();
+			FlxG.camera.focusOn(camFollow.getPosition());
+		}
+
+		FlxG.camera.stopFX();
+		camHUD.stopFX();
+		camNOTE.stopFX();
+		if(camNOTE.camNoteSustain != null) {
+			camNOTE.camNoteSustain.stopFX();
+			camNOTE.camNoteSustain.visible = true;
+		}
+
+		FlxG.camera.visible = true;
+		camHUD.visible = true;
+		camNOTE.visible = true;
+		FlxG.camera.alpha = 1;
+		camHUD.alpha = 1;
+		camNOTE.alpha = 1;
+		FlxG.camera.zoom = defaultCamZoom;
+		camHUD.zoom = 1;
+		camNOTE.zoom = 1;
+		camGame.engineAlpha = modifierCheckList('blind effect') ? 0 : 1;
+
+		if(playLua != null) {
+			playLua.set("inGameOver", false);
+			playLua.set("startedCountdown", false);
+			playLua.call("onSongRestart", []);
+		}
+
+		beginCountdownSequence(false);
 	}
 
 	var previousFrameTime:Int = 0;
@@ -1538,7 +1874,7 @@ class PlayState extends MusicBeatState
 
 	var debugNum:Int = 0;
 
-	private function generateSong(dataPath:String):Void
+	private function generateSong(dataPath:String, ?reloadVocals:Bool = true):Void
 	{
 		var loadedSplashAnimations:Array<String> = [];
 
@@ -1550,7 +1886,9 @@ class PlayState extends MusicBeatState
 
 		curSong = songData.song;
 
-		loadSongVocals(PlayState.SONG.song);
+		if(reloadVocals) {
+			loadSongVocals(PlayState.SONG.song);
+		}
 
 		notes = new FlxTypedGroup<Note>();
 		add(notes);
@@ -1870,36 +2208,38 @@ class PlayState extends MusicBeatState
 		FlxTween.tween(FlxG.camera, {zoom: 1.3}, (Conductor.stepCrochet * 4 / 1000), {ease: FlxEase.elasticInOut});
 	}
 
-	override function closeSubState()
+override function closeSubState()
 	{
 		if (paused)
 		{
-			if (FlxG.sound.music != null && !startingSong)
-			{
-				resyncVocals();
-			}
-
-			if(startTimer != null) {
-				if (!startTimer.finished)
-					startTimer.active = true;
-			}
-
 			paused = false;
 
-			playLua.call('onResume', []);
+			if(!needsReset) {
+				if (FlxG.sound.music != null && !startingSong)
+				{
+					resyncVocals();
+				}
 
-			#if windows
-			if (startTimer.finished)
-			{
-				songLength = FlxG.sound.music.length;
+				if(startTimer != null) {
+					if (!startTimer.finished)
+						startTimer.active = true;
+				}
 
-				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, - songLength);
+				playLua.call('onResume', []);
+
+				#if windows
+				if (startTimer.finished)
+				{
+					songLength = FlxG.sound.music.length;
+
+					DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, - songLength);
+				}
+				else
+				{
+					DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
+				}
+				#end
 			}
-			else
-			{
-				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
-			}
-			#end
 		}
 
 		setupKeyStuff();
@@ -2095,6 +2435,11 @@ class PlayState extends MusicBeatState
 		}
 
 		super.update(elapsed);
+
+		if(needsReset) {
+			restartSongInPlace();
+			return;
+		}
 
 		noteBeat = curBeat;
 
@@ -4091,10 +4436,12 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		iconP1.setGraphicSize(Std.int(iconP1.width + 30));
-		iconP2.setGraphicSize(Std.int(iconP2.width + 30));
-		iconP1.updateHitbox();
-		iconP2.updateHitbox();
+		if(!hudIconsStatic) {
+			iconP1.setGraphicSize(Std.int(iconP1.width + 30));
+			iconP2.setGraphicSize(Std.int(iconP2.width + 30));
+			iconP1.updateHitbox();
+			iconP2.updateHitbox();
+		}
 
 		if (curBeat % 8 == 7 && curSong == 'Bopeebo')
 		{
@@ -4175,6 +4522,12 @@ class PlayState extends MusicBeatState
 		if(playLua != null) {
 			playLua.prepareForStateSwitch();
 		}
+	}
+
+	public function requestSongRestart():Void {
+		needsReset = true;
+		persistentUpdate = true;
+		persistentDraw = true;
 	}
 
 	override public function destroy() {
