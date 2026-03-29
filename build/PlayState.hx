@@ -117,6 +117,7 @@ class PlayState extends MusicBeatState
 		public var timeFreeze:Float = 0;
 		public var health:Float = 1;
 		public var healthLerp:Float = 1;
+		public var hudIconsStatic:Bool = false;
 
 		public var healthTween:FlxTween;
 		public var prevHealth:Float = 0;
@@ -2150,11 +2151,13 @@ class PlayState extends MusicBeatState
 		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
 		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
 
-			iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.width, 150, 0.1/(Main.framerate/100))));
-			iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.width, 150, 0.1/(Main.framerate/100))));
+			if(!hudIconsStatic) {
+				iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.width, 150, 0.1/(Main.framerate/100))));
+				iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.width, 150, 0.1/(Main.framerate/100))));
 
-			iconP1.updateHitbox();
-			iconP2.updateHitbox();
+				iconP1.updateHitbox();
+				iconP2.updateHitbox();
+			}
 
 			if (health > 2)
 				health = 2;
@@ -2162,10 +2165,12 @@ class PlayState extends MusicBeatState
 			updateHealthBar();
 			healthBar.updateValueFromParent();
 
-			var iconOffset:Int = 26;
+			if(!hudIconsStatic) {
+				var iconOffset:Int = 26;
 
-			iconP1.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset);
-			iconP2.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - iconOffset);
+				iconP1.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset);
+				iconP2.x = healthBar.x + (healthBar.barWidth * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - iconOffset);
+			}
 
 			if (healthBar.percent < 20) {
 			iconP1.animation.curAnim.curFrame = 1;
