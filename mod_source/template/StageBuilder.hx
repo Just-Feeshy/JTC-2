@@ -42,6 +42,10 @@ abstract class StageBuilder extends FlxGroup {
         //empty method
     }
 
+    public function resetStage():Void {
+        //empty method
+    }
+
     public function setDefaultCameraZoom(zoom:Float):Void {
         if(isOfType(FlxG.state, PlayState)) {
             @:privateAccess playstate.defaultCamZoom = zoom;

@@ -177,7 +177,7 @@ class FeshCamera extends FlxCamera {
     }
 
     override function set_alpha(Alpha:Float):Float {
-        alpha = FlxMath.bound(Alpha * engineAngle, 0, 1);
+        alpha = FlxMath.bound(Alpha * engineAlpha, 0, 1);
 
         if (FlxG.renderBlit) {
             _flashBitmap.alpha = alpha;

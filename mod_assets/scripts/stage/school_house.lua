@@ -66,10 +66,17 @@ local function applyCharacterLayout()
 end
 
 local function buildCharacterProps()
-    createCharacterSprite("schoolGirlfriendProp", "under-your-spell-gf", placeX(GF_LAYOUT.x + BF_AND_GF_POS.x), placeY(GF_LAYOUT.y + BF_AND_GF_POS.y), false)
-    scaleSprite("schoolGirlfriendProp", 1.0, 1.0)
+    createSprite("schoolGirlfriendProp")
+    compileSpriteSheet("schoolGirlfriendProp", "school_house/Dearest_GF", "sparrow")
+    addAnimationByPrefix("schoolGirlfriendProp", "idle", "gf full idle", 24, true)
+    playAnim("schoolGirlfriendProp", "idle", true)
+    setSpritePosition("schoolGirlfriendProp", placeX(GF_LAYOUT.x + BF_AND_GF_POS.x), placeY(GF_LAYOUT.y + BF_AND_GF_POS.y))
 
-    createCharacterSprite("schoolPicoProp", "under-your-spell-pico", placeX(PICO_PROP_LAYOUT.x), placeY(PICO_PROP_LAYOUT.y), false)
+    createSprite("schoolPicoProp")
+    compileSpriteSheet("schoolPicoProp", "school_house/Dearest_PICO_", "sparrow")
+    addAnimationByPrefix("schoolPicoProp", "idle", "idle pico", 24, true)
+    playAnim("schoolPicoProp", "idle", true)
+    setSpritePosition("schoolPicoProp", placeX(PICO_PROP_LAYOUT.x), placeY(PICO_PROP_LAYOUT.y))
 end
 
 local function setupStageMetrics()
@@ -135,7 +142,7 @@ local function buildSpeakers()
 
         createSprite(name)
         compileSpriteSheet(name, "school_house/BG/Speaker bump", "sparrow")
-        addAnimationByPrefix(name, "bump", "speaker bump", 24, false)
+        addAnimationByPrefix(name, "bump", "speaker bump", 24, true)
         playAnim(name, "bump", true)
         scaleSprite(name, stageScale * 0.28, stageScale * 0.28)
         setSpritePosition(name, placeX(layout.x), placeY(layout.y))
@@ -200,22 +207,6 @@ function onStepHit()
 end
 
 function onBeatHit()
-    if spriteExist("schoolGirlfriendProp") then
-        playAnim("schoolGirlfriendProp", "idle", true)
-    end
-
-    if spriteExist("schoolPicoProp") then
-        characterDance("schoolPicoProp")
-    end
-
-    local i = 1
-
-    while i <= #schoolSpeakerNames do
-        if spriteExist(schoolSpeakerNames[i]) then
-            playAnim(schoolSpeakerNames[i], "bump", true)
-        end
-        i = i + 1
-    end
 end
 
 function onUpdate(elapsed)
