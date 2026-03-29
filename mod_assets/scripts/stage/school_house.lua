@@ -212,3 +212,7 @@ end
 function onUpdate(elapsed)
 	school_mechanics.onUpdate(elapsed)
 end
+
+function onSongRestart()
+    school_mechanics.onSongRestart()
+end

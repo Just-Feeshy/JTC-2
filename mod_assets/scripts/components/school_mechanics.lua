@@ -1,10 +1,10 @@
 local school_mechanics = {}
 
 local METER_OFFSET = {x = 6, y = -271}
-local HUD_ICON_SIZE_RATIO = 0.1
-local HUD_ICON_Y_RATIO = 0.76
-local HUD_ICON_GAP_RATIO = 0.015
-local HUD_ICON_LEFT_NUDGE_RATIO = 0.006
+local HUD_ICON_SIZE_RATIO = 0.07
+local HUD_ICON_Y_RATIO = 0.74
+local HUD_ICON_GAP_RATIO = 0.01
+local HUD_ICON_LEFT_NUDGE_RATIO = 0.003
 
 local function setHudSpriteVisible(spriteName, visible)
     if spriteExist(spriteName) then
@@ -19,7 +19,7 @@ local function hideDefaultHud()
 end
 
 local function positionHudIcons()
-    local iconSize = 150
+    local iconSize = math.floor(windowWidth * HUD_ICON_SIZE_RATIO)
     local iconGap = math.floor(windowWidth * HUD_ICON_GAP_RATIO)
     local leftIconNudge = math.floor(windowWidth * HUD_ICON_LEFT_NUDGE_RATIO)
     local iconY = math.floor(windowHeight * HUD_ICON_Y_RATIO)
@@ -27,13 +27,21 @@ local function positionHudIcons()
 
     if spriteExist("iconP2") then
         setSpriteVisible("iconP2", true)
+        setSpriteSize("iconP2", iconSize, iconSize)
         setSpritePosition("iconP2", centerX - iconSize - iconGap - leftIconNudge, iconY)
     end
 
     if spriteExist("iconP1") then
         setSpriteVisible("iconP1", true)
+        setSpriteSize("iconP1", iconSize, iconSize)
         setSpritePosition("iconP1", centerX + iconGap, iconY)
     end
+end
+
+local function applyHudLayout()
+    setHudIconsStatic(true)
+    hideDefaultHud()
+    positionHudIcons()
 end
 
 local function buildWeirdMenuHud()
@@ -64,13 +72,15 @@ local function buildMeter()
 end
 
 function school_mechanics.onCreate()
-    setHudIconsStatic(true)
-    hideDefaultHud()
+    applyHudLayout()
 	buildWeirdMenuHud()
 	buildBar()
 	buildMeter()
     registerOrbitSprite("schoolMeterHUD", METER_OFFSET.x, METER_OFFSET.y, 1, 0)
-    positionHudIcons()
+end
+
+function school_mechanics.onSongRestart()
+    applyHudLayout()
 end
 
 function school_mechanics.onStep(step)

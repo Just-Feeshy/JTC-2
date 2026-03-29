@@ -1043,7 +1043,9 @@ class PlayState extends MusicBeatState
 
 		if (!showCountdownSprites && !playCountdownSounds)
 		{
-			iconP1.setGraphicSize(Std.int(iconP1.width + 30));
+			if(!hudIconsStatic) {
+				iconP1.setGraphicSize(Std.int(iconP1.width + 30));
+			}
 
 			if(gf != null) {
 				gf.dance();
@@ -1067,7 +1069,9 @@ class PlayState extends MusicBeatState
 
 		startTimer = new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer)
 		{
-			iconP1.setGraphicSize(Std.int(iconP1.width + 30));
+			if(!hudIconsStatic) {
+				iconP1.setGraphicSize(Std.int(iconP1.width + 30));
+			}
 
 			if(gf != null) {
 				gf.dance();
@@ -3655,7 +3659,6 @@ override function closeSubState()
 		}
 
 			if(!GhostTapping.ghostTap) {
-				breakComboOnMiss();
 				takeDamage(lane, true);
 				songScore -= 10;
 				setHealth(health - 0.08);
