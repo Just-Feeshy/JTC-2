@@ -66,23 +66,7 @@ def main() -> int:
     args = parser.parse_args()
 
     root_dir = Path(__file__).resolve().parent
-    source_scripts = Path(args.source_scripts) if args.source_scripts else root_dir / "mod_assets" / "scripts"
-
-    if args.target:
-        target_root = resolve_target_root(Path(args.target).expanduser())
-    else:
-        target_root = find_target_root(root_dir)
-
-    if target_root is None:
-        print("No export target found. Pass one explicitly or build the macOS/Windows target first.", file=sys.stderr)
-        return 1
-
-    target_mod_assets = target_root / "mod_assets"
-    target_scripts = target_mod_assets / "scripts"
-
-    if not target_root.is_dir():
-        print(f"Export target root not found: {target_root}", file=sys.stderr)
-        return 1
+    source_scripts = root_dir / "mod_assets" / "scripts"
 
     if not source_scripts.is_dir():
         print(f"Source scripts directory not found: {source_scripts}", file=sys.stderr)
