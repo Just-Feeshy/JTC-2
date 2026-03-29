@@ -151,6 +151,8 @@ local function buildSpeakers()
 end
 
 function generatedStage()
+	school_mechanics.onCreate()
+
     setupStageMetrics()
     applyCharacterLayout()
     setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y), true)
@@ -214,4 +216,8 @@ function onBeatHit()
         end
         i = i + 1
     end
+end
+
+function onUpdate(elapsed)
+	school_mechanics.onUpdate(elapsed)
 end

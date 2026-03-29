@@ -353,6 +353,10 @@ class PlayLua
 		playState.addCallback("disableInputs", function(disable:Bool) {
 			playState.disableInputs = disable;
 		});
+
+		playState.addCallback("setHudIconsStatic", function(staticIcons:Bool) {
+			playState.hudIconsStatic = staticIcons;
+		});
 		#end
 	}
 

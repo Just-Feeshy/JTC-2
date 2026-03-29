@@ -80,6 +80,7 @@ class Note extends FeshSprite {
 	public var earlyHit(default, null):Float = 0.5;
 	public var playerEarlyHit(default, null):Float = 1;
 	public var playerLateHit(default, null):Float = 1;
+	public var sustainBaseScaleY(default, null):Float = 1;
 
 	public var endPieceOffsetX(default, null):Float = 0;
 	public var endPieceOffsetY(default, null):Float = 0;
@@ -277,6 +278,8 @@ class Note extends FeshSprite {
 				x += swagWidth * 3;
 				animation.play('redScroll');
 		}
+
+		sustainBaseScaleY = scale.y;
 
 		// trace(prevNote);
 
@@ -493,6 +496,7 @@ class Note extends FeshSprite {
 
 	public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
 		y = (strumPos + noteOffset.y) + Math.cos(strumAngle + directionAngle) * caculatePos;
+
 		var yAddon:Float = 0;
 
 		if(height < 50) {
@@ -654,15 +658,38 @@ class Note extends FeshSprite {
 	}
 
 	function makeLongNote(note:Note):Void {
-		if(hasCustomAddon != null) {
-			if(hasCustomAddon.makeLongNoteLong()) {
-				note.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
-			}
-		}else {
-			note.scale.y *= Conductor.stepCrochet / 100 * 1.5 * howSpeed;
+		note.scale.y = note.sustainBaseScaleY * getSustainLengthScale();
+		note.updateHitbox();
+	}
+
+	function syncPrevSustainLength():Void {
+		if(!isSustainNote || prevNote == null || !prevNote.isSustainNote) {
+			return;
 		}
 
-		note.updateHitbox();
+		if(prevNote.scale == null || !prevNote.exists || !prevNote.alive) {
+			return;
+		}
+
+		prevNote.scale.y = prevNote.sustainBaseScaleY * getSustainLengthScale();
+		prevNote.updateHitbox();
+	}
+
+	function getSustainLengthScale():Float {
+		var baseScale:Float = Conductor.stepCrochet / 100 * 1.5 * howSpeed;
+
+		if(prevNote == null || prevNote.scale == null || !prevNote.exists || !prevNote.alive) {
+			return baseScale;
+		}
+
+		var noteDelta:Float = Math.abs(getNoteTime() - prevNote.getNoteTime());
+		if(noteDelta <= 0) {
+			noteDelta = Conductor.stepCrochet;
+		}
+
+		var visualDelta:Float = Math.abs(PlayScrollSpeed.getVisualSongDelta(prevNote.getNoteTime(), getNoteTime()));
+		var visualRatio:Float = noteDelta <= 0 ? 1 : visualDelta / noteDelta;
+		return baseScale * visualRatio;
 	}
 
 	inline function resolveSongPosition(songPosition:Null<Float>):Float {
@@ -698,6 +725,8 @@ class Note extends FeshSprite {
 
 		if(hasCustomAddon != null)
 			hasCustomAddon.noteUpdate(this);
+		
+		syncPrevSustainLength();
 
 		if (mustPress)
 		{
