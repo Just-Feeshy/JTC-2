@@ -108,6 +108,17 @@ class PlayLua
 			return;
 		}
 
+		// Stage scripts usually cache layout/camera state during generatedStage().
+		// Rebuilding the VM without rerunning generatedStage() leaves those locals invalid on restart.
+		// Keep the live stage VM and let onSongRestart() refresh runtime state instead.
+		if(scriptPath.startsWith("stage/")) {
+			updateDynamicVars();
+			updatePerSectionVars();
+			set("curElapsed", 0);
+			set("curTicks", FlxG.game.ticks);
+			return;
+		}
+
 		var persistentState:Dynamic = null;
 		var stateLua:ModLua = getLua();
 
