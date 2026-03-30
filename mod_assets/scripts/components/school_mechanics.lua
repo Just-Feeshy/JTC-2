@@ -2,7 +2,7 @@ local school_mechanics = {}
 
 local METER_OFFSET = {x = 6, y = -271}
 local HUD_ICON_SIZE_RATIO = 0.07
-local HUD_ICON_Y_OFFSET = 100
+local HUD_ICON_Y_OFFSET_BASE = 100
 local HUD_ICON_GAP_RATIO = 0.01
 local HUD_ICON_LEFT_NUDGE_RATIO = 0.003
 
@@ -18,15 +18,22 @@ local function hideDefaultHud()
     setHudSpriteVisible("counterTxt", false)
 end
 
-local function positionHudIcons()
-	if not downscroll then
-		HUD_ICON_Y_OFFSET = windowHeight - HUD_ICON_Y_OFFSET * 1.8
-	end
+local function hideHudIcons()
+    setHudSpriteVisible("iconP1", false)
+    setHudSpriteVisible("iconP2", false)
+end
 
+local function positionHudIcons()
     local iconSize = math.floor(windowWidth * HUD_ICON_SIZE_RATIO)
     local iconGap = math.floor(windowWidth * HUD_ICON_GAP_RATIO)
     local leftIconNudge = math.floor(windowWidth * HUD_ICON_LEFT_NUDGE_RATIO)
-    local iconY = math.floor(getSpriteY("schoolBarHUD") + HUD_ICON_Y_OFFSET)
+    local iconYOffset = HUD_ICON_Y_OFFSET_BASE
+
+    if not downscroll then
+        iconYOffset = windowHeight - (HUD_ICON_Y_OFFSET_BASE * 1.8)
+    end
+
+    local iconY = math.floor(getSpriteY("schoolBarHUD") + iconYOffset)
     local centerX = math.floor(windowWidth * 0.5)
 
     if spriteExist("iconP2") then
