@@ -315,6 +315,12 @@ local function updateIntroClearTween(elapsed)
     end
 end
 
+function onSongRestart()
+    jtc_camera.hideGameplayUntilStep(12, false)
+    setCameraVisible("camGame", true)
+    ensureIntroWarmupCover()
+end
+
 function generatedStage()
     init()
     setEndVideo("post.mp4")

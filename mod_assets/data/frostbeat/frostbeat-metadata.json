@@ -1,0 +1,52 @@
+{
+ "version": "2.2.4",
+ "songName": "Frostbeat",
+ "artist": "Varsavi",
+ "charter": "DiFicuz & Feeshy",
+ "divisions": 96,
+ "looped": false,
+ "offsets": {
+  "instrumental": 0,
+  "altInstrumentals": {  },
+  "vocals": {  },
+  "altVocals": {  }
+ },
+ "playData": {
+  "songVariations": [],
+  "difficulties": [
+   "hard"
+  ],
+  "characters": {
+   "player": "flying BF sings",
+   "girlfriend": "gf",
+   "opponent": "skater-boi",
+   "instrumental": "",
+   "altInstrumentals": [],
+   "opponentVocals": [
+    "skater-boi"
+   ],
+   "playerVocals": [
+    "flying BF sings"
+   ]
+  },
+  "stage": "funkroad",
+  "noteStyle": "funkin",
+  "ratings": {
+   "hard": 0
+  },
+  "previewStart": 0,
+  "previewEnd": 0
+ },
+ "generatedBy": "Friday Night Funkin' - v0.8.1",
+ "timeFormat": "ms",
+ "timeChanges": [
+  {
+   "t": 0,
+   "b": 0,
+   "bpm": 144,
+   "n": 4,
+   "d": 4,
+   "bt": [4, 4, 4, 4]
+  }
+ ]
+}
