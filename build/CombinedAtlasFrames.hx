@@ -62,6 +62,12 @@ class CombinedAtlasFrames extends FlxFramesCollection
 			}
 		}
 
-		super.destroy();
+		// These frames are shared with cached source atlases.
+		// Destroying them here would corrupt the original frame collections and
+		// break the next attempt to combine the same atlases on restart.
+		frames = null;
+		border = null;
+		parent = null;
+		type = null;
 	}
 }

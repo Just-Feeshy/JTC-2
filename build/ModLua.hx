@@ -306,11 +306,13 @@ class ModLua {
 		    }
 
 			var combinedFrames = FlxAnimationUtil.combineAtlas([firstFrames, secondFrames]);
+			var oldFrames:FlxFramesCollection = luaFrameCollections.get(name);
 
 			//firstFrames.destroy();
 			//secondFrames.destroy();
 
 			luaFrameCollections.set(name, combinedFrames);
+			releaseReplacedFrames(oldFrames, combinedFrames);
 		});
 
 		Lua_helper.add_callback(lua, "addFramesToSprite", function(name:String, frameName:String) {

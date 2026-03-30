@@ -315,33 +315,55 @@ local function updateIntroClearTween(elapsed)
     end
 end
 
-function onSongRestart()
-    jtc_camera.hideGameplayUntilStep(12, false)
-    setCameraVisible("camGame", true)
-    ensureIntroWarmupCover()
+local function refreshFrostbiteCarAnimation()
+    if not spriteExist("frostbiteCAR") then
+        return
+    end
+
+    local stepValue = curStep or 0
+
+    if daddyTrans and stepValue < 630 then
+        setSpritePosition("frostbiteCAR", 241, 81)
+        playAnimRaw("frostbiteCAR", "transition", true)
+        return
+    end
+
+    if stepValue < 607 then
+        playAnimRaw("frostbiteCAR", "drive", true)
+    end
 end
 
-function generatedStage()
-    init()
-    setEndVideo("post.mp4")
-    setCountdownPresentation(false, false)
-    addSongTrack("gfVocals", "GF_Voices", "extra", 1)
-    addSongTrack("jtcVocals", "JTC_Voices", "player", 1, false, "t,joul")
-    jtc_camera.hideGameplayUntilStep(12, false)
-    setCameraVisible("camGame", true)
-    ensureIntroWarmupCover()
+local function destroyManagedSprite(spriteName)
+    if not spriteExist(spriteName) then
+        return
+    end
 
+    removeSpriteFromStage(spriteName)
+    removeSpriteFromState(spriteName)
+    destroySprite(spriteName)
+end
+
+local function restoreFrostbeatCharacters()
+    callEvent("character change", "skater-boi", "dad")
+    callEvent("character change", "flying BF sings", "bf")
+end
+
+local function ensureFrostbiteCar()
+    destroyManagedSprite("frostbiteCAR")
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
     createCombinedFrames("frostbiteCAR-frames", "daddycar", "daddycar2", "sparrow", "sparrow")
     addFramesToSprite("frostbiteCAR", "frostbiteCAR-frames")
+    addAnimationByPrefix("frostbiteCAR", "drive", "daddycar", 24, true)
     addAnimationByPrefix("frostbiteCAR", "transition", "car drive and dust0", 24, false)
     addAnimationByPrefix("frostbiteCAR", "fog", "car drive and dust t", 24, false)
-    playAnimationByPrefix("frostbiteCAR", "drive", "daddycar", 24, false)
+    playAnimRaw("frostbiteCAR", "drive", true)
     setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
     insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
-    applyIntroOpponentFaceShot()
+end
 
+local function ensureSecondSprite()
+    destroyManagedSprite("second")
     createSprite("second")
     setSpritePosition("second", secondBaseX, secondBaseY)
     createCombinedFrames("second-frames", "skater_assets", "skater_miss_notes", "sparrow", "sparrow")
@@ -357,7 +379,11 @@ function generatedStage()
     addAnimationByPrefix("second", "singRIGHT miss", "skater dance RIGHT miss", 24, false)
     spriteFlip("second", true, false)
     playAnimation("second", "idle")
+    removeSpriteFromStage("second")
+end
 
+local function ensureCloudSprite()
+    destroyManagedSprite("cloud")
     createSprite("cloud")
     setSpritePosition("cloud", 0, 0)
     loadGraphic("cloud", "daddy_transition_cloud")
@@ -365,6 +391,37 @@ function generatedStage()
     screenCenter("cloud", "y")
     setSpriteX("cloud", -6736)
     addSpriteToState("cloud")
+end
+
+function onSongRestart()
+    init()
+    setCountdownPresentation(false, false)
+    jtc_camera.hideGameplayUntilStep(12, false)
+    setCameraVisible("camGame", true)
+    ensureIntroWarmupCover()
+    restoreFrostbeatCharacters()
+    ensureFrostbiteCar()
+    ensureSecondSprite()
+    ensureCloudSprite()
+    applyIntroOpponentFaceShot()
+end
+
+function generatedStage()
+    init()
+    setEndVideo("post.mp4")
+    setCountdownPresentation(false, false)
+    addSongTrack("gfVocals", "GF_Voices", "extra", 1)
+    addSongTrack("jtcVocals", "JTC_Voices", "player", 1, false, "t,joul")
+    jtc_camera.hideGameplayUntilStep(12, false)
+    setCameraVisible("camGame", true)
+    ensureIntroWarmupCover()
+
+    ensureFrostbiteCar()
+    applyIntroOpponentFaceShot()
+
+    ensureSecondSprite()
+
+    ensureCloudSprite()
 
     setupPunchHealth(3)
 end
@@ -426,11 +483,6 @@ function onStepHit()
         addAnimationByPrefix("boyfriend", "singLEFT", "flying dance LEFT GF", 24, false)
         addAnimationByPrefix("boyfriend", "singRIGHT", "flying dance RIGHT GF", 24, false)
     end
-
-    if curStep == 904 and beatSection == 5 then
-        callEvent("bump per beat", "4", "1")
-        beatSection = beatSection + 1
-    end
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
@@ -485,6 +537,10 @@ function onUpdate(elapsed)
     end
 
     cloudIncome()
+end
+
+function onResume()
+    refreshFrostbiteCarAnimation()
 end
 
 function setupPunchHealth(amount)

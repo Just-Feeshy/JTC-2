@@ -7,6 +7,7 @@ import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import flixel.math.FlxMath;
 import lime.utils.Assets;
 import haxe.Json;
 import openfl.utils.Assets as OpenFlAssets;
@@ -15,6 +16,9 @@ using StringTools;
 
 @:access(MusicBeatState)
 class CheesyStage extends StorageStage {
+	private static final DEFAULT_STAGE_CAMERA_FOCUS:Array<Float> = [785, 458.5];
+	private static final DEFAULT_STAGE_CAMERA_FOCUS_LERP:Float = 0.09;
+
 	final tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
@@ -255,7 +259,10 @@ class CheesyStage extends StorageStage {
 
 	override function setCamPos(camPos:FlxPoint):FlxPoint {
 		if(stage == "funkroad") {
-			return FlxPoint.get(785, 458.5);
+			return FlxPoint.get(
+				FlxMath.lerp(DEFAULT_STAGE_CAMERA_FOCUS[0], camPos.x, DEFAULT_STAGE_CAMERA_FOCUS_LERP),
+				FlxMath.lerp(DEFAULT_STAGE_CAMERA_FOCUS[1], camPos.y, DEFAULT_STAGE_CAMERA_FOCUS_LERP)
+			);
 		}
 
 		return null;
