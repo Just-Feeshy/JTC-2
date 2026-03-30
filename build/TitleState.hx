@@ -53,8 +53,8 @@ class TitleState extends MusicBeatState {
 
 	override public function create():Void
 	{
-		Conductor.songPosition = 0;
-		Conductor.songPosition -= Conductor.crochet * 5;
+		Conductor.instance.trackedSongPosition = 0;
+		Conductor.instance.trackedSongPosition -= Conductor.instance.beatLengthMs * 5;
 		credits.sort(sortByShit);
 
 		PlayerSettings.init();
@@ -89,7 +89,7 @@ class TitleState extends MusicBeatState {
             FlxG.sound.music.fadeIn(4, 0, 0.7);
         }
 
-        Conductor.changeBPM(Paths.modJSON.title_menu.music.bpm);
+        Conductor.instance.forceBPM(Paths.modJSON.title_menu.music.bpm);
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		add(bg);
@@ -191,7 +191,7 @@ class TitleState extends MusicBeatState {
 
 	override function update(elapsed:Float) {
         if (FlxG.sound.music != null && FlxG.sound.music.playing) {
-            Conductor.songPosition += FlxG.elapsed * 1000;
+            Conductor.instance.trackedSongPosition += FlxG.elapsed * 1000;
         }
 
 		if(Paths.modJSON.title_menu.music.song != "" && curBeat >= 2) {
@@ -258,8 +258,8 @@ class TitleState extends MusicBeatState {
 	override function stepHit() {
 		super.stepHit();
 
-		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20)) {
-			Conductor.songPosition = FlxG.sound.music.time;
+		if ((FlxG.sound.music.time > Conductor.instance.trackedSongPosition + 20 || FlxG.sound.music.time < Conductor.instance.trackedSongPosition - 20)) {
+			Conductor.instance.trackedSongPosition = FlxG.sound.music.time;
 		}
 	}
 

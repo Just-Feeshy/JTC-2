@@ -1,6 +1,5 @@
 package;
 
-import Conductor.BPMChangeEvent;
 import flixel.FlxG;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.addons.ui.FlxUIState;
@@ -19,7 +18,9 @@ class MusicBeatState extends HelperStates
 	private var songPos(get, never):Float;
 
 	function get_songPos():Float
-		return Conductor.songPosition;
+	{
+		return Conductor.instance.trackedSongPosition;
+	}
 
 	override function onCreate():Dynamic {
 		#if (USING_LUA && cpp)
@@ -42,10 +43,33 @@ class MusicBeatState extends HelperStates
 		updateCurStep();
 		updateBeat();
 
-		if (oldStep != curStep && curStep > 0)
+		if (oldStep != curStep)
 			stepHit();
 
 		super.update(elapsed);
+	}
+
+	public function syncMusicBeatState(?songTime:Null<Float>):Void {
+		var sourceSongTime:Float = songTime != null ? songTime : songPos;
+
+		if(songTime != null && Math.abs(sourceSongTime - Conductor.instance.trackedSongPosition) > 0.001) {
+			var stepTime:Float = Conductor.instance.getTimeInSteps(sourceSongTime);
+			curStep = Math.floor(stepTime);
+			curBeat = Math.floor(stepTime * 0.25);
+		} else {
+			curStep = Conductor.instance.currentStep;
+			curBeat = Conductor.instance.currentBeat;
+		}
+
+		lastStep = curStep;
+		lastBeat = curBeat;
+
+		#if (USING_LUA && cpp)
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			HelperStates.getLua(Type.getClass(this)).set("curStep", curStep);
+			HelperStates.getLua(Type.getClass(this)).set("curBeat", curBeat);
+		}
+		#end
 	}
 
 	public function clickedOnSprite(clickSprite:FlxSprite, spriteDiameter:Float):Bool {
@@ -59,7 +83,7 @@ class MusicBeatState extends HelperStates
     }
 
 	private function updateBeat():Void {
-		curBeat = Math.floor(curStep * 0.25);
+		curBeat = Conductor.instance.currentBeat;
 
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this)))
@@ -68,18 +92,7 @@ class MusicBeatState extends HelperStates
 	}
 
 	private function updateCurStep():Void {
-		var lastChange:BPMChangeEvent = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: 0
-		}
-		for (i in 0...Conductor.bpmChangeMap.length)
-		{
-			if (songPos >= Conductor.bpmChangeMap[i].songTime)
-				lastChange = Conductor.bpmChangeMap[i];
-		}
-
-		curStep = lastChange.stepTime + Math.floor((songPos - lastChange.songTime) / Conductor.stepCrochet);
+		curStep = Conductor.instance.currentStep;
 
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this)))
@@ -88,10 +101,22 @@ class MusicBeatState extends HelperStates
 	}
 
 	public function stepHit():Void {
+		curStep = Conductor.instance.currentStep;
+		curBeat = Conductor.instance.currentBeat;
+
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
-			HelperStates.getLua(Type.getClass(this)).call("onStepHit", []);
-			HelperStates.getLua(Type.getClass(this)).set("curStep", curStep);
+			var stateLua = HelperStates.getLua(Type.getClass(this));
+			stateLua.set("curStep", curStep);
+			stateLua.set("curBeat", curBeat);
+
+			if(Std.isOfType(this, PlayState)) {
+				var playState:PlayState = cast this;
+				playState.updateLuaVars();
+				playState.updatePerSectionLuaVars();
+			}
+
+			stateLua.call("onStepHit", []);
 		}
 		#end
 
@@ -100,10 +125,22 @@ class MusicBeatState extends HelperStates
 	}
 
 	public function beatHit():Void {
+		curStep = Conductor.instance.currentStep;
+		curBeat = Conductor.instance.currentBeat;
+
 		#if (USING_LUA && cpp)
 		if(HelperStates.luaExist(Type.getClass(this))) {
-			HelperStates.getLua(Type.getClass(this)).call("onBeatHit", []);
-			HelperStates.getLua(Type.getClass(this)).set("curBeat", curBeat);
+			var stateLua = HelperStates.getLua(Type.getClass(this));
+			stateLua.set("curStep", curStep);
+			stateLua.set("curBeat", curBeat);
+
+			if(Std.isOfType(this, PlayState)) {
+				var playState:PlayState = cast this;
+				playState.updateLuaVars();
+				playState.updatePerSectionLuaVars();
+			}
+
+			stateLua.call("onBeatHit", []);
 		}
 		#end
 	}

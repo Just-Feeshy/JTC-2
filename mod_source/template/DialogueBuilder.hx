@@ -49,6 +49,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     var changingScene:Bool;
     var playSong:Bool;
+    var dialogueSongPosition:Float = 0;
+    var dialogueBeatLengthMs:Float = 0;
+    var lastDialogueBeat:Int = -1;
 
     var girlfriend:Character;
 
@@ -312,8 +315,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 			FlxG.sound.music.stop();
         }
 
-        Conductor.songPosition = 0;
-        Conductor.changeBPM(bpm);
+        dialogueSongPosition = 0;
+        dialogueBeatLengthMs = (60 / Math.max(bpm, 1)) * 1000;
+        lastDialogueBeat = -1;
         FlxG.sound.playMusic(path);
 
         playSong = true;
@@ -379,7 +383,19 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     override function update(elapsed:Float):Void {
         if (FlxG.sound.music != null && playSong) {
-			Conductor.songPosition += FlxG.elapsed * 1000;
+			dialogueSongPosition = FlxG.sound.music.time;
+
+            if(dialogueBeatLengthMs > 0) {
+                var dialogueBeat:Int = Math.floor(dialogueSongPosition / dialogueBeatLengthMs);
+
+                while(lastDialogueBeat < dialogueBeat) {
+                    lastDialogueBeat++;
+
+                    if(lastDialogueBeat >= 0 && girlfriend != null) {
+                        girlfriend.dance();
+                    }
+                }
+            }
         }
 
         if(controls.ACCEPT && !changingScene && dialogueScene < _info.info.length) {
@@ -414,12 +430,6 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
 
         super.update(elapsed);
-    }
-
-    override function beatHit():Void {
-        if(curBeat % 1 == 0) {
-            girlfriend.dance();
-        }
     }
 
     override function destroy():Void {

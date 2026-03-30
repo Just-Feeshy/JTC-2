@@ -85,9 +85,9 @@ class PauseSubState extends MusicBeatSubstate
 			levelDifficulty.x = FlxG.width - (levelDifficulty.width + 20);
 			otherStuff.x = FlxG.width - (otherStuff.width + 20);
 
-			FlxTween.tween(bg, {alpha: 0.6}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut});
-			FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, startDelay: 0.3});
-			FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, startDelay: 0.5});
+			FlxTween.tween(bg, {alpha: 0.6}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut});
+			FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut, startDelay: 0.3});
+			FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut, startDelay: 0.5});
 		}
 
 		grpMenuShit = new FlxTypedGroup<Alphabet>();
@@ -186,7 +186,7 @@ class PauseSubState extends MusicBeatSubstate
 					}
 
 					switch(SaveData.getData(SaveType.PRESET_KEYBINDS)) {
-						case 0:							
+						case 0:
 							otherStuff.text = "SCHEME: "+"WASD";
 						case 1:
 							otherStuff.text = "SCHEME: "+"DFJK";

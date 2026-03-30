@@ -21,7 +21,7 @@ class PlayScoreFeedback
 
 	public function popUpScore(strumtime:Float, id:Int, abby:String, ?judgeSongPosition:Float, ?noteTag:String):Void
 	{
-		var noteDiff:Float = Math.abs(strumtime - (judgeSongPosition == null ? Conductor.trackPosition : judgeSongPosition));
+		var noteDiff:Float = Math.abs(strumtime - (judgeSongPosition == null ? Conductor.instance.trackedSongPosition : judgeSongPosition));
 		playState.setPlayerVocalsVolume(1, noteTag);
 
 		var placement:String = Std.string(playState.combo);
@@ -32,7 +32,7 @@ class PlayScoreFeedback
 		var rating:FlxSprite = new FlxSprite();
 		var score:Int = 350;
 
-		if (noteDiff > Conductor.safeZoneOffset * 0.9)
+		if (noteDiff > Conductor.instance.safeZoneOffset * 0.9)
 		{
 			if(playState.modifierCheckList('get good')) {
 				playState.setHealth(playState.health - 2);
@@ -44,7 +44,7 @@ class PlayScoreFeedback
 			playState.combo = 0;
 			playState.setHealth(playState.health - 0.05);
 		}
-		else if (noteDiff > Conductor.safeZoneOffset * 0.75)
+		else if (noteDiff > Conductor.instance.safeZoneOffset * 0.75)
 		{
 			if(playState.modifierCheckList('get good')) {
 				playState.setHealth(playState.health - 2);
@@ -56,7 +56,7 @@ class PlayScoreFeedback
 			playState.combo = 0;
 			playState.setHealth(playState.health - 0.03);
 		}
-		else if (noteDiff > Conductor.safeZoneOffset * 0.2)
+		else if (noteDiff > Conductor.instance.safeZoneOffset * 0.2)
 		{
 			playState.daRating = 'good';
 			score = 200;
@@ -151,7 +151,7 @@ class PlayScoreFeedback
 				{
 					numScore.destroy();
 				},
-				startDelay: Conductor.crochet * 0.002
+				startDelay: Conductor.instance.beatLengthMs * 0.002
 			});
 
 			daLoop++;
@@ -160,7 +160,7 @@ class PlayScoreFeedback
 		coolText.text = Std.string(seperatedScore);
 
 		FlxTween.tween(rating, {alpha: 0}, 0.2, {
-			startDelay: Conductor.crochet * 0.001
+			startDelay: Conductor.instance.beatLengthMs * 0.001
 		});
 
 		FlxTween.tween(comboSpr, {alpha: 0}, 0.2, {
@@ -170,7 +170,7 @@ class PlayScoreFeedback
 				comboSpr.destroy();
 				rating.destroy();
 			},
-			startDelay: Conductor.crochet * 0.001
+			startDelay: Conductor.instance.beatLengthMs * 0.001
 		});
 
 		playState.curSection += 1;

@@ -9,8 +9,6 @@ import flixel.tweens.FlxTween;
 import lime.utils.Assets;
 import haxe.Json;
 
-import Conductor.BPMChangeEvent;
-
 using StringTools;
 
 @:access(MusicBeatState)
@@ -113,7 +111,7 @@ class CheesyStage extends StorageStage {
 				prevValue = healthBarArrayLength - 1;
 			}
 
-			allTweens.push(FlxTween.color(playstate.healthBar.filledBar, Conductor.bpm/60, info[prevValue], info[tweenIndex], {ease: FlxEase.linear,
+			allTweens.push(FlxTween.color(playstate.healthBar.filledBar, Conductor.instance.activeBpm / 60, info[prevValue], info[tweenIndex], {ease: FlxEase.linear,
 				onComplete: function(twn:FlxTween) {
 					cleanTween();
 					tweenHealthBar(info, direction, playstate);
@@ -146,18 +144,7 @@ class CheesyStage extends StorageStage {
 	}
 
 	function updateCurStep():Void {
-		var lastChange:BPMChangeEvent = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: 0
-		}
-
-		for (i in 0...Conductor.bpmChangeMap.length) {
-			if (playstate.songPos >= Conductor.bpmChangeMap[i].songTime)
-				lastChange = Conductor.bpmChangeMap[i];
-		}
-
-		curStep = lastChange.stepTime + (playstate.songPos - lastChange.songTime) / Conductor.stepCrochet;
+		curStep = Conductor.instance.getTimeInSteps(playstate.songPos);
 
 		/*
 		* Hell yea, I can cheese my way to making my own methods! Pun intended hehe.
@@ -287,7 +274,7 @@ class CheesyStage extends StorageStage {
 				playstate.healthTween = null;
 			}
 
-			FlxTween.tween(playstate, {health: 1}, (Conductor.stepCrochet * 0.0055), {ease: FlxEase.cubeOut,
+			FlxTween.tween(playstate, {health: 1}, (Conductor.instance.stepLengthMs * 0.0055), {ease: FlxEase.cubeOut,
 				onComplete: function(twn:FlxTween) {
 					playstate.prevHealth = playstate.health;
 					playstate.avoidHealthIssues = false;

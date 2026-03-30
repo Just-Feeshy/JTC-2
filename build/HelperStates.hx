@@ -236,6 +236,11 @@ class HelperStates extends FlxState {
 	}
 
 	override function update(elapsed:Float):Void {
+		if(isOfType(this, PlayState)) {
+			var playState:PlayState = cast this;
+			playState.updateLuaVars();
+		}
+
 		setLua("curElapsed", elapsed);
         setLua("curTicks", FlxG.game.ticks);
 		callLua("onUpdate", [elapsed]);

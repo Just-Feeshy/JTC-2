@@ -121,8 +121,8 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 if(playState.playScrollSpeed != null) {
                     playState.playScrollSpeed.tweenTo(
                         targetScrollSpeed,
-                        Conductor.trackPosition,
-                        (Conductor.stepCrochet / 1000) * transitionSteps
+                        Conductor.instance.trackedSongPosition,
+                        (Conductor.instance.stepLengthMs / 1000) * transitionSteps
                     );
                 } else {
                     Note.AFFECTED_SCROLLSPEED = targetScrollSpeed;
@@ -135,7 +135,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     playState.resyncVocals();
                 }
 
-                storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.crochet/500) * Std.parseFloat(eventValue2), {
+                storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.instance.beatLengthMs/500) * Std.parseFloat(eventValue2), {
                     onComplete: function(tween:FlxTween) {
                         if(Std.parseInt(eventValue) == 1) {
                             playState.pauseMusic();
@@ -153,7 +153,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 else
                     playState.flipWiggle = 1;
             case "note rewind":
-                storeTween(eventName, FlxTween.tween(Note, {AFFECTED_STRUMTIME : Std.parseFloat(eventValue)}, (Conductor.stepCrochet/500) * Std.parseFloat(eventValue2), {
+                storeTween(eventName, FlxTween.tween(Note, {AFFECTED_STRUMTIME : Std.parseFloat(eventValue)}, (Conductor.instance.stepLengthMs/500) * Std.parseFloat(eventValue2), {
                     onComplete: function(tween:FlxTween) {
                         cancelTween(eventName);
                     }
@@ -206,7 +206,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     setModifierToDefault(eventValue);
 
                     if(eventValue == "jumpspeed" && playState.playScrollSpeed != null) {
-                        playState.playScrollSpeed.snapTo(1, Conductor.trackPosition);
+                        playState.playScrollSpeed.snapTo(1, Conductor.instance.trackedSongPosition);
                     }
                 }
 
@@ -215,12 +215,12 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     setModifierToDefault(eventValue2);
 
                     if(eventValue2 == "jumpspeed" && playState.playScrollSpeed != null) {
-                        playState.playScrollSpeed.snapTo(1, Conductor.trackPosition);
+                        playState.playScrollSpeed.snapTo(1, Conductor.instance.trackedSongPosition);
                     }
                 }
             case "clear all":
                 if(playState.playScrollSpeed != null) {
-                    playState.playScrollSpeed.snapTo(1, Conductor.trackPosition);
+                    playState.playScrollSpeed.snapTo(1, Conductor.instance.trackedSongPosition);
                 }
 
                 reflushModifiers();

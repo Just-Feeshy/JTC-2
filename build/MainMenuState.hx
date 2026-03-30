@@ -103,7 +103,7 @@ class MainMenuState extends MusicBeatState
 
 	function applyMenuZoom():Void {
 		if(zoomSineWave) {
-			camMenu.zoom = baseMenuZoom + 0.02 * (Math.sin(0.0005 * Conductor.songPosition * Math.PI * (Paths.modJSON.main_menu.bpm / 120)));
+			camMenu.zoom = baseMenuZoom + 0.02 * (Math.sin(0.0005 * Conductor.instance.trackedSongPosition * Math.PI * (Paths.modJSON.main_menu.bpm / 120)));
 		}else {
 			camMenu.zoom = baseMenuZoom;
 		}
@@ -118,8 +118,8 @@ class MainMenuState extends MusicBeatState
 	override function create() {
         FlxG.mouse.visible = false;
 
-		Conductor.songPosition = 0;
-		Conductor.songPosition -= Conductor.crochet * 5;
+		Conductor.instance.trackedSongPosition = 0;
+		Conductor.instance.trackedSongPosition -= Conductor.instance.beatLengthMs * 5;
 
 		camX = new FeshCamera();
 		camMenu = new FeshCamera();
@@ -143,7 +143,7 @@ class MainMenuState extends MusicBeatState
 
 		PlayState.hasWarning = true;
 
-		Conductor.changeBPM(Paths.modJSON.main_menu.bpm);
+		Conductor.instance.forceBPM(Paths.modJSON.main_menu.bpm);
 
 		Main.trueFramerate = FlxG.save.data.lowFps;
         Register.updateFramerate(Main.trueFramerate * SaveData.getData(SaveType.FPS_MULTIPLIER));
@@ -347,7 +347,7 @@ class MainMenuState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		if (FlxG.sound.music != null)
-			Conductor.songPosition = FlxG.sound.music.time;
+			Conductor.instance.trackedSongPosition = FlxG.sound.music.time;
 
 		if (FlxG.sound.music.volume < 0.8)
 		{

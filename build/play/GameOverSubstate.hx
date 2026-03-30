@@ -37,7 +37,7 @@ class GameOverSubstate extends MusicBeatSubstate
 
 		super();
 
-		Conductor.songPosition = 0;
+		Conductor.instance.trackedSongPosition = 0;
 
 		bf = new Boyfriend(x, y, daBf);
 		add(bf);
@@ -46,7 +46,7 @@ class GameOverSubstate extends MusicBeatSubstate
 		add(camFollow);
 
 		FlxG.sound.play(Paths.sound('fnf_loss_sfx' + stageSuffix));
-		Conductor.changeBPM(100);
+		Conductor.instance.forceBPM(100);
 
 		// FlxG.camera.followLerp = 1;
 		// FlxG.camera.focusOn(FlxPoint.get(FlxG.width / 2, FlxG.height / 2));
@@ -93,7 +93,7 @@ class GameOverSubstate extends MusicBeatSubstate
 
 		if (FlxG.sound.music.playing)
 		{
-			Conductor.songPosition = FlxG.sound.music.time;
+			Conductor.instance.trackedSongPosition = FlxG.sound.music.time;
 		}
 	}
 

@@ -109,8 +109,8 @@ class FreeplayState extends MusicBeatState
 			index++;
 		}
 
-		Conductor.songPosition = 0;
-		Conductor.songPosition -= Conductor.crochet * 5;
+		Conductor.instance.trackedSongPosition = 0;
+		Conductor.instance.trackedSongPosition -= Conductor.instance.beatLengthMs * 5;
 
 		camFreeplay = new FeshCamera();
 		camBackground = new FeshCamera();
@@ -305,7 +305,7 @@ class FreeplayState extends MusicBeatState
 		super.update(elapsed);
 
 		if (FlxG.sound.music != null)
-			Conductor.songPosition = FlxG.sound.music.length;
+			Conductor.instance.trackedSongPosition = FlxG.sound.music.length;
 
 		if (FlxG.sound.music.volume < 0.7) {
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
@@ -372,8 +372,8 @@ class FreeplayState extends MusicBeatState
 	override function stepHit() {
 		super.stepHit();
 
-		if ((FlxG.sound.music.time > Conductor.songPosition + 20 || FlxG.sound.music.time < Conductor.songPosition - 20)) {
-			Conductor.songPosition = FlxG.sound.music.time;
+		if ((FlxG.sound.music.time > Conductor.instance.trackedSongPosition + 20 || FlxG.sound.music.time < Conductor.instance.trackedSongPosition - 20)) {
+			Conductor.instance.trackedSongPosition = FlxG.sound.music.time;
 		}
 	}
 

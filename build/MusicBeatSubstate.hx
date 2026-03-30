@@ -1,6 +1,5 @@
 package;
 
-import Conductor.BPMChangeEvent;
 import flixel.FlxG;
 import flixel.FlxSubState;
 
@@ -21,7 +20,7 @@ class MusicBeatSubstate extends FlxSubState
 	private var songPos(get, never):Float;
 
 	function get_songPos():Float
-		return Conductor.songPosition;
+		return Conductor.instance.trackedSongPosition;
 
 	inline function get_controls():Controls
 		return PlayerSettings.player1.controls;
@@ -42,19 +41,7 @@ class MusicBeatSubstate extends FlxSubState
 
 	private function updateCurStep():Void
 	{
-		var lastChange:BPMChangeEvent = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: 0
-		}
-		
-		for (i in 0...Conductor.bpmChangeMap.length)
-		{
-			if (songPos > Conductor.bpmChangeMap[i].songTime)
-				lastChange = Conductor.bpmChangeMap[i];
-		}
-
-		curStep = lastChange.stepTime + Math.floor((songPos - lastChange.songTime) / Conductor.stepCrochet);
+		curStep = Math.floor(Conductor.instance.getTimeInSteps(songPos));
 	}
 
 	public function stepHit():Void

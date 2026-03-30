@@ -154,7 +154,7 @@ class Character extends feshixl.FeshSprite {
 				singMultiplier = 6.1;
 			}
 
-			if (holdTimer >= Conductor.stepCrochet * singMultiplier * 0.0011) {
+			if (holdTimer >= Conductor.instance.stepLengthMs * singMultiplier * 0.0011) {
 				dance();
 				holdTimer = 0;
 			}

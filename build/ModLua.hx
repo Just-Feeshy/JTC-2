@@ -67,6 +67,16 @@ typedef LuaOrbitSprite = {
     var angle:Float;
 }
 
+typedef LuaPersistentRestartState = {
+    var texts:Map<String, FlxText>;
+    var sprites:Map<String, FlxSprite>;
+    var cameras:Map<String, FlxCamera>;
+    var bitmaps:Map<String, BitmapData>;
+    var frameCollections:Map<String, FlxFramesCollection>;
+    var orbitSprites:Map<String, LuaOrbitSprite>;
+    var cameraShaderNames:Map<String, String>;
+}
+
 /**
 * Honestly, modcharts are my least concern, since this is mostly object-orientated based.
 */
@@ -89,6 +99,7 @@ class ModLua {
     public var luaShaderSources(default, null):Map<String, LuaShaderSource> = new Map<String, LuaShaderSource>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameraShaderFilters(default, null):Map<String, ShaderFilter> = new Map<String, ShaderFilter>();
+    public var luaCameraShaderNames(default, null):Map<String, String> = new Map<String, String>();
 	public var luaBitmaps(default, null):Map<String, BitmapData> = new Map<String, BitmapData>();
 	public var luaFrameCollections(default, null):Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
     public var luaOrbitSprites(default, null):Map<String, LuaOrbitSprite> = new Map<String, LuaOrbitSprite>();
@@ -111,7 +122,7 @@ class ModLua {
         #if (USING_LUA && cpp)
         lua = LuaL.newstate();
 		LuaL.openlibs(lua);
-		Lua.init_callbacks(lua);
+		FeeshmoraLuaCallbackBridge.init(lua);
 
         var resultFile:Dynamic = LuaL.dofile(lua, luaScript);
 		var luaResults:String = Lua.tostring(lua, resultFile);
@@ -131,10 +142,10 @@ class ModLua {
 
         set("inRapBattle", false);
 
-        set('curBpm', Conductor.bpm);
+        set('curBpm', Conductor.instance.activeBpm);
 
-        set('crochet', Conductor.crochet);
-        set('stepCrochet', Conductor.stepCrochet);
+        set('crochet', Conductor.instance.beatLengthMs);
+        set('stepCrochet', Conductor.instance.stepLengthMs);
 		set('crochetPitch', 0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end);
 
         set('getCwd', Sys.getCwd());
@@ -1405,7 +1416,7 @@ class ModLua {
             }
         });
 
-	        Lua_helper.add_callback(lua, "setCameraZoom", function(name:String, zoom:Float) {
+	        addProtectedLuaCallback("setCameraZoom", function(name:String, zoom:Float) {
 	            var cam:FlxCamera = getCamera(name);
 
 	            if(cam == null) {
@@ -1426,7 +1437,7 @@ class ModLua {
 	            return true;
 	        });
 
-        Lua_helper.add_callback(lua, "getCameraZoom", function(name:String) {
+	        addProtectedLuaCallback("getCameraZoom", function(name:String) {
             var cam:FlxCamera = getCamera(name);
 
             if(cam != null) {
@@ -1503,11 +1514,11 @@ class ModLua {
             return removeShaderFromSprite(spriteName);
         });
 
-        Lua_helper.add_callback(lua, "setCameraShader", function(cameraName:String, shaderName:String) {
+        addProtectedLuaCallback("setCameraShader", function(cameraName:String, shaderName:String) {
             return attachShaderToCamera(shaderName, cameraName);
         });
 
-        Lua_helper.add_callback(lua, "removeCameraShader", function(cameraName:String) {
+        addProtectedLuaCallback("removeCameraShader", function(cameraName:String) {
             return removeShaderFromCamera(cameraName);
         });
 
@@ -1519,28 +1530,32 @@ class ModLua {
             return attachShaderToSprite(name, spriteName);
         });
 
-        Lua_helper.add_callback(lua, "setShaderFloat", function(target:String, property:String, value:Float) {
+        addProtectedLuaCallback("setShaderFloat", function(target:String, property:String, value:Float) {
             return setShaderFloatValue(target, property, [value]);
         });
 
-        Lua_helper.add_callback(lua, "setShaderFloat2", function(target:String, property:String, x:Float, y:Float) {
+        addProtectedLuaCallback("setShaderFloat2", function(target:String, property:String, x:Float, y:Float) {
             return setShaderFloatValue(target, property, [x, y]);
         });
 
-        Lua_helper.add_callback(lua, "getShaderFloat", function(target:String, property:String) {
+        addProtectedLuaCallback("setShaderFloat4", function(target:String, property:String, x:Float, y:Float, z:Float, w:Float) {
+            return setShaderFloatValue(target, property, [x, y, z, w]);
+        });
+
+        addProtectedLuaCallback("getShaderFloat", function(target:String, property:String) {
             var values:Array<Dynamic> = getShaderValue(target, property);
             return values.length > 0 ? values[0] : 0.0;
         });
 
-        Lua_helper.add_callback(lua, "setShaderFloatArray", function(target:String, property:String, values:Array<Dynamic>) {
-            return setShaderFloatValue(target, property, normalizeFloatArray(values));
+        addProtectedLuaCallback("setShaderFloatArray", function(target:String, property:String, values:Dynamic) {
+            return setShaderFloatValue(target, property, normalizeFloatArray(normalizeDynamicArray(values)));
         });
 
-        Lua_helper.add_callback(lua, "getShaderFloatArray", function(target:String, property:String) {
+        addProtectedLuaCallback("getShaderFloatArray", function(target:String, property:String) {
             return getShaderValue(target, property);
         });
 
-        Lua_helper.add_callback(lua, "setShaderInt", function(target:String, property:String, value:Int) {
+        addProtectedLuaCallback("setShaderInt", function(target:String, property:String, value:Int) {
             return setShaderIntValue(target, property, [value]);
         });
 
@@ -1549,15 +1564,15 @@ class ModLua {
             return values.length > 0 ? Std.int(values[0]) : 0;
         });
 
-        Lua_helper.add_callback(lua, "setShaderIntArray", function(target:String, property:String, values:Array<Dynamic>) {
-            return setShaderIntValue(target, property, normalizeIntArray(values));
+        addProtectedLuaCallback("setShaderIntArray", function(target:String, property:String, values:Dynamic) {
+            return setShaderIntValue(target, property, normalizeIntArray(normalizeDynamicArray(values)));
         });
 
         Lua_helper.add_callback(lua, "getShaderIntArray", function(target:String, property:String) {
             return getShaderValue(target, property);
         });
 
-        Lua_helper.add_callback(lua, "setShaderBool", function(target:String, property:String, value:Bool) {
+        addProtectedLuaCallback("setShaderBool", function(target:String, property:String, value:Bool) {
             return setShaderBoolValue(target, property, [value]);
         });
 
@@ -1566,8 +1581,8 @@ class ModLua {
             return values.length > 0 ? values[0] == true : false;
         });
 
-        Lua_helper.add_callback(lua, "setShaderBoolArray", function(target:String, property:String, values:Array<Dynamic>) {
-            return setShaderBoolValue(target, property, normalizeBoolArray(values));
+        addProtectedLuaCallback("setShaderBoolArray", function(target:String, property:String, values:Dynamic) {
+            return setShaderBoolValue(target, property, normalizeBoolArray(normalizeDynamicArray(values)));
         });
 
         Lua_helper.add_callback(lua, "getShaderBoolArray", function(target:String, property:String) {
@@ -1776,6 +1791,20 @@ class ModLua {
             return null;
         }
 
+        ensureCameraShaderAttachment(name);
+
+        var shaderFilter:ShaderFilter = luaCameraShaderFilters.get(name);
+
+        if(shaderFilter != null && shaderFilter.shader != null && isOfType(shaderFilter.shader, FeshShader)) {
+            var filterShader:FeshShader = cast shaderFilter.shader;
+
+            if(luaShaders != null) {
+                luaShaders.set(name, filterShader);
+            }
+
+            return filterShader;
+        }
+
         var shader:FeshShader = luaShaders.get(name);
 
         if(shader != null) {
@@ -1788,13 +1817,47 @@ class ModLua {
             return cast spr.shader;
         }
 
-        var shaderFilter:ShaderFilter = luaCameraShaderFilters.get(name);
+        return null;
+    }
 
-        if(shaderFilter != null && shaderFilter.shader != null && isOfType(shaderFilter.shader, FeshShader)) {
-            return cast shaderFilter.shader;
+    function ensureCameraShaderAttachment(cameraName:String):Bool {
+        if(cameraName == null || luaShaders == null || luaCameraShaderFilters == null || luaCameraShaderNames == null) {
+            return false;
         }
 
-        return null;
+        var cam:FlxCamera = getCamera(cameraName);
+        var shaderName:String = luaCameraShaderNames.get(cameraName);
+        var shader:FeshShader = luaShaders.get(cameraName);
+
+        if(cam == null) {
+            return false;
+        }
+
+        if((shader == null || shader.data == null) && shaderName != null && shaderName.trim() != "") {
+            shader = createShaderInstance(shaderName, cameraName);
+        }
+
+        if(shader == null) {
+            return false;
+        }
+
+        var filters:Array<BitmapFilter> = getCameraFilters(cam);
+        var shaderFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
+
+        if(shaderFilter != null && filters.contains(shaderFilter) && shaderFilter.shader == cast shader) {
+            return true;
+        }
+
+        if(shaderFilter != null) {
+            filters.remove(shaderFilter);
+        }
+
+        var repairedFilter:ShaderFilter = new ShaderFilter(cast shader);
+        filters.push(repairedFilter);
+        cam.setFilters(filters);
+        luaShaders.set(cameraName, shader);
+        luaCameraShaderFilters.set(cameraName, repairedFilter);
+        return true;
     }
 
     function getCameraFilters(camera:FlxCamera):Array<BitmapFilter> {
@@ -2078,33 +2141,37 @@ class ModLua {
     }
 
     function attachShaderToCamera(shaderName:String, cameraName:String):Bool {
-        var cam:FlxCamera = getCamera(cameraName);
+        try {
+            var cam:FlxCamera = getCamera(cameraName);
 
-        if(cam == null) {
-            Log.error('Camera `$cameraName` could not be found!');
+            if(cam == null || luaShaders == null || luaCameraShaderFilters == null || luaCameraShaderNames == null) {
+                return false;
+            }
+
+            var shader:FeshShader = luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, cameraName);
+
+            if(shader == null) {
+                return false;
+            }
+
+            var filters:Array<BitmapFilter> = getCameraFilters(cam);
+            var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
+
+            if(previousFilter != null) {
+                filters.remove(previousFilter);
+            }
+
+            var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
+            filters.push(shaderFilter);
+
+            cam.setFilters(filters);
+            luaCameraShaderFilters.set(cameraName, shaderFilter);
+            luaCameraShaderNames.set(cameraName, shaderName);
+            luaShaders.set(cameraName, shader);
+            return true;
+        } catch(e:Dynamic) {
             return false;
         }
-
-        var shader:FeshShader = luaShaders.exists(shaderName) ? luaShaders.get(shaderName) : createShaderInstance(shaderName, cameraName);
-
-        if(shader == null) {
-            return false;
-        }
-
-        var filters:Array<BitmapFilter> = getCameraFilters(cam);
-        var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
-
-        if(previousFilter != null) {
-            filters.remove(previousFilter);
-        }
-
-        var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
-        filters.push(shaderFilter);
-
-        cam.setFilters(filters);
-        luaCameraShaderFilters.set(cameraName, shaderFilter);
-        luaShaders.set(cameraName, shader);
-        return true;
     }
 
     function removeShaderFromSprite(spriteName:String):Bool {
@@ -2127,6 +2194,10 @@ class ModLua {
     }
 
     function removeShaderFromCamera(cameraName:String):Bool {
+        if(luaCameraShaderFilters == null || luaShaders == null || luaCameraShaderNames == null) {
+            return false;
+        }
+
         var cam:FlxCamera = getCamera(cameraName);
         var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
 
@@ -2139,6 +2210,7 @@ class ModLua {
 
         cam.setFilters(filters);
         luaCameraShaderFilters.remove(cameraName);
+        luaCameraShaderNames.remove(cameraName);
         luaShaders.remove(cameraName);
         return true;
     }
@@ -2147,14 +2219,18 @@ class ModLua {
         var shader:FeshShader = getShaderInstance(target);
 
         if(shader == null) {
-            Log.error('Shader target `$target` could not be found!');
             return null;
         }
 
-        var shaderField:Dynamic = Reflect.field(shader.data, property);
+        var shaderData:Dynamic = shader.data;
+
+        if(shaderData == null) {
+            return null;
+        }
+
+        var shaderField:Dynamic = Reflect.field(shaderData, property);
 
         if(shaderField == null) {
-            Log.error('Shader property `$property` was not found on `$target`!');
             return null;
         }
 
@@ -2174,65 +2250,61 @@ class ModLua {
 
     function setShaderFloatValue(target:String, property:String, values:Array<Float>):Bool {
         try {
-        var shaderField:Dynamic = getShaderDataField(target, property);
+            var shaderField:Dynamic = getShaderDataField(target, property);
 
-        if(shaderField == null) {
-            return false;
-        }
+            if(shaderField == null) {
+                return false;
+            }
 
-        Reflect.setProperty(shaderField, "value", cast values);
-        return true;
+            Reflect.setProperty(shaderField, "value", cast values);
+            return true;
         } catch(e:Dynamic) {
-            Log.error('Failed to set float shader property `$property` on `$target`: $e');
             return false;
         }
     }
 
     function setShaderIntValue(target:String, property:String, values:Array<Int>):Bool {
         try {
-        var shaderField:Dynamic = getShaderDataField(target, property);
+            var shaderField:Dynamic = getShaderDataField(target, property);
 
-        if(shaderField == null) {
-            return false;
-        }
+            if(shaderField == null) {
+                return false;
+            }
 
-        Reflect.setProperty(shaderField, "value", cast values);
-        return true;
+            Reflect.setProperty(shaderField, "value", cast values);
+            return true;
         } catch(e:Dynamic) {
-            Log.error('Failed to set int shader property `$property` on `$target`: $e');
             return false;
         }
     }
 
     function setShaderBoolValue(target:String, property:String, values:Array<Bool>):Bool {
         try {
-        var shaderField:Dynamic = getShaderDataField(target, property);
+            var shaderField:Dynamic = getShaderDataField(target, property);
 
-        if(shaderField == null) {
-            return false;
-        }
+            if(shaderField == null) {
+                return false;
+            }
 
-        Reflect.setProperty(shaderField, "value", cast values);
-        return true;
+            Reflect.setProperty(shaderField, "value", cast values);
+            return true;
         } catch(e:Dynamic) {
-            Log.error('Failed to set bool shader property `$property` on `$target`: $e');
             return false;
         }
     }
 
     function setShaderSampler(target:String, property:String, texture:String):Bool {
         try {
-        var shaderField:Dynamic = getShaderDataField(target, property);
-        var bitmapData:BitmapData = resolveShaderBitmap(texture);
+            var shaderField:Dynamic = getShaderDataField(target, property);
+            var bitmapData:BitmapData = resolveShaderBitmap(texture);
 
-        if(shaderField == null || bitmapData == null) {
-            return false;
-        }
+            if(shaderField == null || bitmapData == null) {
+                return false;
+            }
 
-        Reflect.setProperty(shaderField, "input", bitmapData);
-        return true;
+            Reflect.setProperty(shaderField, "input", bitmapData);
+            return true;
         } catch(e:Dynamic) {
-            Log.error('Failed to set sampler shader property `$property` on `$target`: $e');
             return false;
         }
     }
@@ -2275,6 +2347,18 @@ class ModLua {
         return output;
     }
 
+    function normalizeDynamicArray(values:Dynamic):Array<Dynamic> {
+        if(values == null) {
+            return [];
+        }
+
+        if(isOfType(values, Array)) {
+            return cast values;
+        }
+
+        return [values];
+    }
+
     function normalizeIntArray(values:Array<Dynamic>):Array<Int> {
         var output:Array<Int> = [];
 
@@ -2312,28 +2396,83 @@ class ModLua {
     }
 
     public function getObjectFromMap(name:String):Dynamic {
-        var spr:FlxSprite = getSprite(name);
         var cam:FlxCamera = getCamera(name);
+        var spr:FlxSprite = getSprite(name);
 
-        if(spr != null)return spr;
         if(cam != null)return cam;
+        if(spr != null)return spr;
 
         return null;
     }
 
     public function cancelTween(name:String):Void {
-        if(luaTweens.exists(name)) {
-            luaTweens.get(name).cancel();
-            luaTweens.get(name).destroy();
-            luaTweens.remove(name);
+        if(luaTweens == null || name == null || !luaTweens.exists(name)) {
+            return;
         }
+
+        var tween:FlxTween = luaTweens.get(name);
+
+        if(tween != null) {
+            try {
+                tween.cancel();
+            } catch(_:Dynamic) {}
+
+            try {
+                tween.destroy();
+            } catch(_:Dynamic) {}
+        }
+
+        luaTweens.remove(name);
     }
 
     public function cancelSound(name:String):Void {
-        if(luaSounds.exists(name)) {
-            luaSounds.get(name).stop();
-            luaSounds.remove(name);
+        if(luaSounds == null || name == null || !luaSounds.exists(name)) {
+            return;
         }
+
+        var sound:FlxSound = luaSounds.get(name);
+
+        if(sound != null) {
+            sound.stop();
+        }
+
+        luaSounds.remove(name);
+    }
+
+    public function detachPersistentRestartState():LuaPersistentRestartState {
+        var state:LuaPersistentRestartState = {
+            texts: luaTexts != null ? luaTexts : new Map<String, FlxText>(),
+            sprites: luaSprites != null ? luaSprites : new Map<String, FlxSprite>(),
+            cameras: luaCameras != null ? luaCameras : new Map<String, FlxCamera>(),
+            bitmaps: luaBitmaps != null ? luaBitmaps : new Map<String, BitmapData>(),
+            frameCollections: luaFrameCollections != null ? luaFrameCollections : new Map<String, FlxFramesCollection>(),
+            orbitSprites: luaOrbitSprites != null ? luaOrbitSprites : new Map<String, LuaOrbitSprite>(),
+            cameraShaderNames: luaCameraShaderNames != null ? luaCameraShaderNames : new Map<String, String>()
+        };
+
+        luaTexts = new Map<String, FlxText>();
+        luaSprites = new Map<String, FlxSprite>();
+        luaCameras = new Map<String, FlxCamera>();
+        luaBitmaps = new Map<String, BitmapData>();
+        luaFrameCollections = new Map<String, FlxFramesCollection>();
+        luaOrbitSprites = new Map<String, LuaOrbitSprite>();
+        luaCameraShaderNames = new Map<String, String>();
+
+        return state;
+    }
+
+    public function adoptPersistentRestartState(state:LuaPersistentRestartState):Void {
+        if(state == null) {
+            return;
+        }
+
+        luaTexts = state.texts != null ? state.texts : new Map<String, FlxText>();
+        luaSprites = state.sprites != null ? state.sprites : new Map<String, FlxSprite>();
+        luaCameras = state.cameras != null ? state.cameras : new Map<String, FlxCamera>();
+        luaBitmaps = state.bitmaps != null ? state.bitmaps : new Map<String, BitmapData>();
+        luaFrameCollections = state.frameCollections != null ? state.frameCollections : new Map<String, FlxFramesCollection>();
+        luaOrbitSprites = state.orbitSprites != null ? state.orbitSprites : new Map<String, LuaOrbitSprite>();
+        luaCameraShaderNames = state.cameraShaderNames != null ? state.cameraShaderNames : new Map<String, String>();
     }
 
     public function updateManagedSprites(elapsed:Float):Void {
@@ -2369,11 +2508,15 @@ class ModLua {
             return 0;
         }
 
+        var tracebackIndex:Int = 0;
+
         try {
             if(lua == null) {
                 trace("Error: Something went wrong with lua.");
                 return LuaUtils.Function_Continue;
             }
+
+            tracebackIndex = pushLuaTracebackHandler();
 
             Lua.getglobal(lua, event);
             var type:Int = Lua.type(lua, -1);
@@ -2384,22 +2527,29 @@ class ModLua {
                 }
 
                 Lua.pop(lua, 1);
+                removeLuaTracebackHandler(tracebackIndex);
                 return LuaUtils.Function_Continue;
+            }
+
+            if(tracebackIndex > 0) {
+                Lua.insert(lua, tracebackIndex + 1);
             }
 
             for (arg in args) {
                 Convert.toLua(lua, arg);
             }
 
-            var status:Int = Lua.pcall(lua, args.length, 1, 0);
+            var status:Int = Lua.pcall(lua, args.length, 1, tracebackIndex);
 
             if (status != Lua.LUA_OK) {
                 var error:String = getErrorMessage(status);
+                removeLuaTracebackHandler(tracebackIndex);
 				Log.error("Error (" + event + ") - " + error);
 				return LuaUtils.Function_Continue;
 			}
 
             var result:Dynamic = cast Convert.fromLua(lua, -1);
+            removeLuaTracebackHandler(tracebackIndex);
 
             if (result == null) {
                 return 0;
@@ -2408,11 +2558,86 @@ class ModLua {
             Lua.pop(lua, 1);
 			return result;
         }catch(e:Dynamic) {
-            trace(e);
+            removeLuaTracebackHandler(tracebackIndex);
+
+            var uncaughtError:String = lastLuaCallbackError;
+
+            if(uncaughtError == null || uncaughtError.trim() == "") {
+                uncaughtError = Std.string(e);
+            }
+
+            uncaughtError = buildUnhandledLuaErrorMessage(uncaughtError);
+            lastLuaCallbackError = null;
+            Log.error("Error (" + event + ") - " + uncaughtError);
+            return LuaUtils.Function_Continue;
         }
         #end
 
         return 0;
+    }
+
+    function pushLuaTracebackHandler():Int {
+        #if USING_LUA
+        if(lua == null) {
+            return 0;
+        }
+
+        Lua.getglobal(lua, "debug");
+
+        if(Lua.type(lua, -1) != Lua.LUA_TTABLE) {
+            Lua.pop(lua, 1);
+            return 0;
+        }
+
+        Lua.getfield(lua, -1, "traceback");
+        Lua.remove(lua, -2);
+
+        if(Lua.type(lua, -1) != Lua.LUA_TFUNCTION) {
+            Lua.pop(lua, 1);
+            return 0;
+        }
+
+        return Lua.gettop(lua);
+        #else
+        return 0;
+        #end
+    }
+
+    function removeLuaTracebackHandler(tracebackIndex:Int):Void {
+        #if USING_LUA
+        if(lua == null || tracebackIndex <= 0) {
+            return;
+        }
+
+        if(Lua.gettop(lua) >= tracebackIndex) {
+            Lua.remove(lua, tracebackIndex);
+        }
+        #end
+    }
+
+    function buildUnhandledLuaErrorMessage(message:String):String {
+        #if USING_LUA
+        if(message == null || message.trim() == "") {
+            message = "C++ exception";
+        }
+
+        if(lua == null) {
+            return message;
+        }
+
+        LuaL.traceback(lua, lua, message, 1);
+
+        var traceback:String = Lua.tostring(lua, -1);
+        Lua.pop(lua, 1);
+
+        if(traceback != null && traceback.trim() != "") {
+            return traceback.trim();
+        }
+
+        return message;
+        #else
+        return message;
+        #end
     }
 
     public function getSprite(name:String):FlxSprite {
@@ -2420,34 +2645,34 @@ class ModLua {
             return null;
         }
 
-        var spr:FlxSprite = luaSprites.get(name);
+        var spr:FlxSprite = luaSprites != null ? luaSprites.get(name) : null;
         var curState = cast FlxG.state;
 
-        if(spr == null && curState is HelperStates) {
+        if(spr == null && curState != null && curState is HelperStates && curState.modifiableSprites != null) {
             if(curState.modifiableSprites.exists(name))
                 spr = curState.modifiableSprites.get(name);
         }
 
         if(isValidLuaSprite(spr)) {
             return spr;
-        } else if(spr != null && luaSprites.exists(name)) {
+        } else if(spr != null && luaSprites != null && luaSprites.exists(name)) {
             luaSprites.remove(name);
         }
 
-        spr = luaTexts.get(name);
+        spr = luaTexts != null ? luaTexts.get(name) : null;
 
-        if(spr == null && curState is HelperStates) {
+        if(spr == null && curState != null && curState is HelperStates && curState.modifiableTexts != null) {
             if(curState.modifiableTexts.exists(name))
                 spr = curState.modifiableTexts.get(name);
         }
 
         if(isValidLuaSprite(spr)) {
             return spr;
-        } else if(spr != null && luaTexts.exists(name)) {
+        } else if(spr != null && luaTexts != null && luaTexts.exists(name)) {
             luaTexts.remove(name);
         }
 
-        if(curState is PlayState) {
+        if(curState != null && curState is PlayState) {
             var playState:PlayState = cast curState;
 
             switch(name.toLowerCase().trim()) {
@@ -2460,11 +2685,11 @@ class ModLua {
                 default:
             }
 
-            if(spr == null && playState.modifiableCharacters.exists(name))
+            if(spr == null && playState.modifiableCharacters != null && playState.modifiableCharacters.exists(name))
                 spr = playState.modifiableCharacters.get(name);
         }
 
-        if(spr == null) {
+        if(spr == null && curState != null) {
             var reflectedObject:Dynamic = Reflect.getProperty(curState, name);
 
             if(isOfType(reflectedObject, FlxSprite)) {
@@ -2484,30 +2709,49 @@ class ModLua {
             return null;
         }
 
-        var cam:FlxCamera = luaCameras.get(name);
+        var normalizedName:String = name.toLowerCase().trim();
+        var cam:FlxCamera = null;
         var curState = cast FlxG.state;
 
-        if(cam == null && curState is HelperStates) {
+        switch(normalizedName) {
+            case "camhud", "hud":
+                cam = PlayState.camHUD;
+            case "camnote", "note":
+                cam = PlayState.camNOTE;
+            case "camnotesustain", "notesustain", "sustain":
+                cam = PlayState.camNOTE != null ? PlayState.camNOTE.camNoteSustain : null;
+            case "camgame", "game":
+                var reflectedCam:Dynamic = curState != null ? Reflect.getProperty(curState, "camGame") : null;
+
+                if(isOfType(reflectedCam, FlxCamera)) {
+                    cam = cast reflectedCam;
+                }else {
+                    cam = FlxG.camera;
+                }
+            case "camera", "default":
+                cam = FlxG.camera;
+            default:
+        }
+
+        if(cam == null && luaCameras != null) {
+            cam = luaCameras.get(name);
+        }
+
+        if(cam == null && curState != null && curState is HelperStates && curState.modifiableCameras != null) {
             if(curState.modifiableCameras.exists(name))
                 cam = curState.modifiableCameras.get(name);
         }
 
-	        if(cam == null) {
-	            switch(name.toLowerCase().trim()) {
-	                case "camhud", "hud":
-	                    cam = PlayState.camHUD;
-	                case "camnote", "note":
-	                    cam = PlayState.camNOTE;
-	                case "camnotesustain", "notesustain", "sustain":
-	                    cam = PlayState.camNOTE != null ? PlayState.camNOTE.camNoteSustain : null;
-	                case "camgame", "game":
-	                    var reflectedCam:Dynamic = Reflect.getProperty(curState, "camGame");
-
-                    if(isOfType(reflectedCam, FlxCamera)) {
-                        cam = cast reflectedCam;
-                    }else {
-                        cam = FlxG.camera;
-                    }
+        if(cam == null) {
+            switch(normalizedName) {
+                case "camhud", "hud":
+                    cam = PlayState.camHUD;
+                case "camnote", "note":
+                    cam = PlayState.camNOTE;
+                case "camnotesustain", "notesustain", "sustain":
+                    cam = PlayState.camNOTE != null ? PlayState.camNOTE.camNoteSustain : null;
+                case "camgame", "game":
+                    cam = FlxG.camera;
                 case "camera", "default":
                     cam = FlxG.camera;
                 default:
@@ -2604,6 +2848,11 @@ class ModLua {
         if(luaShaderSources != null) {
             luaShaderSources.clear();
             luaShaderSources = null;
+        }
+
+        if(luaCameraShaderNames != null) {
+            luaCameraShaderNames.clear();
+            luaCameraShaderNames = null;
         }
 
         if(luaSprites != null) {
@@ -2769,6 +3018,12 @@ class ModLua {
             return callbackError;
         }
 
+        if(v != null && v.indexOf("C++ exception") == 0 && v.indexOf("stack traceback:") != -1 && lastLuaCallbackError != null) {
+            var callbackErrorWithTrace:String = mergeLuaCallbackErrorWithTraceback(lastLuaCallbackError, v);
+            lastLuaCallbackError = null;
+            return callbackErrorWithTrace;
+        }
+
 		if (v == null || v == "") {
 			switch(status) {
 				case Lua.LUA_ERRRUN: return "Runtime Error";
@@ -2786,6 +3041,20 @@ class ModLua {
 		return null;
 		#end
 	}
+
+    function mergeLuaCallbackErrorWithTraceback(callbackError:String, traceback:String):String {
+        if(traceback == null || traceback.trim() == "") {
+            return callbackError;
+        }
+
+        var stackIndex:Int = traceback.indexOf("stack traceback:");
+
+        if(stackIndex == -1) {
+            return callbackError + "\n" + traceback.trim();
+        }
+
+        return callbackError + "\n" + traceback.substr(stackIndex).trim();
+    }
 
     function typeToString(type:Int):String {
 		#if USING_LUA

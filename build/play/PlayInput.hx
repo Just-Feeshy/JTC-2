@@ -94,7 +94,7 @@ class PlayInput
 		playState.updateHoldCoverSprites(true, controlHoldArray);
 		playState.updateHoldCoverSprites(false);
 
-		if(playState.boyfriend.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end)
+		if(playState.boyfriend.holdTimer > Conductor.instance.stepLengthMs * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end)
 			* playState.boyfriend.singMultiplier
 			&& playState.boyfriend.animation.curAnim.name.startsWith('sing')
 			&& !playState.boyfriend.animation.curAnim.name.endsWith('miss')) {
@@ -248,7 +248,7 @@ class PlayInput
 			return FlxG.sound.music.time;
 		}
 
-		return Conductor.trackPosition;
+		return Conductor.instance.trackedSongPosition;
 	}
 
 	function processBotplayNotes():Void

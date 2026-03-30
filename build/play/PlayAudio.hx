@@ -260,6 +260,9 @@ class PlayAudio
 
 	public function playVocals(?startTime:Null<Float>):Void
 	{
+		if (isSongAudioBlocked())
+			return;
+
 		for (track in playState.syncedSongTracks)
 			playSongTrack(track, startTime);
 	}
@@ -309,8 +312,16 @@ class PlayAudio
 		}
 	}
 
+	inline function isSongAudioBlocked():Bool
+	{
+		return playState.inCutscene || playState.talking;
+	}
+
 	public function startInstrumentTrack(?startTime:Null<Float>):Void
 	{
+		if (isSongAudioBlocked())
+			return;
+
 		if (FlxG.sound.music == null)
 			FlxG.sound.music = new FlxSound();
 		else
@@ -326,13 +337,21 @@ class PlayAudio
 
 	public function startSong():Void
 	{
+		if (isSongAudioBlocked())
+		{
+			pauseVocals();
+			return;
+		}
+
 		playState.startingSong = false;
+		playState.isInCountdown = false;
 		playState.previousHeldInputSongTime = null;
 		playState.previousFrameTime = FlxG.game.ticks;
 		playState.lastReportedPlayheadPosition = 0;
 
 		startInstrumentTrack(0);
 		playVocals(FlxG.sound.music != null ? FlxG.sound.music.time : 0);
+		setSongPosition(FlxG.sound.music != null ? FlxG.sound.music.time : 0);
 
 		if(playState.paused) {
 			FlxG.sound.music.pause();
@@ -359,14 +378,16 @@ class PlayAudio
 			pauseVocals();
 		}
 
-		if(playState.startTimer != null && !playState.startTimer.finished)
-			playState.startTimer.active = false;
+		Countdown.pauseCountdown();
 	}
 
 	public function resyncVocals():Void
 	{
-		if(playState.timeFreeze > 0)
+		if(playState.timeFreeze > 0 || isSongAudioBlocked())
+		{
+			pauseVocals();
 			return;
+		}
 
 		pauseVocals();
 		playState.previousHeldInputSongTime = null;
@@ -382,8 +403,10 @@ class PlayAudio
 
 	public function setSongPosition(time:Float):Void
 	{
-		var prevTrackPos:Float = Conductor.trackPosition;
-		Conductor.songPosition = time;
-		Conductor.trackPosition += (Conductor.songPosition - prevTrackPos) * (1 - playState.timeFreeze);
+		Conductor.instance.update(time, false);
+		playState.syncMusicBeatState(Conductor.instance.trackedSongPosition);
+		playState.lastTrackedSongPos = Conductor.instance.trackedSongPosition;
+		playState.updateLuaVars();
+		playState.updatePerSectionLuaVars();
 	}
 }

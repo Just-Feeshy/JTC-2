@@ -103,7 +103,7 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
         var targetY:Float = focusPoint.y + offsetY;
         var currentX:Float = playState.vSliceCameraFocusEnabled ? playState.vSliceCameraFocusX : playState.camPos.x;
         var currentY:Float = playState.vSliceCameraFocusEnabled ? playState.vSliceCameraFocusY : playState.camPos.y;
-        var durationSeconds:Float = Math.max(0, (Conductor.stepCrochet / 1000) * durationSteps);
+        var durationSeconds:Float = Math.max(0, (Conductor.instance.stepLengthMs / 1000) * durationSteps);
 
         playState.vSliceCameraFocusEnabled = true;
 
@@ -144,7 +144,7 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
         var zoomFallback:Float = playState.vSliceDirectZoomEnabled ? playState.vSliceDirectZoomValue : FlxG.camera.zoom;
         var zoom:Float = readFloat(payload, "zoom", safeParseFloat(Std.string(payload), zoomFallback));
         var durationSteps:Float = readFloat(payload, "duration", 4);
-        var durationSeconds:Float = Math.max(0, (Conductor.stepCrochet / 1000) * durationSteps);
+        var durationSeconds:Float = Math.max(0, (Conductor.instance.stepLengthMs / 1000) * durationSteps);
         var mode:String = readString(payload, "mode", "stage").toLowerCase().trim();
         var easeName:String = readString(payload, "ease", "linear");
         var instant:Bool = easeName.toUpperCase() == "INSTANT" || durationSeconds <= 0;

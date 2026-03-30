@@ -21,7 +21,7 @@ class LatencyState extends FlxState
 
 		for (i in 0...32)
 		{
-			var note:Note = new Note(Conductor.crochet * i, 1);
+			var note:Note = new Note(Conductor.instance.beatLengthMs * i, 1);
 			noteGrp.add(note);
 		}
 
@@ -32,16 +32,16 @@ class LatencyState extends FlxState
 		strumLine = new FlxSprite(FlxG.width / 2, 100).makeGraphic(FlxG.width, 5);
 		add(strumLine);
 
-		Conductor.changeBPM(120);
+		Conductor.instance.forceBPM(120);
 
 		super.create();
 	}
 
 	override function update(elapsed:Float)
 	{
-		offsetText.text = "Offset: " + Conductor.offset + "ms";
+		offsetText.text = "Offset: " + Conductor.instance.globalOffset + "ms";
 
-		Conductor.songPosition = FlxG.sound.music.time - Conductor.offset;
+		Conductor.instance.trackedSongPosition = FlxG.sound.music.time - Conductor.instance.globalOffset;
 
 		var multiply:Float = 1;
 
@@ -49,9 +49,9 @@ class LatencyState extends FlxState
 			multiply = 10;
 
 		if (FlxG.keys.justPressed.RIGHT)
-			Conductor.offset += 1 * multiply;
+			FlxG.save.data.noteOffset = Conductor.instance.globalOffset + (1 * multiply);
 		if (FlxG.keys.justPressed.LEFT)
-			Conductor.offset -= 1 * multiply;
+			FlxG.save.data.noteOffset = Conductor.instance.globalOffset - (1 * multiply);
 
 		if (FlxG.keys.justPressed.SPACE)
 		{
@@ -62,7 +62,7 @@ class LatencyState extends FlxState
 
 		noteGrp.forEach(function(daNote:Note)
 		{
-			daNote.y = (strumLine.y - (Conductor.songPosition - daNote.strumTime) * 0.45);
+			daNote.y = (strumLine.y - (Conductor.instance.trackedSongPosition - daNote.strumTime) * 0.45);
 			daNote.x = strumLine.x + 30;
 
 			if (daNote.y < strumLine.y)

@@ -53,7 +53,7 @@ class DefaultHandler {
     private static var jitStrumSize:Bool = false;
 
     inline static public function getNoteTime(strumTime:Float):Float {
-		return strumTime + (Conductor.stepCrochet * Note.AFFECTED_STRUMTIME);
+		return strumTime + (Conductor.instance.stepLengthMs * Note.AFFECTED_STRUMTIME);
 	}
 
     inline static public function getcharacterJSON():Array<String> {

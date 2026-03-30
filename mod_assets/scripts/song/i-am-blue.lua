@@ -27,6 +27,7 @@ local STRUM_WAVE_LENGTH_MAX = STRUM_WAVE_SIZE * 3.0
 local STRUM_WAVE_DECAY_RATE = 4.2
 local STRUM_WAVE_MAX_PULSE = 36
 local STRUM_WAVE_KICK = 18
+local CAMERA_BOP_DECAY_RATE = 0.95
 
 local function addPulseStep(stepValue, intensity)
     pulseStepIntensity[stepValue] = intensity
@@ -106,12 +107,7 @@ local function updateStrumWaveShader()
         return
     end
 
-    if setShaderFloat == nil or setShaderFloatArray == nil or setShaderInt == nil then
-        return
-    end
-
     updateStrumWaveLaneCenters()
-
     setShaderFloat(STRUM_WAVE_CAMERA, "waveAmplitude", strumWavePulse)
     setShaderFloat(STRUM_WAVE_CAMERA, "waveTime", strumWaveTime)
     setShaderFloat(STRUM_WAVE_CAMERA, "waveTravelSpeed", STRUM_WAVE_TRAVEL_SPEED)
@@ -119,22 +115,24 @@ local function updateStrumWaveShader()
     setShaderFloat(STRUM_WAVE_CAMERA, "waveLengthMin", STRUM_WAVE_LENGTH_MIN)
     setShaderFloat(STRUM_WAVE_CAMERA, "waveLengthMax", STRUM_WAVE_LENGTH_MAX)
     setShaderFloat(STRUM_WAVE_CAMERA, "laneRadius", STRUM_WAVE_LANE_RADIUS)
-    setShaderFloatArray(STRUM_WAVE_CAMERA, "laneCentersA", strumWaveLaneCentersA)
-    setShaderFloatArray(STRUM_WAVE_CAMERA, "laneCentersB", strumWaveLaneCentersB)
+    setShaderFloat4(STRUM_WAVE_CAMERA, "laneCentersA",
+        strumWaveLaneCentersA[1], strumWaveLaneCentersA[2], strumWaveLaneCentersA[3], strumWaveLaneCentersA[4])
+    setShaderFloat4(STRUM_WAVE_CAMERA, "laneCentersB",
+        strumWaveLaneCentersB[1], strumWaveLaneCentersB[2], strumWaveLaneCentersB[3], strumWaveLaneCentersB[4])
     setShaderInt(STRUM_WAVE_CAMERA, "laneCount", strumWaveLaneCount)
 end
 
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-    addPulseRange(60, 120, 4, 0.65)
-    addPulseRange(124, 312, 4, 0.95)
-    addPulseRange(316, 376, 4, 0.55)
-    addPulseRange(380, 456, 4, 0.85)
-    addPulseRange(460, 520, 4, 0.70)
-    addPulseRange(524, 584, 4, 0.95)
-    addPulseSteps({588, 592, 596, 600, 604, 608, 612, 616}, 1.15)
-    addPulseSteps({620, 624, 628, 632}, 0.80)
+    addPulseRange(64, 124, 4, 0.65)
+    addPulseRange(128, 316, 4, 0.95)
+    addPulseRange(320, 380, 4, 0.55)
+    addPulseRange(384, 460, 4, 0.85)
+    addPulseRange(464, 524, 4, 0.70)
+    addPulseRange(528, 588, 4, 0.95)
+    addPulseSteps({592, 596, 600, 604, 608, 612, 616, 620}, 1.15)
+    addPulseSteps({624, 628, 632, 636}, 0.80)
 end
 
 local function pulseCamera(stepValue)
@@ -144,26 +142,46 @@ local function pulseCamera(stepValue)
         return
     end
 
-    local tweenDuration = math.max((stepCrochet / 1000) * 1.1, 0.06)
+    local gameZoom = getCameraZoom("camGAME") or baseGameZoom
+    local hudZoom = getCameraZoom("camHUD") or baseHudZoom
+    local noteZoom = getCameraZoom("camNOTE") or baseNoteZoom
 
-    setCameraZoom("camGAME", getCameraZoom("camGAME") + (BASE_GAME_BUMP * intensity))
-    setCameraZoom("camHUD", getCameraZoom("camHUD") + (BASE_HUD_BUMP * intensity))
-    setCameraZoom("camNOTE", getCameraZoom("camNOTE") + (BASE_NOTE_BUMP * intensity))
-
-    doTweenZoom("i_am_blue_game_zoom", "camGAME", baseGameZoom, tweenDuration, "quadOut")
-    doTweenZoom("i_am_blue_hud_zoom", "camHUD", baseHudZoom, tweenDuration, "quadOut")
-    doTweenZoom("i_am_blue_note_zoom", "camNOTE", baseNoteZoom, tweenDuration, "quadOut")
+    setCameraZoom("camGAME", gameZoom + (BASE_GAME_BUMP * intensity))
+    setCameraZoom("camHUD", hudZoom + (BASE_HUD_BUMP * intensity))
+    setCameraZoom("camNOTE", noteZoom + (BASE_NOTE_BUMP * intensity))
 
     strumWavePulse = math.min(strumWavePulse + (STRUM_WAVE_KICK * intensity), STRUM_WAVE_MAX_PULSE)
     strumWaveTime = 0
     strumWaveSeed = strumWaveSeed + 1
 end
 
+local function decayCameraZooms(elapsed)
+    local safeElapsed = math.max(elapsed or 0, 0)
+    local dt = safeElapsed * 60
+    local decay = math.pow(CAMERA_BOP_DECAY_RATE, dt)
+
+    local gameZoom = getCameraZoom("camGAME")
+    local hudZoom = getCameraZoom("camHUD")
+    local noteZoom = getCameraZoom("camNOTE")
+
+    if gameZoom ~= nil then
+        setCameraZoom("camGAME", baseGameZoom + ((gameZoom - baseGameZoom) * decay))
+    end
+
+    if hudZoom ~= nil then
+        setCameraZoom("camHUD", baseHudZoom + ((hudZoom - baseHudZoom) * decay))
+    end
+
+    if noteZoom ~= nil then
+        setCameraZoom("camNOTE", baseNoteZoom + ((noteZoom - baseNoteZoom) * decay))
+    end
+end
+
 function onCreate()
     frost_modchart = {}
 
     baseGameZoom = getCameraZoom("camGAME")
-    baseHudZoom = getCameraZoom("camHUD")
+    baseHudZoom  = getCameraZoom("camHUD")
     baseNoteZoom = getCameraZoom("camNOTE")
 
     buildPulseSteps()
@@ -178,6 +196,11 @@ function onCreate()
 end
 
 function onUpdate(elapsed)
+    if substateOpenName ~= nil and substateOpenName ~= "" then
+        strumWaveShaderActive = false
+        return
+    end
+
     local safeElapsed = elapsed or 0
 
     if strumWavePulse > 0 then
@@ -190,7 +213,7 @@ function onUpdate(elapsed)
         strumWaveTime = 0
     end
 
-	if curStep >= 240 and curStep < 632 then
+	if curStep >= 256 and curStep < 636 then
 		frost_modchart.applyNormalBounce(9, 1)
 		bounceStoppedAtOutro = false
 	elseif not bounceStoppedAtOutro and frost_modchart.resetNormalStrums ~= nil then
@@ -198,6 +221,7 @@ function onUpdate(elapsed)
 		bounceStoppedAtOutro = true
 	end
 
+    decayCameraZooms(safeElapsed)
     updateStrumWaveShader()
 end
 

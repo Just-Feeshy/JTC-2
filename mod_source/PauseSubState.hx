@@ -81,10 +81,10 @@ class PauseSubState extends MusicBeatSubstate {
 		levelInfo.alpha = 0;
 		otherStuff.alpha = 0;
 
-        FlxTween.tween(bg, {alpha: 0.6}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut});
-        FlxTween.tween(paused, {x: 0}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut});
-        FlxTween.tween(levelInfo, {alpha: 1, y: FlxG.height - levelInfo.height - (20 + 96)}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, startDelay: 0.3});
-		FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y - 10}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, startDelay: 0.5});
+        FlxTween.tween(bg, {alpha: 0.6}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut});
+        FlxTween.tween(paused, {x: 0}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut});
+        FlxTween.tween(levelInfo, {alpha: 1, y: FlxG.height - levelInfo.height - (20 + 96)}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut, startDelay: 0.3});
+		FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y - 10}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut, startDelay: 0.5});
 
         grpMenuShit = new FlxTypedGroup<FlxSprite>();
 		add(grpMenuShit);
@@ -97,7 +97,7 @@ class PauseSubState extends MusicBeatSubstate {
 			grpMenuShit.add(songText);
             updateSpriteAlpha();
 
-            FlxTween.tween(songText, {x: (menuItems.length - i) * 30}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, startDelay: 0.03 * i, 
+            FlxTween.tween(songText, {x: (menuItems.length - i) * 30}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut, startDelay: 0.03 * i, 
                 onComplete: function(twn:FlxTween) {
                     completeTweens++;
                 }     
@@ -215,7 +215,7 @@ class PauseSubState extends MusicBeatSubstate {
                 if(curSelected == i) {
                     var prevX:Float = grpMenuShit.members[i].x;
 
-                    allTweens.push(FlxTween.tween(grpMenuShit.members[i], {x: prevX - 30}, 0.4 * (Conductor.bpm / 120), {ease: FlxEase.quadOut, 
+                    allTweens.push(FlxTween.tween(grpMenuShit.members[i], {x: prevX - 30}, 0.4 * (Conductor.instance.activeBpm / 120), {ease: FlxEase.quadOut, 
                         onComplete: function(twn:FlxTween) {
                             cleanTween();
                         }     

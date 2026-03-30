@@ -45,7 +45,7 @@ class PlayEvents
 		if(playState.eventInfo.length == 0)
 			return;
 
-		var liveSongTime:Float = Conductor.songPosition;
+		var liveSongTime:Float = Conductor.instance.trackedSongPosition;
 		var liveStep:Int = playState.getStepFromTime(liveSongTime);
 		var liveGridY:Int = liveStep * 40;
 

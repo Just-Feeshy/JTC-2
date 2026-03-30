@@ -27,10 +27,11 @@ local function updateSelectionColors(selectedIndex)
     for i = 1, #assetNames do
         local spriteName = "pauseOption" .. i
         if spriteExist(spriteName) then
+            setSpriteColor(spriteName, "0xFFFFFFFF")
             if (i - 1) == selectedIndex then
-                setSpriteColor(spriteName, "0xFFFFFFFF")
+                setSpriteAlpha(spriteName, 1)
             else
-                setSpriteColor(spriteName, "0xFF999999")
+                setSpriteAlpha(spriteName, 0.6)
             end
         end
     end
@@ -78,9 +79,9 @@ function onCreate()
     setSpriteX("pauseLevelInfo", textX)
     setSpriteX("pauseLevelDifficulty", textX)
     setSpriteX("pauseOtherStuff", textX)
-    setSpriteY("pauseLevelInfo", windowHeight - infoHeight - (15 + 96))
+    setSpriteY("pauseLevelInfo", windowHeight - infoHeight - 111)
     setSpriteY("pauseLevelDifficulty", windowHeight - difficultyHeight - infoHeight - 10)
-    setSpriteY("pauseOtherStuff", windowHeight - otherHeight - 15)
+    setSpriteY("pauseOtherStuff", windowHeight - otherHeight - 22.5)
 
     setSpriteAlpha("pauseLevelInfo", 0)
     setSpriteAlpha("pauseLevelDifficulty", 0)
@@ -89,7 +90,7 @@ function onCreate()
 
     doTweenAlpha("pauseBGAlpha", "pauseBackground", 0.6, tweenDuration(), "quadOut")
     doTweenAlpha("pauseInfoAlpha", "pauseLevelInfo", 1, tweenDuration(), "quadOut")
-    doTweenY("pauseInfoY", "pauseLevelInfo", windowHeight - infoHeight - (20 + 96), tweenDuration(), "quadOut")
+    doTweenY("pauseInfoY", "pauseLevelInfo", windowHeight - infoHeight - 116, tweenDuration(), "quadOut")
     doTweenAlpha("pauseDifficultyAlpha", "pauseLevelDifficulty", 1, tweenDuration(), "quadOut")
     doTweenY("pauseDifficultyY", "pauseLevelDifficulty", getSpriteY("pauseLevelDifficulty") - 10, tweenDuration(), "quadOut")
 

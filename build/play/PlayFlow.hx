@@ -37,13 +37,11 @@ class PlayFlow
 		if (playState.paused) {
 			playState.pauseMusic();
 		}else {
-			if (FlxG.sound.music != null && !playState.startingSong) {
+			if (FlxG.sound.music != null && !playState.startingSong && !playState.inCutscene && !playState.talking) {
 				playState.resyncVocals();
 			}
 
-			if(playState.startTimer != null && !playState.startTimer.finished) {
-				playState.startTimer.active = true;
-			}
+			Countdown.resumeCountdown();
 		}
 	}
 
@@ -53,6 +51,8 @@ class PlayFlow
 		playState.persistentDraw = true;
 		playState.paused = true;
 		playState.pauseMusic();
+		playState.playLua.set("substateOpenName", "play.PauseSubState");
+		playState.playLua.call("onPause", ["play.PauseSubState"]);
 
 		if (FlxG.random.bool(0.1)) {
 			FlxG.switchState(new GitarooPause());
@@ -81,6 +81,8 @@ class PlayFlow
 		playState.persistentUpdate = false;
 		playState.persistentDraw = false;
 		playState.paused = true;
+		playState.playLua.set("substateOpenName", "play.GameOverSubstate");
+		playState.playLua.call("onPause", ["play.GameOverSubstate"]);
 
 		playState.stopVocals();
 		FlxG.sound.music.stop();

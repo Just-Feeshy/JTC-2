@@ -86,27 +86,49 @@ class PlayLua
 	public function loadScript():Void
 	{
 		#if (USING_LUA && cpp)
+		var scriptPath:String = resolveScriptKey();
+
 		Register.detachLuaFromState(PlayState);
-
-		var songScript:String = "song/" + CoolUtil.readableSongDirectory(PlayState.SONG.song.toLowerCase());
-		var stageScript:String = "stage/" + PlayState.curStage.toLowerCase();
-		var scriptPath:String = null;
-
-		if(Paths.assetExists(Paths.getPath('scripts/${songScript}.lua', TEXT, null), TEXT)) {
-			scriptPath = songScript;
-		}else if(Paths.assetExists(Paths.getPath('scripts/${stageScript}.lua', TEXT, null), TEXT)) {
-			scriptPath = stageScript;
-		}
 
 		ownedLua = null;
 		luaDetachedForStateSwitch = false;
 
 		if(scriptPath != null) {
-			Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
-			ownedLua = playState.getModLua();
+			attachScript(scriptPath);
+		}
+		#end
+	}
 
-			if(ownedLua != null)
-				ownedLua.execute();
+	public function reloadScriptForSongRestart():Void
+	{
+		#if (USING_LUA && cpp)
+		var scriptPath:String = resolveScriptKey();
+
+		if(scriptPath == null) {
+			return;
+		}
+
+		var persistentState:Dynamic = null;
+		var stateLua:ModLua = getLua();
+
+		if(stateLua != null) {
+			persistentState = stateLua.detachPersistentRestartState();
+		}
+
+		Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
+		ownedLua = playState.getModLua();
+		luaDetachedForStateSwitch = false;
+
+		if(ownedLua != null) {
+			ownedLua.adoptPersistentRestartState(persistentState);
+			ownedLua.execute();
+			generateStaticBindings();
+			generateNoteBindings();
+			updateDynamicVars();
+			updatePerSectionVars();
+			set("curElapsed", 0);
+			set("curTicks", FlxG.game.ticks);
+			call("onCreate", []);
 		}
 		#end
 	}
@@ -134,6 +156,10 @@ class PlayLua
 		set("songName", PlayState.SONG.song);
 		set("isStoryMode", PlayState.isStoryMode);
 		set("startedCountdown", false);
+		set("isInCountdown", false);
+		set("startTimestamp", playState.startTimestamp);
+		set("countdownStep", Countdown.stepToString(Countdown.countdownStep));
+		set("countdownStepInt", Countdown.stepToInt(Countdown.countdownStep));
 		set("difficulty", PlayState.storyDifficulty);
 		set("difficultyName", CoolUtil.getDifficultyName(PlayState.storyDifficulty));
 		set("week", Paths.modJSON.weeks.get("week_" + PlayState.storyWeek).week_name.toUpperCase());
@@ -160,6 +186,30 @@ class PlayLua
 
 		playState.addCallback("freezeOrUnfreezeGame", function() {
 			playState.haveGamePaused();
+		});
+
+		playState.addCallback("performCountdown", function() {
+			return Countdown.performCountdown();
+		});
+
+		playState.addCallback("pauseCountdown", function() {
+			Countdown.pauseCountdown();
+		});
+
+		playState.addCallback("resumeCountdown", function() {
+			Countdown.resumeCountdown();
+		});
+
+		playState.addCallback("stopCountdown", function() {
+			Countdown.stopCountdown();
+		});
+
+		playState.addCallback("skipCountdown", function() {
+			Countdown.skipCountdown();
+		});
+
+		playState.addCallback("resetCountdown", function() {
+			Countdown.resetCountdown();
 		});
 
 		playState.addCallback("setEndVideo", function(path:String) {
@@ -381,93 +431,120 @@ class PlayLua
 			set('defaultOpponentStrumHeight' + i, PlayState.opponentStrums.members[i].scale.y);
 		}
 
-		playState.addCallback("setNoteStrumPos", function(id:Int, x:Float, y:Float) {
-			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];
-			strumOBJ.x = x;
-			strumOBJ.y = y;
-		});
+			playState.addCallback("setNoteStrumPos", function(id:Int, x:Float, y:Float) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.x = x;
+					strumOBJ.y = y;
+				});
+			});
 
-		playState.addCallback("setNoteStrumAngleX", function(id:Int, angle:Float) {
-			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].xAngle = angle;
-		});
+			playState.addCallback("setNoteStrumAngleX", function(id:Int, angle:Float) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.xAngle = angle;
+				});
+			});
 
-		playState.addCallback("setNoteStrumAngleY", function(id:Int, angle:Float) {
-			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].yAngle = angle;
-		});
+			playState.addCallback("setNoteStrumAngleY", function(id:Int, angle:Float) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.yAngle = angle;
+				});
+			});
 
-		playState.addCallback("setNoteStrumAngleZ", function(id:Int, angle:Float) {
-			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].angle = angle;
-		});
+			playState.addCallback("setNoteStrumAngleZ", function(id:Int, angle:Float) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.angle = angle;
+				});
+			});
 
-		playState.addCallback("setNoteStrumAngle", function(id:Int, angle:Float) {
-			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].angle = angle;
-		});
+			playState.addCallback("setNoteStrumAngle", function(id:Int, angle:Float) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.angle = angle;
+				});
+			});
 
-		playState.addCallback("setNoteDirection", function(id:Int, angle:Float) {
-			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].directionAngle = angle;
-		});
+			playState.addCallback("setNoteDirection", function(id:Int, angle:Float) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.directionAngle = angle;
+				});
+			});
 
-		playState.addCallback("setNoteAlpha", function(id:Int, alpha:Float) {
-			playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].alpha = alpha;
-		});
+			playState.addCallback("setNoteAlpha", function(id:Int, alpha:Float) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.alpha = alpha;
+				});
+			});
 
-		playState.addCallback("setNoteScale", function(id:Int, x:Float, y:Float, shouldUpdateHitbox:Bool = true) {
-			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];
-			strumOBJ.scale.set(x, y);
+			playState.addCallback("setNoteScale", function(id:Int, x:Float, y:Float, shouldUpdateHitbox:Bool = true) {
+				return withStrumById(id, function(strumOBJ:Strum) {
+					strumOBJ.scale.set(x, y);
 
-			if(shouldUpdateHitbox)
-				strumOBJ.updateHitbox();
-		});
+					if(shouldUpdateHitbox)
+						strumOBJ.updateHitbox();
+				});
+			});
 
 		playState.addCallback("getNoteStrumAngleX", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].xAngle;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.xAngle : 0;
 		});
 
 		playState.addCallback("getNoteStrumAngleY", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].yAngle;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.yAngle : 0;
 		});
 
 		playState.addCallback("getNoteStrumAngleZ", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].angle;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.angle : 0;
 		});
 
 		playState.addCallback("getNoteStrumAngle", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].angle;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.angle : 0;
 		});
 
 		playState.addCallback("getNoteDirection", function(id:Int, angle:Float) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].directionAngle;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.directionAngle : 0;
 		});
 
 		playState.addCallback("getNoteScaleX", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].scale.x;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.scale.x : 0;
 		});
 
 		playState.addCallback("getNoteScaleY", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].scale.y;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.scale.y : 0;
 		});
 
 		playState.addCallback("getNotePosX", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].x;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.x : 0;
 		});
 
 		playState.addCallback("getNotePosY", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].y;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.y : 0;
 		});
 
 		playState.addCallback("getNoteAlpha", function(id:Int) {
-			return playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length].alpha;
+			var strumOBJ:Strum = getStrumById(id);
+			return strumOBJ != null ? strumOBJ.alpha : 0;
 		});
 
-		playState.addCallback("getNoteScreenCenter", function(id:Int, ?axis:String) {
-			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];
+			playState.addCallback("getNoteScreenCenter", function(id:Int, ?axis:String):Float {
+				var strumOBJ:Strum = getStrumById(id);
 
-			switch(axis.toLowerCase()) {
-				case "x": return strumOBJ.getScreenCenter(X);
-				case "y": return strumOBJ.getScreenCenter(Y);
-			}
+				if(strumOBJ == null)
+					return 0.0;
 
-			return 0;
+				switch((axis == null ? "" : axis).toLowerCase()) {
+					case "x": return strumOBJ.getScreenCenter(X);
+					case "y": return strumOBJ.getScreenCenter(Y);
+				}
+
+			return 0.0;
 		});
 
 		registerNoteTweenCallback("noteTweenX", function(strumOBJ:Strum, value:Dynamic) return {x: value});
@@ -479,39 +556,68 @@ class PlayLua
 		registerNoteTweenCallback("noteTweenDirection", function(strumOBJ:Strum, value:Dynamic) return {directionAngle: value});
 		registerNoteTweenCallback("noteTweenAlpha", function(strumOBJ:Strum, value:Dynamic) return {alpha: value});
 
-		playState.addCallback("noteTweenScale", function(name:String, id:Int, value1:Float, value2:Float, duration:Float, ease:String) {
-			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];
-			var lua:ModLua = getLua();
+			playState.addCallback("noteTweenScale", function(name:String, id:Int, value1:Float, value2:Float, duration:Float, ease:String) {
+				var strumOBJ:Strum = getStrumById(id);
+				var lua:ModLua = getLua();
 
-			if(strumOBJ == null || lua == null)
-				return;
+				if(strumOBJ == null || lua == null)
+					return false;
 
-			lua.luaTweens.set(name, FlxTween.tween(strumOBJ.scale, {x: value1, y: value2}, duration, {ease: Register.getFlxEaseByString(ease),
-				onComplete: function(twn:FlxTween) {
-					lua.luaTweens.remove(name);
-					call('onTweenCompleted', [name]);
-				}
-			}));
-		});
+				lua.luaTweens.set(name, FlxTween.tween(strumOBJ.scale, {x: value1, y: value2}, duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+						lua.luaTweens.remove(name);
+						call('onTweenCompleted', [name]);
+					}
+				}));
+				return true;
+			});
 		#end
 	}
 
-	private function registerNoteTweenCallback(name:String, buildProps:Dynamic):Void
+		private function registerNoteTweenCallback(name:String, buildProps:Dynamic):Void
+		{
+			playState.addCallback(name, function(tweenName:String, id:Int, value:Dynamic, duration:Float, ease:String) {
+				var strumOBJ:Strum = getStrumById(id);
+				var lua:ModLua = getLua();
+
+				if(strumOBJ == null || lua == null)
+					return false;
+
+				lua.luaTweens.set(tweenName, FlxTween.tween(strumOBJ, buildProps(strumOBJ, value), duration, {ease: Register.getFlxEaseByString(ease),
+					onComplete: function(twn:FlxTween) {
+						lua.luaTweens.remove(tweenName);
+						call('onTweenCompleted', [tweenName]);
+					}
+				}));
+				return true;
+			});
+		}
+
+		private inline function withStrumById(id:Int, apply:Strum->Void):Bool
+		{
+			var strumOBJ:Strum = getStrumById(id);
+
+			if(strumOBJ == null) {
+				return false;
+			}
+
+			apply(strumOBJ);
+			return true;
+		}
+
+	private function getStrumById(id:Int):Strum
 	{
-		playState.addCallback(name, function(tweenName:String, id:Int, value:Dynamic, duration:Float, ease:String) {
-			var strumOBJ:Strum = playState.strumLineNotes.members[Std.int(Math.abs(id)) % playState.strumLineNotes.length];
-			var lua:ModLua = getLua();
+		if(playState == null || playState.strumLineNotes == null || playState.strumLineNotes.members == null) {
+			return null;
+		}
 
-			if(strumOBJ == null || lua == null)
-				return;
+		var strumCount:Int = playState.strumLineNotes.length;
 
-			lua.luaTweens.set(tweenName, FlxTween.tween(strumOBJ, buildProps(strumOBJ, value), duration, {ease: Register.getFlxEaseByString(ease),
-				onComplete: function(twn:FlxTween) {
-					lua.luaTweens.remove(tweenName);
-					call('onTweenCompleted', [tweenName]);
-				}
-			}));
-		});
+		if(strumCount <= 0) {
+			return null;
+		}
+
+		return playState.strumLineNotes.members[Std.int(Math.abs(id)) % strumCount];
 	}
 
 	public function updateDynamicVars():Void
@@ -521,12 +627,27 @@ class PlayLua
 
         getLua().updateManagedSprites(FlxG.elapsed);
 
+		var curStepFloat:Float = Conductor.instance.currentStepTime;
+		var curBeatFloat:Float = Conductor.instance.currentBeatTime;
+		var curStepValue:Int = Conductor.instance.currentStep;
+		var curBeatValue:Int = Conductor.instance.currentBeat;
+
 		set('cameraX', playState.camFollow.x);
 		set('cameraY', playState.camFollow.y);
 
 		set("score", playState.songScore);
 		set("misses", playState.misses);
 		set("hits", playState.hits);
+		set("curStep", curStepValue);
+		set("curBeat", curBeatValue);
+		set("curSection", playState.curSection);
+		set("curStepFloat", curStepFloat);
+		set("curBeatFloat", curBeatFloat);
+		set("substateOpenName", playState.subState != null ? Type.getClassName(Type.getClass(playState.subState)) : "");
+		set("isInCountdown", playState.isInCountdown);
+		set("startTimestamp", playState.startTimestamp);
+		set("countdownStep", Countdown.stepToString(Countdown.countdownStep));
+		set("countdownStepInt", Countdown.stepToInt(Countdown.countdownStep));
 
 		set("boyfriendName", playState.boyfriend.curCharacter);
 		set("dadName", playState.dad.curCharacter);
@@ -536,7 +657,7 @@ class PlayLua
 		set('framerate', Lib.current.stage.frameRate);
 		set('ghostTapping', GhostTapping.ghostTap);
 		set("songLength", FlxG.sound.music.length);
-		set("trackPos", Conductor.trackPosition);
+		set("trackPos", Conductor.instance.trackedSongPosition);
 
 		set("iconP1_ID_Regular", playState.iconP1.iconAnimInfo[0]);
 		set("iconP2_ID_Regular", playState.iconP2.iconAnimInfo[0]);
@@ -551,17 +672,22 @@ class PlayLua
 		if(!hasScript())
 			return;
 
-		var sectionIndex:Int = Std.int(playState.curStep / 16);
+		var sectionIndex:Int = Std.int(Math.floor(Conductor.instance.currentStepTime) / 16);
 		var curSection:SwagSection = null;
 
 		if(PlayState.SONG != null && PlayState.SONG.notes != null && sectionIndex >= 0 && sectionIndex < PlayState.SONG.notes.length) {
 			curSection = PlayState.SONG.notes[sectionIndex];
 		}
 
-		set("bpm", PlayState.SONG.bpm);
+		set("bpm", Conductor.instance.activeBpm);
 		set("scrollspeed", PlayState.SONG.speed);
 		set("mustHitSection", curSection != null ? curSection.mustHitSection : false);
 		set("altAnim", curSection != null ? curSection.altAnim : false);
+	}
+
+	private function getStepFloatFromTime(songTime:Float):Float
+	{
+		return Conductor.instance.getTimeInSteps(songTime);
 	}
 
 	public function prepareForStateSwitch():Void
@@ -594,5 +720,31 @@ class PlayLua
 		ownedLua = null;
 		playState = null;
 		luaDetachedForStateSwitch = true;
+	}
+
+	private function resolveScriptKey():String
+	{
+		var songScript:String = "song/" + CoolUtil.readableSongDirectory(PlayState.SONG.song.toLowerCase());
+		var stageScript:String = "stage/" + PlayState.curStage.toLowerCase();
+
+		if(Paths.assetExists(Paths.getPath('scripts/${songScript}.lua', TEXT, null), TEXT)) {
+			return songScript;
+		}
+
+		if(Paths.assetExists(Paths.getPath('scripts/${stageScript}.lua', TEXT, null), TEXT)) {
+			return stageScript;
+		}
+
+		return null;
+	}
+
+	private function attachScript(scriptPath:String):Void
+	{
+		Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
+		ownedLua = playState.getModLua();
+
+		if(ownedLua != null) {
+			ownedLua.execute();
+		}
 	}
 }
