@@ -57,6 +57,7 @@ class Note extends FeshSprite {
 	public var caculatePos:Float = 0;
 
 	public var noteOffset:FlxPoint;
+	public var restartVisualOffsetY:Float = 0;
 
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
@@ -503,7 +504,7 @@ class Note extends FeshSprite {
 			yAddon = ((Note.swagWidth - height - 10) * 0.5) * Math.abs(Math.sin(angle));
 		}
 
-		y += yAddon;
+		y += yAddon + restartVisualOffsetY;
 	}
 
 	//More complicated method

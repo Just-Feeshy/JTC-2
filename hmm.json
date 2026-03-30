@@ -40,10 +40,6 @@
       "type": "haxelib"
     },
     {
-      "name": "discord_rpc",
-      "type": "haxelib"
-    },
-    {
       "name": "hxvlc",
       "type": "haxelib",
       "version": "2.2.4"
