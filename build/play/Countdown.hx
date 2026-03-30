@@ -163,6 +163,11 @@ class Countdown
 		playState.syncMusicBeatState(Conductor.instance.trackedSongPosition);
 		playState.updateLuaVars();
 		playState.updatePerSectionLuaVars();
+
+		if(playState.startingSong && !playState.inCutscene && !playState.talking)
+		{
+			playState.startSong();
+		}
 	}
 
 	public static function resetCountdown():Void

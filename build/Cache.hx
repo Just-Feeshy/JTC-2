@@ -5,16 +5,15 @@ import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
 import openfl.display.BitmapData;
 import openfl.media.Sound;
-import openfl.utils.ByteArray;
+import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-
-import SaveData.SaveType;
+import openfl.utils.ByteArray;
 
 using StringTools;
 
-// Basically a class like Path.
 @:access(flixel.FlxG)
-class Cache {
+class Cache
+{
 	@:noCompletion private static var permanentCachedTextures:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 	@:noCompletion private static var currentCachedTextures:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 	@:noCompletion private static var previousCachedTextures:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
@@ -24,36 +23,6 @@ class Cache {
 	@:noCompletion private static var previousCachedSounds:Map<String, Sound> = new Map<String, Sound>();
 
 	@:noCompletion private static var purgeFilter:Array<String> = ["/week", "/characters", "/charSelect", "/results"];
-
-static function isFreeplayAssetKey(key:String):Bool {
-		if(key == null) {
-			return false;
-		}
-
-		var normalized = key.toLowerCase();
-		return normalized.indexOf("freeplay") >= 0 || normalized.indexOf("graffiti") >= 0;
-	}
-
-	static function isSongSoundKey(key:String):Bool {
-		if(key == null) {
-			return false;
-		}
-
-		for(prefix in ["songs", "assets/music/", "shared:assets/shared/music/", "preload:assets/preload/music/"]) {
-			if(key.indexOf(prefix) >= 0) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	static inline function shouldUseGPUCache(allowGPUCache:Bool):Bool {
-		return allowGPUCache
-			&& SaveData.getData(SaveType.GPU_CACHE)
-			&& FlxG.stage != null
-			&& FlxG.stage.context3D != null;
-	}
 
 	static function copyTextureMap(source:Map<String, FlxGraphic>):Map<String, FlxGraphic> {
 		var copy:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
@@ -95,7 +64,90 @@ static function isFreeplayAssetKey(key:String):Bool {
 		return merged;
 	}
 
-	static function warmGraphicTexture(graphic:FlxGraphic):Void {
+	static function isFreeplayAssetKey(key:String):Bool {
+		if(key == null) {
+			return false;
+		}
+
+		var normalized = key.toLowerCase();
+		return normalized.indexOf("freeplay") >= 0 || normalized.indexOf("graffiti") >= 0;
+	}
+
+	static function isSongSoundKey(key:String):Bool {
+		if(key == null) {
+			return false;
+		}
+
+		for(prefix in ["songs", "assets/music/", "shared:assets/shared/music/", "preload:assets/preload/music/"]) {
+			if(key.indexOf(prefix) >= 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	static function removeGraphicByKey(path:String):Void {
+		if(path == null || path == "") {
+			return;
+		}
+
+		FlxG.bitmap.removeByKey(path);
+	}
+
+	static function destroyGraphic(path:String, graphic:FlxGraphic):Void {
+		if(graphic != null) {
+			graphic.persist = false;
+			graphic.destroyOnNoUse = true;
+			FlxG.bitmap.remove(graphic);
+			graphic.destroy();
+		}
+
+		removeGraphicByKey(path);
+		OpenFlAssets.cache.removeBitmapData(path);
+	}
+
+	static function removeStaleGraphic(path:String, graphic:FlxGraphic):Void {
+		if(graphic == null || graphic.bitmap != null) {
+			return;
+		}
+
+		permanentCachedTextures.remove(path);
+		currentCachedTextures.remove(path);
+		previousCachedTextures.remove(path);
+		removeGraphicByKey(path);
+		OpenFlAssets.cache.removeBitmapData(path);
+	}
+
+	static function loadGraphic(path:String):FlxGraphic {
+		if(path == null || path == "") {
+			return null;
+		}
+
+		var bitmapGraphic:FlxGraphic = FlxG.bitmap.get(path);
+
+		if(bitmapGraphic != null) {
+			if(bitmapGraphic.bitmap != null) {
+				return bitmapGraphic;
+			}
+
+			removeGraphicByKey(path);
+		}
+
+		if(OpenFlAssets.exists(path, AssetType.IMAGE)) {
+			return FlxGraphic.fromAssetKey(path, false, null, true);
+		}
+
+		var bitmap:BitmapData = Paths.loadBitmap(path, true);
+
+		if(bitmap == null) {
+			return null;
+		}
+
+		return FlxGraphic.fromBitmapData(bitmap, false, path);
+	}
+
+	static function forceRender(graphic:FlxGraphic):Void {
 		if(graphic == null || graphic.bitmap == null || FlxG.stage == null || FlxG.stage.context3D == null) {
 			return;
 		}
@@ -113,25 +165,32 @@ static function isFreeplayAssetKey(key:String):Bool {
 		}
 
 		var graphic:FlxGraphic = permanentCachedTextures.get(path);
+		removeStaleGraphic(path, graphic);
 
-		if(graphic != null) {
+		if(graphic != null && graphic.bitmap != null) {
 			return graphic;
 		}
 
 		graphic = currentCachedTextures.get(path);
+		removeStaleGraphic(path, graphic);
 
-		if(graphic != null) {
+		if(graphic != null && graphic.bitmap != null) {
 			return graphic;
 		}
 
 		graphic = previousCachedTextures.get(path);
+		removeStaleGraphic(path, graphic);
 
-		if(graphic != null && promoteFromPrevious) {
+		if(graphic != null && graphic.bitmap != null && promoteFromPrevious) {
 			previousCachedTextures.remove(path);
 			currentCachedTextures.set(path, graphic);
 		}
 
-		return graphic;
+		if(graphic != null && graphic.bitmap != null) {
+			return graphic;
+		}
+
+		return null;
 	}
 
 	static function getCachedSound(path:String, promoteFromPrevious:Bool):Sound {
@@ -161,36 +220,104 @@ static function isFreeplayAssetKey(key:String):Bool {
 		return sound;
 	}
 
-	static function destroyGraphic(path:String, graphic:FlxGraphic):Void {
-		if(graphic != null) {
-			graphic.persist = false;
-			graphic.destroyOnNoUse = true;
-		}
-
-		if(graphic != null) {
-			FlxG.bitmap.remove(graphic);
-		}
-		OpenFlAssets.cache.removeBitmapData(path);
-	}
-
-	static function cacheSoundDirectly(path:String):Void {
-		if(getCachedSound(path, true) != null) {
+	public static function cacheTexture(path:String):Void {
+		if(currentCachedTextures.exists(path)) {
 			return;
 		}
 
-		if(!(Paths.assetExists(path, SOUND) || Paths.assetExists(path, MUSIC))) {
-			trace("Warning: could not locate asset - " + path);
+		if(previousCachedTextures.exists(path)) {
+			var previousGraphic:FlxGraphic = previousCachedTextures.get(path);
+			removeStaleGraphic(path, previousGraphic);
+
+			if(previousGraphic != null && previousGraphic.bitmap != null) {
+				previousCachedTextures.remove(path);
+				currentCachedTextures.set(path, previousGraphic);
+				return;
+			}
+		}
+
+		var graphic:FlxGraphic = loadGraphic(path);
+
+		if(graphic == null) {
+			FlxG.log.warn('Failed to cache graphic: $path');
+			return;
+		}
+
+		graphic.persist = true;
+		graphic.destroyOnNoUse = false;
+		currentCachedTextures.set(path, graphic);
+		forceRender(graphic);
+	}
+
+	static function permanentCacheTexture(path:String):Void {
+		if(permanentCachedTextures.exists(path)) {
+			return;
+		}
+
+		var graphic:FlxGraphic = loadGraphic(path);
+
+		if(graphic == null) {
+			FlxG.log.warn('Failed to cache graphic: $path');
+			return;
+		}
+
+		graphic.persist = true;
+		graphic.destroyOnNoUse = false;
+		permanentCachedTextures.set(path, graphic);
+		currentCachedTextures = copyTextureMap(permanentCachedTextures);
+		forceRender(graphic);
+	}
+
+	public static function getCachedGraphic(path:String):FlxGraphic {
+		return getCachedTexture(path, false);
+	}
+
+	public static function isTextureCached(path:String):Bool {
+		return FlxG.bitmap.get(path) != null
+			&& (permanentCachedTextures.exists(path) || currentCachedTextures.exists(path) || previousCachedTextures.exists(path));
+	}
+
+	public static function cacheSound(path:String):Void {
+		if(currentCachedSounds.exists(path)) {
+			return;
+		}
+
+		if(previousCachedSounds.exists(path)) {
+			var previousSound:Sound = previousCachedSounds.get(path);
+			previousCachedSounds.remove(path);
+
+			if(previousSound != null) {
+				currentCachedSounds.set(path, previousSound);
+				return;
+			}
+		}
+
+		var sound:Sound = Paths.loadSoundAsset(path);
+
+		if(sound == null) {
+			return;
+		}
+
+		currentCachedSounds.set(path, sound);
+	}
+
+	static function permanentCacheSound(path:String):Void {
+		if(permanentCachedSounds.exists(path)) {
 			return;
 		}
 
 		var sound:Sound = Paths.loadSoundAsset(path);
 
 		if(sound == null) {
-			trace("Warning: could not locate asset - " + path);
 			return;
 		}
 
+		permanentCachedSounds.set(path, sound);
 		currentCachedSounds.set(path, sound);
+	}
+
+	static function cacheSoundDirectly(path:String):Void {
+		cacheSound(path);
 	}
 
 	static public function cacheListedFormat(path:String, allowGPUCache:Bool = true):Void {
@@ -202,61 +329,28 @@ static function isFreeplayAssetKey(key:String):Bool {
 
 		switch(path.substr(extensionIndex + 1).toLowerCase()) {
 			case "png":
-				if(Paths.assetExists(path, IMAGE)) {
-					cacheAssetDirectly(path, allowGPUCache);
+				if(Paths.assetExists(path, AssetType.IMAGE)) {
+					cacheTexture(path);
 				}
 			case Paths.SOUND_EXT:
-				if(Paths.assetExists(path, SOUND) || Paths.assetExists(path, MUSIC)) {
+				if(Paths.assetExists(path, AssetType.SOUND) || Paths.assetExists(path, AssetType.MUSIC)) {
 					cacheSoundDirectly(path);
 				}
 		}
 	}
 
 	static function cacheAssetDirectly(path:String, allowGPUCache:Bool = true):Void {
-		if(getCachedTexture(path, true) != null) {
-			return;
-		}
-
-		if(!Paths.assetExists(path, IMAGE)) {
-			trace("Warning: could not locate asset - " + path);
-			return;
-		}
-
-		var useGPUCache:Bool = shouldUseGPUCache(allowGPUCache);
-		var bitmap:BitmapData = Paths.loadBitmap(path, !useGPUCache);
-
-		if(bitmap == null) {
-			trace("Warning: could not locate asset - " + path);
-			return;
-		}
-
-		if(!useGPUCache) {
-			bitmap = bitmap.clone();
-			OpenFlAssets.cache.removeBitmapData(path);
-		}
-
-		var graphic:FlxGraphic = FlxG.bitmap.add(bitmap, false, path);
-		graphic.persist = true;
-		graphic.destroyOnNoUse = false;
-		currentCachedTextures.set(path, graphic);
-
-		if(useGPUCache) {
-			warmGraphicTexture(graphic);
-		}
+		cacheTexture(path);
 	}
 
 	static public function cacheAsset(key:String, ?library:String = "", allowGPUCache:Bool = true):Void {
-		var path:String = Paths.getPath('images/$key.png', IMAGE, library);
+		var path:String = Paths.getPath('images/$key.png', AssetType.IMAGE, library);
 		cacheAssetDirectly(path, allowGPUCache);
 	}
 
 	static public function cacheRemove(key:String, ?library:String = ""):Void {
-		var path:String = Paths.getPath('images/$key.png', IMAGE, library);
+		var path:String = Paths.getPath('images/$key.png', AssetType.IMAGE, library);
 		var graphic:FlxGraphic = getCachedTexture(path, false);
-
-		if(graphic == null) {
-			return;
-		}
 
 		permanentCachedTextures.remove(path);
 		currentCachedTextures.remove(path);
@@ -302,10 +396,7 @@ static function isFreeplayAssetKey(key:String):Bool {
 			permanentCachedTextures.set(name, graphic);
 		}
 
-		if(shouldUseGPUCache(true)) {
-			warmGraphicTexture(graphic);
-		}
-
+		forceRender(graphic);
 		return graphic;
 	}
 
@@ -314,15 +405,17 @@ static function isFreeplayAssetKey(key:String):Bool {
 	}
 
 	static public function getAsset(key:String, ?library:String = ""):FlxGraphic {
-		var path:String = Paths.getPath('images/$key.png', IMAGE, library);
+		var path:String = Paths.getPath('images/$key.png', AssetType.IMAGE, library);
 		return getAssetDirectly(path);
 	}
 
 	public static function preparePurgeTextureCache():Void {
-		previousCachedTextures = currentCachedTextures;
+		previousCachedTextures = copyTextureMap(currentCachedTextures);
 
-		for(key in permanentCachedTextures.keys()) {
-			previousCachedTextures.remove(key);
+		for(key in previousCachedTextures.keys()) {
+			if(permanentCachedTextures.exists(key)) {
+				previousCachedTextures.remove(key);
+			}
 		}
 
 		currentCachedTextures = copyTextureMap(permanentCachedTextures);
@@ -331,6 +424,11 @@ static function isFreeplayAssetKey(key:String):Bool {
 	public static function purgeTextureCache():Void {
 		for(key in previousCachedTextures.keys()) {
 			if(permanentCachedTextures.exists(key)) {
+				previousCachedTextures.remove(key);
+				continue;
+			}
+
+			if(key.contains("fonts")) {
 				continue;
 			}
 
@@ -339,9 +437,9 @@ static function isFreeplayAssetKey(key:String):Bool {
 			if(graphic != null) {
 				destroyGraphic(key, graphic);
 			}
-		}
 
-		previousCachedTextures = new Map<String, FlxGraphic>();
+			previousCachedTextures.remove(key);
+		}
 
 		@:privateAccess
 		if(FlxG.bitmap._cache == null) {
@@ -353,14 +451,16 @@ static function isFreeplayAssetKey(key:String):Bool {
 		for(key in FlxG.bitmap._cache.keys()) {
 			var graphic:FlxGraphic = FlxG.bitmap.get(key);
 
-			if(graphic == null || graphic.persist || permanentCachedTextures.exists(key) || key.contains("fonts")) {
+			if(graphic == null || (graphic.persist && permanentCachedTextures.exists(key)) || key.contains("fonts")) {
 				continue;
 			}
 
 			if(graphic.useCount > 0) {
 				for(purgeEntry in purgeFilter) {
 					if(key.contains(purgeEntry)) {
-						FlxG.bitmap.removeByKey(key);
+						removeGraphicByKey(key);
+						graphic.persist = false;
+						graphic.destroy();
 						break;
 					}
 				}
@@ -369,10 +469,12 @@ static function isFreeplayAssetKey(key:String):Bool {
 	}
 
 	public static function preparePurgeSoundCache():Void {
-		previousCachedSounds = currentCachedSounds;
+		previousCachedSounds = copySoundMap(currentCachedSounds);
 
-		for(key in permanentCachedSounds.keys()) {
-			previousCachedSounds.remove(key);
+		for(key in previousCachedSounds.keys()) {
+			if(permanentCachedSounds.exists(key)) {
+				previousCachedSounds.remove(key);
+			}
 		}
 
 		currentCachedSounds = copySoundMap(permanentCachedSounds);
@@ -381,13 +483,16 @@ static function isFreeplayAssetKey(key:String):Bool {
 	public static function purgeSoundCache():Void {
 		for(key in previousCachedSounds.keys()) {
 			if(permanentCachedSounds.exists(key)) {
+				previousCachedSounds.remove(key);
 				continue;
 			}
 
-			OpenFlAssets.cache.removeSound(key);
-		}
+			if(previousCachedSounds.get(key) != null) {
+				OpenFlAssets.cache.removeSound(key);
+			}
 
-		previousCachedSounds = new Map<String, Sound>();
+			previousCachedSounds.remove(key);
+		}
 
 		for(prefix in ["songs", "music"]) {
 			OpenFlAssets.cache.clear(prefix);
@@ -454,7 +559,7 @@ static function isFreeplayAssetKey(key:String):Bool {
 				continue;
 			}
 
-			if(permanentCachedTextures.exists(key)) {
+			if(permanentCachedTextures.exists(key) || key.contains("fonts")) {
 				continue;
 			}
 
@@ -485,7 +590,7 @@ static function isFreeplayAssetKey(key:String):Bool {
 
 			if(graphic != null && getCachedTexture(key, false) == null) {
 				OpenFlAssets.cache.removeBitmapData(key);
-				FlxG.bitmap.removeByKey(key);
+				removeGraphicByKey(key);
 			}
 		}
 	}

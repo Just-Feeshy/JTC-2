@@ -1871,7 +1871,27 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
+		prepareCharactersForSongStart();
 		playAudio.startSong();
+	}
+
+	function prepareCharactersForSongStart():Void
+	{
+		resetCharacterForSongStart(gf);
+		resetCharacterForSongStart(dad);
+		resetCharacterForSongStart(boyfriend);
+	}
+
+	function resetCharacterForSongStart(character:Character):Void
+	{
+		if(character == null) {
+			return;
+		}
+
+		character.stunned = false;
+		character.holdTimer = 0;
+		character.customAnimation = false;
+		character.dance();
 	}
 
 	var debugNum:Int = 0;

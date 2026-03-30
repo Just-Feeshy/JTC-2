@@ -15,6 +15,7 @@ import flixel.tweens.FlxEase;
 import flixel.util.FlxGradient;
 import flixel.util.FlxColor;
 import flixel.math.FlxRect;
+import flixel.graphics.FlxGraphic;
 import flixel.text.FlxText;
 import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.system.FlxSound;
@@ -108,6 +109,31 @@ class ModLua {
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
+    }
+
+    static function releaseReplacedGraphic(oldGraphic:FlxGraphic, newGraphic:FlxGraphic):Void {
+        if(oldGraphic == null || oldGraphic == newGraphic) {
+            return;
+        }
+
+        oldGraphic.persist = false;
+        oldGraphic.destroyOnNoUse = true;
+
+        if(oldGraphic.assetsKey != null) {
+            OpenFlAssets.cache.removeBitmapData(oldGraphic.assetsKey);
+        } else if(oldGraphic.key != null) {
+            OpenFlAssets.cache.removeBitmapData(oldGraphic.key);
+        }
+    }
+
+    static function releaseReplacedFrames(oldFrames:FlxFramesCollection, newFrames:FlxFramesCollection):Void {
+        if(oldFrames == null || oldFrames == newFrames) {
+            return;
+        }
+
+        if(Std.isOfType(oldFrames, CombinedAtlasFrames)) {
+            cast(oldFrames, CombinedAtlasFrames).destroy();
+        }
     }
 
     public function execute() {
@@ -279,7 +305,7 @@ class ModLua {
 					secondFrames = Paths.getSparrowAtlas(second);
 		    }
 
-			var combinedFrames = feshixl.FeshSprite.twoInOneFrames(firstFrames, secondFrames);
+			var combinedFrames = FlxAnimationUtil.combineAtlas([firstFrames, secondFrames]);
 
 			//firstFrames.destroy();
 			//secondFrames.destroy();
@@ -295,7 +321,11 @@ class ModLua {
 				return;
 			}
 
+			var oldFrames:FlxFramesCollection = spr.frames;
+			var oldGraphic:FlxGraphic = spr.graphic;
 			spr.frames = frames;
+			releaseReplacedFrames(oldFrames, spr.frames);
+			releaseReplacedGraphic(oldGraphic, spr.graphic);
 		});
 
 		Lua_helper.add_callback(lua, "loadBitmapData", function(name:String, path:String, x:Int, y:Int) {
@@ -1016,6 +1046,7 @@ class ModLua {
                 return;
             }
 
+            releaseReplacedFrames(spr.frames, null);
             spr.kill();
             spr.destroy();
 
@@ -2955,6 +2986,14 @@ class ModLua {
 		}
 
 		if(luaFrameCollections != null) {
+			for(k in luaFrameCollections.keys()) {
+				var frames:FlxFramesCollection = luaFrameCollections.get(k);
+
+				if(Std.isOfType(frames, CombinedAtlasFrames)) {
+					cast(frames, CombinedAtlasFrames).destroy();
+				}
+			}
+
 		    luaFrameCollections.clear();
 			luaFrameCollections = null;
 		}

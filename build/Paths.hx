@@ -824,7 +824,7 @@ class Paths
 
 		if(cachedImage != null && cachedImage.bitmap != null) {
 			return cachedImage;
-		}else if(cachedImage != null) {
+		} else if(cachedImage != null) {
 			FlxG.bitmap.removeByKey(cachedImage.key);
 		}
 
@@ -833,20 +833,23 @@ class Paths
 
 		if(bitmapGraphic != null && bitmapGraphic.bitmap != null) {
 			return bitmapGraphic;
-		}else if(bitmapGraphic != null) {
+		} else if(bitmapGraphic != null) {
 			FlxG.bitmap.removeByKey(path);
 		}
 
-		var bitmap = loadBitmap(path);
+		if(OpenFlAssets.exists(path, IMAGE)) {
+			return FlxGraphic.fromAssetKey(path, false, null, true);
+		}
+
+		var bitmap = loadBitmap(path, true);
 
 		if(bitmap != null) {
 			var graphics:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, path);
 			graphics.persist = false;
 			return graphics;
-		}else {
-			//trace("Error: could not locate asset - " + file('images/$key.png', library));
-			return null;
 		}
+
+		return null;
 	}
 
 	static public function lua(key:String) {

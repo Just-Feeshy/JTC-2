@@ -23,6 +23,7 @@ import openfl.geom.Point;
 import haxe.xml.Access;
 import haxe.io.Bytes;
 
+import FlxAnimationUtil;
 import SaveData.SaveType;
 
 #if (haxe_ver >= 4.2)
@@ -162,34 +163,7 @@ class FeshSprite extends FlxSprite {
     }
 
     public static function twoInOneFrames(firstF:FlxFramesCollection, secondF:FlxFramesCollection):FlxFramesCollection {
-        var firstBitmap:BitmapData = firstF.parent.bitmap;
-        var secondBitmap:BitmapData = secondF.parent.bitmap;
-
-		final combinedBitmapWidth:Int = firstBitmap.width + secondBitmap.width;
-        final combinedBitmapHeight:Int = FlxMath.maxInt(firstBitmap.height, secondBitmap.height);
-        var combinedBitmap:BitmapData = new BitmapData(combinedBitmapWidth, combinedBitmapHeight, true, 0x00000000);
-
-        combinedBitmap.draw(firstBitmap, new Matrix());
-
-		var matrix:Matrix = new Matrix();
-        matrix.translate(firstBitmap.width, 0);
-        combinedBitmap.draw(secondBitmap, matrix);
-
-		var combinedFrames:FlxAtlasFrames = new FlxAtlasFrames(FlxGraphic.fromBitmapData(combinedBitmap));
-
-		for (frame in firstF.frames) {
-		    frame.parent = combinedFrames.parent;
-            combinedFrames.pushFrame(frame);
-		}
-
-		for (frame in secondF.frames) {
-		    frame.parent = combinedFrames.parent;
-			final rect = new FlxRect(frame.frame.x + firstBitmap.width, frame.frame.y, frame.frame.width, frame.frame.height);
-			frame.frame = rect;
-            combinedFrames.pushFrame(frame);
-		}
-
-		return combinedFrames;
+		return FlxAnimationUtil.combineFramesCollections(firstF, secondF);
 	}
 
     public function updateFrameSizeOffset(width:Float, height:Float, ?name:String = null):Void {

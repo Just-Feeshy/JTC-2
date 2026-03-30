@@ -2,12 +2,14 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.graphics.FlxGraphic;
 import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import lime.utils.Assets;
 import haxe.Json;
+import openfl.utils.Assets as OpenFlAssets;
 
 using StringTools;
 
@@ -199,10 +201,20 @@ class CheesyStage extends StorageStage {
 		dad = Register.getInGameCharacter(OPPONENT);
 
 		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
-		    boyfriend.frames = feshixl.FeshSprite.twoInOneFrames(
+			var oldGraphic:FlxGraphic = boyfriend.graphic;
+		    boyfriend.frames = FlxAnimationUtil.combineAtlas([
 				Paths.getSparrowAtlas("flying notes BF SINGS"),
 				Paths.getSparrowAtlas("flying notes GF SINGS")
-			);
+			]);
+			if(oldGraphic != null && oldGraphic != boyfriend.graphic) {
+				oldGraphic.persist = false;
+				oldGraphic.destroyOnNoUse = true;
+				if(oldGraphic.assetsKey != null) {
+					OpenFlAssets.cache.removeBitmapData(oldGraphic.assetsKey);
+				} else if(oldGraphic.key != null) {
+					OpenFlAssets.cache.removeBitmapData(oldGraphic.key);
+				}
+			}
 			boyfriend.animOffsets = flyingOffset;
 
 			addAnimation("idle", "flying dance IDLE0");

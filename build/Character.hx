@@ -176,6 +176,10 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	override function destroy() {
+		if(Std.isOfType(frames, CombinedAtlasFrames)) {
+			cast(frames, CombinedAtlasFrames).destroy();
+		}
+
 		super.destroy();
 
 		if(animOffsets != null) {
