@@ -2,16 +2,16 @@ package;
 
 import flixel.FlxG;
 import flixel.util.FlxDestroyUtil;
-import feshixl.FeshCamera;
+import play.PlayCamera;
 
-class CameraNote extends FeshCamera {
-    public var camNoteSustain:FeshCamera;
+class CameraNote extends PlayCamera {
+    public var camNoteSustain:PlayCamera;
 
     public function createSustainCam() {
         if(camNoteSustain != null)
             return;
 
-        camNoteSustain = new FeshCamera();
+        camNoteSustain = new PlayCamera();
         camNoteSustain.bgColor.alpha = 0;
     }
 

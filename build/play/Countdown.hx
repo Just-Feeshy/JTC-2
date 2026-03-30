@@ -76,6 +76,11 @@ class Countdown
 			if(countdownStep == AFTER)
 			{
 				stopCountdown();
+
+				if(!stepCancelled && activePlayState.startingSong && !activePlayState.inCutscene && !activePlayState.talking)
+				{
+					activePlayState.startSong();
+				}
 			}
 		}, 5);
 

@@ -84,7 +84,7 @@ class Register {
     }
 
     @:access(HelperStates)
-    public inline static function attachLuaToState<T:HelperStates>(state:Class<T>, path:String):Void { //Won't work with PlayState.
+    public inline static function attachLuaToState(state:Class<Dynamic>, path:String):Void { //Won't work with PlayState.
 		#if USING_LUA
         if(HelperStates.scriptsInStates.exists(Type.getClassName(state))) {
             HelperStates.scriptsInStates.get(Type.getClassName(state)).close();
@@ -96,7 +96,7 @@ class Register {
 	}
 
     @:access(HelperStates)
-    public inline static function detachLuaFromState<T:HelperStates>(state:Class<T>):Void { //Won't work with PlayState.
+    public inline static function detachLuaFromState(state:Class<Dynamic>):Void { //Won't work with PlayState.
         #if USING_LUA
         if(HelperStates.scriptsInStates.exists(Type.getClassName(state))) {
             HelperStates.scriptsInStates.get(Type.getClassName(state)).close();

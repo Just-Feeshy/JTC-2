@@ -5,7 +5,7 @@ import sys.FileSystem;
 #end
 
 import flixel.FlxG;
-import feshixl.FeshCamera;
+import play.PlayCamera;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import openfl.utils.Assets;
 import openfl.events.Event;
@@ -154,9 +154,9 @@ class DefaultHandler {
     }
 
     static private function update(e:Event) {
-        var mainCam:FeshCamera = cast FlxG.camera;
-        var camHUD:FeshCamera = cast PlayState.camHUD;
-        var noteCam:FeshCamera = cast PlayState.camNOTE;
+        var mainCam:PlayCamera = cast FlxG.camera;
+        var camHUD:PlayCamera = cast PlayState.camHUD;
+        var noteCam:PlayCamera = cast PlayState.camNOTE;
 
         mainCam.engineAngle = camAngle[0] + caculateShake(50, shakeCamTimer);
         camHUD.engineAngle = camAngle[1] + caculateShake(50, -shakeCamTimerHUD);

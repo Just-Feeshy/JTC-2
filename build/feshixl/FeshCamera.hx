@@ -19,10 +19,11 @@ using flixel.util.FlxColorTransformUtil;
 
 class FeshCamera extends FlxCamera {
 
+    private var baseFilters:Array<BitmapFilter>;
     private var lockedFilters:Array<BitmapFilter>;
     private var wastefulFilters:Array<BitmapFilter>;
 
-    public var betterFiltersEnabled:Bool = true;
+    public var betterFiltersEnabled(default, set):Bool = true;
 
 	public var engineX(default, set):Float = 0;
 	public var engineY(default, set):Float = 0;
@@ -31,37 +32,58 @@ class FeshCamera extends FlxCamera {
     public var engineAlpha(default, set):Float = 1;
 
     public function new() {
-        _filters = [];
+        super();
 
+        baseFilters = [];
         lockedFilters = [];
         wastefulFilters = [];
-
-        filtersEnabled = false;
-
-        super();
+        filtersEnabled = true;
+        rebuildFilters();
     }
 
     public function setTrashFilters(trashFilters:Array<BitmapFilter>) {
-        wastefulFilters = trashFilters;
+        wastefulFilters = trashFilters != null ? trashFilters.concat([]) : [];
+        rebuildFilters();
     }
     
     public function lockFilter(filters:BitmapFilter):Void {
-        lockedFilters.push(filters);
+        if(filters != null) {
+            lockedFilters.push(filters);
+            rebuildFilters();
+        }
     }
 
     public function eraseFilters() {
+        baseFilters = [];
         lockedFilters = [];
         wastefulFilters = [];
         setFilters([]);
     }
 
-    function getFilters():Array<BitmapFilter> {
-        var daFilters:Array<BitmapFilter> = [];
+    public function collectFilters():Array<BitmapFilter> {
+        @:privateAccess
+        return _filters != null ? _filters.concat([]) : [];
+    }
 
-        daFilters = _filters.concat(lockedFilters);
-        daFilters = daFilters.concat(wastefulFilters);
+    public function collectBaseFilters():Array<BitmapFilter> {
+        return baseFilters != null ? baseFilters.concat([]) : [];
+    }
 
-        return daFilters;
+    private function rebuildFilters():Void {
+        var filters:Array<BitmapFilter> = [];
+
+        if(betterFiltersEnabled) {
+            filters = filters.concat(baseFilters);
+            filters = filters.concat(lockedFilters);
+            filters = filters.concat(wastefulFilters);
+        }
+
+        super.setFilters(filters);
+    }
+
+    override public function setFilters(filters:Array<BitmapFilter>):Void {
+        baseFilters = filters != null ? filters.concat([]) : [];
+        rebuildFilters();
     }
 
     function set_engineX(x:Float):Float {
@@ -75,6 +97,12 @@ class FeshCamera extends FlxCamera {
         updateFlashSpritePosition();
         return engineY;
 	}
+
+    function set_betterFiltersEnabled(value:Bool):Bool {
+        betterFiltersEnabled = value;
+        rebuildFilters();
+        return value;
+    }
 
     override function drawPixels(?frame:FlxFrame, ?pixels:BitmapData, matrix:FlxMatrix, ?transform:ColorTransform, ?blend:BlendMode, ?smoothing:Bool = false,
         ?shader:FlxShader):Void {
@@ -189,11 +217,7 @@ class FeshCamera extends FlxCamera {
     }
 
     override public function update(elapsed:Float):Void {
-        filtersEnabled = false;
-
         super.update(elapsed);
-
-        flashSprite.filters = betterFiltersEnabled ? getFilters() : null;
     }
 
     override function render():Void {

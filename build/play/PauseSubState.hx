@@ -219,7 +219,7 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		if(pauseLua != null) {
 			pauseLua.call("onDestroy", []);
-			pauseLua.close();
+			Register.detachLuaFromState(PauseSubState);
 			pauseLua = null;
 		}
 
@@ -293,7 +293,16 @@ class PauseSubState extends MusicBeatSubstate
 			return;
 		}
 
-		pauseLua = new ModLua(Paths.lua(PAUSE_LUA_SCRIPT));
+		if(!HelperStates.luaExist(PauseSubState)) {
+			Register.attachLuaToState(PauseSubState, Paths.lua(PAUSE_LUA_SCRIPT));
+		}
+
+		pauseLua = HelperStates.getLua(PauseSubState);
+
+		if(pauseLua == null) {
+			return;
+		}
+
 		pauseLua.luaSprites.set("pauseBackground", bg);
 		pauseLua.luaTexts.set("pauseLevelInfo", levelInfo);
 		pauseLua.luaTexts.set("pauseLevelDifficulty", levelDifficulty);

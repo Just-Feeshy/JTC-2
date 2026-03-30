@@ -74,7 +74,6 @@ typedef LuaPersistentRestartState = {
     var bitmaps:Map<String, BitmapData>;
     var frameCollections:Map<String, FlxFramesCollection>;
     var orbitSprites:Map<String, LuaOrbitSprite>;
-    var cameraShaderNames:Map<String, String>;
 }
 
 /**
@@ -99,7 +98,6 @@ class ModLua {
     public var luaShaderSources(default, null):Map<String, LuaShaderSource> = new Map<String, LuaShaderSource>();
     public var luaShaders(default, null):Map<String, FeshShader> = new Map<String, FeshShader>();
     public var luaCameraShaderFilters(default, null):Map<String, ShaderFilter> = new Map<String, ShaderFilter>();
-    public var luaCameraShaderNames(default, null):Map<String, String> = new Map<String, String>();
 	public var luaBitmaps(default, null):Map<String, BitmapData> = new Map<String, BitmapData>();
 	public var luaFrameCollections(default, null):Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
     public var luaOrbitSprites(default, null):Map<String, LuaOrbitSprite> = new Map<String, LuaOrbitSprite>();
@@ -1791,87 +1789,64 @@ class ModLua {
             return null;
         }
 
-        ensureCameraShaderAttachment(name);
-
-        var shaderFilter:ShaderFilter = luaCameraShaderFilters.get(name);
-
-        if(shaderFilter != null && shaderFilter.shader != null && isOfType(shaderFilter.shader, FeshShader)) {
-            var filterShader:FeshShader = cast shaderFilter.shader;
-
-            if(luaShaders != null) {
-                luaShaders.set(name, filterShader);
-            }
-
-            return filterShader;
-        }
-
-        var shader:FeshShader = luaShaders.get(name);
-
-        if(shader != null) {
-            return shader;
-        }
-
         var spr:FlxSprite = getSprite(name);
 
         if(spr != null && spr.shader != null && isOfType(spr.shader, FeshShader)) {
             return cast spr.shader;
         }
 
-        return null;
+        var cam:FlxCamera = getCamera(name);
+
+        if(cam != null) {
+            for(filter in getActiveCameraFilters(cam)) {
+                if(filter != null && Std.isOfType(filter, ShaderFilter)) {
+                    var shaderFilter:ShaderFilter = cast filter;
+
+                    if(shaderFilter.shader != null && isOfType(shaderFilter.shader, FeshShader)) {
+                        var filterShader:FeshShader = cast shaderFilter.shader;
+
+                        if(luaShaders != null) {
+                            luaShaders.set(name, filterShader);
+                        }
+
+                        return filterShader;
+                    }
+                }
+            }
+        }
+
+        return luaShaders != null ? luaShaders.get(name) : null;
     }
 
-    function ensureCameraShaderAttachment(cameraName:String):Bool {
-        if(cameraName == null || luaShaders == null || luaCameraShaderFilters == null || luaCameraShaderNames == null) {
-            return false;
-        }
-
-        var cam:FlxCamera = getCamera(cameraName);
-        var shaderName:String = luaCameraShaderNames.get(cameraName);
-        var shader:FeshShader = luaShaders.get(cameraName);
-
-        if(cam == null) {
-            return false;
-        }
-
-        if((shader == null || shader.data == null) && shaderName != null && shaderName.trim() != "") {
-            shader = createShaderInstance(shaderName, cameraName);
-        }
-
-        if(shader == null) {
-            return false;
-        }
-
-        var filters:Array<BitmapFilter> = getCameraFilters(cam);
-        var shaderFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
-
-        if(shaderFilter != null && filters.contains(shaderFilter) && shaderFilter.shader == cast shader) {
-            return true;
-        }
-
-        if(shaderFilter != null) {
-            filters.remove(shaderFilter);
-        }
-
-        var repairedFilter:ShaderFilter = new ShaderFilter(cast shader);
-        filters.push(repairedFilter);
-        cam.setFilters(filters);
-        luaShaders.set(cameraName, shader);
-        luaCameraShaderFilters.set(cameraName, repairedFilter);
-        return true;
-    }
-
-    function getCameraFilters(camera:FlxCamera):Array<BitmapFilter> {
+    function getCameraAssignedFilters(camera:FlxCamera):Array<BitmapFilter> {
         if(camera == null) {
             return [];
         }
 
-        var filters:Dynamic = Reflect.getProperty(camera, "filters");
+        var collectBaseFilters:Dynamic = Reflect.getProperty(camera, "collectBaseFilters");
 
-        if(filters == null) {
+        if(Reflect.isFunction(collectBaseFilters)) {
+            var filters:Dynamic = Reflect.callMethod(camera, collectBaseFilters, []);
+            return filters != null ? (cast filters:Array<BitmapFilter>).concat([]) : [];
+        }
+
+        @:privateAccess
+        return camera._filters != null ? camera._filters.concat([]) : [];
+    }
+
+    function getActiveCameraFilters(camera:FlxCamera):Array<BitmapFilter> {
+        if(camera == null) {
             return [];
         }
 
-        return (cast filters:Array<BitmapFilter>).concat([]);
+        var collectFilters:Dynamic = Reflect.getProperty(camera, "collectFilters");
+
+        if(Reflect.isFunction(collectFilters)) {
+            var filters:Dynamic = Reflect.callMethod(camera, collectFilters, []);
+            return filters != null ? (cast filters:Array<BitmapFilter>).concat([]) : [];
+        }
+
+        return getCameraAssignedFilters(camera);
     }
 
     function parseLuaColor(colorStr:String):Int {
@@ -2092,7 +2067,7 @@ class ModLua {
 
         var filters:Array<BitmapFilter> = [];
 
-        for(filter in getCameraFilters(cam)) {
+        for(filter in getCameraAssignedFilters(cam)) {
             if(!isOfType(filter, BlurFilter)) {
                 filters.push(filter);
             }
@@ -2144,7 +2119,7 @@ class ModLua {
         try {
             var cam:FlxCamera = getCamera(cameraName);
 
-            if(cam == null || luaShaders == null || luaCameraShaderFilters == null || luaCameraShaderNames == null) {
+            if(cam == null || luaShaders == null || luaCameraShaderFilters == null) {
                 return false;
             }
 
@@ -2154,19 +2129,14 @@ class ModLua {
                 return false;
             }
 
-            var filters:Array<BitmapFilter> = getCameraFilters(cam);
-            var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
-
-            if(previousFilter != null) {
-                filters.remove(previousFilter);
-            }
+            var filters:Array<BitmapFilter> = getCameraAssignedFilters(cam);
+            filters = stripManagedCameraShaderFilters(filters, cameraName);
 
             var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
             filters.push(shaderFilter);
 
             cam.setFilters(filters);
             luaCameraShaderFilters.set(cameraName, shaderFilter);
-            luaCameraShaderNames.set(cameraName, shaderName);
             luaShaders.set(cameraName, shader);
             return true;
         } catch(e:Dynamic) {
@@ -2194,25 +2164,65 @@ class ModLua {
     }
 
     function removeShaderFromCamera(cameraName:String):Bool {
-        if(luaCameraShaderFilters == null || luaShaders == null || luaCameraShaderNames == null) {
+        if(luaCameraShaderFilters == null || luaShaders == null) {
             return false;
         }
 
         var cam:FlxCamera = getCamera(cameraName);
-        var previousFilter:ShaderFilter = luaCameraShaderFilters.get(cameraName);
-
-        if(cam == null || previousFilter == null) {
+        if(cam == null) {
             return false;
         }
 
-        var filters:Array<BitmapFilter> = getCameraFilters(cam);
-        filters.remove(previousFilter);
+        var filters:Array<BitmapFilter> = getCameraAssignedFilters(cam);
+        var strippedFilters:Array<BitmapFilter> = stripManagedCameraShaderFilters(filters, cameraName);
 
-        cam.setFilters(filters);
+        if(strippedFilters.length == filters.length) {
+            luaCameraShaderFilters.remove(cameraName);
+            luaShaders.remove(cameraName);
+            return false;
+        }
+
+        cam.setFilters(strippedFilters);
         luaCameraShaderFilters.remove(cameraName);
-        luaCameraShaderNames.remove(cameraName);
         luaShaders.remove(cameraName);
         return true;
+    }
+
+    function stripManagedCameraShaderFilters(filters:Array<BitmapFilter>, cameraName:String):Array<BitmapFilter> {
+        if(filters == null || filters.length == 0) {
+            return [];
+        }
+
+        var managedFilter:ShaderFilter = luaCameraShaderFilters != null ? luaCameraShaderFilters.get(cameraName) : null;
+        var managedShader:FeshShader = luaShaders != null ? luaShaders.get(cameraName) : null;
+        var output:Array<BitmapFilter> = [];
+
+        for(filter in filters) {
+            if(filter == null) {
+                continue;
+            }
+
+            if(Std.isOfType(filter, ShaderFilter)) {
+                var shaderFilter:ShaderFilter = cast filter;
+                var filterShader:Dynamic = shaderFilter.shader;
+
+                if(shaderFilter == managedFilter) {
+                    continue;
+                }
+
+                if(managedShader != null && filterShader == cast managedShader) {
+                    continue;
+                }
+
+                if(filterShader != null && isOfType(filterShader, FeshShader)) {
+                    continue;
+                }
+            }
+
+            output.push(filter);
+        }
+
+        return output;
     }
 
     function getShaderDataField(target:String, property:String):Dynamic {
@@ -2248,6 +2258,32 @@ class ModLua {
         return value != null ? cast value : [];
     }
 
+    function invalidateShaderTarget(target:String):Void {
+        if(target == null) {
+            return;
+        }
+
+        var cam:FlxCamera = getCamera(target);
+
+        if(cam == null) {
+            return;
+        }
+
+        var filters:Array<BitmapFilter> = getActiveCameraFilters(cam);
+
+        for(filter in filters) {
+            if(Std.isOfType(filter, ShaderFilter)) {
+                var shaderFilter:ShaderFilter = cast filter;
+                shaderFilter.invalidate();
+            }
+        }
+
+        if(cam.flashSprite != null) {
+            cam.flashSprite.filters = filters.length > 0 ? filters.concat([]) : null;
+            @:privateAccess cam.flashSprite.__setRenderDirty();
+        }
+    }
+
     function setShaderFloatValue(target:String, property:String, values:Array<Float>):Bool {
         try {
             var shaderField:Dynamic = getShaderDataField(target, property);
@@ -2257,6 +2293,7 @@ class ModLua {
             }
 
             Reflect.setProperty(shaderField, "value", cast values);
+            invalidateShaderTarget(target);
             return true;
         } catch(e:Dynamic) {
             return false;
@@ -2272,6 +2309,7 @@ class ModLua {
             }
 
             Reflect.setProperty(shaderField, "value", cast values);
+            invalidateShaderTarget(target);
             return true;
         } catch(e:Dynamic) {
             return false;
@@ -2287,6 +2325,7 @@ class ModLua {
             }
 
             Reflect.setProperty(shaderField, "value", cast values);
+            invalidateShaderTarget(target);
             return true;
         } catch(e:Dynamic) {
             return false;
@@ -2303,6 +2342,7 @@ class ModLua {
             }
 
             Reflect.setProperty(shaderField, "input", bitmapData);
+            invalidateShaderTarget(target);
             return true;
         } catch(e:Dynamic) {
             return false;
@@ -2446,8 +2486,7 @@ class ModLua {
             cameras: luaCameras != null ? luaCameras : new Map<String, FlxCamera>(),
             bitmaps: luaBitmaps != null ? luaBitmaps : new Map<String, BitmapData>(),
             frameCollections: luaFrameCollections != null ? luaFrameCollections : new Map<String, FlxFramesCollection>(),
-            orbitSprites: luaOrbitSprites != null ? luaOrbitSprites : new Map<String, LuaOrbitSprite>(),
-            cameraShaderNames: luaCameraShaderNames != null ? luaCameraShaderNames : new Map<String, String>()
+            orbitSprites: luaOrbitSprites != null ? luaOrbitSprites : new Map<String, LuaOrbitSprite>()
         };
 
         luaTexts = new Map<String, FlxText>();
@@ -2456,7 +2495,6 @@ class ModLua {
         luaBitmaps = new Map<String, BitmapData>();
         luaFrameCollections = new Map<String, FlxFramesCollection>();
         luaOrbitSprites = new Map<String, LuaOrbitSprite>();
-        luaCameraShaderNames = new Map<String, String>();
 
         return state;
     }
@@ -2472,7 +2510,6 @@ class ModLua {
         luaBitmaps = state.bitmaps != null ? state.bitmaps : new Map<String, BitmapData>();
         luaFrameCollections = state.frameCollections != null ? state.frameCollections : new Map<String, FlxFramesCollection>();
         luaOrbitSprites = state.orbitSprites != null ? state.orbitSprites : new Map<String, LuaOrbitSprite>();
-        luaCameraShaderNames = state.cameraShaderNames != null ? state.cameraShaderNames : new Map<String, String>();
     }
 
     public function updateManagedSprites(elapsed:Float):Void {
@@ -2848,11 +2885,6 @@ class ModLua {
         if(luaShaderSources != null) {
             luaShaderSources.clear();
             luaShaderSources = null;
-        }
-
-        if(luaCameraShaderNames != null) {
-            luaCameraShaderNames.clear();
-            luaCameraShaderNames = null;
         }
 
         if(luaSprites != null) {

@@ -36,6 +36,8 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     public var finishCallback:(dialogue:IDialogue)->Void;
 
     var blurEffect:GuassianBlur;
+    var blurFilter:ShaderFilter;
+    var playstateRef:PlayState;
 
     var _info:DialogueInfo;
 
@@ -347,23 +349,36 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     public function createDialogue(state:FlxState):Void {
         var playstate:PlayState = cast(state, PlayState);
 
+        playstateRef = playstate;
         girlfriend = playstate.gf;
 
         blurEffect = new GuassianBlur(0);
+        blurFilter = new ShaderFilter(blurEffect);
 
         new FlxTimer().start(0.1, function(tmr:FlxTimer) {
             playstate.camFollow.x = playstate.gf.getGraphicMidpoint().x;
             playstate.camFollow.y = playstate.gf.getGraphicMidpoint().y;
             playstate.camGame.focusOn(playstate.camFollow.getPosition());
 
-            @:privateAccess
-            playstate.camGame.wastefulFilters.push(new ShaderFilter(blurEffect));
+            playstate.camGame.setTrashFilters([blurFilter]);
 
             new FlxTimer().start(0.3, function(tmr:FlxTimer) {
-                FlxTween.tween(blurEffect, {size: 20}, 0.75, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-                    playstate.openSubState(this);
-                    createAfterTransition();
-                }});
+                FlxTween.tween(blurEffect, {size: 20}, 0.75, {
+                    ease: FlxEase.quadOut,
+                    onUpdate: function(_:FlxTween) {
+                        if(playstateRef != null && playstateRef.camGame != null) {
+                            playstateRef.camGame.invalidateFilters();
+                        }
+                    },
+                    onComplete: function(twn:FlxTween) {
+                        if(playstateRef != null && playstateRef.camGame != null) {
+                            playstateRef.camGame.invalidateFilters();
+                        }
+
+                        playstate.openSubState(this);
+                        createAfterTransition();
+                    }
+                });
             });
         });
     }
@@ -413,9 +428,21 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
             shadowText = FlxDestroyUtil.destroy(shadowText);
 
-            FlxTween.tween(blurEffect, {size: 0}, 0.75, {ease: FlxEase.quadOut, onComplete: function(twn:FlxTween) {
-                finishCallback(this);
-            }});
+            FlxTween.tween(blurEffect, {size: 0}, 0.75, {
+                ease: FlxEase.quadOut,
+                onUpdate: function(_:FlxTween) {
+                    if(playstateRef != null && playstateRef.camGame != null) {
+                        playstateRef.camGame.invalidateFilters();
+                    }
+                },
+                onComplete: function(twn:FlxTween) {
+                    if(playstateRef != null && playstateRef.camGame != null) {
+                        playstateRef.camGame.invalidateFilters();
+                    }
+
+                    finishCallback(this);
+                }
+            });
         }
 
         if(shadowText != null && displayText != null) {
@@ -434,6 +461,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
 
     override function destroy():Void {
         girlfriend = null;
+        playstateRef = null;
+        blurFilter = null;
+        blurEffect = null;
 
         for(i in 0...soundBinds.length) {
             soundBinds[i] = FlxDestroyUtil.destroy(soundBinds[i]);

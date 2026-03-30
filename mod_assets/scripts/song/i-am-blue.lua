@@ -103,10 +103,6 @@ local function ensureStrumWaveShader()
 end
 
 local function updateStrumWaveShader()
-    if not ensureStrumWaveShader() then
-        return
-    end
-
     updateStrumWaveLaneCenters()
     setShaderFloat(STRUM_WAVE_CAMERA, "waveAmplitude", strumWavePulse)
     setShaderFloat(STRUM_WAVE_CAMERA, "waveTime", strumWaveTime)
@@ -187,20 +183,16 @@ function onCreate()
     buildPulseSteps()
     callEvent("setCameraBop", "0", "0")
 
-    updateStrumWaveShader()
-
 	frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
 	if frost_modchart.initStrumsAndNotes ~= nil then
 		frost_modchart.initStrumsAndNotes()
 	end
+
+	ensureStrumWaveShader()
+	updateStrumWaveShader()
 end
 
 function onUpdate(elapsed)
-    if substateOpenName ~= nil and substateOpenName ~= "" then
-        strumWaveShaderActive = false
-        return
-    end
-
     local safeElapsed = elapsed or 0
 
     if strumWavePulse > 0 then
@@ -221,14 +213,26 @@ function onUpdate(elapsed)
 		bounceStoppedAtOutro = true
 	end
 
+    ensureStrumWaveShader()
     decayCameraZooms(safeElapsed)
-    updateStrumWaveShader()
+
+    if strumWaveShaderActive then
+        updateStrumWaveShader()
+    end
 end
 
 function onStepHit()
     local stepValue = (curStep or 0) + 1
 
     pulseCamera(stepValue)
+end
+
+function onResume()
+    strumWavePulse = math.max(strumWavePulse, STRUM_WAVE_KICK)
+    strumWaveTime = 0
+end
+
+function onPause()
 end
 
 function onDestroy()

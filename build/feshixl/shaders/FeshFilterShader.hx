@@ -14,7 +14,12 @@ class FeshFilterShader extends BitmapFilterShader {
     static final DEFAULT_FRAGMENT_SOURCE = "#pragma header\n\nvoid main(void)\n{\n\t#pragma body\n}\n";
     static final RUNTIME_FRAGMENT_HEADER = "varying vec2 openfl_TextureCoordv;\n\n"
         + "uniform sampler2D openfl_Texture;\n"
-        + "uniform vec2 openfl_TextureSize;";
+        + "uniform vec2 openfl_TextureSize;\n\n"
+        + "#define bitmap openfl_Texture\n\n"
+        + "vec4 flixel_texture2D(sampler2D source, vec2 coord)\n"
+        + "{\n"
+        + "\treturn texture2D(source, coord);\n"
+        + "}";
     static final RUNTIME_FRAGMENT_BODY = "gl_FragColor = texture2D(openfl_Texture, openfl_TextureCoordv);";
 
     public function new(?glFragmentSource:String, ?glVertexSource:String) {

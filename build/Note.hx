@@ -505,6 +505,10 @@ class Note extends FeshSprite {
 		}
 
 		y += yAddon + restartVisualOffsetY;
+
+		if(isHoldEndPiece()) {
+			y += getHoldEndOffsetY();
+		}
 	}
 
 	//More complicated method
@@ -663,6 +667,14 @@ class Note extends FeshSprite {
 		note.updateHitbox();
 	}
 
+	inline function isHoldEndPiece():Bool {
+		return isSustainNote
+			&& animation != null
+			&& animation.curAnim != null
+			&& animation.curAnim.name != null
+			&& animation.curAnim.name.endsWith("hold end");
+	}
+
 	function syncPrevSustainLength():Void {
 		if(!isSustainNote || prevNote == null || !prevNote.isSustainNote) {
 			return;
@@ -674,6 +686,26 @@ class Note extends FeshSprite {
 
 		prevNote.scale.y = prevNote.sustainBaseScaleY * getSustainLengthScale();
 		prevNote.updateHitbox();
+	}
+
+	function getHoldEndOffsetY():Float {
+		if(!downscrollNote || prevNote == null || !prevNote.isSustainNote) {
+			return 0;
+		}
+
+		if(prevNote.scale == null || !prevNote.exists || !prevNote.alive) {
+			return 0;
+		}
+
+		var baseHeight:Float = prevNote.frameHeight * prevNote.sustainBaseScaleY;
+		var scaledHeight:Float = prevNote.height;
+		var deltaHeight:Float = scaledHeight - baseHeight;
+
+		if(deltaHeight <= 0) {
+			return 0;
+		}
+
+		return deltaHeight * 0.5;
 	}
 
 	function getSustainLengthScale():Float {

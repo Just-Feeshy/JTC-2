@@ -392,6 +392,21 @@ class PlayAudio
 		pauseVocals();
 		playState.previousHeldInputSongTime = null;
 
+		var resumeTime:Float = Math.max(0, Conductor.instance.trackedSongPosition - Conductor.instance.combinedOffset);
+
+		if(FlxG.sound.music == null)
+		{
+			startInstrumentTrack(resumeTime);
+		}
+		else if(FlxG.sound.music.length <= 0)
+		{
+			startInstrumentTrack(resumeTime);
+		}
+		else if(!FlxG.sound.music.playing)
+		{
+			FlxG.sound.music.time = resumeTime;
+		}
+
 		if(PlayState.muteInst)
 			FlxG.sound.music.volume = 0;
 

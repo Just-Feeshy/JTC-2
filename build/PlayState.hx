@@ -56,13 +56,13 @@ import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import feshixl.group.FeshEventGroup;
 import feshixl.math.FeshMath;
-import feshixl.FeshCamera;
 import lime.utils.Assets;
 import lime.system.ThreadPool;
 
 import example_code.DefaultEvents;
 import example_code.DefaultStage;
 import play.PlayAudio;
+import play.PlayCamera;
 import play.Countdown;
 import play.DefaultHandler;
 import play.PlayEvents;
@@ -205,11 +205,11 @@ class PlayState extends MusicBeatState
 	public var eventStorage:Array<String> = [];
 
 	//Camera Shit
-	public static var camHUD:FeshCamera;
+	public static var camHUD:PlayCamera;
 	public static var camNOTE:CameraNote;
-	private var ownedCamHUD:FeshCamera;
+	private var ownedCamHUD:PlayCamera;
 	private var ownedCamNOTE:CameraNote;
-	private var ownedCamNoteSustain:FeshCamera;
+	private var ownedCamNoteSustain:PlayCamera;
 	private var playAudio:PlayAudio;
 	private var playEvents:PlayEvents;
 	private var playFlow:PlayFlow;
@@ -317,7 +317,7 @@ class PlayState extends MusicBeatState
 	private var generatedMusic:Bool = false;
 	private var startingSong:Bool = false;
 
-	public var camGame:FeshCamera;
+	public var camGame:PlayCamera;
 
 	var customNoteSprites:FlxTypedGroup<FlxSprite>;
 
@@ -416,10 +416,10 @@ class PlayState extends MusicBeatState
 
 		SaveData.saveClient();
 
-		camGame = new FeshCamera();
+		camGame = new PlayCamera();
 		camNOTE = new CameraNote();
 		camNOTE.createSustainCam();
-		camHUD = new FeshCamera();
+		camHUD = new PlayCamera();
 		ownedCamNOTE = camNOTE;
 		ownedCamNoteSustain = camNOTE.camNoteSustain;
 		ownedCamHUD = camHUD;
@@ -2210,43 +2210,74 @@ class PlayState extends MusicBeatState
 		FlxTween.tween(FlxG.camera, {zoom: 1.3}, (Conductor.instance.stepLengthMs * 4 / 1000), {ease: FlxEase.elasticInOut});
 	}
 
-override function closeSubState()
+	override public function openSubState(SubState:FlxSubState):Void
 	{
+		if(paused)
+		{
+			var substateName:String = Type.getClassName(Type.getClass(SubState));
+
+			pauseMusic();
+			FlxG.camera.followLerp = 0;
+
+			if(playLua != null)
+			{
+				playLua.set("substateOpenName", substateName);
+				playLua.call("onPause", [substateName]);
+			}
+		}
+
+		super.openSubState(SubState);
+	}
+
+	override function closeSubState()
+	{
+		var shouldResume:Bool = paused;
+
 		if (paused)
 		{
 			paused = false;
-
-				if(!needsReset) {
-					if (FlxG.sound.music != null && !startingSong && !inCutscene && !talking)
-					{
-						resyncVocals();
-					}
-
-				Countdown.resumeCountdown();
-
-				playLua.set("substateOpenName", "");
-				updateLuaVars();
-				updatePerSectionLuaVars();
-				playLua.call('onResume', []);
-
-				#if windows
-				if (startTimer != null && startTimer.finished)
-				{
-					songLength = FlxG.sound.music.length;
-
-					DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, - songLength);
-				}
-				else
-				{
-					DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
-				}
-				#end
-			}
 		}
 
 		setupKeyStuff();
 
 		super.closeSubState();
+
+		if(shouldResume && !needsReset) {
+			persistentUpdate = true;
+			persistentDraw = true;
+			FlxG.camera.followLerp = getGameplayCameraFollowLerp();
+
+			if (FlxG.sound.music != null && !startingSong && !inCutscene && !talking)
+			{
+				resyncVocals();
+			}
+
+			Countdown.resumeCountdown();
+
+			if(playLua != null) {
+				playLua.set("substateOpenName", "");
+			}
+
+			updateLuaVars();
+			updatePerSectionLuaVars();
+
+			if(playLua != null) {
+				playLua.call('onResume', []);
+			}
+
+			#if windows
+			if (startTimer != null && startTimer.finished)
+			{
+				songLength = FlxG.sound.music.length;
+
+				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, - songLength);
+			}
+			else
+			{
+				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
+			}
+			#end
+		}
 	}
 
 	override public function onFocus():Void
@@ -3605,8 +3636,8 @@ override function closeSubState()
 
 	public function prepareForStateSwitch():Void {
 		var stateCamNOTE:CameraNote = ownedCamNOTE;
-		var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
-		var stateCamHUD:FeshCamera = ownedCamHUD;
+		var stateCamNoteSustain:PlayCamera = ownedCamNoteSustain;
+		var stateCamHUD:PlayCamera = ownedCamHUD;
 
 		resetScriptedCameraState(false);
 
@@ -3668,8 +3699,8 @@ override function closeSubState()
 	override public function destroy() {
 		var statePlayLua:PlayLua = playLua;
 		var stateCamNOTE:CameraNote = ownedCamNOTE;
-		var stateCamNoteSustain:FeshCamera = ownedCamNoteSustain;
-		var stateCamHUD:FeshCamera = ownedCamHUD;
+		var stateCamNoteSustain:PlayCamera = ownedCamNoteSustain;
+		var stateCamHUD:PlayCamera = ownedCamHUD;
 
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, getPressed);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, getReleased);
