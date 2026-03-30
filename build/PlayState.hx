@@ -1711,6 +1711,8 @@ class PlayState extends MusicBeatState
 			playLua.set("inGameOver", false);
 			playLua.set("startedCountdown", false);
 			playLua.call("onSongRestart", []);
+			captureRestartScriptedCameraState();
+			restoreRestartScriptedCameraState(true);
 		}
 
 		restartVwooshActive = true;
