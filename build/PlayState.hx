@@ -1021,11 +1021,13 @@ class PlayState extends MusicBeatState
 
 	var startTimer:FlxTimer;
 	var restartIntroTimer:FlxTimer;
+	var restartVwooshNotes:FlxTypedGroup<Note>;
 	var perfectMode:Bool = false;
 	private static inline var RESTART_NOTE_INTRO_TIME:Float = 0.5;
 	private static inline var RESTART_NOTE_INTRO_OFFSET:Float = 200;
 	var defaultPlayerStrumState:Array<StrumResetState> = [];
 	var defaultOpponentStrumState:Array<StrumResetState> = [];
+	var restartVwooshActive:Bool = false;
 
 	function setupModifiers():Void {
 		DefaultHandler.modifiers.customHell.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CUSTOM_HELL_MOD) #else false #end;
@@ -1159,6 +1161,7 @@ class PlayState extends MusicBeatState
 	function clearGeneratedSongState():Void {
 		Countdown.stopCountdown();
 		Countdown.reset();
+		restartVwooshActive = false;
 
 		if(restartIntroTimer != null) {
 			restartIntroTimer.cancel();
@@ -1431,7 +1434,71 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	function playRestartNoteIntro():Void {
+	function clearRestartVwooshNotes():Void {
+		if(restartVwooshNotes == null) {
+			return;
+		}
+
+		for(note in restartVwooshNotes.members.copy()) {
+			if(note == null) {
+				continue;
+			}
+
+			restartVwooshNotes.remove(note, true);
+			note.destroy();
+		}
+
+		remove(restartVwooshNotes, true);
+		restartVwooshNotes.destroy();
+		restartVwooshNotes = null;
+	}
+
+	function vwooshNotesOut():Void {
+		clearRestartVwooshNotes();
+
+		if(notes == null) {
+			return;
+		}
+
+		restartVwooshNotes = new FlxTypedGroup<Note>();
+		restartVwooshNotes.cameras = [camNOTE];
+		add(restartVwooshNotes);
+
+		for(note in notes.members.copy()) {
+			if(note == null || !note.alive) {
+				continue;
+			}
+
+			if(note.trail != null) {
+				remove(note.trail);
+				note.trail.destroy();
+				note.trail = null;
+			}
+
+			notes.remove(note, true);
+			restartVwooshNotes.add(note);
+			note.restartVisualOffsetY = 0;
+
+			var targetY:Float = note.y + FlxG.height;
+			if(note.downscrollNote) {
+				targetY = note.y - FlxG.height;
+			}
+
+			FlxTween.tween(note, {y: targetY}, RESTART_NOTE_INTRO_TIME, {
+				ease: FlxEase.expoIn,
+				onComplete: function(_) {
+					if(restartVwooshNotes != null) {
+						restartVwooshNotes.remove(note, true);
+					}
+
+					note.kill();
+					note.destroy();
+				}
+			});
+		}
+	}
+
+	function vwooshNotesIn():Void {
 		if(notes == null) {
 			return;
 		}
@@ -1585,6 +1652,8 @@ class PlayState extends MusicBeatState
 			restartIntroTimer = null;
 		}
 
+		vwooshNotesOut();
+
 		Conductor.instance.forceBPM(null);
 		Conductor.instance.mapTimeChangesFromSong(SONG);
 
@@ -1631,7 +1700,7 @@ class PlayState extends MusicBeatState
 		camGame.engineAlpha = modifierCheckList('blind effect') ? 0 : 1;
 		restoreRestartScriptedCameraState(true);
 
-		Conductor.instance.update(-(RESTART_NOTE_INTRO_TIME * 1000) - (Conductor.instance.beatLengthMs * 5));
+		Conductor.instance.update(startTimestamp - (RESTART_NOTE_INTRO_TIME * 1000) + (Conductor.instance.beatLengthMs * -5));
 		lastTrackedSongPos = Conductor.instance.trackedSongPosition;
 		syncMusicBeatState(Conductor.instance.trackedSongPosition);
 
@@ -1644,11 +1713,13 @@ class PlayState extends MusicBeatState
 			playLua.call("onSongRestart", []);
 		}
 
-		spawnVisibleNotes();
-		playRestartNoteIntro();
+		restartVwooshActive = true;
 		disableInputs = true;
 		restartIntroTimer = new FlxTimer().start(RESTART_NOTE_INTRO_TIME, function(_) {
 			restartIntroTimer = null;
+			restartVwooshActive = false;
+			spawnVisibleNotes();
+			vwooshNotesIn();
 			disableInputs = false;
 			beginCountdownSequence(false);
 		});
@@ -2570,7 +2641,7 @@ override function closeSubState()
 			health = 0;
 		}
 
-		if (unspawnNotes[0] != null)
+		if (!restartVwooshActive && unspawnNotes[0] != null)
 		{
 			var spawnTime:Float = 3000;
 
@@ -3439,7 +3510,7 @@ override function closeSubState()
 
 		if (gf != null) {
 			if(gf.animation.curAnim != null) {
-				if (curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing") && !gf.stunned && gf.shouldPlayDance) {
+				if (!isInCountdown && curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing") && !gf.stunned && gf.shouldPlayDance) {
 					gf.dance();
 				}
 			}
@@ -3604,6 +3675,7 @@ override function closeSubState()
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, getReleased);
 
 		Countdown.stopCountdown();
+		clearRestartVwooshNotes();
 		if(instance == this) {
 			instance = null;
 		}

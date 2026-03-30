@@ -64,7 +64,6 @@ class Countdown
 			activePlayState.updateLuaVars();
 			activePlayState.updatePerSectionLuaVars();
 
-			performCountdownStep();
 			showCountdownGraphic(countdownStep);
 			playCountdownSound(countdownStep);
 
@@ -228,28 +227,6 @@ class Countdown
 		}
 
 		return result == LuaUtils.Function_Stop || result == LuaUtils.Function_StopLua || result == LuaUtils.Function_StopAll;
-	}
-
-	static function performCountdownStep():Void
-	{
-		var playState:PlayState = PlayState.instance;
-		if(playState == null)
-		{
-			return;
-		}
-
-		if(!playState.hudIconsStatic)
-		{
-			playState.iconP1.setGraphicSize(Std.int(playState.iconP1.width + 30));
-		}
-
-		if(playState.gf != null)
-		{
-			playState.gf.dance();
-		}
-
-		playState.dad.dance();
-		playState.boyfriend.dance();
 	}
 
 	public static function showCountdownGraphic(index:CountdownStep):Void
