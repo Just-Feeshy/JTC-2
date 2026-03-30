@@ -19,14 +19,14 @@ local function hideDefaultHud()
 end
 
 local function positionHudIcons()
-	if downscroll then
-		HUD_ICON_Y_OFFSET = HUD_ICON_Y_OFFSET * -1
+	if not downscroll then
+		HUD_ICON_Y_OFFSET = windowHeight - HUD_ICON_Y_OFFSET * 1.8
 	end
 
     local iconSize = math.floor(windowWidth * HUD_ICON_SIZE_RATIO)
     local iconGap = math.floor(windowWidth * HUD_ICON_GAP_RATIO)
     local leftIconNudge = math.floor(windowWidth * HUD_ICON_LEFT_NUDGE_RATIO)
-    local iconY = math.floor(getSpriteY("schoolBarHUD") - HUD_ICON_Y_OFFSET)
+    local iconY = math.floor(getSpriteY("schoolBarHUD") + HUD_ICON_Y_OFFSET)
     local centerX = math.floor(windowWidth * 0.5)
 
     if spriteExist("iconP2") then
