@@ -2375,10 +2375,8 @@ class PlayState extends MusicBeatState
 			* FlxMath.roundDecimal(note.howSpeed, 2);
 		var yAddon:Float = 0;
 		var noteAngleRadians:Float = FeshMath.radians(note.angle);
-		
-		if(note.height < 50 && note.isSustainNote) {
-			yAddon -= (Note.swagWidth - note.height) * 0.5;
 
+		if(note.height < 50 && note.isSustainNote) {
 			if(note.downscrollNote) {
 				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
 			}else {
@@ -2396,10 +2394,8 @@ class PlayState extends MusicBeatState
 			* FlxMath.roundDecimal(note.howSpeed, 2);
 		var yAddon:Float = 0;
 		var noteAngleRadians:Float = FeshMath.radians(note.angle);
-		
-		if(note.height < 50 && note.isSustainNote) {
-			yAddon += (Note.swagWidth - note.height) * 0.5;
 
+		if(note.height < 50 && note.isSustainNote) {
 			if(note.downscrollNote) {
 				yAddon += ((Note.swagWidth - note.height));
 				yAddon *= -1;
