@@ -618,10 +618,6 @@ function onUpdate(elapsed)
         playAnimRaw("frostbiteCAR", "drive")
     end
 
-    if frost_modchart.sectionTwo_HELL ~= nil then
-    	frost_modchart.sectionTwo_HELL(elapsed)
-    end
-
     cloudIncome()
 end
 

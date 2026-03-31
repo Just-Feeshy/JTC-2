@@ -2373,38 +2373,15 @@ class PlayState extends MusicBeatState
 		var noteCacurations:Float = (-0.45 * (downscroll ? -1 : 1))
 			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.instance.trackedSongPosition)
 			* FlxMath.roundDecimal(note.howSpeed, 2);
-		var yAddon:Float = 0;
-		var noteAngleRadians:Float = FeshMath.radians(note.angle);
-
-		if(note.height < 50 && note.isSustainNote) {
-			if(note.downscrollNote) {
-				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
-				yAddon *= -1;
-			}else {
-				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
-			}
-		}
-
-		return noteCacurations - yAddon;
+		return noteCacurations;
 	}
 
 	function cutOff(note:Note, downscroll:Bool):Float {
 		var noteCacurations:Float = (-0.45 * (downscroll ? -1 : 1))
 			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.instance.trackedSongPosition)
 			* FlxMath.roundDecimal(note.howSpeed, 2);
-		var yAddon:Float = 0;
-		var noteAngleRadians:Float = FeshMath.radians(note.angle);
 
-		if(note.height < 50 && note.isSustainNote) {
-			if(note.downscrollNote) {
-				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
-				yAddon *= -1;
-			}else {
-				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
-			}
-		}
-
-		return noteCacurations - yAddon;
+		return noteCacurations;
 	}
 
 	function addToNoteX(alreadyX:Float, note:Note):Float {
@@ -2751,14 +2728,11 @@ class PlayState extends MusicBeatState
 				daNote.setNoteAxis(strumPos, strumAngle);
 
 				final properCutOff:Float = cutOff(daNote, daNote.downscrollNote) + strumPos;
-				var centerNote:Float = strumPos + 5;
+				var centerNote:Float = strumPos + Note.swagWidth * 0.5;
 
 				// fixed it kinda
 				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)
 				&& (!daNote.mustPress || (daNote.wasGoodHit || (daNote.prevNote.wasGoodHit && !daNote.canBeHit)))) {
-					if(daNote.height < 50) {
-						centerNote = strumPos + Note.swagWidth * 0.5;
-					}
 
 					if(longConditionForNote(daNote, centerNote)) {
 						if(daNote.downscrollNote) {

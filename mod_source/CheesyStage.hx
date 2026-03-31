@@ -205,6 +205,9 @@ class CheesyStage extends StorageStage {
 				Paths.getSparrowAtlas("flying notes BF SINGS"),
 				Paths.getSparrowAtlas("flying notes GF SINGS")
 			]);
+			boyfriend.animation.destroyAnimations();
+			boyfriend.animations = [];
+			boyfriend.animOffsets = new Map<String, Array<Float>>();
 			if(oldGraphic != null && oldGraphic != boyfriend.graphic) {
 				oldGraphic.persist = false;
 				oldGraphic.destroyOnNoUse = true;
@@ -228,6 +231,7 @@ class CheesyStage extends StorageStage {
 
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
+			boyfriend.playAnim("idle", true);
 		}
 
 		if(stage == "funkroad") {

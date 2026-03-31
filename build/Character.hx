@@ -208,7 +208,25 @@ class Character extends feshixl.FeshSprite {
 		animation.curAnim.finish();
 	}
 
+	function repairInvalidAnimationState():Void {
+		if(animation == null || animation.curAnim == null) {
+			return;
+		}
+
+		if(animation.curAnim.frames != null) {
+			return;
+		}
+
+		animation.play(null);
+
+		if(hasAnimation("idle")) {
+			playAnim("idle", true);
+		}
+	}
+
 	override function update(elapsed:Float) {
+		repairInvalidAnimationState();
+
 		var currentAnimation:String = getAnimName();
 
 		if(currentAnimation != "") {

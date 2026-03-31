@@ -376,8 +376,6 @@ class Note extends FeshSprite {
 		}else if(!isSustainNote) {
 			earlyHit = 1;
 		}
-
-		offsetNote();
 	}
 
 	public function refresh(fifth:Bool, ?findSus:Bool):Void {
@@ -545,8 +543,6 @@ class Note extends FeshSprite {
 			}
 		}
 
-		// Adjust origin for sustain notes to rotate around center-top
-		offsetNote();
 	}
 
 	public function getNoteY():Float {
@@ -665,20 +661,6 @@ class Note extends FeshSprite {
 		}
 
 		return customNote;
-	}
-
-	function offsetNote():Void {
-		if(isSustainNote) {
-			if(isHoldEndPiece()) {
-				// Hold end pieces need center origin for proper rotation
-				origin.x = frameWidth * 0.5;
-				origin.y = frameHeight * 0.5;
-			} else {
-				// Regular sustain pieces rotate around center-top
-				origin.x = frameWidth * 0.5;
-				origin.y = 0;
-			}
-		}
 	}
 
 	function makeLongNote(note:Note):Void {
