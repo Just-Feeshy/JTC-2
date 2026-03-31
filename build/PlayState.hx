@@ -2751,11 +2751,15 @@ class PlayState extends MusicBeatState
 				daNote.setNoteAxis(strumPos, strumAngle);
 
 				final properCutOff:Float = cutOff(daNote, daNote.downscrollNote) + strumPos;
-				final centerNote:Float = strumPos + Note.swagWidth * 0.5;
+				var centerNote:Float = strumPos + 5;
 
 				// fixed it kinda
 				if (daNote.isSustainNote && (daNote.mustPress || !daNote.ignore)
 				&& (!daNote.mustPress || (daNote.wasGoodHit || (daNote.prevNote.wasGoodHit && !daNote.canBeHit)))) {
+					if(daNote.height < 50) {
+						centerNote = strumPos + Note.swagWidth * 0.5;
+					}
+
 					if(longConditionForNote(daNote, centerNote)) {
 						if(daNote.downscrollNote) {
 							var swagRect = new FlxRect(0, 0, daNote.frameWidth, daNote.frameHeight);
@@ -2943,7 +2947,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function shouldBotplayHitPlayerNote(note:Note):Bool {
-		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead) {
+		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead && !note.ignore) {
 			return false;
 		}
 
