@@ -3,11 +3,14 @@
 
 --variables of components
 local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
+local static_shader = require("mod_assets/scripts/utils/static_shader")
 local frost_modchart = {}
 
 local beatSection = 0
 local pulseStepIntensity = {}
 local baseGameZoom = 1
+local staticShaderInstance = nil
+local staticShaderTime = 0
 local baseHudZoom = 1
 local baseNoteZoom = 1
 
@@ -105,9 +108,9 @@ end
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-	addPulseRange(150, 212, 4, 2.67)
-	addPulseRange(216, 282, 4, 2.0)
-	addPulseRange(216, 474, 4, 1.67)
+	addPulseRange(150, 212, 4, 1.41)
+	addPulseRange(216, 282, 4, 1.0)
+	addPulseRange(216, 474, 4, 0.67)
 end
 
 local function pulseCamera(stepValue)
@@ -169,6 +172,7 @@ local function init()
     beatSection = 0
     frost_modchart = {}
     pulseStepIntensity = {}
+    staticShaderTime = 0
     curAnimName = ""
     holdTimer = 0
     multipler = 6.1
@@ -487,6 +491,7 @@ end
 
 function generatedStage()
     init()
+    staticShaderInstance = static_shader.new("static_shader")
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
@@ -540,6 +545,12 @@ function onStepHit()
         daddyTrans = true
     end
 
+    if curStep == 608 then
+        staticShaderInstance:bindToCamera("camGame")
+        staticShaderInstance:setProperty("opacity", 0.4)
+        staticShaderInstance:setProperty("time", 1.0)
+    end
+
     if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
         removeSpriteFromState("frostbiteCAR")
@@ -586,6 +597,12 @@ end
 function onUpdate(elapsed)
     if not startedCountdown then
         return
+    end
+
+    -- Update shader time animation
+    if staticShaderInstance and staticShaderInstance:getBoundCamera() then
+        staticShaderTime = staticShaderTime + elapsed
+        staticShaderInstance:setProperty("time", staticShaderTime)
     end
 
     updateIntroWarmup()
