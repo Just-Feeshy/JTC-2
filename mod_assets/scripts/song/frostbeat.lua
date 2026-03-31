@@ -156,9 +156,9 @@ local function startsWith(value, prefix)
     return value:sub(1, #prefix) == prefix
 end
 
-local function easeOutCubic(value)
-    local inverse = 1 - value
-    return 1 - (inverse * inverse * inverse)
+local function smootherStep(value)
+    local clamped = math.max(0, math.min(value, 1))
+    return clamped * clamped * clamped * (clamped * ((clamped * 6) - 15) + 10)
 end
 
 local function lerp(a, b, t)
@@ -367,7 +367,7 @@ local function updateIntroClearTween(elapsed)
 
     introClearTween.elapsed = introClearTween.elapsed + elapsed
     local t = math.min(introClearTween.elapsed / introClearTween.duration, 1)
-    local eased = easeOutCubic(t)
+    local eased = smootherStep(t)
 
     local focusX = lerp(introClearTween.startFocusX, introClearTween.targetFocusX, eased)
     local focusY = lerp(introClearTween.startFocusY, introClearTween.targetFocusY, eased)

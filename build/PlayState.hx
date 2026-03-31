@@ -1696,6 +1696,7 @@ class PlayState extends MusicBeatState
 
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		resetScriptedCameraState(false);
+		restartScriptedCameraCaptured = false;
 
 		if(camFollow != null) {
 			camFollow.setPosition(camPos.x, camPos.y);
@@ -1721,7 +1722,6 @@ class PlayState extends MusicBeatState
 		camHUD.zoom = 1;
 		camNOTE.zoom = 1;
 		camGame.engineAlpha = modifierCheckList('blind effect') ? 0 : 1;
-		restoreRestartScriptedCameraState(true);
 
 		Conductor.instance.update(startTimestamp - (RESTART_NOTE_INTRO_TIME * 1000) + (Conductor.instance.beatLengthMs * -5));
 		lastTrackedSongPos = Conductor.instance.trackedSongPosition;
