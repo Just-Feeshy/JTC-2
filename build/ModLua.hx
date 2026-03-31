@@ -2972,6 +2972,10 @@ class ModLua {
                 var spr:FlxSprite = luaSprites.get(k);
 
                 if(spr != null) {
+                    if(FlxG.state != null) {
+                        FlxG.state.remove(spr, true);
+                    }
+
                     spr.destroy();
                 }
             }
@@ -2985,6 +2989,7 @@ class ModLua {
                 var cam:FlxCamera = getCamera(k);
 
                 if(cam != null) {
+                    FlxG.cameras.remove(cam);
                     cam.destroy();
                 }
             }
@@ -3012,6 +3017,10 @@ class ModLua {
                 var text:FlxText = luaTexts.get(k);
 
                 if(text != null) {
+                    if(FlxG.state != null) {
+                        FlxG.state.remove(text, true);
+                    }
+
                     text.destroy();
                 }
             }

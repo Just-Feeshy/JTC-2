@@ -1733,7 +1733,7 @@ class PlayState extends MusicBeatState
 			updatePerSectionLuaVars();
 			playLua.set("inGameOver", false);
 			playLua.set("startedCountdown", false);
-			playLua.call("onSongRestart", []);
+			playLua.call("generatedStage", []);
 			captureRestartScriptedCameraState();
 			restoreRestartScriptedCameraState(true);
 		}

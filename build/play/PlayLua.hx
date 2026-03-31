@@ -108,30 +108,11 @@ class PlayLua
 			return;
 		}
 
-		// Scripts that build runtime scene state during generatedStage()/onCreate() need to
-		// stay alive across in-place restart and refresh themselves in onSongRestart().
-		// Rebuilding those VMs without rerunning generatedStage() leaves their locals invalid.
-		if(shouldKeepScriptForSongRestart(scriptPath)) {
-			updateDynamicVars();
-			updatePerSectionVars();
-			set("curElapsed", 0);
-			set("curTicks", FlxG.game.ticks);
-			return;
-		}
-
-		var persistentState:Dynamic = null;
-		var stateLua:ModLua = getLua();
-
-		if(stateLua != null) {
-			persistentState = stateLua.detachPersistentRestartState();
-		}
-
 		Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
 		ownedLua = playState.getModLua();
 		luaDetachedForStateSwitch = false;
 
 		if(ownedLua != null) {
-			ownedLua.adoptPersistentRestartState(persistentState);
 			ownedLua.execute();
 			generateStaticBindings();
 			generateNoteBindings();
@@ -142,24 +123,6 @@ class PlayLua
 			call("onCreate", []);
 		}
 		#end
-	}
-
-	function shouldKeepScriptForSongRestart(scriptPath:String):Bool
-	{
-		if(scriptPath == null) {
-			return false;
-		}
-
-		if(scriptPath.startsWith("stage/")) {
-			return true;
-		}
-
-		switch(scriptPath) {
-			case "song/frostbeat":
-				return true;
-			default:
-				return false;
-		}
 	}
 
 	public function generateStaticBindings():Void

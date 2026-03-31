@@ -216,9 +216,3 @@ end
 function onUpdate(elapsed)
 	school_mechanics.onUpdate(elapsed)
 end
-
-function onSongRestart()
-    setupStageMetrics()
-    school_mechanics.onSongRestart()
-    applyGameplayCameraSetup()
-end

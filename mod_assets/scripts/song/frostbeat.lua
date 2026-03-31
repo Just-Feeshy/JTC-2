@@ -102,16 +102,6 @@ local function addPulseRange(startStep, endStep, everySteps, intensity)
     end
 end
 
-local function addPulseSteps(stepList, intensity)
-    if stepList == nil then
-        return
-    end
-
-    for i = 1, #stepList do
-        addPulseStep(stepList[i], intensity)
-    end
-end
-
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
@@ -436,11 +426,6 @@ local function destroyManagedSprite(spriteName)
     destroySprite(spriteName)
 end
 
-local function restoreFrostbeatCharacters()
-    callEvent("character change", "skater-boi", "dad")
-    callEvent("character change", "flying BF sings", "bf")
-end
-
 local function ensureFrostbiteCar()
     destroyManagedSprite("frostbiteCAR")
     createSprite("frostbiteCAR")
@@ -498,20 +483,6 @@ local function refreshFrostbeatRuntimeState()
         "punchIcon2",
         "punchIcon3"
     })
-end
-
-function onSongRestart()
-    init()
-    setCountdownPresentation(false, false)
-    jtc_camera.hideGameplayUntilStep(12, false)
-    setCameraVisible("camGame", true)
-    ensureIntroWarmupCover()
-    restoreFrostbeatCharacters()
-    ensureFrostbiteCar()
-    ensureSecondSprite()
-    ensureCloudSprite()
-    refreshFrostbeatRuntimeState()
-    applyIntroOpponentFaceShot()
 end
 
 function generatedStage()
@@ -605,8 +576,6 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
 end
 
 function noteMiss(noteData, tag)
-    print("Missed note")
-
     if daddyIsHere and (tag == "joul" or tag == "t") then
         playAnimation("second", jtcStrumAnims[noteData + 1] .. " miss")
         setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 5][1], secondBaseY - jtcOffsets[noteData + 5][2])

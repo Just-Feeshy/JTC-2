@@ -106,10 +106,6 @@ function school_mechanics.onCreate()
     registerOrbitSprite("schoolMeterHUD", METER_OFFSET.x, METER_OFFSET.y, 1, 0)
 end
 
-function school_mechanics.onSongRestart()
-    applyHudLayout()
-end
-
 function school_mechanics.onStep(step)
 	if step == 504 then
 		callEvent("jumpspeed", "0.75", "67")
