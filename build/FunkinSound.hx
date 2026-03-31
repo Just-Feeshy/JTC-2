@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxG;
 import flixel.system.FlxSound;
+import openfl.media.Sound;
 
 class FunkinSound extends FlxSound
 {
@@ -20,7 +21,17 @@ class FunkinSound extends FlxSound
 	public static function load(path:String):FunkinSound
 	{
 		var sound = new FunkinSound();
-		sound.loadEmbedded(path, false, true);
+		// Use Paths.loadSoundAsset to properly handle library paths and filesystem paths
+		var soundAsset:Sound = Paths.loadSoundAsset(path);
+		if (soundAsset != null)
+		{
+			sound.loadEmbedded(soundAsset, false, true);
+		}
+		else
+		{
+			// Fallback to direct path loading
+			sound.loadEmbedded(path, false, true);
+		}
 		sound.persist = true;
 		sound.group = getMusicGroup();
 		return sound;

@@ -8,7 +8,6 @@ import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import FunkinSound;
 import util.HapticUtil;
-import lime.utils.Assets;
 import openfl.utils.AssetType;
 import CharacterRole;
 import FreeplayState;
