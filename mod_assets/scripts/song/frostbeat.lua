@@ -378,7 +378,7 @@ local function updateIntroClearTween(elapsed)
     currentIntroFocusX = focusX
     currentIntroFocusY = focusY
     currentIntroZoom = zoom
-    currentIntroCarX = carX
+    currentIntroCarX = carplX
     currentIntroCarY = carY
 
     setGameplayCameraFocus(focusX, focusY, true)

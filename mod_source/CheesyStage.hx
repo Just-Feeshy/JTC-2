@@ -144,11 +144,6 @@ class CheesyStage extends StorageStage {
         }
     }
 
-	function lazySpin(index:Int) {
-		var playerStrum:Strum = PlayState.playerStrums.members[index];
-		var opponentStrum:Strum = PlayState.opponentStrums.members[index];
-	}
-
 	function updateCurStep():Void {
 		curStep = Conductor.instance.getTimeInSteps(playstate.songPos);
 
