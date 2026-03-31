@@ -58,7 +58,7 @@ class CrashLogDisplay extends Sprite {
         var erect:Rectangle = createRectPanel(backgroundData);
         _panel = createPanel(backgroundData, erect, new Point(0, -5), 0);
 
-        var _title:FlxText = createText("Game Crashed!", Paths.font("OpenSans-Bold.ttf"), 64);
+        var _title:FlxText = createText("Game Crashed!", Paths.font("OpenSans-Bold.ttf"), 96);
 
         @:privateAccess {
             _title._matrix.translate((backgroundData.width - _title.width) / 2, 5);
