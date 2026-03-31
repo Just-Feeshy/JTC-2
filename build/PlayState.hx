@@ -2378,10 +2378,10 @@ class PlayState extends MusicBeatState
 
 		if(note.height < 50 && note.isSustainNote) {
 			if(note.downscrollNote) {
-				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
-			}else {
 				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
 				yAddon *= -1;
+			}else {
+				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
 			}
 		}
 
@@ -2947,7 +2947,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function shouldBotplayHitPlayerNote(note:Note):Bool {
-		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead && !note.ignore) {
+		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead || note.ignore) {
 			return false;
 		}
 
