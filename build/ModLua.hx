@@ -2190,7 +2190,10 @@ class ModLua {
         luaShaders.set(spriteName, shader);
         return true;
         } catch(e:Dynamic) {
-            Log.error('Failed to attach shader `$shaderName` to sprite `$spriteName`: $e');
+            var errorMsg:String = 'Failed to attach shader "$shaderName" to sprite "$spriteName"\nReason: $e';
+            var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
+            new CrashLogDisplay(prevWindow).attachReport([errorMsg, 'Shader Attachment Error']);
+            Log.error(errorMsg);
             return false;
         }
     }
@@ -2238,7 +2241,10 @@ class ModLua {
         luaShaders.remove(spriteName);
         return true;
         } catch(e:Dynamic) {
-            Log.error('Failed to remove shader from sprite `$spriteName`: $e');
+            var errorMsg:String = 'Failed to remove shader from sprite "$spriteName"\nReason: $e';
+            var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
+            new CrashLogDisplay(prevWindow).attachReport([errorMsg, 'Shader Removal Error']);
+            Log.error(errorMsg);
             return false;
         }
     }
@@ -2662,6 +2668,11 @@ class ModLua {
                 var error:String = getErrorMessage(status);
                 removeLuaTracebackHandler(tracebackIndex);
 				Log.error("Error (" + event + ") - " + error);
+
+				// Show crash log with detailed error info even during dialogue
+				var errorDetails:String = 'Event: $event\nError: $error\nCall Stack: ${haxe.CallStack.toString(haxe.CallStack.callStack())}';
+				var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
+				new CrashLogDisplay(prevWindow).attachReport([errorDetails, 'Lua Error in $event']);
 				return LuaUtils.Function_Continue;
 			}
 
@@ -2686,6 +2697,15 @@ class ModLua {
             uncaughtError = buildUnhandledLuaErrorMessage(uncaughtError);
             lastLuaCallbackError = null;
             Log.error("Error (" + event + ") - " + uncaughtError);
+
+			// Show crash log with detailed error info even during dialogue
+			var stackTrace:String = '';
+			#if debug
+			stackTrace = '\n\nCall Stack:\n${haxe.CallStack.toString(haxe.CallStack.callStack())}';
+			#end
+			var errorDetails:String = 'Event: $event\nError: $uncaughtError$stackTrace';
+			var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
+			new CrashLogDisplay(prevWindow).attachReport([errorDetails, 'Uncaught Lua Error']);
             return LuaUtils.Function_Continue;
         }
         #end
