@@ -2397,7 +2397,7 @@ class PlayState extends MusicBeatState
 
 		if(note.height < 50 && note.isSustainNote) {
 			if(note.downscrollNote) {
-				yAddon += ((Note.swagWidth - note.height));
+				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
 				yAddon *= -1;
 			}else {
 				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
