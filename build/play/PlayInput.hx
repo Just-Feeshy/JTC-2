@@ -92,14 +92,7 @@ class PlayInput
 		playState.updateHoldCoverSprites(false);
 
 		if(botMode && shouldKeepBotSinging(controlHoldArray)) {
-			playState.boyfriend.holdTimer = 0;
-		}
-
-		if(playState.boyfriend.holdTimer > Conductor.instance.stepLengthMs * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end)
-			* playState.boyfriend.singMultiplier
-			&& playState.boyfriend.animation.curAnim.name.startsWith('sing')
-			&& !playState.boyfriend.animation.curAnim.name.endsWith('miss')) {
-			playState.boyfriend.dance();
+			playState.currentPlayer.holdTimer = 0;
 		}
 	}
 

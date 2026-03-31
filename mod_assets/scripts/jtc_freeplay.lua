@@ -504,7 +504,7 @@ function prepareGraffitiRevealShader(index)
     local scaleY = sourceHeight / spriteHeight
 
     if setShaderFloat ~= nil then
-        setShaderFloat(sprName, "active", 0)
+        setShaderFloat(sprName, "revealEnabled", 0)
         setShaderFloat2(sprName, "curveScale", scaleX, scaleY)
         setShaderFloat(sprName, "trailShift", SPRAY_TRAIL_SHIFT * scaleX)
         setShaderFloat(sprName, "trailRadius", SPRAY_TRAIL_START_RADIUS * ((scaleX + scaleY) * 0.5))
@@ -607,7 +607,7 @@ function updateGraffitiRevealShader(index, canName)
     local easedRadiusProgress = math.pow(math.min(radiusProgress, 1), 4)
     local trailRadius = (SPRAY_TRAIL_START_RADIUS + (SPRAY_TRAIL_RADIUS - SPRAY_TRAIL_START_RADIUS) * easedRadiusProgress) * ((scaleX + scaleY) * 0.5)
 
-    setShaderFloat(sprName, "active", progress >= SPRAY_REVEAL_START and 1 or 0)
+    setShaderFloat(sprName, "revealEnabled", progress >= SPRAY_REVEAL_START and 1 or 0)
     setShaderFloat2(sprName, "pathBase", pathBaseX, pathBaseY)
     setShaderFloat2(sprName, "curveScale", scaleX, scaleY)
     setShaderFloat(sprName, "trailRadius", trailRadius)
@@ -622,7 +622,7 @@ function updateGraffitiFullReveal(index, progress)
         return
     end
 
-    setShaderFloat(sprName, "active", 1)
+    setShaderFloat(sprName, "revealEnabled", 1)
     setShaderFloat(sprName, "fullReveal", math.min(math.max(progress, 0), 1))
 end
 

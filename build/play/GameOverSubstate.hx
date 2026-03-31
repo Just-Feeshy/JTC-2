@@ -151,6 +151,8 @@ class GameOverSubstate extends MusicBeatSubstate
     FlxG.camera.target = null;
     FlxG.camera.follow(cameraFollowPoint, FlxCameraFollowStyle.LOCKON, Constants.DEFAULT_CAMERA_FOLLOW_RATE / 2);
     targetCameraZoom = (parentPlayState?.currentStage?.camZoom ?? 1.0) * boyfriend.getDeathCameraZoom();
+    // Immediately snap camera zoom to target to avoid inheriting zoomed-in state from Lua scripts
+    FlxG.camera.zoom = targetCameraZoom;
   }
 
   /**

@@ -2,7 +2,6 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxState;
-import sys.thread.Thread;
 import sys.FileSystem;
 import sys.io.File;
 import lime.utils.Assets;
@@ -24,6 +23,9 @@ class CacheState extends HelperStates {
     var timer:Float = 0;
 
     var loadingScene:LoadingScene;
+    var pendingCacheEntries:Array<Dynamic> = [];
+    var cacheIndex:Int = 0;
+    var cacheReady:Bool = false;
 
     public function new(target:FlxState, stopMusic:Bool):Void {
         super("void", "void");
@@ -35,14 +37,7 @@ class CacheState extends HelperStates {
     override function create() {
         loadingScene = new LoadingScene();
         add(loadingScene);
-
-		if(SaveData.getData(SaveType.GPU_CACHE)) {
-			cacheStuff(true);
-		}else {
-			Thread.create(() -> {
-				cacheStuff(false);
-			});
-		}
+		cacheStuff();
 
         super.create();
     }
@@ -81,7 +76,7 @@ class CacheState extends HelperStates {
         return candidates.length > 0 ? candidates[0] : "";
     }
 
-    static function cacheAssetEntry(entry:Dynamic, allowGPUCache:Bool):Void {
+    static function cacheAssetEntry(entry:Dynamic):Void {
         if(entry == null) {
             return;
         }
@@ -111,13 +106,12 @@ class CacheState extends HelperStates {
             return;
         }
 
-        Cache.cacheAsset(key, library, allowGPUCache);
+        Cache.cacheAsset(key, library);
     }
 
-    function cacheStuff(allowGPUCache:Bool):Void {
+    function cacheStuff():Void {
         Cache.preparePurgeCache();
 
-        var cacheList:Array<Dynamic> = [];
         var dialogueList:Array<DialogueData>;
         var songCacheDirectory:String = getSongCacheDirectory();
 
@@ -126,24 +120,40 @@ class CacheState extends HelperStates {
         }
 
         if(songCacheDirectory != "" && Paths.assetExists(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, ""), TEXT)) {
-            cacheList = cast Json.parse(Paths.readText(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")));
-
-            for(i in 0...cacheList.length) {
-                // Entries may optionally use "library:key" for non-mod assets.
-                // When GPU cache is enabled, this path runs on the main thread so
-                // textures can be uploaded immediately instead of keeping CPU bitmaps.
-                cacheAssetEntry(cacheList[i], allowGPUCache);
-                loadingScene.setCacheValue(i / cacheList.length);
-            }
-
-            loadingScene.setCacheValue(1);
+            pendingCacheEntries = cast Json.parse(Paths.readText(Paths.getPath('data/${songCacheDirectory}/cache.json', TEXT, "")));
         }
 
+        if(pendingCacheEntries == null) {
+            pendingCacheEntries = [];
+        }
+
+        loadingScene.setCacheValue(pendingCacheEntries.length > 0 ? 0 : 1, false);
         loadingScene.callback = function() {
             Cache.purgeCache(true);
             CacheState.loadAndSwitchState(target, stopMusic, true);
-        }
+        };
 	}
+
+    override function update(elapsed:Float):Void {
+        if(!cacheReady) {
+            if(cacheIndex < pendingCacheEntries.length) {
+                var workPerFrame:Int = 1;
+                var targetIndex:Int = Std.int(Math.min(cacheIndex + workPerFrame, pendingCacheEntries.length));
+
+                while(cacheIndex < targetIndex) {
+                    cacheAssetEntry(pendingCacheEntries[cacheIndex]);
+                    cacheIndex++;
+                }
+
+                loadingScene.setCacheValue(cacheIndex / pendingCacheEntries.length);
+            } else {
+                cacheReady = true;
+                loadingScene.setCacheValue(1, false);
+            }
+        }
+
+        super.update(elapsed);
+    }
 
     function loadDialogue(name:String):Array<DialogueData> {
         var parser:JsonParser<Array<DialogueData>> = new JsonParser<Array<DialogueData>>();

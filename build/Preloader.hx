@@ -65,6 +65,7 @@ class Preloader extends HelperStates {
         SaveData.ensureGPUCacheDefault();
         SaveData.saveClient();
         Highscore.load();
+        Cache.initialCache();
 
         Main.trueFramerate = FlxG.save.data.lowFps;
         Main.framerate = Main.trueFramerate;

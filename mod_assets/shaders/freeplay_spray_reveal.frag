@@ -9,7 +9,7 @@ uniform float sprayT;
 uniform float trailShift;
 uniform float trailRadius;
 uniform float edgeSoftness;
-uniform float active;
+uniform float revealEnabled;
 uniform float fullReveal;
 
 const float BASE_CURVE_MAX = 23.140692632779267;
@@ -59,7 +59,7 @@ void main(void)
 {
     vec4 color = flixel_texture2D(bitmap, openfl_TextureCoordv);
 
-    if (active <= 0.5) {
+    if (revealEnabled <= 0.5) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
         return;
     }

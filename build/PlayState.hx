@@ -1914,7 +1914,7 @@ class PlayState extends MusicBeatState
 		character.stunned = false;
 		character.holdTimer = 0;
 		character.customAnimation = false;
-		character.dance();
+		character.dance(true);
 	}
 
 	var debugNum:Int = 0;
@@ -2926,10 +2926,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(note.playAnyAnimation) {
-			if(!note.isSustainNote || (note.isSustainNote && currentOpponent.dancing)) {
-				currentOpponent.playNoDanceAnim(singAnims[Std.int(Math.abs(note.noteData))] + altAnim);
-			}
-
+			currentOpponent.playSingAnimation(Std.int(Math.abs(note.noteData)), false, altAnim);
 			currentOpponent.holdTimer = 0;
 		}
 
@@ -3111,12 +3108,7 @@ class PlayState extends MusicBeatState
 			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
 
-				var currentAnim = currentPlayer.animation != null ? currentPlayer.animation.curAnim : null;
-
-				if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract) &&
-				(currentPlayer.customAnimation && ((currentAnim != null && currentAnim.name.startsWith("sing")) || currentPlayer.dancing))) {
-				var animPlay:String = singAnims[Std.int(Math.abs(note.noteData))] + playerAltAnim + currentPlayer.hasBePlayer;
-
+			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
 				events.whenNoteIsPressed(note, this);
 				stage.whenNoteIsPressed(note);
 				cameraMovement(note.noteData, note.isSustainNote);
@@ -3124,10 +3116,7 @@ class PlayState extends MusicBeatState
 				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					if((!note.isSustainNote || currentPlayer.isAnimationFinished()) || (note.isSustainNote && currentPlayer.dancing)) {
-						currentPlayer.playNoDanceAnim(animPlay, true);
-					}
-
+					currentPlayer.playSingAnimation(Std.int(Math.abs(note.noteData)), false, playerAltAnim + currentPlayer.hasBePlayer);
 					currentPlayer.holdTimer = 0;
 				}
 			}
@@ -3652,20 +3641,20 @@ class PlayState extends MusicBeatState
 
 		if (gf != null) {
 			if(gf.animation.curAnim != null) {
-				if (!isInCountdown && curBeat % gf.danceBeatTimer == 0 && !gf.animation.curAnim.name.startsWith("sing") && !gf.stunned && gf.shouldPlayDance) {
+				if (!isInCountdown && curBeat % gf.danceBeatTimer == 0 && !gf.isSinging() && !gf.stunned && gf.shouldPlayDance) {
 					gf.dance();
 				}
 			}
 		}
 
 		if(dad.animation.curAnim != null) {
-			if (curBeat % dad.danceBeatTimer == 0 && !dad.animation.curAnim.name.startsWith("sing") && !dad.stunned && dad.shouldPlayDance) {
+			if (curBeat % dad.danceBeatTimer == 0 && !dad.isSinging() && !dad.stunned && dad.shouldPlayDance) {
 				dad.dance();
 			}
 		}
 
 		if(boyfriend.animation.curAnim != null) {
-			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned && boyfriend.shouldPlayDance) {
+			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.isSinging() && !boyfriend.stunned && boyfriend.shouldPlayDance) {
 				boyfriend.dance();
 			}
 		}

@@ -19,6 +19,8 @@ import ModInitialize;
 using StringTools;
 
 class Character extends feshixl.FeshSprite {
+	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 0.75;
+	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT", "SPACE"];
 	private var finalizedX:Float;
 	private var finalizedY:Float;
 
@@ -31,6 +33,7 @@ class Character extends feshixl.FeshSprite {
 
 	public var dancing(default, null):Bool = false;
 	public var singMultiplier:Float = 4;
+	public var singTimeSteps:Float = 4;
 
 	public var curCharacter:String = 'bf';
 
@@ -125,6 +128,12 @@ class Character extends feshixl.FeshSprite {
 				flipX = _info.isPlayer;
 		}
 
+		if(curCharacter == "dad") {
+			singMultiplier = 6.1;
+		}
+
+		singTimeSteps = singMultiplier;
+
 		dance();
 
 		if (isPlayer)
@@ -200,38 +209,56 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	override function update(elapsed:Float) {
-		if(animation.curAnim == null) {
-			return;
-		}
+		var currentAnimation:String = getAnimName();
 
-		if (!isPlayer) {
-			if (animation.curAnim.name.startsWith('sing')) {
+		if(currentAnimation != "") {
+			if(isAnimationFinished()
+				&& !currentAnimation.endsWith(Constants.ANIMATION_HOLD_SUFFIX)
+				&& hasAnimation(currentAnimation + Constants.ANIMATION_HOLD_SUFFIX)) {
+				playAnim(currentAnimation + Constants.ANIMATION_HOLD_SUFFIX);
+				currentAnimation = getAnimName();
+			}
+
+			if(isSinging()) {
 				holdTimer += elapsed;
-			}
 
-			if (curCharacter == 'dad') {
-				singMultiplier = 6.1;
-			}
+				var singTimeSec:Float = singTimeSteps * (Conductor.instance.stepLengthMs / Constants.MS_PER_SEC);
 
-			if (holdTimer >= Conductor.instance.stepLengthMs * singMultiplier * 0.0011) {
-				dance();
+				if(currentAnimation.endsWith("miss")) {
+					singTimeSec *= 2;
+				}
+
+				var shouldStopSinging:Bool = isControlledByPlayer() ? !isHoldingNote() : true;
+
+				if(holdTimer > singTimeSec && shouldStopSinging) {
+					holdTimer = 0;
+
+					var nextAnimation:String = currentAnimation;
+
+					if(nextAnimation.endsWith(Constants.ANIMATION_HOLD_SUFFIX)) {
+						nextAnimation = nextAnimation.substr(0, nextAnimation.length - Constants.ANIMATION_HOLD_SUFFIX.length);
+					}
+
+					var endAnimation:String = nextAnimation + Constants.ANIMATION_END_SUFFIX;
+
+					if(hasAnimation(endAnimation)) {
+						playAnim(endAnimation);
+					}else {
+						dance(true);
+					}
+				}
+			}else {
 				holdTimer = 0;
 			}
+
+			switch (curCharacter) {
+				case 'gf' | 'fesh':
+					if (currentAnimation == 'hairFall' && isAnimationFinished())
+						playAnim('danceRight');
+			}
 		}
 
-
-		if(animation.curAnim.name.endsWith('miss') && isAnimationFinished()) {
-		     dance();
-			 finishAnimation();
-		}
-
-		switch (curCharacter) {
-			case 'gf' | 'fesh':
-				if (animation.curAnim.name == 'hairFall' && animation.curAnim.finished)
-					playAnim('danceRight');
-		}
-
-		super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : 0.75));
+		super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER));
 	}
 
 	override function destroy() {
@@ -257,10 +284,29 @@ class Character extends feshixl.FeshSprite {
 	/**
 	 * FOR GF DANCING SHIT
 	 */
-	public function dance()
+	public function dance(force:Bool = false)
 	{
+		if(isDead) {
+			return;
+		}
+
 		if (!debugMode)
 		{
+			if(!force) {
+				if(isSinging()) {
+					return;
+				}
+
+				var currentAnimation:String = getAnimName();
+
+				if(currentAnimation != ""
+					&& !currentAnimation.startsWith("dance")
+					&& !currentAnimation.startsWith("idle")
+					&& !isAnimationFinished()) {
+					return;
+				}
+			}
+
 			dancing = true;
 
 			switch (curCharacter)
@@ -350,6 +396,7 @@ class Character extends feshixl.FeshSprite {
 		}
 
 		if(AnimName.startsWith('sing')) {
+			dancing = false;
 			animation.reset();
 		}
 
@@ -380,6 +427,31 @@ class Character extends feshixl.FeshSprite {
 				danced = !danced;
 			}
 		}
+	}
+
+	public function isSinging():Bool {
+		var currentAnimation:String = getAnimName();
+		return currentAnimation.startsWith("sing") && !currentAnimation.endsWith(Constants.ANIMATION_END_SUFFIX);
+	}
+
+	function isControlledByPlayer():Bool {
+		return PlayState.instance != null && PlayState.instance.currentPlayer == this;
+	}
+
+	function isHoldingNote():Bool {
+		if(!isControlledByPlayer()) {
+			return false;
+		}
+
+		var controls = PlayerSettings.player1.controls;
+
+		return controls != null
+			&& (controls.LEFT || controls.DOWN || controls.UP || controls.RIGHT || controls.SPACE);
+	}
+
+	public function playSingAnimation(direction:Int, miss:Bool = false, ?suffix:String = ""):Void {
+		var animName:String = 'sing${singDirections[Std.int(Math.abs(direction))]}${miss ? "miss" : ""}$suffix';
+		playAnim(animName, true);
 	}
 
 	public function addOffset(name:String, x:Float = 0, y:Float = 0):Void {
