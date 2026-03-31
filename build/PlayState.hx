@@ -2791,7 +2791,7 @@ class PlayState extends MusicBeatState
 					final strumIndex = Math.floor(Math.abs(daNote.noteData));
 					final currentStrum = currentStrums.members[strumIndex];
 					final sustainDirectionAngle = currentStrum.directionAngle;
-					final sustainNoteAngle = currentStrum.directionAngle * -FeshMath.sec(daNote.yAngle);
+					final sustainNoteAngle = currentStrum.directionAngle;
 
 					daNote.setVisibility(currentStrum.onlyVisible);
 
@@ -2806,8 +2806,8 @@ class PlayState extends MusicBeatState
 					daNote.setNoteAlpha(currentStrum.onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = currentStrum.xAngle;
-					daNote.yAngle = currentStrum.yAngle;
+					daNote.xAngle = 0;
+					daNote.yAngle = 0;
 
 					if (daNote.isSustainNote) {
 						daNote.setXaxisSustain(currentStrums.members, currentStrum.x, currentStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
@@ -2817,7 +2817,7 @@ class PlayState extends MusicBeatState
 					final strumIndex = Math.floor(Math.abs(daNote.noteData));
 					final oppositeStrum = oppositeStrums.members[strumIndex];
 					final sustainDirectionAngle = oppositeStrum.directionAngle;
-					final sustainNoteAngle = oppositeStrum.directionAngle * -FeshMath.sec(daNote.yAngle);
+					final sustainNoteAngle = oppositeStrum.directionAngle;
 
 					daNote.setVisibility(oppositeStrum.onlyVisible);
 
@@ -2832,8 +2832,8 @@ class PlayState extends MusicBeatState
 					daNote.setNoteAlpha(oppositeStrum.onlyFans, fadeInValue);
 
 					//Nothing planned for now.
-					daNote.xAngle = oppositeStrum.xAngle;
-					daNote.yAngle = oppositeStrum.yAngle;
+					daNote.xAngle = 0;
+					daNote.yAngle = 0;
 
 					if (daNote.isSustainNote) {
 						daNote.setXaxisSustain(oppositeStrums.members, oppositeStrum.x, oppositeStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
