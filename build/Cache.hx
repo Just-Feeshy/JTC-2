@@ -681,4 +681,113 @@ class Cache
 			}
 		}
 	}
+
+	/**
+	 * Caches character graphics to prevent them from disappearing on different machines.
+	 * This ensures the graphics are properly uploaded to GPU memory.
+	 * @param characterPath The path to the character's sprite sheet
+	 */
+	static public function cacheCharacter(characterPath:String):Void
+	{
+		if (characterPath == null || characterPath == "")
+			return;
+
+		var graphicKey = Paths.getPath('images/characters/$characterPath.png', AssetType.IMAGE, null);
+
+		if (graphicKey == null || graphicKey == "")
+			return;
+
+		// Check if already cached
+		if (currentCachedTextures.exists(graphicKey))
+			return;
+
+		// Build and cache the graphic
+		var graphic = buildGraphic(graphicKey);
+
+		if (graphic != null)
+		{
+			graphic.persist = true;
+			currentCachedTextures.set(graphicKey, graphic);
+			forceRender(graphic); // Critical: Force GPU upload
+			trace('[CACHE] Cached character: $characterPath');
+		}
+	}
+
+	/**
+	 * Caches a stage's graphics.
+	 * @param stagePath The path to the stage
+	 */
+	static public function cacheStage(stagePath:String):Void
+	{
+		if (stagePath == null || stagePath == "")
+			return;
+
+		var graphicKey = Paths.getPath('images/stages/$stagePath.png', AssetType.IMAGE, null);
+
+		if (graphicKey == null || graphicKey == "")
+			return;
+
+		cacheTexture(graphicKey);
+		trace('[CACHE] Cached stage: $stagePath');
+	}
+
+	/**
+	 * Clears all character-related assets from cache.
+	 */
+	static public function clearCharacters():Void
+	{
+		var keysToRemove:Array<String> = [];
+
+		@:privateAccess
+		for (key in FlxG.bitmap._cache.keys())
+		{
+			if (!key.contains("characters"))
+				continue;
+
+			if (permanentCachedTextures.exists(key))
+				continue;
+
+			keysToRemove.push(key);
+		}
+
+		for (key in keysToRemove)
+		{
+			var graphic = FlxG.bitmap.get(key);
+			currentCachedTextures.remove(key);
+			previousCachedTextures.remove(key);
+			destroyGraphic(key, graphic);
+		}
+
+		trace('[CACHE] Cleared character assets');
+	}
+
+	/**
+	 * Clears all stage-related assets from cache.
+	 */
+	static public function clearStages():Void
+	{
+		var keysToRemove:Array<String> = [];
+
+		@:privateAccess
+		for (key in FlxG.bitmap._cache.keys())
+		{
+			if (!key.contains("stages"))
+				continue;
+
+			if (permanentCachedTextures.exists(key))
+				continue;
+
+			keysToRemove.push(key);
+		}
+
+		for (key in keysToRemove)
+		{
+			var graphic = FlxG.bitmap.get(key);
+			currentCachedTextures.remove(key);
+			previousCachedTextures.remove(key);
+			destroyGraphic(key, graphic);
+		}
+
+		trace('[CACHE] Cleared stage assets');
+	}
 }

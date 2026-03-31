@@ -10,6 +10,7 @@ import WiggleEffect.WiggleEffectType;
 import Controls.Control;
 import Controls.Device;
 import CheeseSliceSprite;
+import Cache;
 import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -515,6 +516,7 @@ class PlayState extends MusicBeatState
 
 		curStage = SONG.stage;
 
+		Cache.cacheStage(curStage);
 		stage = cast Type.createInstance(Register.stage, [curStage]);
 		add(stage);
 
@@ -544,6 +546,7 @@ class PlayState extends MusicBeatState
 			gfVersion = SONG.girlfriend;
 		}
 
+		Cache.cacheCharacter(gfVersion);
 		gf = new Character(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
 		
@@ -552,6 +555,7 @@ class PlayState extends MusicBeatState
 			gf = null;
 		}
 
+		Cache.cacheCharacter(SONG.player2);
 		dad = new Character(100, 100, SONG.player2);
 
 		camPos = new FlxPoint(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
@@ -567,6 +571,7 @@ class PlayState extends MusicBeatState
 				}
 		}
 
+		Cache.cacheCharacter(SONG.player1);
 		boyfriend = new Boyfriend(770, 100, SONG.player1);
 
 		boyfriend.refresh(SONG.player1, camPos);
