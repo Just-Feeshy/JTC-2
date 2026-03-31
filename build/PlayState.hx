@@ -1837,11 +1837,6 @@ class PlayState extends MusicBeatState
 		playAudio.setOpponentVocalsVolume(volume, noteTag);
 	}
 
-	private inline function hasCharacterAnimation(character:Character, animName:String):Bool
-	{
-		return character != null && character.animation != null && character.animation.getByName(animName) != null;
-	}
-
 	private inline function breakComboOnMiss():Void
 	{
 		if(gf != null && combo > 5 && gf.animOffsets.exists('sad'))
@@ -1852,24 +1847,7 @@ class PlayState extends MusicBeatState
 		combo = 0;
 	}
 
-	private function playPlayerMissAnimation(direction:Int):Void
-	{
-		var missAnim:String = singAnims[direction] + "miss";
-		var fallbackAnim:String = singAnims[direction];
-
-		if(hasCharacterAnimation(currentPlayer, missAnim))
-		{
-			currentPlayer.playNoDanceAnim(missAnim, true);
-		}
-		else if(hasCharacterAnimation(currentPlayer, fallbackAnim))
-		{
-			currentPlayer.playNoDanceAnim(fallbackAnim, true);
-		}
-
-		currentPlayer.holdTimer = 0;
-	}
-
-	private function applyPlayerMissFeedback(direction:Int, ?noteTag:String, playSound:Bool = true, playAnim:Bool = true):Void
+	private function applyPlayerMissFeedback(direction:Int, ?noteTag:String, playSound:Bool = true, playAnim:Bool = true, holdDrop:Bool = false, ghostMiss:Bool = false):Void
 	{
 		setPlayerVocalsVolume(0, noteTag);
 
@@ -1880,7 +1858,13 @@ class PlayState extends MusicBeatState
 
 		if(playAnim)
 		{
-			playPlayerMissAnimation(direction);
+			if(ghostMiss) {
+				currentPlayer.onNoteGhostMiss(direction);
+			}else if(holdDrop) {
+				currentPlayer.onNoteHoldDrop(direction);
+			}else {
+				currentPlayer.onNoteMiss(direction);
+			}
 		}
 	}
 
@@ -2893,7 +2877,8 @@ class PlayState extends MusicBeatState
 										Std.int(Math.abs(daNote.noteData)),
 										daNote.tag,
 										!daNote.isSustainNote,
-										daNote.playAnyAnimation && !daNote.isSustainNote
+										daNote.playAnyAnimation,
+										daNote.isSustainNote
 									);
 									playLua.call("noteMiss", [daNote.noteData, daNote.tag]);
 								}
@@ -2926,8 +2911,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(note.playAnyAnimation) {
-			currentOpponent.playSingAnimation(Std.int(Math.abs(note.noteData)), false, altAnim);
-			currentOpponent.holdTimer = 0;
+			currentOpponent.onNoteHit(Std.int(Math.abs(note.noteData)), altAnim);
 		}
 
 		events.whenNoteIsPressed(note, this);
@@ -3090,7 +3074,7 @@ class PlayState extends MusicBeatState
 	*/
 
 		function takeDamage(direction:Int, playAnim:Bool):Void {
-				applyPlayerMissFeedback(direction, null, true, playAnim);
+				applyPlayerMissFeedback(direction, null, true, playAnim, false, true);
 		}
 
 	function goodNoteHit(note:Note, ?hitSongTime:Float):Void
@@ -3116,8 +3100,7 @@ class PlayState extends MusicBeatState
 				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					currentPlayer.playSingAnimation(Std.int(Math.abs(note.noteData)), false, playerAltAnim + currentPlayer.hasBePlayer);
-					currentPlayer.holdTimer = 0;
+					currentPlayer.onNoteHit(Std.int(Math.abs(note.noteData)), playerAltAnim + currentPlayer.hasBePlayer);
 				}
 			}
 

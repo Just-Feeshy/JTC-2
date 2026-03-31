@@ -434,6 +434,10 @@ class Character extends feshixl.FeshSprite {
 		return currentAnimation.startsWith("sing") && !currentAnimation.endsWith(Constants.ANIMATION_END_SUFFIX);
 	}
 
+	function buildSingAnimationName(direction:Int, miss:Bool = false, ?suffix:String = ""):String {
+		return 'sing${singDirections[Std.int(Math.abs(direction))]}${miss ? "miss" : ""}$suffix';
+	}
+
 	function isControlledByPlayer():Bool {
 		return PlayState.instance != null && PlayState.instance.currentPlayer == this;
 	}
@@ -450,8 +454,41 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	public function playSingAnimation(direction:Int, miss:Bool = false, ?suffix:String = ""):Void {
-		var animName:String = 'sing${singDirections[Std.int(Math.abs(direction))]}${miss ? "miss" : ""}$suffix';
-		playAnim(animName, true);
+		playAnim(buildSingAnimationName(direction, miss, suffix), true);
+	}
+
+	public function playMissAnimation(direction:Int, ?suffix:String = ""):Void {
+		var candidates:Array<String> = [
+			buildSingAnimationName(direction, true, suffix),
+			buildSingAnimationName(direction, true),
+			buildSingAnimationName(direction, false, suffix),
+			buildSingAnimationName(direction, false)
+		];
+
+		for(animName in candidates) {
+			if(hasAnimation(animName)) {
+				playNoDanceAnim(animName, true);
+				holdTimer = 0;
+				return;
+			}
+		}
+	}
+
+	public function onNoteHit(direction:Int, ?suffix:String = ""):Void {
+		playSingAnimation(direction, false, suffix);
+		holdTimer = 0;
+	}
+
+	public function onNoteMiss(direction:Int, ?suffix:String = ""):Void {
+		playMissAnimation(direction, suffix);
+	}
+
+	public function onNoteGhostMiss(direction:Int, ?suffix:String = ""):Void {
+		playMissAnimation(direction, suffix);
+	}
+
+	public function onNoteHoldDrop(direction:Int, ?suffix:String = ""):Void {
+		playMissAnimation(direction, suffix);
 	}
 
 	public function addOffset(name:String, x:Float = 0, y:Float = 0):Void {
