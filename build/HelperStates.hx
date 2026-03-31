@@ -14,6 +14,8 @@ import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 
 import example_code.TransitionSamples;
+import play.PlayScriptEvent;
+import play.PlayScriptEventDispatcher;
 import template.TransitionBuilder;
 import Controls;
 
@@ -199,6 +201,10 @@ class HelperStates extends FlxState {
 		#end
 
 		return null;
+	}
+
+	public function dispatchEvent(event:PlayScriptEvent):Void {
+		PlayScriptEventDispatcher.callEvent(this, event);
 	}
 
 	public function setLua(variable:String, data:Dynamic):Void {

@@ -82,17 +82,18 @@ class PlayInput
 			return;
 
 		var botMode:Bool = playState.modifierCheckList('bot mode');
-		var controlHoldArray = botMode ? getBotControlHoldArray() : getControlHoldArray();
-
-		if(botMode) {
-			processBotplayNotes();
-		}
+		var songTime:Float = botMode ? getBotplaySongTime() : getCurrentInputSongTime();
+		var controlHoldArray = botMode ? getBotControlHoldArray(songTime) : getControlHoldArray();
 
 		processInputQueue(controlHoldArray);
 		refreshHeldStrums(controlHoldArray);
-		processHeldNotes(controlHoldArray, getCurrentInputSongTime());
+		processHeldNotes(controlHoldArray, songTime);
 		playState.updateHoldCoverSprites(true, controlHoldArray);
 		playState.updateHoldCoverSprites(false);
+
+		if(botMode && shouldKeepBotSinging(controlHoldArray)) {
+			playState.boyfriend.holdTimer = 0;
+		}
 
 		if(playState.boyfriend.holdTimer > Conductor.instance.stepLengthMs * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end)
 			* playState.boyfriend.singMultiplier
@@ -177,11 +178,10 @@ class PlayInput
 		];
 	}
 
-	function getBotControlHoldArray():Array<Bool>
+	function getBotControlHoldArray(songTime:Float):Array<Bool>
 	{
 		var values:Array<Bool> = [];
 		var index:Int = 0;
-		var songTime:Float = getCurrentInputSongTime();
 
 		while(index < playState.getLaneCount()) {
 			values.push(false);
@@ -189,14 +189,14 @@ class PlayInput
 		}
 
 		playState.notes.forEachAlive(function(daNote:Note) {
-			if(daNote.mustPress
-				&& daNote.isSustainNote
-				&& !daNote.wasGoodHit
-				&& daNote.noteData >= 0
-				&& daNote.noteData < values.length
-				&& daNote.canHoldHit(songTime)
-				&& songTime >= daNote.getNoteTime()) {
-				values[daNote.noteData] = true;
+			var lane:Int = daNote.noteData;
+
+			if(lane < 0 || lane >= values.length) {
+				return;
+			}
+
+			if(shouldBotHoldLane(daNote, songTime)) {
+				values[lane] = true;
 			}
 		});
 
@@ -251,26 +251,9 @@ class PlayInput
 		return Conductor.instance.trackedSongPosition;
 	}
 
-	function processBotplayNotes():Void
+	inline function getBotplaySongTime():Float
 	{
-		if(!playState.generatedMusic || playState.disableInputs) {
-			return;
-		}
-
-		var songTime:Float = getCurrentInputSongTime();
-		var lane:Int = 0;
-
-		while(lane < playState.getLaneCount()) {
-			var targetNote:Note = findTapNote(lane, songTime);
-
-			while(targetNote != null && targetNote.shouldAutoHit(songTime)) {
-				playStrumPress(lane);
-				playState.goodNoteHit(targetNote, targetNote.getNoteTime());
-				targetNote = findTapNote(lane, songTime);
-			}
-
-			lane++;
-		}
+		return Conductor.instance.trackedSongPosition;
 	}
 
 	function queueLaneInput(lane:Int, pressed:Bool, songTime:Float):Void
@@ -321,7 +304,8 @@ class PlayInput
 	{
 		var values:Array<Bool> = [];
 		var index:Int = 0;
-		var songTime:Float = getCurrentInputSongTime();
+		var botMode:Bool = playState.modifierCheckList('bot mode');
+		var songTime:Float = botMode ? getBotplaySongTime() : getCurrentInputSongTime();
 
 		while(index < playState.getLaneCount()) {
 			values.push(false);
@@ -332,19 +316,19 @@ class PlayInput
 			var lane:Int = daNote.noteData;
 			var chainActive:Bool = false;
 
-			if(daNote.mustPress
-				&& daNote.isSustainNote
-				&& lane >= 0
-				&& lane < values.length
-				&& controlHoldArray[lane]) {
-				if(daNote.wasGoodHit || daNote.shouldBeDead) {
-					chainActive = true;
-				}else if(daNote.canHoldHit(songTime)) {
-					chainActive = true;
-				}else if(songTime < daNote.getNoteTime()
-					&& daNote.prevNote != null
-					&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)) {
-					chainActive = true;
+				if(daNote.mustPress
+					&& daNote.isSustainNote
+					&& lane >= 0
+					&& lane < values.length
+					&& controlHoldArray[lane]) {
+					if(daNote.wasGoodHit || daNote.shouldBeDead) {
+						chainActive = true;
+					}else if(botMode ? shouldBotHoldLane(daNote, songTime) : daNote.canHoldHit(songTime)) {
+						chainActive = true;
+					}else if(songTime < daNote.getNoteTime()
+						&& daNote.prevNote != null
+						&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)) {
+						chainActive = true;
 				}
 			}
 
@@ -420,6 +404,8 @@ class PlayInput
 	{
 		playState.notes.forEachAlive(function(daNote:Note) {
 			if (daNote.mustPress && daNote.isSustainNote && !daNote.wasGoodHit
+				&& daNote.noteData >= 0
+				&& daNote.noteData < controlHoldArray.length
 				&& controlHoldArray[daNote.noteData] && !playState.disableInputs
 				&& (daNote.canHoldHit(songTime) || shouldCatchHeldSustainNote(daNote, songTime))) {
 				playState.goodNoteHit(daNote, daNote.getNoteTime());
@@ -504,6 +490,46 @@ class PlayInput
 		}
 
 		return targetNote;
+	}
+
+	function shouldBotHoldLane(note:Note, songTime:Float):Bool
+	{
+		if(note == null || !note.mustPress || !note.isSustainNote) {
+			return false;
+		}
+
+		if(note.noteData < 0 || note.noteData >= playState.getLaneCount()) {
+			return false;
+		}
+
+		if(note.tooLate || songTime < note.getNoteTime()) {
+			return false;
+		}
+
+		if(note.wasGoodHit || note.shouldBeDead) {
+			return true;
+		}
+
+		return note.prevNote != null && (note.prevNote.wasGoodHit || note.prevNote.shouldBeDead);
+	}
+	function shouldKeepBotSinging(controlHoldArray:Array<Bool>):Bool
+	{
+		if(controlHoldArray == null
+			|| playState.boyfriend == null
+			|| playState.boyfriend.animation == null
+			|| playState.boyfriend.animation.curAnim == null
+			|| !playState.boyfriend.animation.curAnim.name.startsWith('sing')
+			|| playState.boyfriend.animation.curAnim.name.endsWith('miss')) {
+			return false;
+		}
+
+		for(held in controlHoldArray) {
+			if(held) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	function playStrumPress(lane:Int):Void

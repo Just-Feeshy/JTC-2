@@ -74,6 +74,41 @@ abstract class StageBuilder extends FlxGroup {
         return null;
     }
 
+	public var camZoom(get, never):Float;
+
+	function get_camZoom():Float {
+		return playstate.defaultCamZoom;
+	}
+
+	public function getBoyfriend(removeFromStage:Bool = false):Boyfriend {
+		var boyfriend:Boyfriend = playstate.boyfriend;
+
+		if(removeFromStage && boyfriend != null) {
+			remove(boyfriend, true);
+		}
+
+		return boyfriend;
+	}
+
+	public function addCharacter(character:Character, role:CharacterRole):Void {
+		if(character == null) {
+			return;
+		}
+
+		switch(role) {
+			case BOYFRIEND:
+				playstate.boyfriend = cast character;
+			case GIRLFRIEND:
+				playstate.gf = character;
+			case OPPONENT:
+				playstate.dad = character;
+		}
+
+		if(members.indexOf(character) == -1) {
+			add(character);
+		}
+	}
+
     public function hasGirlfriend():Bool {
         return true;
     }

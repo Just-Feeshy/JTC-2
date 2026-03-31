@@ -23,13 +23,6 @@ class PlayScoreFeedback
 	{
 		var noteDiff:Float = Math.abs(strumtime - (judgeSongPosition == null ? Conductor.instance.trackedSongPosition : judgeSongPosition));
 		playState.setPlayerVocalsVolume(1, noteTag);
-
-		var placement:String = Std.string(playState.combo);
-		var coolText:FlxText = new FlxText(0, 0, 0, placement, 32);
-		coolText.screenCenter();
-		coolText.x = FlxG.width * 0.55;
-
-		var rating:FlxSprite = new FlxSprite();
 		var score:Int = 350;
 
 		if (noteDiff > Conductor.instance.safeZoneOffset * 0.9)
@@ -67,6 +60,18 @@ class PlayScoreFeedback
 		}
 
 		playState.songScore += Std.int(score / GhostTapping.consequence);
+
+		if(playState.modifierCheckList('bot mode')) {
+			playState.curSection += 1;
+			return;
+		}
+
+		var placement:String = Std.string(playState.combo);
+		var coolText:FlxText = new FlxText(0, 0, 0, placement, 32);
+		coolText.screenCenter();
+		coolText.x = FlxG.width * 0.55;
+
+		var rating:FlxSprite = new FlxSprite();
 
 		var pixelShitPart1:String = "";
 		var pixelShitPart2:String = '';

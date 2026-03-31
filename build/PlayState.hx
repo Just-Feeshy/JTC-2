@@ -128,6 +128,7 @@ class PlayState extends MusicBeatState
 
 	//More Stuff
 	public var stage:StageBuilder;
+	public var deathCounter:Int = 0;
 
 	private var createdCharacters:Bool;
 	private var testSprite:FlxSprite;
@@ -153,9 +154,28 @@ class PlayState extends MusicBeatState
 		public var healthTween:FlxTween;
 		public var prevHealth:Float = 0;
 
+	public var currentStage(get, never):StageBuilder;
+	public var cameraFollowPoint(get, never):FlxObject;
+	public var isMinimalMode(get, never):Bool;
+
 	inline function getGameplayCameraFollowLerp():Float
 	{
 		return GAMEPLAY_CAMERA_FOLLOW_LERP_60FPS * 60 / FlxG.updateFramerate;
+	}
+
+	function get_currentStage():StageBuilder
+	{
+		return stage;
+	}
+
+	function get_cameraFollowPoint():FlxObject
+	{
+		return camFollow;
+	}
+
+	function get_isMinimalMode():Bool
+	{
+		return false;
 	}
 
 	public var opponentAltAnim:String = "";
@@ -244,6 +264,7 @@ class PlayState extends MusicBeatState
 	private var defaultBlur:Float = 0;
 	private var playFPS:Null<Int> = Main.framerate;
 	private var counterTxt:FlxText;
+	private var botplayText:BotplayText;
 
 	private var accTotal(get, never):Float;
 	private var totalRatingAcc:Float = 0;
@@ -712,6 +733,8 @@ class PlayState extends MusicBeatState
 		});
 
 		startingSong = true;
+
+		updateBotplayOverlay();
 
 		if(!hasWarning)
 			inDeBenigin();
@@ -2234,7 +2257,9 @@ class PlayState extends MusicBeatState
 
 	override public function openSubState(SubState:FlxSubState):Void
 	{
-		if(paused)
+		var isGameOverSubstate:Bool = Std.isOfType(SubState, GameOverSubstate);
+
+		if(paused && !isGameOverSubstate)
 		{
 			var substateName:String = Type.getClassName(Type.getClass(SubState));
 
@@ -2253,9 +2278,10 @@ class PlayState extends MusicBeatState
 
 	override function closeSubState()
 	{
-		var shouldResume:Bool = paused;
+		var wasGameOverSubstate:Bool = Std.isOfType(subState, GameOverSubstate);
+		var shouldResume:Bool = paused && !wasGameOverSubstate;
 
-		if (paused)
+		if (shouldResume)
 		{
 			paused = false;
 		}
@@ -2723,6 +2749,7 @@ class PlayState extends MusicBeatState
 		if (generatedMusic && !inCutscene)
 		{
 			playInput.defaultGameStuff();
+			var botMode:Bool = modifierCheckList('bot mode');
 
 			//Nothing here!
 			notes.forEachAlive(function(daNote:Note)
@@ -2766,6 +2793,14 @@ class PlayState extends MusicBeatState
 
 				if (!daNote.mustPress && !daNote.shouldBeDead && daNote.wasGoodHit && !daNote.ignore) {
 					opponentNoteHit(daNote);
+				}
+
+				if(botMode && shouldBotplayHitPlayerNote(daNote)) {
+					goodNoteHit(daNote, daNote.getNoteTime());
+				}
+
+				if(!daNote.exists || !daNote.alive) {
+					return;
 				}
 
 				if (daNote.mustPress) {
@@ -2926,6 +2961,22 @@ class PlayState extends MusicBeatState
 		}else {
 			note.shouldBeDead = true;
 		}
+	}
+
+	function shouldBotplayHitPlayerNote(note:Note):Bool {
+		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead) {
+			return false;
+		}
+
+		if(note.getNoteTime() > Conductor.instance.trackedSongPosition) {
+			return false;
+		}
+
+		if(note.isSustainNote && note.prevNote != null && !note.prevNote.wasGoodHit && !note.prevNote.shouldBeDead) {
+			return false;
+		}
+
+		return true;
 	}
 
     function haveGamePaused():Void {
@@ -3514,6 +3565,44 @@ class PlayState extends MusicBeatState
 			return boyfriend;
 	}
 
+	public function extractGameOverCharacter():Character
+	{
+		var deathCharacter:Character = currentPlayer;
+
+		if(deathCharacter == null)
+		{
+			return null;
+		}
+
+		if(stage != null)
+		{
+			stage.remove(deathCharacter, true);
+		}
+
+		return deathCharacter;
+	}
+
+	public function restoreGameOverCharacter(character:Character):Void
+	{
+		if(character == null || stage == null)
+		{
+			return;
+		}
+
+		if(character == boyfriend)
+		{
+			stage.addCharacter(character, CharacterRole.BOYFRIEND);
+		}
+		else if(character == dad)
+		{
+			stage.addCharacter(character, CharacterRole.OPPONENT);
+		}
+		else if(character == gf)
+		{
+			stage.addCharacter(character, CharacterRole.GIRLFRIEND);
+		}
+	}
+
 	function get_currentOpponent():Character {
 		if(SaveData.getData(PLAY_AS_OPPONENT))
 			return boyfriend;
@@ -3661,6 +3750,7 @@ class PlayState extends MusicBeatState
 		var stateCamNoteSustain:PlayCamera = ownedCamNoteSustain;
 		var stateCamHUD:PlayCamera = ownedCamHUD;
 
+		removeBotplayOverlay();
 		resetScriptedCameraState(false);
 
 		if(stateCamNOTE != null) {
@@ -3718,17 +3808,42 @@ class PlayState extends MusicBeatState
 		persistentDraw = true;
 	}
 
+	function updateBotplayOverlay():Void {
+		if(!modifierCheckList('bot mode')) {
+			removeBotplayOverlay();
+			return;
+		}
+
+		if(botplayText == null) {
+			botplayText = new BotplayText();
+		}
+
+		if(botplayText.parent == null) {
+			Lib.current.addChild(botplayText);
+		}
+	}
+
+	function removeBotplayOverlay():Void {
+		if(botplayText == null) {
+			return;
+		}
+
+		if(botplayText.parent != null) {
+			botplayText.parent.removeChild(botplayText);
+		}
+
+		botplayText.dispose();
+		botplayText = null;
+	}
+
 	public function requestGameOverRestart():Void {
-		requestSongRestart();
+		needsReset = true;
+		persistentUpdate = true;
+		persistentDraw = false;
+		paused = false;
 
 		FlxG.camera.stopFX();
 		FlxG.camera.alpha = 1;
-		FlxG.camera.zoom = defaultCamZoom;
-
-		if(camFollow != null) {
-			FlxG.camera.followLerp = getGameplayCameraFollowLerp();
-			FlxG.camera.focusOn(camFollow.getPosition());
-		}
 
 		if(playLua != null) {
 			playLua.set("inGameOver", false);

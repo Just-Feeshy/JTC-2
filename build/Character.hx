@@ -1,6 +1,7 @@
 package;
 
 import flixel.FlxG;
+import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
@@ -34,6 +35,8 @@ class Character extends feshixl.FeshSprite {
 	public var curCharacter:String = 'bf';
 
 	public var customAnimation:Bool = false;
+	public var canPlayOtherAnims:Bool = false;
+	public var isDead:Bool = false;
 
 	public var holdTimer:Float = 0;
 
@@ -48,6 +51,7 @@ class Character extends feshixl.FeshSprite {
 	public var finalizedHeight(default, null):Float = 0;
 
 	public var danceBeatTimer:Int = 1;
+	private var cameraFocusPointCache:FlxPoint = new FlxPoint();
 
 	private var testClip:Map<String, Array<Int>> = ["idle" => [-600, 100]];
 
@@ -133,6 +137,61 @@ class Character extends feshixl.FeshSprite {
 		}
 
 		return animation.curAnim.finished;
+	}
+
+	public function hasAnimation(animName:String):Bool {
+		return animation != null && animation.getByName(animName) != null;
+	}
+
+	public function playAnimation(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
+		playAnim(animName, force, reversed, frame);
+	}
+
+	public function getCurrentAnimation():String {
+		return getAnimName();
+	}
+
+	public function resetCharacter(reapplyDance:Bool = true):Void {
+		visible = true;
+		alpha = 1;
+		color = FlxColor.WHITE;
+		angle = 0;
+		specialAnim = false;
+		customAnimation = false;
+		holdTimer = 0;
+		stunned = false;
+
+		if(reapplyDance) {
+			dance();
+		}
+	}
+
+	public function getDeathCameraOffsets():Array<Float> {
+		return [0, 0];
+	}
+
+	public function getDeathCameraZoom():Float {
+		return 1;
+	}
+
+	public function getDeathQuote():String {
+		return null;
+	}
+
+	public var cameraFocusPoint(get, never):FlxPoint;
+
+	function get_cameraFocusPoint():FlxPoint {
+		cameraFocusPointCache.set(getGraphicMidpoint().x, getGraphicMidpoint().y);
+
+		if(_info != null && _info.position != null) {
+			var camPosX:Dynamic = _info.position.get('camPosX');
+			var camPosY:Dynamic = _info.position.get('camPosY');
+
+			cameraFocusPointCache.x += camPosX != null ? camPosX : 0;
+			cameraFocusPointCache.y += camPosY != null ? camPosY : 0;
+		}
+
+		return cameraFocusPointCache;
 	}
 
 	public function finishAnimation():Void {

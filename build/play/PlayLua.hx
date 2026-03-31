@@ -108,10 +108,10 @@ class PlayLua
 			return;
 		}
 
-		// Stage scripts usually cache layout/camera state during generatedStage().
-		// Rebuilding the VM without rerunning generatedStage() leaves those locals invalid on restart.
-		// Keep the live stage VM and let onSongRestart() refresh runtime state instead.
-		if(scriptPath.startsWith("stage/")) {
+		// Scripts that build runtime scene state during generatedStage()/onCreate() need to
+		// stay alive across in-place restart and refresh themselves in onSongRestart().
+		// Rebuilding those VMs without rerunning generatedStage() leaves their locals invalid.
+		if(shouldKeepScriptForSongRestart(scriptPath)) {
 			updateDynamicVars();
 			updatePerSectionVars();
 			set("curElapsed", 0);
@@ -142,6 +142,24 @@ class PlayLua
 			call("onCreate", []);
 		}
 		#end
+	}
+
+	function shouldKeepScriptForSongRestart(scriptPath:String):Bool
+	{
+		if(scriptPath == null) {
+			return false;
+		}
+
+		if(scriptPath.startsWith("stage/")) {
+			return true;
+		}
+
+		switch(scriptPath) {
+			case "song/frostbeat":
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	public function generateStaticBindings():Void

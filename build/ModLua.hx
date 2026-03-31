@@ -111,6 +111,38 @@ class ModLua {
         this.luaScript = luaScript;
     }
 
+    inline function ensureLuaSpriteMap():Map<String, FlxSprite> {
+        if(luaSprites == null) {
+            luaSprites = new Map<String, FlxSprite>();
+        }
+
+        return luaSprites;
+    }
+
+    inline function ensureLuaTextMap():Map<String, FlxText> {
+        if(luaTexts == null) {
+            luaTexts = new Map<String, FlxText>();
+        }
+
+        return luaTexts;
+    }
+
+    inline function ensureLuaBitmapMap():Map<String, BitmapData> {
+        if(luaBitmaps == null) {
+            luaBitmaps = new Map<String, BitmapData>();
+        }
+
+        return luaBitmaps;
+    }
+
+    inline function ensureLuaFrameCollectionMap():Map<String, FlxFramesCollection> {
+        if(luaFrameCollections == null) {
+            luaFrameCollections = new Map<String, FlxFramesCollection>();
+        }
+
+        return luaFrameCollections;
+    }
+
     static function releaseReplacedGraphic(oldGraphic:FlxGraphic, newGraphic:FlxGraphic):Void {
         if(oldGraphic == null || oldGraphic == newGraphic) {
             return;
@@ -200,12 +232,14 @@ class ModLua {
 		});
 
 		Lua_helper.add_callback(lua, "createBitmapData", function(name:String, width:Int, height:Int) {
-		    if(luaBitmaps.exists(name)) {
+            var bitmaps = ensureLuaBitmapMap();
+
+		    if(bitmaps.exists(name)) {
 		        return;
 		    }
 
 		    var bmp:BitmapData = new BitmapData(width, height, true, 0x00000000);
-		    luaBitmaps.set(name, bmp);
+		    bitmaps.set(name, bmp);
 		});
 
 		Lua_helper.add_callback(lua, "fillBitmapData", function(name:String, colorStr:String = "0x00000000") {
@@ -219,14 +253,18 @@ class ModLua {
 		});
 
 		Lua_helper.add_callback(lua, "makeBitmapSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String, segments:Int = 48) {
+            var bitmaps = ensureLuaBitmapMap();
+
 		    if(radius <= 0) {
 		        return;
 		    }
 
-		    luaBitmaps.set(name, createSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), segments));
+		    bitmaps.set(name, createSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), segments));
 		});
 
 		Lua_helper.add_callback(lua, "makeBitmapGradientSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colors:String, segments:Int = 48) {
+            var bitmaps = ensureLuaBitmapMap();
+
 		    if(radius <= 0) {
 		        return;
 		    }
@@ -237,15 +275,17 @@ class ModLua {
 		        return;
 		    }
 
-		    luaBitmaps.set(name, createSectorGradientBitmapData(radius, startAngle, endAngle, gradientColors, segments));
+		    bitmaps.set(name, createSectorGradientBitmapData(radius, startAngle, endAngle, gradientColors, segments));
 		});
 
 		Lua_helper.add_callback(lua, "makeBitmapSoftSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String = "0xFFFFFFFF", edgePercent:Float = 0.35, steps:Int = 24, segments:Int = 48) {
+            var bitmaps = ensureLuaBitmapMap();
+
 		    if(radius <= 0) {
 		        return;
 		    }
 
-		    luaBitmaps.set(name, createSoftSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), edgePercent, steps, segments));
+		    bitmaps.set(name, createSoftSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), edgePercent, steps, segments));
 		});
 
 		Lua_helper.add_callback(lua, "drawBitmapData", function(target:String, source:String, x:Float = 0, y:Float = 0) {
@@ -288,6 +328,7 @@ class ModLua {
 		});
 
 		Lua_helper.add_callback(lua, "createCombinedFrames", function(name:String, first:String, second:String, type1:String, type2:String) {
+            var frameCollections = ensureLuaFrameCollectionMap();
 		    var firstFrames:FlxFramesCollection;
 			var secondFrames:FlxFramesCollection;
 
@@ -306,12 +347,12 @@ class ModLua {
 		    }
 
 			var combinedFrames = FlxAnimationUtil.combineAtlas([firstFrames, secondFrames]);
-			var oldFrames:FlxFramesCollection = luaFrameCollections.get(name);
+			var oldFrames:FlxFramesCollection = frameCollections.get(name);
 
 			//firstFrames.destroy();
 			//secondFrames.destroy();
 
-			luaFrameCollections.set(name, combinedFrames);
+			frameCollections.set(name, combinedFrames);
 			releaseReplacedFrames(oldFrames, combinedFrames);
 		});
 
@@ -346,7 +387,9 @@ class ModLua {
 		});
 
         Lua_helper.add_callback(lua, "createSprite", function(name:String) {
-            if(luaSprites.exists(name)) {
+            var sprites = ensureLuaSpriteMap();
+
+            if(sprites.exists(name)) {
                 return;
             }
 
@@ -354,11 +397,13 @@ class ModLua {
             sprite.antialiasing = SaveData.getData(SaveType.GRAPHICS);
             sprite.active = true;
 
-            luaSprites.set(name, sprite);
+            sprites.set(name, sprite);
         });
 
         Lua_helper.add_callback(lua, "createText", function(name:String, x:Float = 0, y:Float = 0, width:Float = 0, text:String = "", size:Int = 16) {
-            if(luaTexts.exists(name)) {
+            var texts = ensureLuaTextMap();
+
+            if(texts.exists(name)) {
                 return;
             }
 
@@ -366,11 +411,13 @@ class ModLua {
             luaText.antialiasing = SaveData.getData(SaveType.GRAPHICS);
             luaText.active = true;
 
-            luaTexts.set(name, luaText);
+            texts.set(name, luaText);
         });
 
         Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
-            if(luaSprites.exists(name)) {
+            var sprites = ensureLuaSpriteMap();
+
+            if(sprites.exists(name)) {
                 return;
             }
 
@@ -398,7 +445,7 @@ class ModLua {
             sprite.antialiasing = SaveData.getData(SaveType.GRAPHICS);
             sprite.active = true;
 
-            luaSprites.set(name, sprite);
+            sprites.set(name, sprite);
         });
 
         addProtectedLuaCallback("spriteExist", function(name:String) {

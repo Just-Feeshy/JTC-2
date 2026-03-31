@@ -2,6 +2,8 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSubState;
+import play.PlayScriptEvent;
+import play.PlayScriptEventDispatcher;
 
 class MusicBeatSubstate extends FlxSubState
 {
@@ -53,5 +55,10 @@ class MusicBeatSubstate extends FlxSubState
 	public function beatHit():Void
 	{
 		//do literally nothing dumbass
+	}
+
+	public function dispatchEvent(event:PlayScriptEvent):Void
+	{
+		PlayScriptEventDispatcher.callEvent(this, event);
 	}
 }

@@ -70,6 +70,7 @@ class PlayFlow
 	public function gameOverScreen():Void
 	{
 		playState.currentPlayer.stunned = true;
+		playState.resetScriptedCameraState(false);
 
 		if(playState.modifierCheckList('blind effect')) {
 			FlxG.camera.alpha = 1;
@@ -77,13 +78,13 @@ class PlayFlow
 
 		playState.persistentUpdate = false;
 		playState.persistentDraw = false;
-		playState.paused = true;
+		playState.paused = false;
 
-		playState.stopVocals();
-		FlxG.sound.music.stop();
+		playState.pauseMusic();
+		FlxG.camera.followLerp = 0;
 		FlxG.camera.zoom = playState.defaultCamZoom;
 		playState.playLua.set("inGameOver", true);
-		playState.openSubState(new GameOverSubstate(playState.currentPlayer.getScreenPosition().x, playState.currentPlayer.getScreenPosition().y));
+		playState.openSubState(new GameOverSubstate());
 
 		#if windows
 		DiscordClient.changePresence(
