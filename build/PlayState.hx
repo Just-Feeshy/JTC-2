@@ -3718,6 +3718,23 @@ class PlayState extends MusicBeatState
 		persistentDraw = true;
 	}
 
+	public function requestGameOverRestart():Void {
+		requestSongRestart();
+
+		FlxG.camera.stopFX();
+		FlxG.camera.alpha = 1;
+		FlxG.camera.zoom = defaultCamZoom;
+
+		if(camFollow != null) {
+			FlxG.camera.followLerp = getGameplayCameraFollowLerp();
+			FlxG.camera.focusOn(camFollow.getPosition());
+		}
+
+		if(playLua != null) {
+			playLua.set("inGameOver", false);
+		}
+	}
+
 	override public function destroy() {
 		var statePlayLua:PlayLua = playLua;
 		var stateCamNOTE:CameraNote = ownedCamNOTE;

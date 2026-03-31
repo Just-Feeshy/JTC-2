@@ -1,6 +1,15 @@
+-- First main game lua test of this "engine" to see how well it can handle lua modchart's and general scripting.
+-- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
+
+--variables of components
 local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
+local frost_modchart = {}
 
 local beatSection = 0
+local pulseStepIntensity = {}
+local baseGameZoom = 1
+local baseHudZoom = 1
+local baseNoteZoom = 1
 
 local curAnimName = ""
 local holdTimer = 0
@@ -70,6 +79,84 @@ local currentIntroCarY = baseFrostbiteCarY
 local introClearTween = nil
 local introWarmupIndex = 0
 local introWarmupDone = false
+local INTENSITY_MULTIPLIER = 1.5
+local BASE_GAME_BUMP = 0.015
+local BASE_HUD_BUMP = 0.03
+local BASE_NOTE_BUMP = 0.03
+local CAMERA_BOP_DECAY_RATE = 0.95
+
+local function addPulseStep(stepValue, intensity)
+    pulseStepIntensity[stepValue] = intensity
+end
+
+local function addPulseRange(startStep, endStep, everySteps, intensity)
+    if everySteps == nil or everySteps <= 0 then
+        return
+    end
+
+    local stepValue = startStep
+
+    while stepValue <= endStep do
+        addPulseStep(stepValue, intensity)
+        stepValue = stepValue + everySteps
+    end
+end
+
+local function addPulseSteps(stepList, intensity)
+    if stepList == nil then
+        return
+    end
+
+    for i = 1, #stepList do
+        addPulseStep(stepList[i], intensity)
+    end
+end
+
+local function buildPulseSteps()
+    pulseStepIntensity = {}
+
+	addPulseRange(150, 212, 4, 2.67)
+	addPulseRange(216, 282, 4, 2.0)
+	addPulseRange(216, 474, 4, 1.67)
+end
+
+local function pulseCamera(stepValue)
+    local intensity = (pulseStepIntensity[stepValue] or 0) * INTENSITY_MULTIPLIER
+
+    if intensity <= 0 then
+        return
+    end
+
+    local gameZoom = getCameraZoom("camGAME") or baseGameZoom
+    local hudZoom = getCameraZoom("camHUD") or baseHudZoom
+    local noteZoom = getCameraZoom("camNOTE") or baseNoteZoom
+
+    setCameraZoom("camGAME", gameZoom + (BASE_GAME_BUMP * intensity))
+    setCameraZoom("camHUD", hudZoom + (BASE_HUD_BUMP * intensity))
+    setCameraZoom("camNOTE", noteZoom + (BASE_NOTE_BUMP * intensity))
+end
+
+local function decayCameraZooms(elapsed)
+    local safeElapsed = math.max(elapsed or 0, 0)
+    local dt = safeElapsed * 60
+    local decay = math.pow(CAMERA_BOP_DECAY_RATE, dt)
+
+    local gameZoom = getCameraZoom("camGAME")
+    local hudZoom = getCameraZoom("camHUD")
+    local noteZoom = getCameraZoom("camNOTE")
+
+    if gameZoom ~= nil then
+        setCameraZoom("camGAME", baseGameZoom + ((gameZoom - baseGameZoom) * decay))
+    end
+
+    if hudZoom ~= nil then
+        setCameraZoom("camHUD", baseHudZoom + ((hudZoom - baseHudZoom) * decay))
+    end
+
+    if noteZoom ~= nil then
+        setCameraZoom("camNOTE", baseNoteZoom + ((noteZoom - baseNoteZoom) * decay))
+    end
+end
 
 local function startsWith(value, prefix)
     if type(value) ~= "string" or type(prefix) ~= "string" then
@@ -90,6 +177,8 @@ end
 
 local function init()
     beatSection = 0
+    frost_modchart = {}
+    pulseStepIntensity = {}
     curAnimName = ""
     holdTimer = 0
     multipler = 6.1
@@ -105,6 +194,10 @@ local function init()
     introClearTween = nil
     introWarmupIndex = 0
     introWarmupDone = false
+    baseGameZoom = getCameraZoom("camGAME") or 1
+    baseHudZoom = getCameraZoom("camHUD") or 1
+    baseNoteZoom = getCameraZoom("camNOTE") or 1
+    buildPulseSteps()
     jtc_camera.reset()
 end
 
@@ -393,6 +486,20 @@ local function ensureCloudSprite()
     addSpriteToState("cloud")
 end
 
+local function refreshFrostbeatRuntimeState()
+    frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
+
+    if frost_modchart.initStrumsAndNotes ~= nil then
+        frost_modchart.initStrumsAndNotes()
+    end
+
+    jtc_camera.registerHiddenSprites({
+        "punchIcon1",
+        "punchIcon2",
+        "punchIcon3"
+    })
+end
+
 function onSongRestart()
     init()
     setCountdownPresentation(false, false)
@@ -403,6 +510,7 @@ function onSongRestart()
     ensureFrostbiteCar()
     ensureSecondSprite()
     ensureCloudSprite()
+    refreshFrostbeatRuntimeState()
     applyIntroOpponentFaceShot()
 end
 
@@ -424,6 +532,7 @@ function generatedStage()
     ensureCloudSprite()
 
     setupPunchHealth(3)
+    refreshFrostbeatRuntimeState()
 end
 
 function onStepHit()
@@ -453,6 +562,8 @@ function onStepHit()
     if curStep == introClearStep then
         clearIntroCameraShot()
     end
+
+    pulseCamera(curStep)
 
     if curStep == 606 then
         daddyTrans = true
@@ -510,7 +621,9 @@ function onUpdate(elapsed)
 
     updateIntroWarmup()
     jtc_camera.onUpdate(elapsed)
+
     updateIntroClearTween(elapsed)
+    decayCameraZooms(elapsed)
 
     if startsWith(curAnimName, "sing") then
         holdTimer = holdTimer + elapsed
@@ -534,6 +647,10 @@ function onUpdate(elapsed)
 
     if sprAnimFinished("frostbiteCAR") and curStep < 607 then
         playAnimRaw("frostbiteCAR", "drive")
+    end
+
+    if frost_modchart.sectionTwo_HELL ~= nil then
+    	frost_modchart.sectionTwo_HELL(elapsed)
     end
 
     cloudIncome()

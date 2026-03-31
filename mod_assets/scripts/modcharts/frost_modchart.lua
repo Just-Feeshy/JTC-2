@@ -8,7 +8,6 @@ local size = 20
 
 local wheelAngle = 0
 local AverageSpin = 0
-local megaSpin = 0
 local bounceStrength = 10
 
 local allStrumsX = {}
@@ -25,12 +24,15 @@ local wheelIsHere = false
 local wheelFinished = false
 
 local noteSwagWidth = 160 * 0.7
+local sectionTwoHellTransitionSlowdown = 1
+local sectionTwoHellWheelSpinSlowdown = 10
+local lastSectionTwoHellStepFloat = nil
 
 local frost_modchart = {}
 
 local transitionToWheel = { --In steps
-    614,
-    640,
+    134,
+    164,
     652,
     760,
     772,
@@ -93,6 +95,7 @@ function frost_modchart.initStrumsAndNotes()
     allStrumsX = {}
     allStrumsY = {}
     cacheStrumPositions()
+    lastSectionTwoHellStepFloat = nil
 
     noteWheelOffsetX = {
         -noteSwagWidth;
@@ -114,6 +117,27 @@ function frost_modchart.initStrumsAndNotes()
         (3 * math.pi) * 0.5,
         math.pi
     }
+end
+
+local function consumeSectionTwoHellStepDelta()
+    local stepValue = curStepFloat
+
+    if stepValue == nil then
+        stepValue = curStep or 0
+    end
+
+    if type(stepValue) ~= "number" then
+        stepValue = 0
+    end
+
+    if lastSectionTwoHellStepFloat == nil or stepValue < lastSectionTwoHellStepFloat then
+        lastSectionTwoHellStepFloat = stepValue
+        return 0
+    end
+
+    local delta = stepValue - lastSectionTwoHellStepFloat
+    lastSectionTwoHellStepFloat = stepValue
+    return delta
 end
 
 --Modchart Section 1
@@ -207,9 +231,13 @@ function frost_modchart.sectionTwo_REGULAR()
 end
 
 function frost_modchart.sectionTwo_HELL(elapsed)
-    if transitionToWheel[1] < curStep and transitionToWheel[2] > curStep then
+    local stepDelta = consumeSectionTwoHellStepDelta()
+    local hellTransitionEnd = transitionToWheel[1] + ((transitionToWheel[2] - transitionToWheel[1]) * sectionTwoHellTransitionSlowdown)
+    local hellSpinIntroStart = hellTransitionEnd
+
+    if transitionToWheel[1] < curStepFloat and hellTransitionEnd > curStepFloat then
         for i = 4, 1, -1 do
-            local givenTime = (curStepFloat - transitionToWheel[1]) / (transitionToWheel[2] - transitionToWheel[1])
+            local givenTime = (curStepFloat - transitionToWheel[1]) / (hellTransitionEnd - transitionToWheel[1])
             local timeLerp = givenTime + (stepCrochet * 0.0011 * i) * math.min(givenTime, 1)
             local easing = frost_modchart.smootherStep(math.min(timeLerp, 1))
 
@@ -234,7 +262,7 @@ function frost_modchart.sectionTwo_HELL(elapsed)
         wheelIsHere = true
     end
 
-    if transitionToWheel[2] < curStep then
+    if hellSpinIntroStart < curStepFloat then
         for i = 1, 4 do
             local xNote = getNoteScreenCenter((i - 1) + 4, "X") - (noteSwagWidth + bounceWheel[i]) * math.cos(wheelAngle + noteWheelAngle[i])
             local yNote = getNoteScreenCenter((i - 1) + 4, "Y") + (noteSwagWidth + bounceWheel[i]) * math.sin(wheelAngle + noteWheelAngle[i])
@@ -244,14 +272,14 @@ function frost_modchart.sectionTwo_HELL(elapsed)
             setNoteStrumAngle((i - 1) + 4, -wheelAngle)
 
             if transitionToWheel[3] > curStep then
-                local givenTime = (curStepFloat - transitionToWheel[2]) / (transitionToWheel[3] - transitionToWheel[2])
+                local givenTime = (curStepFloat - hellSpinIntroStart) / (transitionToWheel[3] - hellSpinIntroStart)
                 local timeLerp = quadOut(givenTime)
 
-                wheelAngle = lerp(0, math.pi * 2, timeLerp)
-                setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)
+                wheelAngle = lerp(0, math.pi * 2 * (1 / sectionTwoHellWheelSpinSlowdown), timeLerp)
+                -- setCameraZoom("camNOTE",  1.0 - parabola(timeLerp, 2) * 0.25)
             else
-                AverageSpin = AverageSpin + (elapsed * elapsed * math.pi * (curBpm / 120) * (math.max(bounceStrength * 0.1, 1)))
-                wheelAngle = AverageSpin + megaSpin
+                AverageSpin = AverageSpin + (stepDelta * 0.5 * math.pi * (curBpm / 120) * (math.max(bounceStrength * 0.1, 1)) * (1 / sectionTwoHellWheelSpinSlowdown))
+                wheelAngle = AverageSpin
 
                 if not wheelFinished then
                     wheelFinished = true
@@ -267,8 +295,6 @@ function frost_modchart.sectionTwo_HELL(elapsed)
     if transitionToWheel[4] < curStep and transitionToWheel[5] > curStep then
         local givenTime = (curStepFloat - transitionToWheel[4]) / (transitionToWheel[5] - transitionToWheel[4])
         local timeLerp = quadOut(givenTime)
-
-        megaSpin = lerp(0, math.pi * 2, timeLerp)
         bounceStrength = lerp(10, 18, timeLerp)
 
         setCameraZoom("camNOTE", 1 + parabola(timeLerp, 2) * 0.25)

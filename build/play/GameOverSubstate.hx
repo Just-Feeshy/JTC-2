@@ -121,7 +121,7 @@ class GameOverSubstate extends MusicBeatSubstate
 					var playState:PlayState = Std.isOfType(_parentState, PlayState) ? cast _parentState : null;
 
 					if(playState != null) {
-						playState.requestSongRestart();
+						playState.requestGameOverRestart();
 					}
 
 					close();
