@@ -32,8 +32,8 @@ class CrashLogDisplay extends Sprite {
 
         @:privateAccess var attributes:WindowAttributes = Reflect.copy(prevWindow.__attributes);
 
-        attributes.width = 480;
-        attributes.height = 280;
+        attributes.width = 720;
+        attributes.height = 420;
         attributes.resizable = false;
         attributes.fullscreen = false;
         attributes.title = Paths.modJSON.mod.name + " - Crash Report!";

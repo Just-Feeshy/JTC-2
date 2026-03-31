@@ -184,8 +184,26 @@ class ModLua {
 		var luaResults:String = Lua.tostring(lua, resultFile);
 
         if(luaResults != null && resultFile != 0) {
-            var prevWindow:Window = openfl.Lib.current.stage.window;
-            new CrashLogDisplay(prevWindow).attachReport([luaResults, 'Script: $luaScript']);
+            var errorMsg = "Lua Script Error in " + luaScript + ":\n\n" + luaResults;
+            trace("CRITICAL LUA ERROR: " + errorMsg);
+            Log.error(errorMsg);
+
+            try {
+                var prevWindow:Window = openfl.Lib.current.stage.window;
+                if(prevWindow != null) {
+                    new CrashLogDisplay(prevWindow).attachReport([luaResults, 'Script: $luaScript']);
+                    // Keep the window open indefinitely until user closes it
+                    while(true) {
+                        Sys.sleep(0.1); // Small sleep to prevent CPU spinning
+                    }
+                }
+            } catch(e:Dynamic) {
+                // If crash log display fails, just keep window open indefinitely
+                trace("Crash log display failed: " + Std.string(e) + "\nOriginal error: " + luaResults);
+                while(true) {
+                    Sys.sleep(0.1);
+                }
+            }
             return;
         }
 
@@ -2669,11 +2687,28 @@ class ModLua {
                 removeLuaTracebackHandler(tracebackIndex);
 				Log.error("Error (" + event + ") - " + error);
 
-				// Show crash log with detailed error info even during dialogue
-				var errorDetails:String = 'Event: $event\nError: $error\nCall Stack: ${haxe.CallStack.toString(haxe.CallStack.callStack())}';
-				var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
-				new CrashLogDisplay(prevWindow).attachReport([errorDetails, 'Lua Error in $event']);
-				return LuaUtils.Function_Continue;
+				// Show crash log with full detailed error info even during dialogue
+				var errorDetails:String = 'Lua Event: $event\n\nError Details:\n$error\n\nHaxe Call Stack:\n${haxe.CallStack.toString(haxe.CallStack.callStack())}';
+				try {
+					var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
+					trace("Window: " + prevWindow);
+					if(prevWindow != null) {
+						trace("Creating CrashLogDisplay...");
+						var crashDisplay = new CrashLogDisplay(prevWindow);
+						trace("Attaching crash report...");
+						crashDisplay.attachReport([errorDetails, 'Lua Execution Error']);
+						trace("Crash display created successfully");
+						// Don't return - let the window stay open naturally
+						return LuaUtils.Function_Continue;
+					} else {
+						trace("ERROR: Window is null!");
+						return LuaUtils.Function_Continue;
+					}
+				} catch(e:Dynamic) {
+					trace("CRITICAL: Failed to display crash log: " + Std.string(e));
+					trace("Stack: " + haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
+					return LuaUtils.Function_Continue;
+				}
 			}
 
             var result:Dynamic = cast Convert.fromLua(lua, -1);
@@ -2703,9 +2738,23 @@ class ModLua {
 			#if debug
 			stackTrace = '\n\nCall Stack:\n${haxe.CallStack.toString(haxe.CallStack.callStack())}';
 			#end
-			var errorDetails:String = 'Event: $event\nError: $uncaughtError$stackTrace';
-			var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
-			new CrashLogDisplay(prevWindow).attachReport([errorDetails, 'Uncaught Lua Error']);
+			var errorDetails:String = 'Lua Event: $event\n\nError Details:\n$uncaughtError$stackTrace';
+			try {
+				var prevWindow:lime.ui.Window = openfl.Lib.current.stage.window;
+				trace("Window: " + prevWindow);
+				if(prevWindow != null) {
+					trace("Creating CrashLogDisplay for uncaught error...");
+					var crashDisplay = new CrashLogDisplay(prevWindow);
+					trace("Attaching crash report...");
+					crashDisplay.attachReport([errorDetails, 'Uncaught Lua Error']);
+					trace("Crash display created successfully");
+				} else {
+					trace("ERROR: Window is null!");
+				}
+			} catch(crashLogError:Dynamic) {
+				trace("CRITICAL: Failed to display crash log: " + Std.string(crashLogError));
+				trace("Stack: " + haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
+			}
             return LuaUtils.Function_Continue;
         }
         #end

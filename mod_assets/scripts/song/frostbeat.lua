@@ -492,6 +492,10 @@ end
 function generatedStage()
     init()
     staticShaderInstance = static_shader.new("static_shader")
+
+    -- TEST: Intentional null reference error for testing crash reporting
+    local nullObject = nil
+    local testValue = nullObject.someProperty  -- This will cause a null reference error
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
