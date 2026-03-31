@@ -201,15 +201,30 @@ class Cache
 			removeGraphicByKey(key);
 		}
 
+		var graphic:FlxGraphic = null;
+
 		if (OpenFlAssets.exists(key, AssetType.IMAGE))
-			return FlxGraphic.fromAssetKey(key, false, null, true);
+		{
+			graphic = FlxGraphic.fromAssetKey(key, false, null, true);
+		}
+		else
+		{
+			var bitmap:BitmapData = Paths.loadBitmap(key, true);
 
-		var bitmap:BitmapData = Paths.loadBitmap(key, true);
+			if (bitmap == null)
+				return null;
 
-		if (bitmap == null)
-			return null;
+			graphic = FlxGraphic.fromBitmapData(bitmap, false, key);
+		}
 
-		return FlxGraphic.fromBitmapData(bitmap, false, key);
+		// Ensure the graphic is properly registered with FlxG.bitmap
+		// This is critical for Windows GPU memory management
+		if (graphic != null)
+		{
+			graphic = FlxG.bitmap.add(graphic, false, key);
+		}
+
+		return graphic;
 	}
 
 	static function buildSound(key:String):Sound
@@ -219,14 +234,98 @@ class Cache
 
 	static function forceRender(graphic:FlxGraphic):Void
 	{
-		if (graphic == null || graphic.bitmap == null || FlxG.stage == null || FlxG.stage.context3D == null)
+		if (graphic == null)
 			return;
 
-		var sprite = new FlxSprite();
-		sprite.loadGraphic(graphic);
-		sprite.draw();
-		graphic.bitmap.getTexture(FlxG.stage.context3D);
-		sprite.destroy();
+		// Ensure the graphic is registered with FlxG.bitmap
+		var bmp:FlxGraphic = FlxG.bitmap.get(graphic.key);
+		if (bmp != null && bmp.bitmap != null)
+		{
+			// Trigger bitmap property access to ensure it's loaded into memory
+			var _ = bmp.bitmap.width;
+		}
+
+		// Create a temporary sprite and draw it to force GPU upload
+		// This is critical for Windows GPU context to properly cache the texture
+		if (graphic.bitmap != null)
+		{
+			var sprite = new FlxSprite();
+			sprite.loadGraphic(graphic);
+			sprite.draw(); // This forces the sprite to be rendered and uploaded to GPU
+
+			// Explicitly get the texture on the GPU context
+			// This ensures the bitmap data is properly transferred to VRAM on Windows
+			if (FlxG.stage != null && FlxG.stage.context3D != null)
+			{
+				try
+				{
+					graphic.bitmap.getTexture(FlxG.stage.context3D);
+
+					// Flush the GPU context to ensure immediate upload on Windows
+					// This prevents texture loss due to context switches or GC
+					flushGPUContext();
+				}
+				catch (e:Dynamic)
+				{
+					FlxG.log.error('Failed to upload texture to GPU for ${graphic.key}: $e');
+				}
+			}
+
+			sprite.destroy();
+		}
+	}
+
+	/**
+	 * Flushes the GPU context to ensure textures are properly committed to VRAM.
+	 * This is critical on Windows where GPU context can be lost during context switches.
+	 */
+	static function flushGPUContext():Void
+	{
+		if (FlxG.stage == null || FlxG.stage.context3D == null)
+			return;
+
+		try
+		{
+			// Ensure all pending GPU commands are executed
+			FlxG.stage.context3D.present();
+		}
+		catch (e:Dynamic)
+		{
+			// GPU context may not support present() in all scenarios
+			// This is non-fatal and we can continue
+		}
+	}
+
+	/**
+	 * Verifies and reloads graphics that may have been lost from GPU memory.
+	 * Useful for Windows where GPU context loss can occur.
+	 * Call this if sprites are mysteriously disappearing.
+	 */
+	static public function verifyGPUMemory():Void
+	{
+		// Verify permanent cache
+		for (key in permanentCachedTextures.keys())
+		{
+			var graphic = permanentCachedTextures.get(key);
+			if (graphic != null && graphic.bitmap != null)
+			{
+				// Re-render to ensure it's in GPU memory
+				forceRender(graphic);
+			}
+		}
+
+		// Verify current cache
+		for (key in currentCachedTextures.keys())
+		{
+			var graphic = currentCachedTextures.get(key);
+			if (graphic != null && graphic.bitmap != null)
+			{
+				// Re-render to ensure it's in GPU memory
+				forceRender(graphic);
+			}
+		}
+
+		trace('[CACHE] GPU memory verification complete');
 	}
 
 	static function getCachedTexture(key:String, promoteFromPrevious:Bool):FlxGraphic
@@ -294,6 +393,9 @@ class Cache
 
 		if (previousGraphic != null && previousGraphic.bitmap != null)
 		{
+			// Ensure the recovered graphic has proper GPU settings
+			previousGraphic.persist = true;
+			previousGraphic.destroyOnNoUse = false;
 			previousCachedTextures.remove(key);
 			currentCachedTextures.set(key, previousGraphic);
 			return;
@@ -307,9 +409,14 @@ class Cache
 			return;
 		}
 
+		// Ensure persistent graphics cannot be garbage collected on Windows
 		graphic.persist = true;
 		graphic.destroyOnNoUse = false;
+
 		currentCachedTextures.set(key, graphic);
+
+		// Force GPU upload - this is critical for Windows where GPU context
+		// can be lost or textures can be garbage collected prematurely
 		forceRender(graphic);
 	}
 
@@ -326,10 +433,15 @@ class Cache
 			return;
 		}
 
+		// Ensure permanent graphics cannot be garbage collected
+		// These persist flags are critical for Windows GPU memory management
 		graphic.persist = true;
 		graphic.destroyOnNoUse = false;
+
 		permanentCachedTextures.set(key, graphic);
 		currentCachedTextures = copyTextureMap(permanentCachedTextures);
+
+		// Force GPU upload for permanent cache
 		forceRender(graphic);
 	}
 
@@ -455,15 +567,24 @@ class Cache
 		if (bitmap == null)
 			return null;
 
+		// Use FlxG.bitmap.add() to ensure proper GPU memory registration
 		var graphic = FlxG.bitmap.add(bitmap, false, name);
+
+		if (graphic == null)
+			return null;
+
+		// Ensure GPU-cached graphics cannot be garbage collected on Windows
 		graphic.persist = true;
 		graphic.destroyOnNoUse = false;
+
 		currentCachedTextures.set(name, graphic);
 
 		if (permanent)
 			permanentCachedTextures.set(name, graphic);
 
+		// Force GPU upload - critical for Windows GPU context stability
 		forceRender(graphic);
+
 		return graphic;
 	}
 
@@ -684,7 +805,7 @@ class Cache
 
 	/**
 	 * Caches character graphics to prevent them from disappearing on different machines.
-	 * This ensures the graphics are properly uploaded to GPU memory.
+	 * This ensures the graphics are properly uploaded to GPU memory and protected from GC.
 	 * @param characterPath The path to the character's sprite sheet
 	 */
 	static public function cacheCharacter(characterPath:String):Void
@@ -701,20 +822,32 @@ class Cache
 		if (currentCachedTextures.exists(graphicKey))
 			return;
 
-		// Build and cache the graphic
+		// Build and cache the graphic with proper GPU protection
 		var graphic = buildGraphic(graphicKey);
 
 		if (graphic != null)
 		{
+			// Ensure character graphics persist in GPU memory and cannot be GC'd on Windows
 			graphic.persist = true;
+			graphic.destroyOnNoUse = false;
+
 			currentCachedTextures.set(graphicKey, graphic);
-			forceRender(graphic); // Critical: Force GPU upload
+
+			// Critical: Force GPU upload and ensure texture is in VRAM
+			// This prevents sprites from disappearing on Windows
+			forceRender(graphic);
+
 			trace('[CACHE] Cached character: $characterPath');
+		}
+		else
+		{
+			FlxG.log.warn('Failed to cache character: $characterPath');
 		}
 	}
 
 	/**
-	 * Caches a stage's graphics.
+	 * Caches a stage's graphics with proper GPU memory protection.
+	 * Ensures stage sprites don't disappear on Windows due to GPU context loss.
 	 * @param stagePath The path to the stage
 	 */
 	static public function cacheStage(stagePath:String):Void
@@ -727,6 +860,7 @@ class Cache
 		if (graphicKey == null || graphicKey == "")
 			return;
 
+		// Use standard cacheTexture which ensures proper GPU memory management
 		cacheTexture(graphicKey);
 		trace('[CACHE] Cached stage: $stagePath');
 	}
