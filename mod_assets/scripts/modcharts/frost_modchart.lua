@@ -25,7 +25,7 @@ local wheelFinished = false
 
 local noteSwagWidth = 160 * 0.7
 local sectionTwoHellTransitionSlowdown = 1
-local sectionTwoHellWheelSpinSlowdown = 100
+local sectionTwoHellWheelSpinSlowdown = 410
 local lastSectionTwoHellStepFloat = nil
 local sectionTwoHellSpinInitialized = false
 
@@ -153,18 +153,6 @@ end
 
 local function getSectionTwoHellSpinSlowdown()
     return math.max(sectionTwoHellWheelSpinSlowdown, 1)
-end
-
---Modchart Section 1
-function frost_modchart.sectionOne(elapsed)
-    if not wheelIsHere then
-        for i = 0, 7 do
-            setNoteStrumPos(i, defaultNoteMovement(i, a), (allStrumsY[i + 1] + (math.sin(a * 4) / constant) * size) - (math.abs(math.sin(getNoteStrumAngleY(i) * 0.5)) * 30))
-            setNoteDirection(i, 0)
-        end
-
-        a = a + (elapsed * 0.5) * (curBpm / 120)
-    end
 end
 
 --Modchart Section 2
@@ -300,8 +288,7 @@ function frost_modchart.sectionTwo_HELL(elapsed)
 
             setNoteStrumPos((i - 1) + 4, xNote, yNote)
             setNoteDirection((i - 1) + 4, currentWheelAngle + noteWheelAngle[i] - (math.pi * 0.5))
-            setNoteStrumAngle((i - 1) + 4, -currentWheelAngle)
-			setNoteStrumAngleY((i - 1) + 4, spinWheel[i])
+            setNoteStrumAngle((i - 1) + 4, radiansToDegrees(-currentWheelAngle))
         end
     end
 
@@ -438,8 +425,6 @@ function frost_modchart.resetNormalStrums()
         setNoteDirection((i - 1) + 4, 0)
         setNoteStrumAngle(i - 1, 0)
         setNoteStrumAngle((i - 1) + 4, 0)
-        setNoteStrumAngleY(i - 1, 0)
-        setNoteStrumAngleY((i - 1) + 4, 0)
     end
 end
 
@@ -486,6 +471,10 @@ end
 
 function lerp(value1, value2, ratio)
     return value1 + ratio * (value2 - value1)
+end
+
+function radiansToDegrees(value)
+    return value * (180 / math.pi)
 end
 
 return frost_modchart

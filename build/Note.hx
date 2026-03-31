@@ -501,7 +501,7 @@ class Note extends FeshSprite {
 		var yAddon:Float = 0;
 
 		if(height < 50) {
-			yAddon = ((Note.swagWidth - height - 10) * 0.5) * Math.abs(Math.sin(angle));
+			yAddon = ((Note.swagWidth - height - 10) * 0.5) * Math.abs(Math.sin(FeshMath.radians(angle)));
 		}
 
 		y += yAddon + restartVisualOffsetY;
@@ -540,6 +540,19 @@ class Note extends FeshSprite {
 				angle = value;
 			}else {
 				angle = value2;
+			}
+		}
+
+		// Adjust origin for sustain notes to rotate around center-top
+		if(isSustainNote) {
+			if(isHoldEndPiece()) {
+				// Hold end pieces need center origin for proper rotation
+				origin.x = frameWidth * 0.5;
+				origin.y = frameHeight * 0.5;
+			} else {
+				// Regular sustain pieces rotate around center-top
+				origin.x = frameWidth * 0.5;
+				origin.y = 0;
 			}
 		}
 	}

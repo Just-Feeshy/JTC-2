@@ -2374,14 +2374,15 @@ class PlayState extends MusicBeatState
 			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.instance.trackedSongPosition)
 			* FlxMath.roundDecimal(note.howSpeed, 2);
 		var yAddon:Float = 0;
+		var noteAngleRadians:Float = FeshMath.radians(note.angle);
 		
 		if(note.height < 50 && note.isSustainNote) {
 			yAddon -= (Note.swagWidth - note.height) * 0.5;
 
 			if(note.downscrollNote) {
-				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
+				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
 			}else {
-				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
+				yAddon += ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
 				yAddon *= -1;
 			}
 		}
@@ -2394,6 +2395,7 @@ class PlayState extends MusicBeatState
 			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.instance.trackedSongPosition)
 			* FlxMath.roundDecimal(note.howSpeed, 2);
 		var yAddon:Float = 0;
+		var noteAngleRadians:Float = FeshMath.radians(note.angle);
 		
 		if(note.height < 50 && note.isSustainNote) {
 			yAddon += (Note.swagWidth - note.height) * 0.5;
@@ -2402,7 +2404,7 @@ class PlayState extends MusicBeatState
 				yAddon += ((Note.swagWidth - note.height));
 				yAddon *= -1;
 			}else {
-				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(note.angle);
+				yAddon -= ((Note.swagWidth - note.height) * 0.5) * Math.cos(noteAngleRadians);
 			}
 		}
 
@@ -2791,7 +2793,7 @@ class PlayState extends MusicBeatState
 					final strumIndex = Math.floor(Math.abs(daNote.noteData));
 					final currentStrum = currentStrums.members[strumIndex];
 					final sustainDirectionAngle = currentStrum.directionAngle;
-					final sustainNoteAngle = currentStrum.directionAngle;
+							final sustainNoteAngle = -FeshMath.degrees(currentStrum.directionAngle);
 
 					daNote.setVisibility(currentStrum.onlyVisible);
 
@@ -2817,7 +2819,7 @@ class PlayState extends MusicBeatState
 					final strumIndex = Math.floor(Math.abs(daNote.noteData));
 					final oppositeStrum = oppositeStrums.members[strumIndex];
 					final sustainDirectionAngle = oppositeStrum.directionAngle;
-					final sustainNoteAngle = oppositeStrum.directionAngle;
+							final sustainNoteAngle = FeshMath.degrees(oppositeStrum.directionAngle);
 
 					daNote.setVisibility(oppositeStrum.onlyVisible);
 
