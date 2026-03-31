@@ -294,6 +294,10 @@ class PlayState extends MusicBeatState
 	public var gf:Character;
 	public var boyfriend:Boyfriend;
 
+	// Track character changes for proper reset
+	public var originalPlayer2:String = "";
+	public var characterChangeDirty:Bool = false;
+
 	public var currentPlayer(get, never):Character;
 	public var currentOpponent(get, never):Character;
 
@@ -557,6 +561,8 @@ class PlayState extends MusicBeatState
 
 		Cache.cacheCharacter(SONG.player2);
 		dad = new Character(100, 100, SONG.player2);
+		originalPlayer2 = SONG.player2;
+		characterChangeDirty = false;
 
 		camPos = new FlxPoint(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		camMovementPos = new FlxPoint(0, 0);
@@ -1624,6 +1630,11 @@ class PlayState extends MusicBeatState
 		flipWiggle = 1;
 		timeFreeze = 0;
 		wobbleModPower = 30;
+
+		// Revert character changes on restart
+		if(characterChangeDirty && originalPlayer2 != "") {
+			revertCharacterChanges();
+		}
 
 		CustomNoteHandler.spawn();
 		Note.AFFECTED_STRUMTIME = 0;
@@ -3484,7 +3495,21 @@ class PlayState extends MusicBeatState
 	function event_Extra(skill:String, value:String, value2:String):Void {
 		stage.onEvent(skill, value, value2);
 
+		// Track character changes for restart revert
+		if(skill == "character change") {
+			characterChangeDirty = true;
+		}
+
 		playLua.call("whenEventTriggered", [skill, value, value2]);
+	}
+
+	public function revertCharacterChanges():Void {
+		if(!characterChangeDirty || originalPlayer2 == "" || dad == null)
+			return;
+
+		// Call the character change event with the original character
+		event_Extra("character change", originalPlayer2, "dad");
+		characterChangeDirty = false;
 	}
 
 	function set_wobbleModPower(value:Float):Float {
