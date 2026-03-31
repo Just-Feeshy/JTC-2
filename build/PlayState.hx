@@ -1699,7 +1699,7 @@ class PlayState extends MusicBeatState
 
 		if(camFollow != null) {
 			camFollow.setPosition(camPos.x, camPos.y);
-			FlxG.camera.followLerp = getGameplayCameraFollowLerp();
+			FlxG.camera.follow(camFollow, LOCKON, getGameplayCameraFollowLerp());
 			FlxG.camera.focusOn(camFollow.getPosition());
 		}
 

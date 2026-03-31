@@ -20,16 +20,24 @@ class FunkinSound extends FlxSound
 
 	public static function load(path:String):FunkinSound
 	{
+		if (path == null || path == "")
+		{
+			trace('[FunkinSound] Cannot load sound: path is null or empty');
+			return null;
+		}
+
 		var sound = new FunkinSound();
 		// Use Paths.loadSoundAsset to properly handle library paths and filesystem paths
 		var soundAsset:Sound = Paths.loadSoundAsset(path);
 		if (soundAsset != null)
 		{
 			sound.loadEmbedded(soundAsset, false, true);
+			trace('[FunkinSound] Loaded sound from asset: ' + path);
 		}
 		else
 		{
 			// Fallback to direct path loading
+			trace('[FunkinSound] loadSoundAsset returned null, trying direct load: ' + path);
 			sound.loadEmbedded(path, false, true);
 		}
 		sound.persist = true;

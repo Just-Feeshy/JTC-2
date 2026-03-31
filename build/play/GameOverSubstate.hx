@@ -94,6 +94,10 @@ class GameOverSubstate extends MusicBeatSubstate
       boyfriend = parentPlayState?.extractGameOverCharacter();
       if (boyfriend != null)
       {
+        trace('[GameOver] Extracted character: ' + boyfriend.curCharacter);
+        trace('[GameOver] Character animations: ' + boyfriend.animations);
+        trace('[GameOver] Has firstDeath: ' + boyfriend.hasAnimation('firstDeath'));
+        trace('[GameOver] Has deathLoop: ' + boyfriend.hasAnimation('deathLoop'));
         boyfriend.canPlayOtherAnims = true;
         boyfriend.isDead = true;
         boyfriend.specialAnim = false;
@@ -210,8 +214,11 @@ class GameOverSubstate extends MusicBeatSubstate
         else
         {
           // Start music at normal volume once the initial death animation finishes.
-          if (boyfriend.getCurrentAnimation().startsWith('firstDeath') && boyfriend.isAnimationFinished())
+          var currentAnim = boyfriend.getCurrentAnimation();
+          var animFinished = boyfriend.isAnimationFinished();
+          if (currentAnim.startsWith('firstDeath') && animFinished)
           {
+            trace('[GameOver] firstDeath finished, starting music and deathLoop');
             startDeathMusic(1.0, false);
             boyfriend.playAnimation('deathLoop' + animationSuffix);
           }
@@ -233,31 +240,28 @@ class GameOverSubstate extends MusicBeatSubstate
     }
 
     hasStartedAnimation = true;
+    trace('[GameOver] Starting death animation');
 
     if (boyfriend == null || (parentPlayState?.isMinimalMode ?? true))
     {
+      trace('[GameOver] boyfriend is null or minimal mode, only playing SFX');
       playBlueBalledSFX();
       return;
     }
 
+    // Match original Funkin behavior - play animation directly
     if (boyfriend.hasAnimation('fakeoutDeath') && FlxG.random.bool((1 / 4096) * 100))
     {
+      trace('[GameOver] Playing fakeoutDeath animation');
       boyfriend.playAnimation('fakeoutDeath', true, false);
-      return;
     }
-
-    var deathAnim:String = 'firstDeath' + animationSuffix;
-    if (!boyfriend.hasAnimation(deathAnim))
+    else
     {
-      deathAnim = 'firstDeath';
+      var animName = 'firstDeath' + animationSuffix;
+      trace('[GameOver] Playing animation: ' + animName + ', hasAnimation: ' + boyfriend.hasAnimation(animName));
+      boyfriend.playAnimation(animName, true, false);
+      playBlueBalledSFX();
     }
-
-    if (boyfriend.hasAnimation(deathAnim))
-    {
-      boyfriend.playAnimation(deathAnim, true, false);
-    }
-
-    playBlueBalledSFX();
   }
 
   function playDeathQuote():Void
@@ -388,7 +392,9 @@ class GameOverSubstate extends MusicBeatSubstate
    */
   public function startDeathMusic(startingVolume:Float = 1, force:Bool = false):Void
   {
+    trace('[GameOver] startDeathMusic called, isStarting: ' + isStarting + ', isEnding: ' + isEnding);
     var musicPath:Null<String> = resolveMusicPath(musicSuffix, isStarting, isEnding);
+    trace('[GameOver] Resolved music path: ' + musicPath);
     var onComplete:Void->Void = () -> {};
 
     if (isStarting)

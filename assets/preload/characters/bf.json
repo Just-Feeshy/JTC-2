@@ -66,7 +66,7 @@
         },
 
         "hey": {
-            "prefix": "BF HEY",
+            "prefix": "BF HEY!!",
             "framerate": 24,
             "looped": false,
             "offset": [7, 4]
