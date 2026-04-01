@@ -324,6 +324,9 @@ class Cache
 			return;
 		}
 
+		if (!OpenFlAssets.exists(key, AssetType.SOUND) && !OpenFlAssets.exists(key, AssetType.MUSIC))
+			return;
+
 		var sound:Sound = OpenFlAssets.getSound(key, true);
 		if (sound == null)
 			return;
@@ -338,6 +341,9 @@ class Cache
 	static function permanentCacheSound(key:String):Void
 	{
 		if (permanentCachedSounds.exists(key))
+			return;
+
+		if (!OpenFlAssets.exists(key, AssetType.SOUND) && !OpenFlAssets.exists(key, AssetType.MUSIC))
 			return;
 
 		var sound:Sound = OpenFlAssets.getSound(key, true);
@@ -389,15 +395,6 @@ class Cache
 
 		OpenFlAssets.cache.clear("songs");
 		OpenFlAssets.cache.clear("music");
-
-		// Re-cache the main menu music
-		var key = Paths.getPath('music/freakyMenu/freakyMenu.${Paths.SOUND_EXT}', AssetType.MUSIC, null);
-		var sound:Sound = OpenFlAssets.getSound(key, true);
-		if (sound != null)
-		{
-			permanentCachedSounds.set(key, sound);
-			currentCachedSounds.set(key, sound);
-		}
 	}
 
 	///// MISC /////
