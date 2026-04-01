@@ -179,6 +179,13 @@ class CacheState extends HelperStates {
 
 		if(Std.isOfType(FlxG.state, PlayState)) {
 			cast(FlxG.state, PlayState).prepareForStateSwitch();
+
+			// Clear character cache when transitioning between songs in story mode
+			if(PlayState.isStoryMode && PlayState.storyPlaylist.length > 0) {
+				FlxG.signals.preStateSwitch.addOnce(function() {
+					Cache.clearCharacters();
+				});
+			}
 		}
 
 		if (stopMusic && FlxG.sound.music != null) {
