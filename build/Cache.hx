@@ -273,23 +273,18 @@ class Cache
 		if (graphic == null)
 			return;
 
-		var bmp:FlxGraphic = FlxG.bitmap.get(graphic.key);
-		if (bmp != null && bmp.bitmap != null)
+		// Trigger bitmap loading by accessing properties
+		if (graphic.bitmap != null)
 		{
-			var _:Int = bmp.bitmap.width; // Trigger
+			var _:Int = graphic.bitmap.width;
+			var __:Int = graphic.bitmap.height;
+
+			// Upload texture to GPU if context is available
+			if (FlxG.stage != null && FlxG.stage.context3D != null)
+			{
+				graphic.bitmap.getTexture(FlxG.stage.context3D);
+			}
 		}
-
-		// Draws sprite and actually caches it.
-		var sprite = new FlxSprite();
-		sprite.loadGraphic(graphic);
-		sprite.draw(); // Draw sprite and load it into game's memory.
-
-		if (graphic.bitmap != null && FlxG.stage != null && FlxG.stage.context3D != null)
-		{
-			graphic.bitmap.getTexture(FlxG.stage.context3D); // Just in case that didn't work...
-		}
-
-		sprite.destroy();
 	}
 
 	/**
