@@ -455,7 +455,7 @@ class ModLua {
             var index:Int = 0;
 
 			while(index < colorStrArray.length) {
-				colorArray.push(Std.parseInt(colorStrArray[index].trim()));
+				colorArray.push(parseLuaColor(colorStrArray[index].trim()));
                 index++;
 			}
 
@@ -900,13 +900,7 @@ class ModLua {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
-                var color:Int = Std.parseInt(colorStr);
-
-                if(!colorStr.startsWith('0x')) {
-                    color = Std.parseInt('0xff' + colorStr);
-                }
-
-                spr.color = color;
+                spr.color = parseLuaColor(colorStr);
             }
         });
 
@@ -1305,11 +1299,7 @@ class ModLua {
             if(obj != null) {
                 var curColor:FlxColor = obj.color;
                 curColor.alphaFloat = obj.alpha;
-                var color:Int = Std.parseInt(colorStr);
-
-                if(!colorStr.startsWith('0x')) {
-                    color = Std.parseInt('0xff' + colorStr);
-                }
+                var color:Int = parseLuaColor(colorStr);
 
                 cancelTween(name);
                 luaTweens.set(name, FlxTween.color(obj, duration, curColor, color, {ease: Register.getFlxEaseByString(ease),
@@ -1950,11 +1940,26 @@ class ModLua {
 	function parseLuaColor(colorStr:String):Int {
 		if (colorStr == null) return 0;
 
-		if (colorStr.startsWith("0x")) {
-			return Std.parseInt(colorStr);
+		var hex:String = colorStr.trim();
+
+		// Remove 0x prefix if present
+		if (hex.toLowerCase().startsWith("0x")) {
+			hex = hex.substr(2);
 		}
 
-		return Std.parseInt("0xff" + colorStr);
+		// Pad with alpha if only RGB provided (6 chars or less)
+		if (hex.length <= 6) {
+			hex = "ff" + StringTools.lpad(hex, "0", 6);
+		}
+
+		// Parse in two 16-bit parts to avoid Int32 overflow on Windows/CPP
+		// This handles unsigned 32-bit color values correctly
+		var highStr:String = "0x" + hex.substr(0, 4);
+		var lowStr:String = "0x" + hex.substr(4, 4);
+		var high:Null<Int> = Std.parseInt(highStr);
+		var low:Null<Int> = Std.parseInt(lowStr);
+
+		return ((high != null ? high : 0) << 16) | (low != null ? low : 0);
 	}
 
     function parseLuaColorArray(colors:String):Array<Int> {
