@@ -20,7 +20,6 @@ import openfl.filters.BitmapFilter;
 import openfl.filters.BitmapFilterQuality;
 import openfl.filters.ShaderFilter;
 import feshixl.math.FeshMath;
-import feshixl.FeshCamera;
 import lime.utils.Assets;
 import haxe.Json;
 
@@ -71,8 +70,8 @@ class FreeplayState extends MusicBeatState
 	private var menuBG:MenuBackground;
 	private var backgroundBlur:Float = 0;
 
-	var camFreeplay:FeshCamera;
-	var camBackground:FeshCamera;
+	var camFreeplay:FlxCamera;
+	var camBackground:FlxCamera;
 
 	#if (USING_LUA && cpp)
 	private var hasGraffiti:Array<Bool> = [];
@@ -112,8 +111,8 @@ class FreeplayState extends MusicBeatState
 		Conductor.instance.trackedSongPosition = 0;
 		Conductor.instance.trackedSongPosition -= Conductor.instance.beatLengthMs * 5;
 
-		camFreeplay = new FeshCamera();
-		camBackground = new FeshCamera();
+		camFreeplay = new FlxCamera();
+		camBackground = new FlxCamera();
 		camFreeplay.bgColor.alpha = 0;
 		camBackground.bgColor.alpha = 0;
 
