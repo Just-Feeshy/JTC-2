@@ -171,6 +171,12 @@ class CacheState extends HelperStates {
 			});
 		}
 
+		if(Std.isOfType(FlxG.state, StoryMenuState)) {
+			FlxG.signals.preStateSwitch.addOnce(function() {
+				Cache.clearCharacters();
+			});
+		}
+
 		if(Std.isOfType(FlxG.state, PlayState)) {
 			cast(FlxG.state, PlayState).prepareForStateSwitch();
 		}
