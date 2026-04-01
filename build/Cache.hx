@@ -870,29 +870,39 @@ class Cache
 	 */
 	static public function clearCharacters():Void
 	{
+		// Remove character graphics from cache maps only, don't destroy them.
+		// This allows old sprites to keep their references while new sprites get fresh instances.
+		// The graphics will be garbage collected naturally when old sprites are destroyed.
 		var keysToRemove:Array<String> = [];
 
-		@:privateAccess
-		for (key in FlxG.bitmap._cache.keys())
+		for (key in currentCachedTextures.keys())
 		{
-			if (!key.contains("characters"))
-				continue;
-
-			if (permanentCachedTextures.exists(key))
-				continue;
-
-			keysToRemove.push(key);
+			if (key.contains("characters"))
+			{
+				keysToRemove.push(key);
+			}
 		}
 
 		for (key in keysToRemove)
 		{
-			var graphic = FlxG.bitmap.get(key);
 			currentCachedTextures.remove(key);
-			previousCachedTextures.remove(key);
-			destroyGraphic(key, graphic);
 		}
 
-		trace('[CACHE] Cleared character assets');
+		keysToRemove = [];
+		for (key in previousCachedTextures.keys())
+		{
+			if (key.contains("characters"))
+			{
+				keysToRemove.push(key);
+			}
+		}
+
+		for (key in keysToRemove)
+		{
+			previousCachedTextures.remove(key);
+		}
+
+		trace('[CACHE] Cleared character cache references');
 	}
 
 	/**
