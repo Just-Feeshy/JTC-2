@@ -1947,15 +1947,15 @@ class ModLua {
         return getCameraAssignedFilters(camera);
     }
 
-    function parseLuaColor(colorStr:String):Int {
-        var color:Int = Std.parseInt(colorStr);
+	function parseLuaColor(colorStr:String):Int {
+		if (colorStr == null) return 0;
 
-        if(colorStr != null && !colorStr.startsWith('0x')) {
-            color = Std.parseInt('0xff' + colorStr);
-        }
+		if (colorStr.startsWith("0x")) {
+			return Std.parseInt(colorStr);
+		}
 
-        return color;
-    }
+		return Std.parseInt("0xff" + colorStr);
+	}
 
     function parseLuaColorArray(colors:String):Array<Int> {
         var output:Array<Int> = [];
