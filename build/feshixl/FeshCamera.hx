@@ -113,12 +113,12 @@ class FeshCamera extends FlxCamera {
             if (_useBlitMatrix)
             {
                 _helperMatrix.concat(_blitMatrix);
-                buffer.draw(pixels, _helperMatrix, null, null, null, (smoothing || antialiasing));
+                buffer.draw(pixels, _helperMatrix, transform, blend, null, (smoothing || antialiasing));
             }
             else
             {
                 _helperMatrix.translate(-viewOffsetX, -viewOffsetY);
-                buffer.draw(pixels, _helperMatrix, null, blend, null, (smoothing || antialiasing));
+                buffer.draw(pixels, _helperMatrix, transform, blend, null, (smoothing || antialiasing));
             }
         }
         else

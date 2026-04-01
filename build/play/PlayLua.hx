@@ -352,13 +352,13 @@ class PlayLua
 		});
 
 		playState.addCallback("setHealthBarColors", function(opponentHex:String, playerHex:String) {
-			var opponentColor:FlxColor = !opponentHex.startsWith("0x") ? Std.parseInt('0xff' + opponentHex) : Std.parseInt(opponentHex);
-			var playerColor:FlxColor = !playerHex.startsWith("0x") ? Std.parseInt('0x' + playerHex) : Std.parseInt(playerHex);
+			var opponentColor:FlxColor = parseLuaColor(opponentHex);
+			var playerColor:FlxColor = parseLuaColor(playerHex);
 			playState.healthBar.createFilledBar(opponentColor, playerColor);
 		});
 
 		playState.addCallback("doTweenHealthBarColor", function(name:String, side:String, hex:String, duration:Float, ease:String) {
-			var barColor:FlxColor = !hex.startsWith("0x") ? Std.parseInt('0xff' + hex) : Std.parseInt(hex);
+			var barColor:FlxColor = parseLuaColor(hex);
 			var lua:ModLua = getLua();
 
 			if(lua == null)
@@ -384,7 +384,7 @@ class PlayLua
 		});
 
 		playState.addCallback("setHealthBarColor", function(hex:String, side:String) {
-			var hexColor:FlxColor = !hex.startsWith("0x") ? Std.parseInt('0xff' + hex) : Std.parseInt(hex);
+			var hexColor:FlxColor = parseLuaColor(hex);
 
 			if(side == "left" || side == "opponent")
 				playState.healthBar.emptyColor = hexColor;
@@ -738,5 +738,30 @@ class PlayLua
 		if(ownedLua != null) {
 			ownedLua.execute();
 		}
+	}
+
+	// Parse color string safely to handle unsigned 32-bit values on Windows/CPP
+	private static function parseLuaColor(colorStr:String):Int {
+		if (colorStr == null) return 0;
+
+		var hex:String = colorStr.trim();
+
+		// Remove 0x prefix if present
+		if (hex.toLowerCase().startsWith("0x")) {
+			hex = hex.substr(2);
+		}
+
+		// Pad with alpha if only RGB provided (6 chars or less)
+		if (hex.length <= 6) {
+			hex = "ff" + StringTools.lpad(hex, "0", 6);
+		}
+
+		// Parse in two 16-bit parts to avoid Int32 overflow on Windows/CPP
+		var highStr:String = "0x" + hex.substr(0, 4);
+		var lowStr:String = "0x" + hex.substr(4, 4);
+		var high:Null<Int> = Std.parseInt(highStr);
+		var low:Null<Int> = Std.parseInt(lowStr);
+
+		return ((high != null ? high : 0) << 16) | (low != null ? low : 0);
 	}
 }
