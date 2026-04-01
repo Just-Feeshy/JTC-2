@@ -11,6 +11,8 @@ import openfl.utils.ByteArray;
 
 using StringTools;
 
+// I was at this for hours, let's see how Claude pulls this off.
+
 /**
  * Handles caching of textures and sounds for the game.
  * Based on FunkinMemory from Friday Night Funkin'.
