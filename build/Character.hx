@@ -114,12 +114,6 @@ class Character extends feshixl.FeshSprite {
 				else
 					antialiasing = false;
 
-				// Ensure graphic stays in GPU memory during animation (critical for Windows)
-				if(graphic != null) {
-					graphic.persist = true;
-					graphic.destroyOnNoUse = false;
-				}
-
 				//#if windows // mac has a high DPI which does the fix for me
 				#if (windows)
 				if(frameOffsetApply && _info.clippingAdjustment.toString() != "{}") {
