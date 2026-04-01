@@ -628,6 +628,11 @@ class Cache
 		return getCachedGraphic(path);
 	}
 
+	public static function getAssetDirectly(path:String):FlxGraphic
+	{
+		return getCachedGraphic(path);
+	}
+
 	public static function cacheFromByteArray(name:String, bytes:ByteArray):Void
 	{
 		cacheByteArrayInternal(name, bytes, false);
