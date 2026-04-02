@@ -108,9 +108,9 @@ end
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-	addPulseRange(150, 212, 4, 1.41)
+	addPulseRange(150, 212, 4, 0.67)
 	addPulseRange(216, 282, 4, 1.0)
-	addPulseRange(216, 474, 4, 0.67)
+	addPulseRange(286, 474, 4, 1.41)
 end
 
 local function pulseCamera(stepValue)
@@ -192,6 +192,7 @@ local function init()
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
     buildPulseSteps()
+    callEvent("setCameraBop", "0", "0")
     jtc_camera.reset()
 end
 

@@ -4,8 +4,11 @@ import openfl.events.Event;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.system.System;
+import flixel.math.FlxMath;
 
 class Memory extends TextField {
+	private var units:Array<String> = ["Bytes", "kB", "MB", "GB", "TB", "PB"];
+
     public var memPeak(default, null):Float = 0;
     public var memory(default, null):Float = 0;
 
@@ -26,14 +29,24 @@ class Memory extends TextField {
     }
 
     function onEnter(_) {
-        memory = Math.round(System.totalMemory * 0.00098 * 0.00098 * 100) * 0.01;
+        memory = System.totalMemoryNumber;
 
 		if (memory > Math.abs(memPeak)) {
             memPeak = memory;
         }
 
         if (visible) {
-            text = "MEM: " + memory + " MB\nMEM peak: " + memPeak + " MB";
+            text = "GC MEM: " + formatBytes(memory).toLowerCase() + "\nMEM peak: " + formatBytes(memPeak).toLowerCase();
         }
     }
+
+	function formatBytes(Bytes:Float, Precision:Int = 2):String {
+		var curUnit = 0;
+		while (Bytes >= 1024 && curUnit < units.length - 1) {
+			Bytes /= 1024;
+			curUnit++;
+		}
+
+		return FlxMath.roundDecimal(Bytes, Precision) + units[curUnit];
+	}
 }

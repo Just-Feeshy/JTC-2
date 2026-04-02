@@ -39,6 +39,7 @@ import lime.graphics.Image;
 import lime.math.Rectangle;
 import lime.ui.Window;
 import lime.utils.Log;
+import haxe.Json;
 
 #if sys
 import sys.FileSystem;
@@ -401,6 +402,55 @@ class ModLua {
 			{ // I want to make this confusing as possible lmao.
 				var imgBytes = image.getPixels(new Rectangle(0, 0, image.width, image.height));
 				bmp.setPixels(new OpenFlRectangle(x, y, image.width, image.height), imgBytes);
+			}
+		});
+
+		// Pre-cache functions to avoid lag spikes during gameplay
+		Lua_helper.add_callback(lua, "precacheImage", function(path:String, ?library:String) {
+			if(path == null || path.trim() == "") return;
+			if(library == null) library = "shared";
+			Paths.image(path, library);
+		});
+
+		Lua_helper.add_callback(lua, "precacheAtlas", function(path:String, atlasType:String = "sparrow", ?library:String) {
+			if(path == null || path.trim() == "") return;
+			if(library == null) library = "shared";
+
+			switch(atlasType.toLowerCase().trim()) {
+				case "packer" | "packeratlas" | "pac":
+					Paths.getPackerAtlas(path, library);
+				default:
+					Paths.getSparrowAtlas(path, library);
+			}
+		});
+
+		Lua_helper.add_callback(lua, "precacheCharacter", function(characterName:String) {
+			if(characterName == null || characterName.trim() == "") return;
+
+			var charPath:String = 'characters/$characterName';
+			var infoPath = Paths.getPreloadPath(charPath + '.json');
+
+			if(!Paths.assetExists(infoPath, TEXT)) {
+				infoPath = Paths.getPath(charPath + '.json', TEXT, "shared");
+			}
+
+			if(Paths.assetExists(infoPath, TEXT)) {
+				var rawJson = Paths.readText(infoPath);
+				if(rawJson != null) {
+					var info:Dynamic = Json.parse(rawJson);
+					if(info != null && info.file != null) {
+						var fileParts:Array<String> = cast(info.file, String).split(".");
+						if(fileParts.length >= 2) {
+							var basePath = fileParts[0];
+							var ext = fileParts[1].toLowerCase();
+							if(ext == "xml") {
+								Paths.getSparrowAtlas(basePath, "shared", true);
+							} else if(ext == "json") {
+								Paths.getPackerAtlas(basePath, "shared", true);
+							}
+						}
+					}
+				}
 			}
 		});
 
