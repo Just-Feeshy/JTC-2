@@ -491,7 +491,7 @@ end
 
 function generatedStage()
     init()
-    staticShaderInstance = static_shader.new("static_shader")
+    staticShaderInstance = static_shader.new("static_shader"):init()
 
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)

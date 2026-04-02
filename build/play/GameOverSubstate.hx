@@ -15,6 +15,7 @@ import MusicBeatSubstate;
 import StoryMenuState;
 import util.MathUtil;
 import effects.RetroCameraFade;
+import play.DeathCharacter;
 
 using StringTools;
 
@@ -34,6 +35,8 @@ class GameOverSubstate extends MusicBeatSubstate
   public static var blueBallSuffix:String = '';
   static var blueballed:Bool = false;
   var boyfriend:Null<Character> = null;
+  var customDeathChar:Null<DeathCharacter> = null;
+  var usingCustomDeath:Bool = false;
   var cameraFollowPoint:FlxObject;
   var gameOverMusic:Null<FunkinSound> = null;
   var isEnding:Bool = false;
@@ -84,27 +87,74 @@ class GameOverSubstate extends MusicBeatSubstate
     bg.screenCenter();
     add(bg);
 
+    // Check for custom death character from Lua first
+    if (parentPlayState?.customDeathCharacter != null)
+    {
+      customDeathChar = parentPlayState.customDeathCharacter;
+
+      // Check if the custom death character has the required animations
+      var hasFirstDeath = customDeathChar.hasDeathAnimation(customDeathChar.firstDeathAnim);
+      var hasDeathLoop = customDeathChar.hasDeathAnimation(customDeathChar.deathLoopAnim);
+      var hasDeathConfirm = customDeathChar.hasDeathAnimation(customDeathChar.deathConfirmAnim);
+
+      if (hasFirstDeath && hasDeathLoop && hasDeathConfirm)
+      {
+        usingCustomDeath = true;
+
+        // Position at boyfriend's location if boyfriend exists
+        if (parentPlayState.boyfriend != null)
+        {
+          customDeathChar.copyPositionFrom(parentPlayState.boyfriend);
+        }
+
+        trace('[GameOver] Using custom death character');
+        add(customDeathChar);
+      }
+      else
+      {
+        // Custom death character missing required animations, fall back to default
+        trace('[GameOver] Custom death character missing animations (firstDeath: ' + hasFirstDeath +
+              ', deathLoop: ' + hasDeathLoop + ', deathConfirm: ' + hasDeathConfirm + '), using default character');
+        usingCustomDeath = false;
+        customDeathChar = null;
+      }
+    }
     // Pluck Boyfriend from the PlayState and place him (in the same position) in the GameOverSubState.
     // We can then play the character's `firstDeath` animation.
-    if ((parentPlayState?.isMinimalMode ?? true))
+    if (!usingCustomDeath)
     {
-    }
-    else
-    {
-      boyfriend = parentPlayState?.extractGameOverCharacter();
-      if (boyfriend != null)
+      if ((parentPlayState?.isMinimalMode ?? true))
       {
-        trace('[GameOver] Extracted character: ' + boyfriend.curCharacter);
-        trace('[GameOver] Character animations: ' + boyfriend.animations);
-        trace('[GameOver] Has firstDeath: ' + boyfriend.hasAnimation('firstDeath'));
-        trace('[GameOver] Has deathLoop: ' + boyfriend.hasAnimation('deathLoop'));
-        boyfriend.canPlayOtherAnims = true;
-        boyfriend.isDead = true;
-        boyfriend.specialAnim = false;
-        boyfriend.customAnimation = false;
-        boyfriend.holdTimer = 0;
-        add(boyfriend);
-        boyfriend.resetCharacter(false);
+      }
+      else
+      {
+        boyfriend = parentPlayState?.extractGameOverCharacter();
+        if (boyfriend != null)
+        {
+          trace('[GameOver] Extracted character: ' + boyfriend.curCharacter);
+          trace('[GameOver] Has firstDeath: ' + boyfriend.hasAnimation('firstDeath'));
+          trace('[GameOver] Has deathLoop: ' + boyfriend.hasAnimation('deathLoop'));
+
+          // Check if boyfriend has death animations, if not load default death character
+          if (!boyfriend.hasAnimation('firstDeath') || !boyfriend.hasAnimation('deathLoop'))
+          {
+            // Return the original boyfriend to PlayState since we won't use it
+            parentPlayState?.restoreGameOverCharacter(boyfriend);
+
+            // Load default death character
+            var bfPos = boyfriend.getPosition();
+            boyfriend = new Character(bfPos.x, bfPos.y, "bf", true);
+            bfPos.put();
+          }
+
+          boyfriend.canPlayOtherAnims = true;
+          boyfriend.isDead = true;
+          boyfriend.specialAnim = false;
+          boyfriend.customAnimation = false;
+          boyfriend.holdTimer = 0;
+          add(boyfriend);
+          boyfriend.resetCharacter(false);
+        }
       }
     }
 
@@ -132,7 +182,28 @@ class GameOverSubstate extends MusicBeatSubstate
 
   function setCameraTarget():Void
   {
-    if (parentPlayState == null || parentPlayState.isMinimalMode || boyfriend == null) return;
+    if (parentPlayState == null || parentPlayState.isMinimalMode) return;
+
+    // Handle custom death character camera
+    if (usingCustomDeath && customDeathChar != null)
+    {
+      cameraFollowPoint = new FlxObject(parentPlayState.cameraFollowPoint.x, parentPlayState.cameraFollowPoint.y, 1, 1);
+      var focusPoint = customDeathChar.getCameraFocusPoint();
+      cameraFollowPoint.x = focusPoint.x;
+      cameraFollowPoint.y = focusPoint.y;
+      focusPoint.put();
+
+      add(cameraFollowPoint);
+
+      @:nullSafety(Off)
+      FlxG.camera.target = null;
+      FlxG.camera.follow(cameraFollowPoint, FlxCameraFollowStyle.LOCKON, Constants.DEFAULT_CAMERA_FOLLOW_RATE / 2);
+      targetCameraZoom = (parentPlayState?.currentStage?.camZoom ?? 1.0) * customDeathChar.cameraZoom;
+      FlxG.camera.zoom = targetCameraZoom;
+      return;
+    }
+
+    if (boyfriend == null) return;
 
     cameraFollowPoint = new FlxObject(parentPlayState.cameraFollowPoint.x, parentPlayState.cameraFollowPoint.y, 1, 1);
     cameraFollowPoint.x = boyfriend.cameraFocusPoint.x;
@@ -195,6 +266,18 @@ class GameOverSubstate extends MusicBeatSubstate
       // This enables the stepHit and beatHit events.
       Conductor.instance.update(gameOverMusic.time);
     }
+    else if (usingCustomDeath && customDeathChar != null)
+    {
+      // Handle custom death character animation loop
+      var currentAnim = customDeathChar.getCurrentAnimationName();
+      var animFinished = customDeathChar.isAnimationFinished;
+      if (currentAnim == customDeathChar.firstDeathAnim && animFinished)
+      {
+        trace('[GameOver] Custom death firstDeath finished, starting music and deathLoop');
+        startDeathMusic(1.0, false);
+        customDeathChar.playDeathLoop();
+      }
+    }
     else if (boyfriend != null)
     {
       if ((parentPlayState?.isMinimalMode ?? true))
@@ -243,6 +326,15 @@ class GameOverSubstate extends MusicBeatSubstate
 
     hasStartedAnimation = true;
     trace('[GameOver] Starting death animation');
+
+    // Handle custom death character
+    if (usingCustomDeath && customDeathChar != null)
+    {
+      trace('[GameOver] Playing custom death character animation');
+      customDeathChar.playFirstDeath();
+      playBlueBalledSFX();
+      return;
+    }
 
     if (boyfriend == null || (parentPlayState?.isMinimalMode ?? true))
     {
@@ -313,7 +405,12 @@ class GameOverSubstate extends MusicBeatSubstate
 
       startDeathMusic(1.0, true);
 
-      if ((parentPlayState?.isMinimalMode ?? true) || boyfriend == null)
+      // Play death confirm animation
+      if (usingCustomDeath && customDeathChar != null)
+      {
+        customDeathChar.playDeathConfirm();
+      }
+      else if ((parentPlayState?.isMinimalMode ?? true) || boyfriend == null)
       {
       }
       else
@@ -331,7 +428,13 @@ class GameOverSubstate extends MusicBeatSubstate
             FlxG.camera.fade(FlxColor.BLACK, 1, true, null, true);
           if (parentPlayState != null) parentPlayState.needsReset = true;
 
-          if ((parentPlayState?.isMinimalMode ?? true) || boyfriend == null)
+          // Clean up custom death character (don't restore, it stays with PlayState)
+          if (usingCustomDeath && customDeathChar != null)
+          {
+            remove(customDeathChar);
+            customDeathChar = null;
+          }
+          else if ((parentPlayState?.isMinimalMode ?? true) || boyfriend == null)
           {
           }
           else

@@ -293,6 +293,7 @@ class PlayState extends MusicBeatState
 	public var dad:Character;
 	public var gf:Character;
 	public var boyfriend:Boyfriend;
+	public var customDeathCharacter:play.DeathCharacter;
 
 	// Track character changes for proper reset
 	public var originalPlayer2:String = "";

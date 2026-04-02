@@ -1573,6 +1573,10 @@ class ModLua {
                 return false;
             }
 
+            if(luaShaderSources == null) {
+                return false;
+            }
+
             luaShaderSources.set(name, {
                 vertexSource: vertexSource == null ? "" : vertexSource,
                 fragmentSource: fragmentSource
@@ -1818,6 +1822,11 @@ class ModLua {
 
     function storeShaders(name:String, shader:String, path:String = "shaders", ?glslVersion:Null<UInt>):Bool {
         #if sys
+        if(luaShaderSources == null) {
+            Log.error('Cannot initialize shader - luaShaderSources is null (ModLua may have been destroyed)');
+            return false;
+        }
+
         if(luaShaderSources.exists(name)) {
             Log.info('Shader `$name` was already stored!');
 			return true;
@@ -1857,6 +1866,11 @@ class ModLua {
     }
 
     function createShaderInstance(name:String, ?tag:String):FeshShader {
+        if(luaShaderSources == null) {
+            Log.error('Cannot create shader - luaShaderSources is null');
+            return null;
+        }
+
         var shaderSource:LuaShaderSource = luaShaderSources.get(name);
 
         if(shaderSource == null) {

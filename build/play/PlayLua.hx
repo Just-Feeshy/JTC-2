@@ -6,6 +6,7 @@ import flixel.FlxSprite;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import openfl.Lib;
+import play.DeathCharacter;
 
 import SaveData.SaveType;
 
@@ -399,6 +400,109 @@ class PlayLua
 
 		playState.addCallback("setHudIconsStatic", function(staticIcons:Bool) {
 			playState.hudIconsStatic = staticIcons;
+		});
+
+		// Death Character Lua Bindings
+		playState.addCallback("createDeathCharacter", function() {
+			if(playState.customDeathCharacter == null) {
+				playState.customDeathCharacter = new DeathCharacter();
+			}
+			return true;
+		});
+
+		playState.addCallback("loadDeathCharacterGraphic", function(imagePath:String, ?xmlPath:String) {
+			if(playState.customDeathCharacter == null) {
+				playState.customDeathCharacter = new DeathCharacter();
+			}
+			playState.customDeathCharacter.loadDeathGraphic(imagePath, xmlPath);
+			return true;
+		});
+
+		playState.addCallback("loadDeathCharacterSimpleGraphic", function(imagePath:String) {
+			if(playState.customDeathCharacter == null) {
+				playState.customDeathCharacter = new DeathCharacter();
+			}
+			playState.customDeathCharacter.loadSimpleGraphic(imagePath);
+			return true;
+		});
+
+		playState.addCallback("addDeathCharacterAnimation", function(name:String, prefix:String, frameRate:Int = 24, looped:Bool = false) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.addDeathAnimation(name, prefix, frameRate, looped);
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterAnimations", function(firstDeath:String, deathLoop:String, deathConfirm:String) {
+			if(playState.customDeathCharacter == null) return false;
+			if(firstDeath != null) playState.customDeathCharacter.firstDeathAnim = firstDeath;
+			if(deathLoop != null) playState.customDeathCharacter.deathLoopAnim = deathLoop;
+			if(deathConfirm != null) playState.customDeathCharacter.deathConfirmAnim = deathConfirm;
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterPosition", function(x:Float, y:Float) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.setDeathPosition(x, y);
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterCameraOffset", function(offsetX:Float, offsetY:Float) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.cameraOffsetX = offsetX;
+			playState.customDeathCharacter.cameraOffsetY = offsetY;
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterCameraZoom", function(zoom:Float) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.cameraZoom = zoom;
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterScale", function(scaleX:Float, scaleY:Float) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.scale.set(scaleX, scaleY);
+			playState.customDeathCharacter.updateHitbox();
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterFlipX", function(flip:Bool) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.flipX = flip;
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterAntialiasing", function(enabled:Bool) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.antialiasing = enabled;
+			return true;
+		});
+
+		playState.addCallback("setDeathSounds", function(deathSound:String, deathMusic:String, deathMusicLoop:String, deathConfirmMusic:String) {
+			if(playState.customDeathCharacter == null) return false;
+			if(deathSound != null) playState.customDeathCharacter.deathSoundPath = deathSound;
+			if(deathMusic != null) playState.customDeathCharacter.deathMusicPath = deathMusic;
+			if(deathMusicLoop != null) playState.customDeathCharacter.deathMusicLoopPath = deathMusicLoop;
+			if(deathConfirmMusic != null) playState.customDeathCharacter.deathConfirmMusicPath = deathConfirmMusic;
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterOffset", function(offsetX:Float, offsetY:Float) {
+			if(playState.customDeathCharacter == null) return false;
+			playState.customDeathCharacter.offset.set(offsetX, offsetY);
+			return true;
+		});
+
+		playState.addCallback("hasCustomDeathCharacter", function() {
+			return playState.customDeathCharacter != null;
+		});
+
+		playState.addCallback("clearCustomDeathCharacter", function() {
+			if(playState.customDeathCharacter != null) {
+				playState.customDeathCharacter.destroy();
+				playState.customDeathCharacter = null;
+			}
+			return true;
 		});
 		#end
 	}

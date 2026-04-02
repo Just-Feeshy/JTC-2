@@ -75,8 +75,8 @@ class CrashLogDisplay extends Sprite {
     }
 
     public function attachReport(info:Array<String>):Void {
-        var _frontEndInfo:FlxText = createText(info[0].trim(), Paths.font("OpenSans-Regular.ttf"), 36);
-        var _uncaughtInfo:FlxText = createText(info[1].trim(), Paths.font("OpenSans-Regular.ttf"), 36);
+        var _frontEndInfo:FlxText = createText(info[0].trim(), Paths.font("OpenSans-Regular.ttf"), 18);
+        var _uncaughtInfo:FlxText = createText(info[1].trim(), Paths.font("OpenSans-Regular.ttf"), 16);
 
         @:privateAccess {
             _frontEndInfo._matrix.translate((backgroundData.width - _frontEndInfo.width) / 2, _panel.y + 5);
