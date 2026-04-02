@@ -74,6 +74,11 @@ local jtcOffsets = {
     {5, 23}
 }
 
+local shaderTrans = { --In steps
+	608,
+	644
+}
+
 local currentIntroFocusX = baseFunkroadCameraX
 local currentIntroFocusY = baseFunkroadCameraY
 local currentIntroZoom = baseFunkroadCameraZoom

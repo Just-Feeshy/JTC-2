@@ -42,10 +42,6 @@ local transitionToWheel = { --In steps
     1827
 }
 
-local shaderTrans = { --In steps
-
-}
-
 local bounceWheel = {
     0,
     0,
