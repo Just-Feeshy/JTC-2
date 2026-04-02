@@ -590,16 +590,23 @@ function onStepHit()
         staticShaderInstance:unbindFromCamera()
 	end
 
-    if curStep >= 630 and not daddyIsHere then
+    if curStep == 630 and not daddyIsHere then
 		callEvent("character change", "dad-car", "dad")
 		setSpriteVisible("frostbiteCAR", false)
         removeSpriteFromState("frostbiteCAR")
         daddyIsHere = true
-        
-        -- Add second sprite right after character change
+    end
+
+    if curStep == 631 then
+        -- Insert second sprite (already created in onCreate) right after dad
         if spriteExist("second") then
             setSpriteVisible("second", true)
-            addSpriteToStage("second")
+            local dadIndex = getSpriteIndexFromStage("dad")
+            if dadIndex >= 0 then
+                insertSpriteToStage(dadIndex + 1, "second")
+            else
+                addSpriteToStage("second")
+            end
         end
     end
 

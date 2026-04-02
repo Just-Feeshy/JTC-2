@@ -602,6 +602,7 @@ function onStepHit()
             addSpriteToStage("second")
         end
     end
+    end
 
     if curStep == 903 then
         removeAnimationPrefix("boyfriend", "idle")

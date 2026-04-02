@@ -361,6 +361,7 @@ function onStepHit()
             addSpriteToStage("second")
         end
     end
+	end
     if curStep == 147 and beatSection == 0 then
         callEvent("bump per beat", "2", "1.025")
         beatSection = beatSection + 1

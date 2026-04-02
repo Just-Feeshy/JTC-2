@@ -39,7 +39,7 @@ class CheesyStage extends StorageStage {
 	];
 
 	final funkroadDadPhaseOneOffset:Array<Float> = [-120, 30];
-	final funkroadDadPhaseTwoOffset:Array<Float> = [-480, 40];
+	final funkroadDadPhaseTwoOffset:Array<Float> = [-120, 40];
 	final funkroadBoyfriendPhaseOneOffset:Array<Float> = [120, 60];
 	final funkroadBoyfriendPhaseTwoOffset:Array<Float> = [360, 70];
 
@@ -297,11 +297,33 @@ class CheesyStage extends StorageStage {
 				}
 			});
 
+			// Update dad reference since character changed, and reset cached positions
+			dad = Register.getInGameCharacter(OPPONENT);
+			funkroadBaseDadPos = null;
+			funkroadBaseBoyfriendPos = null;
 			applyFunkroadLayout(true);
 		}
 	}
 
 	override function resetStage():Void {
+		// Update character references in case they changed
+		boyfriend = Register.getInGameCharacter(BOYFRIEND);
+		dad = Register.getInGameCharacter(OPPONENT);
+
+		// Reset characters to their base positions before recaching
+		if(stage == "funkroad") {
+			if(boyfriend != null) {
+				boyfriend.refresh(boyfriend.curCharacter, playstate.camPos);
+			}
+			if(dad != null) {
+				dad.refresh(dad.curCharacter, playstate.camPos);
+			}
+		}
+
+		// Reset cached positions and phase on restart
+		funkroadBaseDadPos = null;
+		funkroadBaseBoyfriendPos = null;
+		phase2_switch = false;
 		applyFunkroadLayout(false);
 	}
 

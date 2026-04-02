@@ -184,7 +184,7 @@ local function shaderTransitionUpdate()
 	local opacity = (curStepFloat - shaderTrans[1]) / (shaderTrans[3] - shaderTrans[1])
 
 	if shaderTrans[1] < curStepFloat and shaderTrans[2] > curStepFloat then
-        staticShaderInstance:setProperty("opacity", math.min(0.5 * bounceOut(opacity), 0.5))
+        staticShaderInstance:setProperty("opacity", math.min(0.36 * opacity, 0.36))
 	end
 
 	if shaderTrans[1] < curStepFloat and shaderTrans[3] > curStepFloat then
@@ -590,17 +590,16 @@ function onStepHit()
         staticShaderInstance:unbindFromCamera()
 	end
 
-    if curStep >= 630 and not daddyIsHere then
+    if curStep == 630 and not daddyIsHere then
 		callEvent("character change", "dad-car", "dad")
 		setSpriteVisible("frostbiteCAR", false)
         removeSpriteFromState("frostbiteCAR")
         daddyIsHere = true
-        
-        -- Add second sprite right after character change
-        if spriteExist("second") then
-            setSpriteVisible("second", true)
-            addSpriteToStage("second")
-        end
+    end
+
+    if curStep == 631 then
+        insertSpriteToStage("dad")
+        addSpriteToStage("second")
     end
 
     if curStep == 903 then

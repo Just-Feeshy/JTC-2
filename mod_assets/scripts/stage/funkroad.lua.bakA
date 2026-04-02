@@ -347,20 +347,28 @@ function onStepHit()
     end
 
     -- if cur
-    if curStep >= 630 and not daddyIsHere then
+
+    if curStep == 630 and not daddyIsHere then
         callEvent("character change", "dad-car", "dad")
 
         removeSpriteFromState("frostbiteCAR")
         destroySprite("frostbiteCAR")
 
         daddyIsHere = true
-        
-        -- Add second sprite right after character change
+    end
+
+	if curStep == 631 then
+        -- Insert second sprite (already created in onCreate) right after dad
         if spriteExist("second") then
             setSpriteVisible("second", true)
-            addSpriteToStage("second")
+            local dadIndex = getSpriteIndexFromStage("dad")
+            if dadIndex >= 0 then
+                insertSpriteToStage(dadIndex + 1, "second")
+            else
+                addSpriteToStage("second")
+            end
         end
-    end
+	end
     if curStep == 147 and beatSection == 0 then
         callEvent("bump per beat", "2", "1.025")
         beatSection = beatSection + 1
