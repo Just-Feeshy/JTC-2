@@ -76,7 +76,8 @@ local jtcOffsets = {
 
 local shaderTrans = { --In steps
 	608,
-	644
+	644,
+	629
 }
 
 local currentIntroFocusX = baseFunkroadCameraX
@@ -156,6 +157,18 @@ local function decayCameraZooms(elapsed)
     end
 end
 
+local function shaderTransitionUpdate()
+	local opacity = (curStepFloat - shaderTrans[1]) / (shaderTrans[3] - shaderTrans[1])
+
+	if shaderTrans[1] < curStepFloat and shaderTrans[2] > curStepFloat then
+        staticShaderInstance:setProperty("opacity", math.min(0.36 * opacity, 0.36))
+	end
+
+	if shaderTrans[1] < curStepFloat and shaderTrans[3] > curStepFloat then
+		setSpriteAlpha("jumpscare", opacity * opacity)
+	end
+end
+
 local function startsWith(value, prefix)
     if type(value) ~= "string" or type(prefix) ~= "string" then
         return false
@@ -171,6 +184,15 @@ end
 
 local function lerp(a, b, t)
     return a + ((b - a) * t)
+end
+
+local function createJumpscare()
+	createSprite("jumpscare")
+	loadGraphic("jumpscare", "jumpscare")
+	setSpriteAlpha("jumpscare", 0.0)
+	setSpriteToCamera("jumpscare", "camNOTE")
+	setSpriteSize("jumpscare", windowWidth, windowHeight)
+	addSpriteToStage("jumpscare")
 end
 
 local function init()
@@ -196,6 +218,8 @@ local function init()
     baseGameZoom = getCameraZoom("camGAME") or 1
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
+	precacheCharacter("dad-car")
+	createJumpscare()
     buildPulseSteps()
     callEvent("setCameraBop", "0", "0")
     jtc_camera.reset()
@@ -209,16 +233,6 @@ local function playAnimation(spriteName, animName)
 
     playAnimRaw(spriteName, animName)
     curAnimName = animName
-end
-
-local function cloudIncome()
-    if curStep > 614 and curStep < (phaseTwo + 1) then
-        local givenTime = (curStepFloat - 614) / ((phaseTwo + 1) - 614)
-        local timeLerp = math.min(givenTime, 1)
-        local easing = math.pow(math.min(timeLerp, 1), 2)
-
-        setSpritePosition("cloud", (10104 * easing) - 6736, -699 + math.sin(easing * math.pi * 2.0) * 250)
-    end
 end
 
 local function getIntroOpponentFaceFocus()
@@ -437,6 +451,8 @@ local function destroyManagedSprite(spriteName)
 end
 
 local function ensureFrostbiteCar()
+	local smallestIndex = math.min(getSpriteIndexFromStage("boyfriend"), getSpriteIndexFromStage("dad"))
+
     destroyManagedSprite("frostbiteCAR")
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
@@ -447,7 +463,7 @@ local function ensureFrostbiteCar()
     addAnimationByPrefix("frostbiteCAR", "fog", "car drive and dust t", 24, false)
     playAnimRaw("frostbiteCAR", "drive", true)
     setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
-    insertSpriteToStage(getSpriteIndexFromStage("dad"), "frostbiteCAR")
+    insertSpriteToStage(smallestIndex, "frostbiteCAR")
 end
 
 local function ensureSecondSprite()
@@ -468,17 +484,6 @@ local function ensureSecondSprite()
     spriteFlip("second", true, false)
     playAnimation("second", "idle")
     removeSpriteFromStage("second")
-end
-
-local function ensureCloudSprite()
-    destroyManagedSprite("cloud")
-    createSprite("cloud")
-    setSpritePosition("cloud", 0, 0)
-    loadGraphic("cloud", "daddy_transition_cloud")
-    scaleSprite("cloud", 2, 2)
-    screenCenter("cloud", "y")
-    setSpriteX("cloud", -6736)
-    addSpriteToState("cloud")
 end
 
 local function refreshFrostbeatRuntimeState()
@@ -502,7 +507,7 @@ function generatedStage()
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
-    addSongTrack("jtcVocals", "JTC_Voices", "player", 1, false, "t,joul")
+    addSongTrack("jtcVocals", "JTC_Voices", "player", 1)
     jtc_camera.hideGameplayUntilStep(12, false)
     setCameraVisible("camGame", true)
     ensureIntroWarmupCover()
@@ -511,8 +516,6 @@ function generatedStage()
     applyIntroOpponentFaceShot()
 
     ensureSecondSprite()
-
-    ensureCloudSprite()
 
     setupPunchHealth(3)
     refreshFrostbeatRuntimeState()
@@ -552,16 +555,21 @@ function onStepHit()
         daddyTrans = true
     end
 
-    if curStep == 608 then
-        staticShaderInstance:bindToCamera("camGame")
-        staticShaderInstance:setProperty("opacity", 0.4)
+    if curStep == shaderTrans[1] then
+		playSound("slenderdad", 1.0)
+        staticShaderInstance:bindToCamera("camNOTE")
         staticShaderInstance:setProperty("time", 1.0)
     end
 
+	if curStep == shaderTrans[2] then
+		setSpriteVisible("jumpscare", false)
+		removeSpriteFromState("jumpscare")
+        staticShaderInstance:unbindFromCamera()
+	end
+
     if curStep == 630 and not daddyIsHere then
-        callEvent("character change", "dad-car", "dad")
+		callEvent("character change", "dad-car", "dad")
         removeSpriteFromState("frostbiteCAR")
-        destroySprite("frostbiteCAR")
         daddyIsHere = true
     end
 
@@ -586,19 +594,23 @@ function onStepHit()
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
-    if daddyIsHere and (tag == "joul" or tag == "t") then
-        playAnimation("second", jtcStrumAnims[noteData + 1])
-        setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 1][1], secondBaseY - jtcOffsets[noteData + 1][2])
-        notDancing = true
-    end
+	if curStep > 906 then
+		return
+	end
+
+	playAnimation("second", jtcStrumAnims[noteData + 1])
+	setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 1][1], secondBaseY - jtcOffsets[noteData + 1][2])
+	notDancing = true
 end
 
 function noteMiss(noteData, tag)
-    if daddyIsHere and (tag == "joul" or tag == "t") then
-        playAnimation("second", jtcStrumAnims[noteData + 1] .. " miss")
-        setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 5][1], secondBaseY - jtcOffsets[noteData + 5][2])
-        notDancing = true
-    end
+	if curStep > 906 then
+		return
+	end
+
+	playAnimation("second", jtcStrumAnims[noteData + 1] .. " miss")
+	setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 5][1], secondBaseY - jtcOffsets[noteData + 5][2])
+	notDancing = true
 end
 
 function onUpdate(elapsed)
@@ -642,7 +654,7 @@ function onUpdate(elapsed)
         playAnimRaw("frostbiteCAR", "drive")
     end
 
-    cloudIncome()
+	shaderTransitionUpdate()
 end
 
 function onResume()

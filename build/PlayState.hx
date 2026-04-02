@@ -3509,6 +3509,8 @@ class PlayState extends MusicBeatState
 			return;
 
 		// Call the character change event with the original character
+		// Need to call events.whenTriggered first (actual change logic), then event_Extra (callbacks)
+		events.whenTriggered("character change", originalPlayer2, "dad", this);
 		event_Extra("character change", originalPlayer2, "dad");
 		characterChangeDirty = false;
 	}

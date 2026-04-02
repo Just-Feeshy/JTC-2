@@ -39,9 +39,9 @@ class CheesyStage extends StorageStage {
 	];
 
 	final funkroadDadPhaseOneOffset:Array<Float> = [-120, 30];
-	final funkroadDadPhaseTwoOffset:Array<Float> = [-220, 40];
+	final funkroadDadPhaseTwoOffset:Array<Float> = [-480, 40];
 	final funkroadBoyfriendPhaseOneOffset:Array<Float> = [120, 60];
-	final funkroadBoyfriendPhaseTwoOffset:Array<Float> = [180, 70];
+	final funkroadBoyfriendPhaseTwoOffset:Array<Float> = [360, 70];
 
 	var tweenIndex:UInt = 0;
 
@@ -186,7 +186,7 @@ class CheesyStage extends StorageStage {
 
 		if(dad != null && funkroadBaseDadPos != null) {
 			var dadOffset = phaseTwo ? funkroadDadPhaseTwoOffset : funkroadDadPhaseOneOffset;
-			dad.setPosition(funkroadBaseDadPos.x + dadOffset[0], funkroadBaseDadPos.y + dadOffset[1]);
+			dad.setPosition(funkroadBaseDadPos.x + dadOffset[0], 130);
 		}
 
 		if(boyfriend != null && funkroadBaseBoyfriendPos != null) {
@@ -233,10 +233,6 @@ class CheesyStage extends StorageStage {
 			dad.shouldPlayDance = false;
 			boyfriend.playAnim("idle", true);
 		}
-
-		if(stage == "funkroad") {
-			applyFunkroadLayout(false);
-		}
 	}
 
 	override function configIcons(iconP1:HealthIcon, iconP2:HealthIcon):Void {
@@ -254,6 +250,8 @@ class CheesyStage extends StorageStage {
 		if(PlayState.SONG.song.toLowerCase() != "funk-off" && PlayState.SONG.song.toLowerCase() != "ping-pong") {
 			playstate.iconP2.createAnim("joul", [24, 30, 24]);
 		}
+
+		applyFunkroadLayout(false);
 	}
 
 	override function setCamPos(camPos:FlxPoint):FlxPoint {
@@ -276,7 +274,7 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {
-		if(stage == "funkroad" && (curStep >= 630 && curStep < 632) && eventValue == "dad-car" && !phase2_switch) {
+		if(stage == "funkroad" && eventValue == "dad-car") {
 			phase2_switch = true;
 
 			playstate.iconP1.createAnim("flying BF sings", [28, 29, 28], true);
@@ -301,6 +299,10 @@ class CheesyStage extends StorageStage {
 
 			applyFunkroadLayout(true);
 		}
+	}
+
+	override function resetStage():Void {
+		applyFunkroadLayout(false);
 	}
 
 	override function update(elapsed:Float):Void {
