@@ -24,7 +24,7 @@ local phaseTwo = 643
 local daddyIsHere = false
 local daddyTrans = false
 
-local secondBaseX = 560
+local secondBaseX = 670
 local secondBaseY = 130
 local baseFunkroadCameraX = 785
 local baseFunkroadCameraY = 458.5
@@ -213,7 +213,7 @@ local function createJumpscare()
 	createSprite("jumpscare")
 	loadGraphic("jumpscare", "jumpscare")
 	setSpriteAlpha("jumpscare", 0.0)
-	setSpriteToCamera("jumpscare", "camNOTE")
+	setSpriteToCamera("jumpscare", "camHUD")
 	setSpriteSize("jumpscare", windowWidth, windowHeight)
 	addSpriteToStage("jumpscare")
 end
@@ -572,6 +572,10 @@ function onStepHit()
         clearIntroCameraShot()
     end
 
+	if curStep == 906 then
+		-- callEvent("character change", "flying GF sings", "boyfriend")
+	end
+
     pulseCamera(curStep)
 
     if curStep == 606 then
@@ -580,7 +584,7 @@ function onStepHit()
 
     if curStep == shaderTrans[1] then
 		playSound("slenderdad", 1.0)
-        staticShaderInstance:bindToCamera("camNOTE")
+        staticShaderInstance:bindToCamera("camHUD")
         staticShaderInstance:setProperty("time", 1.0)
     end
 
@@ -595,7 +599,7 @@ function onStepHit()
 		setSpriteVisible("frostbiteCAR", false)
         removeSpriteFromState("frostbiteCAR")
         daddyIsHere = true
-        
+
         -- Add second sprite right after character change
         if spriteExist("second") then
             setSpriteVisible("second", true)
@@ -603,7 +607,7 @@ function onStepHit()
         end
     end
 
-    if curStep == 903 then
+	if curStep == 903 then
         removeAnimationPrefix("boyfriend", "idle")
         removeAnimationPrefix("boyfriend", "singDOWN")
         removeAnimationPrefix("boyfriend", "singUP")

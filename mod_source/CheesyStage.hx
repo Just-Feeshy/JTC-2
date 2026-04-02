@@ -231,7 +231,6 @@ class CheesyStage extends StorageStage {
 
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
-			boyfriend.playAnim("idle", true);
 		}
 	}
 
@@ -318,6 +317,17 @@ class CheesyStage extends StorageStage {
 			if(dad != null) {
 				dad.refresh(dad.curCharacter, playstate.camPos);
 			}
+
+			// Reset health bar settings to phase 1
+			healthBarArrayLength = 2;
+			playstate.iconP1.createAnim("flying BF sings", [31, 32, 31], true);
+			playstate.healthBar.filledColor = tripleIconColors[0];
+
+			// Cancel existing health bar color tween
+			cleanTween();
+
+			// Restart the health bar tween with original colors
+			tweenHealthBar(tripleIconColors, "player", playstate);
 		}
 
 		// Reset cached positions and phase on restart
