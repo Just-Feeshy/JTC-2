@@ -648,10 +648,6 @@ class ModLua {
 		Lua_helper.add_callback(lua, "addAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null) {
-                return;
-            }
-
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
             */
@@ -682,10 +678,6 @@ class ModLua {
         Lua_helper.add_callback(lua, "playAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null) {
-                return;
-            }
-
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
             */
@@ -700,10 +692,6 @@ class ModLua {
 
 		Lua_helper.add_callback(lua, "addAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
             var spr:FlxSprite = getSprite(name);
-
-            if(spr == null) {
-                return;
-            }
 
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
@@ -737,10 +725,6 @@ class ModLua {
 
         Lua_helper.add_callback(lua, "playAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
             var spr:FlxSprite = getSprite(name);
-
-            if(spr == null) {
-                return;
-            }
 
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
@@ -776,7 +760,7 @@ class ModLua {
         addProtectedLuaCallback("playAnim", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null || !canPlaySpriteAnimation(spr, animation)) {
+            if(!canPlaySpriteAnimation(spr, animation)) {
                 return false;
             }
 
@@ -795,42 +779,42 @@ class ModLua {
             return true;
         });
 
-		addProtectedLuaCallback("playAnimRaw", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
-				var spr:FlxSprite = getSprite(name);
+        addProtectedLuaCallback("playAnimRaw", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
+			var spr:FlxSprite = getSprite(name);
 
-				if(spr == null || !canPlaySpriteAnimation(spr, animation)) {
-				    return false;
-				}
+			if(!canPlaySpriteAnimation(spr, animation)) {
+				return false;
+			}
 
-				spr.animation.play(animation, forced, reverse, startFrame);
+			spr.animation.play(animation, forced, reverse, startFrame);
 
-				return true;
-		});
+			return true;
+        });
 
-		addProtectedLuaCallback("stopAnim", function(name:String) {
-				var spr:FlxSprite = getSprite(name);
+        addProtectedLuaCallback("stopAnim", function(name:String) {
+                        var spr:FlxSprite = getSprite(name);
 
-				if(spr == null || spr.animation == null) {
-				    return;
-				}
+                        if(spr.animation == null) {
+                            return;
+                        }
 
-				spr.animation.stop();
-		});
+                        spr.animation.stop();
+        });
 
-		addProtectedLuaCallback("setAnimFrame", function(name:String, frame:Int) {
-				var spr:FlxSprite = getSprite(name);
+        addProtectedLuaCallback("setAnimFrame", function(name:String, frame:Int) {
+                        var spr:FlxSprite = getSprite(name);
 
-				if(spr == null || spr.animation == null) {
-				    return;
-				}
+                        if(spr.animation == null) {
+                            return;
+                        }
 
-				spr.animation.frameIndex = frame;
-		});
+                        spr.animation.frameIndex = frame;
+        });
 
         addProtectedLuaCallback("getAnimFrame", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null || spr.animation == null) {
+            if(spr.animation == null) {
                 return 0;
             }
 
@@ -851,16 +835,16 @@ class ModLua {
             return spr.animation.curAnim.finished;
         });
 
-		addProtectedLuaCallback("spriteFlip", function(name:String, flipX:Bool, flipY:Bool) {
-		    var spr:FlxSprite = getSprite(name);
+        addProtectedLuaCallback("spriteFlip", function(name:String, flipX:Bool, flipY:Bool) {
+            var spr:FlxSprite = getSprite(name);
 
-			if(spr == null) {
-				return;
-			}
+                if(spr == null) {
+                        return;
+                }
 
-			spr.flipX = flipX;
-			spr.flipY = flipY;
-		});
+                spr.flipX = flipX;
+                spr.flipY = flipY;
+        });
 
         addProtectedLuaCallback("setCustomFieldToSprite", function(name:String, prop:String, value:Dynamic) {
             var spr:FlxSprite = getSprite(name);

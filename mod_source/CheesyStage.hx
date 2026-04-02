@@ -159,8 +159,11 @@ class CheesyStage extends StorageStage {
 	}
 
 	function addAnimation(anim:String, prefix:String):Void {
-		boyfriend.animations.push(anim);
 		boyfriend.animation.addByPrefix(anim, prefix, 24, false);
+
+		if(boyfriend.hasAnimation(anim) && boyfriend.animations.indexOf(anim) < 0) {
+			boyfriend.animations.push(anim);
+		}
 	}
 
 	function cacheFunkroadBasePositions():Void {
@@ -228,9 +231,15 @@ class CheesyStage extends StorageStage {
 			addAnimation("singUPmiss", "flying miss UP0");
 			addAnimation("singRIGHTmiss", "flying miss RIGHT0");
 			addAnimation("singLEFTmiss", "flying miss LEFT0");
+			addAnimation("idle_gf", "flying dance IDLE GF");
+			addAnimation("singDOWN_gf", "flying dance DOWN GF");
+			addAnimation("singUP_gf", "flying dance UP GF");
+			addAnimation("singLEFT_gf", "flying dance LEFT GF");
+			addAnimation("singRIGHT_gf", "flying dance RIGHT GF");
 
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
+			boyfriend.playAnim("idle", true);
 		}
 	}
 

@@ -26,6 +26,7 @@ class Character extends feshixl.FeshSprite {
 
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
+	public var animationAliases:Map<String, String>;
 	public var debugMode:Bool = false;
 	public var specialAnim:Bool = false;
 
@@ -69,6 +70,7 @@ class Character extends feshixl.FeshSprite {
 
 		animOffsets = new Map<String, Array<Float>>();
 		animations = new Array<String>();
+		animationAliases = new Map<String, String>();
 		curCharacter = character;
 		this.isPlayer = isPlayer;
 
@@ -149,7 +151,33 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	public function hasAnimation(animName:String):Bool {
-		return animation != null && animation.getByName(animName) != null;
+		var resolvedAnimName = resolveAnimationName(animName);
+		return animation != null && animation.getByName(resolvedAnimName) != null;
+	}
+
+	public function setAnimationAlias(sourceAnimation:String, targetAnimation:String):Void {
+		if(sourceAnimation == null || targetAnimation == null) {
+			return;
+		}
+
+		animationAliases.set(sourceAnimation, targetAnimation);
+	}
+
+	public function clearAnimationAlias(sourceAnimation:String):Void {
+		if(sourceAnimation == null || animationAliases == null) {
+			return;
+		}
+
+		animationAliases.remove(sourceAnimation);
+	}
+
+	function resolveAnimationName(animName:String):String {
+		if(animName == null || animationAliases == null) {
+			return animName;
+		}
+
+		var aliasName = animationAliases.get(animName);
+		return aliasName != null ? aliasName : animName;
 	}
 
 	public function playAnimation(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
@@ -290,9 +318,14 @@ class Character extends feshixl.FeshSprite {
 			animOffsets.clear();
 		}
 
+		if(animationAliases != null) {
+			animationAliases.clear();
+		}
+
 		curCharacter = null;
 
 		animOffsets = null;
+		animationAliases = null;
 		animations = null;
 		_info = null;
 	}
@@ -408,22 +441,27 @@ class Character extends feshixl.FeshSprite {
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		specialAnim = false;
+		var resolvedAnimName = resolveAnimationName(AnimName);
 
 		if(animations.length == 0) {
 			return;
 		}
 
-		if(AnimName.startsWith('sing')) {
+		if(resolvedAnimName.startsWith('sing')) {
 			dancing = false;
 			animation.reset();
 		}
 
-		super.playAnim(AnimName, Force, Reversed, Frame);
+		super.playAnim(resolvedAnimName, Force, Reversed, Frame);
 		//animation.play(AnimName, Force, Reversed, Frame);
 
 		var daOffset = animOffsets.get(AnimName);
 
-		if (animOffsets.exists(AnimName)) {
+		if(daOffset == null) {
+			daOffset = animOffsets.get(resolvedAnimName);
+		}
+
+		if (daOffset != null) {
 			offset.set(daOffset[0], daOffset[1]);
 		}else {
 			offset.set(0, 0);

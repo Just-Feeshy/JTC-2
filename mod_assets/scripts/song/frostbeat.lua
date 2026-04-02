@@ -76,7 +76,7 @@ local jtcOffsets = {
 
 local shaderTrans = { --In steps
 	608,
-	644,
+	656,
 	629
 }
 
@@ -527,6 +527,12 @@ function generatedStage()
     init()
     staticShaderInstance = static_shader.new("static_shader"):init()
 
+    clearCharacterAnimationAlias("boyfriend", "idle")
+    clearCharacterAnimationAlias("boyfriend", "singDOWN")
+    clearCharacterAnimationAlias("boyfriend", "singUP")
+    clearCharacterAnimationAlias("boyfriend", "singLEFT")
+    clearCharacterAnimationAlias("boyfriend", "singRIGHT")
+
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
@@ -589,7 +595,7 @@ function onStepHit()
     end
 
 	if curStep == shaderTrans[2] then
-		setSpriteVisible("jumpscare", false)
+		setSpriteAlpha("jumpscare", 0)
 		removeSpriteFromState("jumpscare")
         staticShaderInstance:unbindFromCamera()
 	end
@@ -608,17 +614,12 @@ function onStepHit()
     end
 
 	if curStep == 903 then
-        removeAnimationPrefix("boyfriend", "idle")
-        removeAnimationPrefix("boyfriend", "singDOWN")
-        removeAnimationPrefix("boyfriend", "singUP")
-        removeAnimationPrefix("boyfriend", "singLEFT")
-        removeAnimationPrefix("boyfriend", "singRIGHT")
-
-        addAnimationByPrefix("boyfriend", "idle", "flying dance IDLE GF", 24, false)
-        addAnimationByPrefix("boyfriend", "singDOWN", "flying dance DOWN GF", 24, false)
-        addAnimationByPrefix("boyfriend", "singUP", "flying dance UP GF", 24, false)
-        addAnimationByPrefix("boyfriend", "singLEFT", "flying dance LEFT GF", 24, false)
-        addAnimationByPrefix("boyfriend", "singRIGHT", "flying dance RIGHT GF", 24, false)
+        setCharacterAnimationAlias("boyfriend", "idle", "idle_gf")
+        setCharacterAnimationAlias("boyfriend", "singDOWN", "singDOWN_gf")
+        setCharacterAnimationAlias("boyfriend", "singUP", "singUP_gf")
+        setCharacterAnimationAlias("boyfriend", "singLEFT", "singLEFT_gf")
+        setCharacterAnimationAlias("boyfriend", "singRIGHT", "singRIGHT_gf")
+        playAnimation("boyfriend", "idle")
     end
 end
 

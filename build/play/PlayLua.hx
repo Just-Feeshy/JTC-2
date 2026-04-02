@@ -299,6 +299,40 @@ class PlayLua
 			return true;
 		});
 
+		playState.addCallback("setCharacterAnimationAlias", function(name:String, sourceAnimation:String, targetAnimation:String) {
+			var sprite = getSprite(name);
+
+			if(!Std.isOfType(sprite, Character)) {
+				return false;
+			}
+
+			var character:Character = cast sprite;
+
+			if(character == null) {
+				return false;
+			}
+
+			character.setAnimationAlias(sourceAnimation, targetAnimation);
+			return true;
+		});
+
+		playState.addCallback("clearCharacterAnimationAlias", function(name:String, sourceAnimation:String) {
+			var sprite = getSprite(name);
+
+			if(!Std.isOfType(sprite, Character)) {
+				return false;
+			}
+
+			var character:Character = cast sprite;
+
+			if(character == null) {
+				return false;
+			}
+
+			character.clearAnimationAlias(sourceAnimation);
+			return true;
+		});
+
 		playState.addCallback("setCharacterHoldTimer", function(name:String, value:Float) {
 			var character:Character = playState.modifiableCharacters.get(name);
 
