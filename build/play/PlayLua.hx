@@ -360,6 +360,18 @@ class PlayLua
 			playState.modifiableCharacters.set(name, characterSprite);
 		});
 
+		playState.addCallback("makeCharacter", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = false) {
+			if(playState.modifiableCharacters.exists(name))
+				return false;
+
+			var characterSprite:Character = new Character(x, y, characterName, isPlayer);
+			characterSprite.refresh(characterName, playState.camPos);
+			characterSprite.active = true;
+
+			playState.modifiableCharacters.set(name, characterSprite);
+			return true;
+		});
+
 		playState.addCallback("createCharacterSpriteNFA", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = false) {
 			if(playState.modifiableCharacters.exists(name))
 				return;
@@ -369,6 +381,25 @@ class PlayLua
 			characterSprite.active = true;
 
 			playState.modifiableCharacters.set(name, characterSprite);
+		});
+
+		playState.addCallback("warmCharacterAnimations", function(name:String, animations:Array<Dynamic>) {
+			var character:Character = playState.modifiableCharacters.get(name);
+
+			if(character == null || animations == null) {
+				return false;
+			}
+
+			var animationNames:Array<String> = [];
+
+			for(animation in animations) {
+				if(animation != null) {
+					animationNames.push(Std.string(animation));
+				}
+			}
+
+			character.warmAnimations(animationNames);
+			return true;
 		});
 
 		playState.addCallback("addCharacterToList", function(name:String, type:String = "boyfriend") {
@@ -390,6 +421,42 @@ class PlayLua
 			}
 
 			playState.addCharacterToList(resolvedCharacter, charType);
+			return true;
+		});
+
+		playState.addCallback("addCharacter", function(name:String, insertBefore:String = null) {
+			var character:Character = playState.modifiableCharacters.get(name);
+
+			if(character == null) {
+				return false;
+			}
+
+			if(playState.stage.members.indexOf(character) >= 0) {
+				return true;
+			}
+
+			var insertIndex:Int = -1;
+
+			if(insertBefore != null) {
+				switch(insertBefore.toLowerCase().trim()) {
+					case "boyfriend", "bf", "player":
+						insertIndex = playState.stage.members.indexOf(playState.boyfriend);
+					case "dad", "opponent":
+						insertIndex = playState.stage.members.indexOf(playState.dad);
+					case "gf", "girlfriend":
+						insertIndex = playState.gf != null ? playState.stage.members.indexOf(playState.gf) : -1;
+					default:
+						var targetSprite:FlxSprite = getSprite(insertBefore);
+						insertIndex = targetSprite != null ? playState.stage.members.indexOf(targetSprite) : -1;
+				}
+			}
+
+			if(insertIndex >= 0) {
+				playState.stage.insert(insertIndex, character);
+			} else {
+				playState.stage.add(character);
+			}
+
 			return true;
 		});
 

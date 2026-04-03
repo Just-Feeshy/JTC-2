@@ -730,7 +730,9 @@ local function resetSecondSprite()
     setSpritePosition("second", secondBaseX, secondBaseY)
     setSpriteVisible("second", false)
     setCustomFieldToSprite("second", "active", false)
-    playSecondAnimation("idle")
+    playCharacterAnim("second", "idle", true)
+    curAnimName = "idle"
+    holdTimer = 0
 end
 
 local function refreshFrostbeatRuntimeState()
