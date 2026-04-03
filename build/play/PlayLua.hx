@@ -1,6 +1,8 @@
 package play;
 
 import Section.SwagSection;
+import CoolUtil;
+import HealthIcon;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.tweens.FlxTween;
@@ -401,6 +403,23 @@ class PlayLua
 			return true;
 		});
 
+		playState.addCallback("playCharacterAnim", function(name:String, animation:String, forced:Bool = false, reverse:Bool = false, startFrame:Int = 0) {
+			var sprite = getSprite(name);
+
+			if(!Std.isOfType(sprite, Character) || animation == null) {
+				return false;
+			}
+
+			var character:Character = cast sprite;
+
+			if(character == null || !character.hasAnimation(animation)) {
+				return false;
+			}
+
+			character.playAnimation(animation, forced, reverse, startFrame);
+			return true;
+		});
+
 		playState.addCallback("setCharacterAnimationAlias", function(name:String, sourceAnimation:String, targetAnimation:String) {
 			var sprite = getSprite(name);
 
@@ -509,6 +528,44 @@ class PlayLua
 			var opponentColor:FlxColor = parseLuaColor(opponentHex);
 			var playerColor:FlxColor = parseLuaColor(playerHex);
 			playState.healthBar.createFilledBar(opponentColor, playerColor);
+		});
+
+		playState.addCallback("setHealthIconAnimation", function(side:String, character:String, regular:Int, dead:Int, winning:Int, ?isPlayer:Null<Bool>) {
+			var icon:HealthIcon = null;
+			var usePlayerIcon:Bool = true;
+			var normalizedSide:String = side != null ? side.toLowerCase().trim() : "";
+
+			switch(normalizedSide) {
+				case "left", "opponent", "dad", "p2":
+					icon = playState.iconP2;
+					usePlayerIcon = false;
+				default:
+					icon = playState.iconP1;
+					usePlayerIcon = true;
+			}
+
+			if(icon == null || character == null || character.trim() == "") {
+				return false;
+			}
+
+			if(isPlayer != null) {
+				usePlayerIcon = isPlayer;
+			}
+
+			icon.character = character;
+			icon.createAnim(character, [cast regular, cast dead, cast winning], usePlayerIcon);
+			icon.setGraphicSize(150, 150);
+			icon.updateHitbox();
+			icon.y = playState.healthBar.y - (icon.height / 2);
+
+			if(icon == playState.iconP1) {
+				playState.playerIconColor = CoolUtil.calculateAverageColor(icon.updateFramePixels());
+			} else {
+				playState.opponentIconColor = CoolUtil.calculateAverageColor(icon.updateFramePixels());
+			}
+
+			updateDynamicVars();
+			return true;
 		});
 
 		playState.addCallback("doTweenHealthBarColor", function(name:String, side:String, hex:String, duration:Float, ease:String) {

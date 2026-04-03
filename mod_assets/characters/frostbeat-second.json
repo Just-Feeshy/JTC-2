@@ -1,0 +1,129 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "skater dance IDLE0",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"idleExtra": {
+			"prefix": "skater dance IDLE still",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				110,
+				0
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "skater dance DOWN0",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				58,
+				-228
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "skater dance RIGHT0",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				193,
+				-45
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "skater dance LEFT0",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-14,
+				-19
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "skater dance UP0",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				8,
+				59
+			],
+			"looped": false
+		},
+		"singDOWN miss": {
+			"prefix": "skater dance DOWN miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				59,
+				-93
+			],
+			"looped": false
+		},
+		"singRIGHT miss": {
+			"prefix": "skater dance RIGHT miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				216,
+				135
+			],
+			"looped": false
+		},
+		"singLEFT miss": {
+			"prefix": "skater dance LEFT miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-2,
+				18
+			],
+			"looped": false
+		},
+		"singUP miss": {
+			"prefix": "skater dance UP miss",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				8,
+				106
+			],
+			"looped": false
+		},
+		"punched": {
+			"prefix": "skater dance punchd",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-11,
+				-3
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": 0,
+		"camPosY": 0,
+		"y": 0,
+		"camPosX": 0
+	},
+	"playAnim": "idle",
+	"file": "skater_assets.xml, skater extra notes.xml",
+	"icon": [
+		24,
+		30,
+		24
+	]
+}

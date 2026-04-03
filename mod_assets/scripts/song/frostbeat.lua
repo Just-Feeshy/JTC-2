@@ -1,16 +1,17 @@
 -- First main game lua test of this "engine" to see how well it can handle lua modchart's and general scripting.
--- This is not the most organized script setup, but Frostbeat is the best song to test the "simple stuff."
 
 --variables of components
 local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
-local static_shader = require("mod_assets/scripts/utils/static_shader")
 local frost_modchart = {}
 
 local beatSection = 0
 local pulseStepIntensity = {}
 local baseGameZoom = 1
-local staticShaderInstance = nil
+local staticShaderInitialized = false
+local staticShaderActive = false
 local staticShaderTime = 0
+local staticShaderCleared = false
+local staticShaderSoundPlayed = false
 local baseHudZoom = 1
 local baseNoteZoom = 1
 
@@ -26,9 +27,14 @@ local daddyTrans = false
 
 local secondBaseX = 670
 local secondBaseY = 130
+local phaseTwoDadDeltaX = -120
+local phaseTwoDadDeltaY = 10
+local phaseTwoBoyfriendDeltaX = 240
+local phaseTwoBoyfriendDeltaY = 10
 local baseFunkroadCameraX = 785
 local baseFunkroadCameraY = 458.5
 local baseFunkroadCameraZoom = 0.5
+local baseFunkroadCameraFocusLerp = 0.09
 local introNoteRevealStartStep = 36
 local introNoteRevealEndStep = 54
 local introBaseCameraStep = 40
@@ -63,23 +69,13 @@ local jtcStrumAnims = {
     "singLEFT"
 }
 
-local jtcOffsets = {
-    {191, -44},
-    {-61, 61},
-    {-75, -229},
-    {-68, -15},
-
-    {307, 138},
-    {159, 108},
-    {-18, -91},
-    {5, 23}
-}
-
 local shaderTrans = { --In steps
 	608,
 	656,
 	629
 }
+local STATIC_SHADER_NAME = "static_shader"
+local STATIC_SHADER_CAMERA = "camHUD"
 
 local currentIntroFocusX = baseFunkroadCameraX
 local currentIntroFocusY = baseFunkroadCameraY
@@ -97,6 +93,9 @@ local introClearDone = false
 local secondActive = false
 local boyfriendGFSwitched = false
 local jtcVocalsSwitchedToPlayer = false
+local jtcVocalsMutedForPunch = false
+local punchCount = 0
+local punchIconNames = {}
 local INTENSITY_MULTIPLIER = 1.5
 local BASE_GAME_BUMP = 0.015
 local BASE_HUD_BUMP = 0.03
@@ -190,15 +189,75 @@ local function decayCameraZooms(elapsed)
 end
 
 local function shaderTransitionUpdate()
+    if not staticShaderActive then
+        return
+    end
+
 	local opacity = (curStepFloat - shaderTrans[1]) / (shaderTrans[3] - shaderTrans[1])
 
 	if shaderTrans[1] < curStepFloat and shaderTrans[2] > curStepFloat then
-        staticShaderInstance:setProperty("opacity", math.min(0.5 * bounceOut(opacity), 0.5))
+        setShaderFloat(STATIC_SHADER_CAMERA, "opacity", math.min(0.5 * bounceOut(opacity), 0.5))
 	end
 
 	if shaderTrans[1] < curStepFloat and shaderTrans[3] > curStepFloat then
 		setSpriteAlpha("jumpscare", bounceIn(opacity))
 	end
+end
+
+local function ensureStaticShader()
+    if staticShaderActive then
+        return true
+    end
+
+    if not staticShaderInitialized and initLuaShader ~= nil then
+        staticShaderInitialized = initLuaShader(STATIC_SHADER_NAME, "shaders") == true
+    end
+
+    if not staticShaderInitialized or setCameraShader == nil then
+        return false
+    end
+
+    staticShaderActive = setCameraShader(STATIC_SHADER_CAMERA, STATIC_SHADER_NAME) == true
+
+    if staticShaderActive then
+        setShaderFloat(STATIC_SHADER_CAMERA, "time", staticShaderTime)
+        setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
+    end
+
+    return staticShaderActive
+end
+
+local function startStaticShaderEffect()
+    if not staticShaderSoundPlayed then
+	    playSound("slenderdad", 1.0)
+        staticShaderSoundPlayed = true
+    end
+
+    if not ensureStaticShader() then
+        return
+    end
+
+    staticShaderTime = math.max(staticShaderTime, 1.0)
+    setShaderFloat(STATIC_SHADER_CAMERA, "time", staticShaderTime)
+    setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
+    staticShaderCleared = false
+end
+
+local function clearStaticShaderEffect()
+    if staticShaderCleared then
+        return
+    end
+
+	if spriteExist("jumpscare") then
+		setSpriteAlpha("jumpscare", 0)
+		removeSpriteFromState("jumpscare")
+	end
+
+    if staticShaderActive then
+        setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
+    end
+
+    staticShaderCleared = true
 end
 
 local function startsWith(value, prefix)
@@ -233,6 +292,7 @@ local function init()
     pulseStepIntensity = {}
     staticShaderTime = 0
     curAnimName = ""
+    baseFunkroadCameraFocusLerp = 0.09
     holdTimer = 0
     multipler = 6.1
     stunned = false
@@ -255,10 +315,17 @@ local function init()
     secondActive = false
     boyfriendGFSwitched = false
     jtcVocalsSwitchedToPlayer = false
+    jtcVocalsMutedForPunch = false
+    punchCount = 0
+    punchIconNames = {}
     baseGameZoom = getCameraZoom("camGAME") or 1
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
-	precacheCharacter("dad-car")
+    staticShaderInitialized = false
+    staticShaderActive = false
+    staticShaderCleared = false
+    staticShaderSoundPlayed = false
+    precacheCharacter("dad-car")
 	precacheCharacter("flying BF sings gf")
 	addCharacterToList("flying BF sings gf", "boyfriend")
 	createJumpscare()
@@ -267,14 +334,100 @@ local function init()
     jtc_camera.reset()
 end
 
-local function playAnimation(spriteName, animName)
-    if animName == "idle" and notDancing then
-        setSpritePosition("second", secondBaseX, secondBaseY)
-        notDancing = false
+local function playSecondAnimation(animName)
+    if animName ~= "punched" and spriteExist("second") and curAnimName == "punched" and not sprAnimFinished("second") then
+        return
     end
 
-    playAnimRaw(spriteName, animName)
+    playCharacterAnim("second", animName, true)
     curAnimName = animName
+end
+
+local function isSecondPunchLocked()
+    return spriteExist("second") and curAnimName == "punched" and not sprAnimFinished("second")
+end
+
+local function applyPhaseTwoFunkroadLayout()
+    if spriteExist("dad") then
+        setSpritePosition("dad", getSpriteX("dad") + phaseTwoDadDeltaX, getSpriteY("dad") + phaseTwoDadDeltaY)
+    end
+
+    if spriteExist("boyfriend") then
+        setSpritePosition("boyfriend", getSpriteX("boyfriend") + phaseTwoBoyfriendDeltaX, getSpriteY("boyfriend") + phaseTwoBoyfriendDeltaY)
+    end
+end
+
+local function enterPhaseTwo()
+    if daddyIsHere then
+        return
+    end
+
+    callEvent("character change", "dad-car", "dad")
+    setSpriteVisible("frostbiteCAR", false)
+    removeSpriteFromState("frostbiteCAR")
+    setGameplayCameraZoom(1.0, false, false)
+    daddyIsHere = true
+    secondActive = true
+
+    applyPhaseTwoFunkroadLayout()
+
+    if spriteExist("second") then
+        setSpriteVisible("second", true)
+        local dadIndex = getSpriteIndexFromStage("dad")
+
+        if dadIndex ~= nil and dadIndex >= 0 then
+            insertSpriteToStage(dadIndex, "second")
+        else
+            addSpriteToStage("second")
+        end
+    end
+
+    if setHealthIconAnimation ~= nil then
+        setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
+    end
+end
+
+local function applyPhaseOneHud()
+    if setHealthIconAnimation ~= nil then
+        setHealthIconAnimation("player", "flying BF sings", 31, 32, 31, true)
+        setHealthIconAnimation("opponent", "joul", 24, 30, 24, false)
+    end
+end
+
+local function updatePunchIcon(index)
+    local iconName = punchIconNames[index]
+
+    if iconName == nil or not spriteExist(iconName) then
+        return
+    end
+
+    loadGraphic(iconName, "daddy_fisted")
+    scaleSprite(iconName, 0.7, 0.7)
+end
+
+local function triggerDeathNotePunch()
+    if daddyIsHere then
+		playCharacterAnim("dad", "punch", true)
+    end
+
+    if spriteExist("second") then
+        holdTimer = 0
+        playSecondAnimation("punched")
+        notDancing = true
+    end
+
+    if hasSongTrack ~= nil and hasSongTrack("jtcVocals") and setSongTrackBaseVolume ~= nil then
+        setSongTrackBaseVolume("jtcVocals", 0)
+        jtcVocalsMutedForPunch = true
+    end
+
+    punchCount = punchCount + 1
+    updatePunchIcon(punchCount)
+	playSound("punch", 2)
+
+    if punchCount >= 3 then
+        -- instaKillPlayer()
+    end
 end
 
 local function getIntroOpponentFaceFocus()
@@ -319,6 +472,11 @@ local function getIntroCompensatedCarPosition(focusX, focusY, zoom)
         originalCarScreenY + focusY - introHalfHeight
 end
 
+local function applyBaseFunkroadCameraFocus(snap)
+    setGameplayCameraFocus(baseFunkroadCameraX, baseFunkroadCameraY, snap)
+    setGameplayCameraFocusLerp(baseFunkroadCameraFocusLerp)
+end
+
 local function applyIntroCameraState(focusX, focusY, zoom, carX, carY)
     introClearTween = nil
     currentIntroFocusX = focusX
@@ -328,6 +486,7 @@ local function applyIntroCameraState(focusX, focusY, zoom, carX, carY)
     currentIntroCarY = carY
 
     setGameplayCameraFocus(focusX, focusY, true)
+    setGameplayCameraFocusLerp(0)
     setGameplayCameraZoom(zoom, true, true)
     setSpritePosition("frostbiteCAR", carX, carY)
 end
@@ -452,7 +611,7 @@ local function updateIntroClearTween(elapsed)
     currentIntroFocusX = focusX
     currentIntroFocusY = focusY
     currentIntroZoom = zoom
-    currentIntroCarX = carplX
+    currentIntroCarX = carX
     currentIntroCarY = carY
 
     setGameplayCameraFocus(focusX, focusY, true)
@@ -461,7 +620,7 @@ local function updateIntroClearTween(elapsed)
 
     if t >= 1 then
         introClearTween = nil
-        clearGameplayCameraFocus(true)
+        applyBaseFunkroadCameraFocus(true)
         clearGameplayCameraZoom(true)
         setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
         currentIntroFocusX = baseFunkroadCameraX
@@ -506,8 +665,7 @@ local function ensureFrostbiteCar()
     destroyManagedSprite("frostbiteCAR")
     createSprite("frostbiteCAR")
     setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
-    createCombinedFrames("frostbiteCAR-frames", "daddycar", "daddycar2", "sparrow", "sparrow")
-    addFramesToSprite("frostbiteCAR", "frostbiteCAR-frames")
+	compileSpriteSheet("frostbiteCAR", "daddycar", "sparrow")
     addAnimationByPrefix("frostbiteCAR", "drive", "daddycar", 24, true)
     addAnimationByPrefix("frostbiteCAR", "transition", "car drive and dust0", 24, false)
     addAnimationByPrefix("frostbiteCAR", "fog", "car drive and dust t", 24, false)
@@ -523,7 +681,7 @@ local function resetSecondSprite()
 
     setSpritePosition("second", secondBaseX, secondBaseY)
     setSpriteVisible("second", false)
-    playAnimation("second", "idle")
+    playSecondAnimation("idle")
     removeSpriteFromStage("second")
 end
 
@@ -543,7 +701,12 @@ end
 
 function generatedStage()
     init()
-    staticShaderInstance = static_shader.new("static_shader"):init()
+    applyPhaseOneHud()
+    if clearCameraShaders ~= nil then
+        clearCameraShaders(STATIC_SHADER_CAMERA)
+    else
+        removeCameraShader(STATIC_SHADER_CAMERA)
+    end
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
@@ -559,6 +722,7 @@ function generatedStage()
 
     setupPunchHealth(3)
     refreshFrostbeatRuntimeState()
+    ensureStaticShader()
 end
 
 function onStepHit()
@@ -571,29 +735,15 @@ function onStepHit()
     end
 
     if curStep == shaderTrans[1] then
-		playSound("slenderdad", 1.0)
-        staticShaderInstance:bindToCamera("camHUD")
-        staticShaderInstance:setProperty("time", 1.0)
+        startStaticShaderEffect()
     end
 
 	if curStep == shaderTrans[2] then
-		setSpriteAlpha("jumpscare", 0)
-		removeSpriteFromState("jumpscare")
-        staticShaderInstance:unbindFromCamera()
+        clearStaticShaderEffect()
 	end
 
-    if curStep >= 630 and not daddyIsHere then
-		callEvent("character change", "dad-car", "dad")
-		setSpriteVisible("frostbiteCAR", false)
-        removeSpriteFromState("frostbiteCAR")
-        daddyIsHere = true
-        secondActive = true
-
-        -- Add second sprite right after character change
-        if spriteExist("second") then
-            setSpriteVisible("second", true)
-            addSpriteToStage("second")
-        end
+    if curStep >= 630 then
+        enterPhaseTwo()
     end
 
     if curStep >= 630 and not jtcVocalsSwitchedToPlayer then
@@ -610,26 +760,34 @@ end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
 	if not boyfriendGFSwitched and curStep ~= nil and curStep >= 906 then
-		callEvent("character change", "flying BF sings gf", "boyfriend")
+            baseFunkroadCameraFocusLerp = 0.18
+	    callEvent("character change", "flying BF sings gf", "boyfriend")
+        if setHealthIconAnimation ~= nil then
+            setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
+        end
 		boyfriendGFSwitched = true
 	end
 
-	if not secondActive then
+	if noteAbstract == "death" then
+        triggerDeathNotePunch()
 		return
 	end
 
-	playAnimation("second", jtcStrumAnims[noteData + 1])
-	setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 1][1], secondBaseY - jtcOffsets[noteData + 1][2])
+	if not secondActive or isSecondPunchLocked() then
+		return
+	end
+
+	playSecondAnimation(jtcStrumAnims[noteData + 1])
+
 	notDancing = true
 end
 
 function noteMiss(noteData, tag)
-	if not secondActive then
+	if not secondActive or isSecondPunchLocked() then
 		return
 	end
 
-	playAnimation("second", jtcStrumAnims[noteData + 1] .. " miss")
-	setSpritePosition("second", secondBaseX - jtcOffsets[noteData + 5][1], secondBaseY - jtcOffsets[noteData + 5][2])
+	playSecondAnimation(jtcStrumAnims[noteData + 1] .. " miss")
 	notDancing = true
 end
 
@@ -640,10 +798,28 @@ function onUpdate(elapsed)
         return
     end
 
+    if curStepFloat ~= nil and curStepFloat >= 630 then
+        enterPhaseTwo()
+
+        if not jtcVocalsSwitchedToPlayer then
+            removeSongTrack("jtcVocals")
+            addSongTrack("jtcVocals", "JTC_Voices", "player", 1)
+            jtcVocalsSwitchedToPlayer = true
+        end
+    end
+
+    if curStepFloat ~= nil and curStepFloat >= shaderTrans[1] and curStepFloat < shaderTrans[2] then
+        startStaticShaderEffect()
+    end
+
     -- Update shader time animation
-    if staticShaderInstance and staticShaderInstance:getBoundCamera() then
+    if ensureStaticShader() then
         staticShaderTime = staticShaderTime + elapsed
-        staticShaderInstance:setProperty("time", staticShaderTime)
+        setShaderFloat(STATIC_SHADER_CAMERA, "time", staticShaderTime)
+    end
+
+    if curStepFloat ~= nil and curStepFloat >= shaderTrans[2] then
+        clearStaticShaderEffect()
     end
 
     if not introCoverRemoved and curStep ~= nil and curStep >= introBeginStep and spriteExist("introWarmupCover") then
@@ -685,13 +861,20 @@ function onUpdate(elapsed)
         holdTimer = holdTimer + elapsed
     end
 
+    if jtcVocalsMutedForPunch and curAnimName == "punched" and sprAnimFinished("second") then
+        if hasSongTrack ~= nil and hasSongTrack("jtcVocals") and setSongTrackBaseVolume ~= nil then
+            setSongTrackBaseVolume("jtcVocals", 1)
+        end
+        jtcVocalsMutedForPunch = false
+    end
+
     if holdTimer > stepCrochet * crochetPitch * multipler then
-        playAnimation("second", "idle")
+        playSecondAnimation("idle")
         holdTimer = 0
     end
 
     if not stunned and not startsWith(curAnimName, "sing") and sprAnimFinished("second") then
-        playAnimation("second", "idle")
+        playSecondAnimation("idle")
     end
 
     if sprAnimFinished("frostbiteCAR") and daddyTrans then
@@ -708,6 +891,12 @@ function onUpdate(elapsed)
 	shaderTransitionUpdate()
 end
 
+function onDestroy()
+    if staticShaderActive and removeCameraShader ~= nil then
+        removeCameraShader(STATIC_SHADER_CAMERA)
+    end
+end
+
 function onResume()
     holdTimer = 0
 
@@ -721,21 +910,15 @@ function setupPunchHealth(amount)
         local iconX = getSpriteX("healthBarBG") + getSpriteWidth("healthBarBG") + 50
         local iconY = getMidpointY("healthBarBG") - 50
 
-        if spriteExist("punchIcon" .. tostring(i - 1)) then
-            local iconHeight = getSpriteHeight("punchIcon0")
-
-            iconX = iconX + (getSpriteWidth("punchIcon" .. tostring(i - 1)) * (i - 1))
-            iconY = iconY - (iconHeight * 0.5)
-        end
-
         createSprite("punchIcon" .. i)
-        setSpritePosition("punchIcon" .. i, iconX, iconY - 10)
         loadGraphic("punchIcon" .. i, "daddy_fist")
         setSpriteToCamera("punchIcon" .. i, "camHUD")
         scaleSprite("punchIcon" .. i, 0.7, 0.7)
         addSpriteToStage("punchIcon" .. i)
+        setSpritePosition("punchIcon" .. i, iconX + (i - 1) * getSpriteWidth("punchIcon"  .. i) * 1.05, iconY - 10)
         table.insert(punchIcons, "punchIcon" .. i)
     end
 
+    punchIconNames = punchIcons
     jtc_camera.registerHiddenSprites(punchIcons)
 end

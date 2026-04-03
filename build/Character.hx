@@ -6,9 +6,11 @@ import flixel.math.FlxRect;
 import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
 import flixel.animation.FlxBaseAnimation;
+import flixel.animation.FlxAnimation;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFilterFrames;
+import flixel.graphics.frames.FlxFrame;
 import feshixl.ui.FeshFramesHelper;
 import openfl.filters.BitmapFilter;
 import openfl.utils.Assets;
@@ -231,6 +233,42 @@ class Character extends feshixl.FeshSprite {
 		}
 
 		animationAliases.remove(sourceAnimation);
+	}
+
+	public function warmAnimationFrames(animName:String):Void {
+		var resolvedAnimName:String = resolveAnimationName(animName);
+
+		if(animation == null || frames == null || frames.frames == null) {
+			return;
+		}
+
+		var anim:FlxAnimation = animation.getByName(resolvedAnimName);
+
+		if(anim == null || anim.frames == null) {
+			return;
+		}
+
+		for(frameIndex in anim.frames) {
+			if(frameIndex < 0 || frameIndex >= frames.frames.length) {
+				continue;
+			}
+
+			var frame:FlxFrame = frames.frames[frameIndex];
+
+			if(frame != null) {
+				@:privateAccess frame.cacheFrameMatrix();
+			}
+		}
+	}
+
+	public function warmAnimations(animNames:Array<String>):Void {
+		if(animNames == null) {
+			return;
+		}
+
+		for(animName in animNames) {
+			warmAnimationFrames(animName);
+		}
 	}
 
 	function resolveAnimationName(animName:String):String {

@@ -57,6 +57,7 @@ class Note extends FeshSprite {
 	public var caculatePos:Float = 0;
 
 	public var noteOffset:FlxPoint;
+	public var visualOffset:FlxPoint;
 	public var restartVisualOffsetY:Float = 0;
 
 	public var sustainLength:Float = 0;
@@ -97,6 +98,7 @@ class Note extends FeshSprite {
 		useAdvanceClipping = false;
 
 		noteOffset = FlxPoint.get();
+		visualOffset = FlxPoint.get();
 
 		noteAbstract = noteType;
 		
@@ -488,7 +490,7 @@ class Note extends FeshSprite {
 	}
 
 	public function setInverseAxis(strumPos:Float, strumAngle:Float):Float {
-		return (strumPos + noteOffset.x) + Math.sin(strumAngle + directionAngle) * caculatePos;
+		return (strumPos + noteOffset.x) + Math.sin(strumAngle + directionAngle) * caculatePos + visualOffset.x;
 	}
 
 	public function getNoteAxis():Float {
@@ -504,7 +506,7 @@ class Note extends FeshSprite {
 			yAddon = ((Note.swagWidth - height - 10) * 0.5) * Math.abs(Math.sin(FeshMath.radians(angle)));
 		}
 
-		y += yAddon + restartVisualOffsetY;
+		y += yAddon + restartVisualOffsetY + visualOffset.y;
 
 		if(isHoldEndPiece()) {
 			y += getHoldEndOffsetY();
@@ -543,6 +545,18 @@ class Note extends FeshSprite {
 			}
 		}
 
+	}
+
+	public inline function setVisualOffset(x:Float, y:Float):Void {
+		visualOffset.set(x, y);
+	}
+
+	public inline function getRevealProgress(offset:Int):Float {
+		return FlxMath.bound(getNoteStrumPosition(offset), 0, 1);
+	}
+
+	public inline function getTransitionProgress(offset:Int):Float {
+		return 1 - getRevealProgress(offset);
 	}
 
 	public function getNoteY():Float {
@@ -859,6 +873,7 @@ class Note extends FeshSprite {
 		hasCustomAddon = null;
 
 		trail = FlxDestroyUtil.destroy(trail);
+		visualOffset = FlxDestroyUtil.put(visualOffset);
 		modifiedSymbol = FlxDestroyUtil.destroy(modifiedSymbol);
 	}
 }

@@ -2,21 +2,99 @@ package;
 
 import template.CustomNote;
 
-import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.animation.FlxAnimationController;
+import flixel.graphics.frames.FlxFramesCollection;
+import flixel.math.FlxMath;
+import flixel.tweens.FlxEase;
 
 /**
-* All these are extremely simple.
+* All these are extremely simple (Except Death).
 */
 
 class DeathNote extends CustomNoteTemplate {
-    override function useCustomPrefix(animation:FlxAnimationController):Bool {
-        animation.addByPrefix('greenScroll', 'DEATHup', 48);
-        animation.addByPrefix('redScroll', 'DEATHright', 48);
-        animation.addByPrefix('blueScroll', 'DEATHdown', 48);
-        animation.addByPrefix('purpleScroll', 'DEATHleft', 48);
+    private static inline var TRANSITION_START_OFFSET:Int = 350;
+    private static inline var TRANSITION_SPIN_OFFSET:Int = 175;
+    private static var combinedFrames:FlxFramesCollection;
 
+    function setupRegularPrefixes(animation:FlxAnimationController):Void {
+        animation.addByPrefix('greenScroll', 'green0');
+        animation.addByPrefix('redScroll', 'red0');
+        animation.addByPrefix('blueScroll', 'blue0');
+        animation.addByPrefix('purpleScroll', 'purple0');
+        animation.addByPrefix('diamondScroll', 'diamond0');
+    }
+
+    function setupDeathPrefixes(animation:FlxAnimationController):Void {
+        animation.addByPrefix('greenDeathScroll', 'DEATHup', 48);
+        animation.addByPrefix('redDeathScroll', 'DEATHright', 48);
+        animation.addByPrefix('blueDeathScroll', 'DEATHdown', 48);
+        animation.addByPrefix('purpleDeathScroll', 'DEATHleft', 48);
+        animation.addByPrefix('diamondDeathScroll', 'DEATHdown', 48);
+    }
+
+    inline function getScrollAnimName(note:Note):String {
+        return Note.getColorFacing(note.noteData) + "Scroll";
+    }
+
+    inline function getDeathAnimName(note:Note):String {
+        return Note.getColorFacing(note.noteData) + "DeathScroll";
+    }
+
+    function getCombinedFrames():FlxFramesCollection {
+        if(combinedFrames == null) {
+            combinedFrames = FlxAnimationUtil.combineAtlas([
+                Paths.getNoteAtlas('regular/NOTE_assets'),
+                Paths.getNoteAtlas('death/NOTE_assets')
+            ]);
+        }
+
+        return combinedFrames;
+    }
+
+    inline function updateRevealAnimation(note:Note, transitionProgress:Float):Void {
+        var regularAnimName = getScrollAnimName(note);
+        var deathAnimName = getDeathAnimName(note);
+        var targetAnimName = transitionProgress >= 0.5 ? deathAnimName : regularAnimName;
+
+        if(note.animation.curAnim == null || note.animation.curAnim.name != targetAnimName) {
+            note.playAnim(targetAnimName, true);
+        }
+    }
+
+    function setupCombinedAnimations(animation:FlxAnimationController):Void {
+        animation.destroyAnimations();
+        setupRegularPrefixes(animation);
+        setupDeathPrefixes(animation);
+    }
+
+    override function whenIsFirstRendered(note:Note, totalNotesInSection:Int):Void {
+        var currentScaleX:Float = note.scale.x;
+        var currentScaleY:Float = note.scale.y;
+        var currentAntialiasing:Bool = note.antialiasing;
+
+        note.frames = getCombinedFrames();
+        setupCombinedAnimations(note.animation);
+        note.antialiasing = currentAntialiasing;
+        updateRevealAnimation(note, 0);
+    }
+
+    override function setNoteAngle(note:Note, value:Float):Float {
+		var angle:Float = value;
+
+        if(note.getNoteStrumPosition(TRANSITION_SPIN_OFFSET) / 25 <= 1) {
+            angle = FlxMath.lerp(360, 0, FlxEase.backOut(note.getNoteStrumPosition(TRANSITION_SPIN_OFFSET) / 25)) + value;
+        }
+
+        return angle % 360;
+    }
+
+    override function noteUpdate(note:Note):Void {
+        updateRevealAnimation(note, note.getTransitionProgress(TRANSITION_START_OFFSET));
+    }
+
+    override function useCustomPrefix(animation:FlxAnimationController):Bool {
+        setupDeathPrefixes(animation);
         return true;
     }
 
@@ -66,6 +144,10 @@ class CheeseNote extends CustomNoteTemplate {
     }
 
     override function cantHaveHold():Bool {
+        return true;
+    }
+
+    override function noDefaultSplash():Bool {
         return true;
     }
 }

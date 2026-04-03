@@ -22,12 +22,25 @@ function StaticShader:init()
 	return self
 end
 
+function StaticShader:ensureBound()
+	return self.boundCamera ~= nil
+end
+
 -- Bind shader to a camera
 function StaticShader:bindToCamera(cameraName)
 	if cameraName and setCameraShader ~= nil then
 		self:init()
-		setCameraShader(cameraName, self.name)
-		self.boundCamera = cameraName
+		if setCameraShader(cameraName, self.name) ~= false then
+			self.boundCamera = cameraName
+
+			for propertyName, propertyValue in pairs(self.properties) do
+				if setShaderFloat ~= nil then
+					setShaderFloat(self.boundCamera, propertyName, propertyValue)
+				end
+			end
+		else
+			self.boundCamera = nil
+		end
 	end
 	return self
 end

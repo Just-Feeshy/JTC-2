@@ -40,6 +40,7 @@ import lime.math.Rectangle;
 import lime.ui.Window;
 import lime.utils.Log;
 import haxe.Json;
+import play.PlayCamera;
 
 #if sys
 import sys.FileSystem;
@@ -885,11 +886,7 @@ class ModLua {
                 return false;
             }
 
-            if(Std.isOfType(spr, Character)) {
-                var obj:Dynamic = spr;
-				var spr:Character = obj;
-                spr.playNoDanceAnim(animation, forced, reverse, startFrame);
-            }else if(Std.isOfType(spr, feshixl.FeshSprite)) {
+            if(Std.isOfType(spr, feshixl.FeshSprite)) {
                 var obj:Dynamic = spr;
 				var spr:feshixl.FeshSprite = obj;
                 spr.playAnim(animation, forced, reverse, startFrame);
@@ -1777,6 +1774,10 @@ class ModLua {
             return removeShaderFromCamera(cameraName);
         });
 
+        addProtectedLuaCallback("clearCameraShaders", function(cameraName:String) {
+            return clearShadersFromCamera(cameraName);
+        });
+
         Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, cameraName:String) {
             return attachShaderToCamera(name, cameraName);
         });
@@ -2473,6 +2474,35 @@ class ModLua {
         cam.setFilters(strippedFilters);
         luaCameraShaderFilters.remove(cameraName);
         luaShaders.remove(cameraName);
+        return true;
+    }
+
+    function clearShadersFromCamera(cameraName:String):Bool {
+        var cam:FlxCamera = getCamera(cameraName);
+
+        if(cam == null) {
+            return false;
+        }
+
+        if(Std.isOfType(cam, PlayCamera)) {
+            (cast cam:PlayCamera).eraseFilters();
+        } else {
+            cam.setFilters([]);
+        }
+
+        if(cam.flashSprite != null) {
+            cam.flashSprite.filters = null;
+            @:privateAccess cam.flashSprite.__setRenderDirty();
+        }
+
+        if(luaCameraShaderFilters != null) {
+            luaCameraShaderFilters.remove(cameraName);
+        }
+
+        if(luaShaders != null) {
+            luaShaders.remove(cameraName);
+        }
+
         return true;
     }
 

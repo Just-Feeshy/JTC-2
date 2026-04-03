@@ -81,6 +81,7 @@ class PlayFlow
 		playState.paused = false;
 
 		playState.pauseMusic();
+		playState.clearGameplayCameraFilters();
 		FlxG.camera.followLerp = 0;
 		FlxG.camera.zoom = playState.defaultCamZoom;
 		playState.playLua.set("inGameOver", true);

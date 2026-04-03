@@ -18,7 +18,7 @@ void main() {
     vec3 col = vec3((length(uv - 0.5) + 0.5), 0.1, 0.1);
 
     // Apply random effect with time-based seed
-    vec3 overlayColor = col * random(uv * time);
+    vec3 overlayColor = col * random(uv * (time + 1.0));
 
     // Blend as overlay with opacity control
     vec3 result = mix(texColor.rgb, overlayColor, opacity);

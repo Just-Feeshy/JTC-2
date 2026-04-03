@@ -373,6 +373,7 @@ class PlayState extends MusicBeatState
 	public static var campaignScore:Int = 0;
 
 	public var defaultCamZoom:Float = 1.05;
+	public var stageDefaultCamZoom:Float = 1.05;
 
 	var doof:DialogueBox;
 	var events:FeshEventGroup;
@@ -599,6 +600,7 @@ class PlayState extends MusicBeatState
 		}
 
 		stage.configStage();
+		stageDefaultCamZoom = defaultCamZoom;
 
 		boyfriend.setPosition(boyfriend.x - SONG.player1X, boyfriend.y - SONG.player1Y);
 		dad.setPosition(dad.x - SONG.player2X, dad.y - SONG.player2Y);
@@ -1723,6 +1725,9 @@ class PlayState extends MusicBeatState
 
 		resetStrumLayout();
 		resetHealthUi();
+		clearGameplayCameraFilters();
+		defaultCamZoom = stageDefaultCamZoom;
+		vSliceDirectZoomValue = defaultCamZoom;
 
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		resetScriptedCameraState(false);
@@ -4144,6 +4149,7 @@ class PlayState extends MusicBeatState
 		persistentDraw = false;
 		paused = false;
 
+		clearGameplayCameraFilters();
 		FlxG.camera.stopFX();
 		FlxG.camera.alpha = 1;
 
@@ -4154,6 +4160,30 @@ class PlayState extends MusicBeatState
 
 	public function requestPauseExitToMenu():Void {
 		pendingPauseExitToMenu = true;
+	}
+
+	public function clearGameplayCameraFilters():Void {
+		clearGameplayCameraFilterStack(FlxG.camera);
+		clearGameplayCameraFilterStack(ownedCamHUD);
+		clearGameplayCameraFilterStack(ownedCamNOTE);
+		clearGameplayCameraFilterStack(ownedCamNoteSustain);
+	}
+
+	private function clearGameplayCameraFilterStack(camera:FlxCamera):Void {
+		if(camera == null) {
+			return;
+		}
+
+		if(Std.isOfType(camera, PlayCamera)) {
+			(cast camera:PlayCamera).eraseFilters();
+		} else {
+			camera.setFilters([]);
+		}
+
+		if(camera.flashSprite != null) {
+			camera.flashSprite.filters = null;
+			@:privateAccess camera.flashSprite.__setRenderDirty();
+		}
 	}
 
 	override public function destroy() {
