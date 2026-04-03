@@ -3734,6 +3734,19 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	private function syncLoadedCharacterTransform(currentChar:Character, nextChar:Character):Void {
+		if(currentChar == null || nextChar == null) {
+			return;
+		}
+
+		nextChar.setPosition(currentChar.x, currentChar.y);
+		nextChar.updateFinalized(currentChar.x - nextChar._info.position.get("x"), currentChar.y - nextChar._info.position.get("y"));
+		nextChar.alpha = currentChar.alpha;
+		nextChar.angle = currentChar.angle;
+		nextChar.visible = currentChar.visible;
+		nextChar.flipX = currentChar.flipX;
+	}
+
 	public function swapCharacterToLoaded(newCharacter:String, type:Int):Bool {
 		if(newCharacter == null || newCharacter.trim() == "") {
 			return false;
@@ -3757,11 +3770,11 @@ class PlayState extends MusicBeatState
 					return false;
 				}
 
-				var lastAlpha:Float = boyfriend.alpha;
+				var previousBoyfriend:Boyfriend = boyfriend;
+				syncLoadedCharacterTransform(previousBoyfriend, nextBoyfriend);
 				boyfriend.alpha = 0.00001;
 				boyfriend.active = false;
 				boyfriend = nextBoyfriend;
-				boyfriend.alpha = lastAlpha;
 				boyfriend.active = true;
 				modifiableCharacters.set("boyfriend", boyfriend);
 				if(playLua != null) {
@@ -3778,11 +3791,11 @@ class PlayState extends MusicBeatState
 					return false;
 				}
 
-				var lastAlpha:Float = dad.alpha;
+				var previousDad:Character = dad;
+				syncLoadedCharacterTransform(previousDad, nextDad);
 				dad.alpha = 0.00001;
 				dad.active = false;
 				dad = nextDad;
-				dad.alpha = lastAlpha;
 				dad.active = true;
 				modifiableCharacters.set("dad", dad);
 				if(playLua != null) {
@@ -3799,11 +3812,11 @@ class PlayState extends MusicBeatState
 					return false;
 				}
 
-				var lastAlpha:Float = gf.alpha;
+				var previousGf:Character = gf;
+				syncLoadedCharacterTransform(previousGf, nextGf);
 				gf.alpha = 0.00001;
 				gf.active = false;
 				gf = nextGf;
-				gf.alpha = lastAlpha;
 				gf.active = true;
 				modifiableCharacters.set("gf", gf);
 				if(playLua != null) {

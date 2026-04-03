@@ -324,6 +324,10 @@ class PlayLua
 			playState.destroySongTrack(tag);
 		});
 
+		playState.addCallback("destroySongTrack", function(tag:String) {
+			playState.destroySongTrack(tag);
+		});
+
 		playState.addCallback("hasSongTrack", function(tag:String) {
 			return playState.syncedSongTrackMap.exists(tag);
 		});
