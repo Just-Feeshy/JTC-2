@@ -27,10 +27,15 @@ class PlayLua
 	public inline function hasScript():Bool
 	{
 		#if (USING_LUA && cpp)
-		return !luaDetachedForStateSwitch && getLua() != null;
+		return !luaDetachedForStateSwitch && ownedLua != null;
 		#else
 		return false;
 		#end
+	}
+
+	public inline function getOwnedLua():ModLua
+	{
+		return ownedLua;
 	}
 
 	public inline function releaseSongCacheImages(song:String):Void {
@@ -45,12 +50,7 @@ class PlayLua
 
 	public function getLua():ModLua
 	{
-		#if (USING_LUA && cpp)
-		if(ownedLua != null)
-			return ownedLua;
-		#end
-
-		return playState != null ? playState.getModLua() : null;
+		return ownedLua;
 	}
 
 	public function getSprite(name:String):FlxSprite
@@ -62,15 +62,61 @@ class PlayLua
 		return lua != null ? lua.getSprite(name) : null;
 	}
 
+	public function resumeLuaSpriteAnimations():Void
+	{
+		#if (USING_LUA && cpp)
+		var lua:ModLua = getLua();
+
+		if(lua != null) {
+			lua.resumeLuaSpriteAnimations();
+		}
+		#end
+	}
+
+	public function pauseLuaSpriteAnimations():Void
+	{
+		#if (USING_LUA && cpp)
+		var lua:ModLua = getLua();
+
+		if(lua != null) {
+			lua.pauseLuaSpriteAnimations();
+		}
+		#end
+	}
+
+	public function pauseLuaTweens():Void
+	{
+		#if (USING_LUA && cpp)
+		var lua:ModLua = getLua();
+
+		if(lua != null) {
+			lua.pauseLuaTweens();
+		}
+		#end
+	}
+
+	public function resumeLuaTweens():Void
+	{
+		#if (USING_LUA && cpp)
+		var lua:ModLua = getLua();
+
+		if(lua != null) {
+			lua.resumeLuaTweens();
+		}
+		#end
+	}
+
 	public function call(name:String, args:Array<Dynamic>):Dynamic
 	{
-		return hasScript() ? playState.callLua(name, args) : null;
+		var lua:ModLua = getLua();
+		return lua != null && !luaDetachedForStateSwitch ? lua.call(name, args) : null;
 	}
 
 	public function set(variable:String, data:Dynamic):Void
 	{
-		if(hasScript())
-			playState.setLua(variable, data);
+		var lua:ModLua = getLua();
+		if(lua != null && !luaDetachedForStateSwitch)
+			lua.set(variable, data);
 	}
 
 	public function addToNoteAngle(daAngle:Float, note:Note):Float
@@ -89,7 +135,9 @@ class PlayLua
 		#if (USING_LUA && cpp)
 		var scriptPath:String = resolveScriptKey();
 
-		Register.detachLuaFromState(PlayState);
+		if(ownedLua != null) {
+			ownedLua.close();
+		}
 
 		ownedLua = null;
 		luaDetachedForStateSwitch = false;
@@ -109,8 +157,12 @@ class PlayLua
 			return;
 		}
 
-		Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
-		ownedLua = playState.getModLua();
+		if(ownedLua != null) {
+			ownedLua.close();
+		}
+
+		ownedLua = new ModLua(Paths.lua(scriptPath));
+		ownedLua.stateOwnsCreatedObjects = true;
 		luaDetachedForStateSwitch = false;
 
 		if(ownedLua != null) {
@@ -313,6 +365,23 @@ class PlayLua
 			}
 
 			character.setAnimationAlias(sourceAnimation, targetAnimation);
+			return true;
+		});
+
+		playState.addCallback("setCharacterAnimationSetSuffix", function(name:String, suffix:String) {
+			var sprite = getSprite(name);
+
+			if(!Std.isOfType(sprite, Character)) {
+				return false;
+			}
+
+			var character:Character = cast sprite;
+
+			if(character == null) {
+				return false;
+			}
+
+			character.setAnimationSetSuffix(suffix);
 			return true;
 		});
 
@@ -825,12 +894,7 @@ class PlayLua
 		var stateLua:ModLua = ownedLua;
 
 		if(!luaDetachedForStateSwitch && stateLua != null) {
-			if(HelperStates.luaExist(PlayState) && HelperStates.getLua(PlayState) == stateLua) {
-				Register.detachLuaFromState(PlayState);
-			}else {
-				stateLua.close();
-			}
-
+			stateLua.close();
 			luaDetachedForStateSwitch = true;
 		}
 	}
@@ -840,11 +904,7 @@ class PlayLua
 		var stateLua:ModLua = ownedLua;
 
 		if(!luaDetachedForStateSwitch && stateLua != null) {
-			if(HelperStates.luaExist(PlayState) && HelperStates.getLua(PlayState) == stateLua) {
-				Register.detachLuaFromState(PlayState);
-			}else {
-				stateLua.close();
-			}
+			stateLua.close();
 		}
 
 		ownedLua = null;
@@ -870,8 +930,8 @@ class PlayLua
 
 	private function attachScript(scriptPath:String):Void
 	{
-		Register.attachLuaToState(PlayState, Paths.lua(scriptPath));
-		ownedLua = playState.getModLua();
+		ownedLua = new ModLua(Paths.lua(scriptPath));
+		ownedLua.stateOwnsCreatedObjects = true;
 
 		if(ownedLua != null) {
 			ownedLua.execute();

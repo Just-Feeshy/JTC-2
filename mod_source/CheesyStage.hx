@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
 import flixel.tweens.FlxEase;
@@ -11,6 +12,7 @@ import flixel.math.FlxMath;
 import lime.utils.Assets;
 import haxe.Json;
 import openfl.utils.Assets as OpenFlAssets;
+import CombinedAtlasFrames;
 
 using StringTools;
 
@@ -18,6 +20,8 @@ using StringTools;
 class CheesyStage extends StorageStage {
 	private static final DEFAULT_STAGE_CAMERA_FOCUS:Array<Float> = [785, 458.5];
 	private static final DEFAULT_STAGE_CAMERA_FOCUS_LERP:Float = 0.09;
+	private static final FROSTBEAT_SECOND_BASE_X:Float = 670;
+	private static final FROSTBEAT_SECOND_BASE_Y:Float = 130;
 
 	final tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
@@ -54,6 +58,8 @@ class CheesyStage extends StorageStage {
 	var phase2_switch:Bool = false;
 	var funkroadBaseBoyfriendPos:BasicPoint;
 	var funkroadBaseDadPos:BasicPoint;
+	var frostbeatSecond:FlxSprite;
+	var frostbeatSecondFrames:FlxFramesCollection;
 
 	var curStep:Float = 0;
 	var curBeat:Float = 0;
@@ -166,6 +172,31 @@ class CheesyStage extends StorageStage {
 		}
 	}
 
+	function prewarmAnimationSet(character:Character, suffix:String, animationNames:Array<String>):Void {
+		if(character == null || animationNames == null) {
+			return;
+		}
+
+		var previousSuffix:String = character.animationSetSuffix;
+		var previousAnimation:String = character.getAnimName();
+
+		character.setAnimationSetSuffix(suffix);
+
+		for(animationName in animationNames) {
+			if(character.hasAnimation(animationName)) {
+				character.playAnim(animationName, true);
+			}
+		}
+
+		character.setAnimationSetSuffix(previousSuffix);
+
+		if(previousAnimation != null && previousAnimation != "" && character.hasAnimation(previousAnimation)) {
+			character.playAnim(previousAnimation, true);
+		} else if(character.hasAnimation("idle")) {
+			character.playAnim("idle", true);
+		}
+	}
+
 	function cacheFunkroadBasePositions():Void {
 		if(stage != "funkroad" || dad == null || boyfriend == null) {
 			return;
@@ -195,6 +226,49 @@ class CheesyStage extends StorageStage {
 		if(boyfriend != null && funkroadBaseBoyfriendPos != null) {
 			var boyfriendOffset = phaseTwo ? funkroadBoyfriendPhaseTwoOffset : funkroadBoyfriendPhaseOneOffset;
 			boyfriend.setPosition(funkroadBaseBoyfriendPos.x + boyfriendOffset[0], funkroadBaseBoyfriendPos.y + boyfriendOffset[1]);
+		}
+	}
+
+	function ensureFrostbeatSecondSprite():Void {
+		if(stage != "funkroad" || PlayState.SONG.song.toLowerCase() != "frostbeat") {
+			return;
+		}
+
+		if(frostbeatSecond == null) {
+			frostbeatSecondFrames = FlxAnimationUtil.combineAtlas([
+				Paths.getSparrowAtlas("skater_assets"),
+				Paths.getSparrowAtlas("skater_miss_notes")
+			]);
+
+			frostbeatSecond = new FlxSprite(FROSTBEAT_SECOND_BASE_X, FROSTBEAT_SECOND_BASE_Y);
+			frostbeatSecond.frames = frostbeatSecondFrames;
+			frostbeatSecond.antialiasing = FlxG.save.data.showAntialiasing;
+			frostbeatSecond.active = true;
+			frostbeatSecond.animation.addByPrefix("idle", "skater dance IDLE0", 24, false);
+			frostbeatSecond.animation.addByPrefix("singDOWN", "skater dance DOWN0", 24, false);
+			frostbeatSecond.animation.addByPrefix("singUP", "skater dance UP0", 24, false);
+			frostbeatSecond.animation.addByPrefix("singLEFT", "skater dance LEFT0", 24, false);
+			frostbeatSecond.animation.addByPrefix("singRIGHT", "skater dance RIGHT0", 24, false);
+			frostbeatSecond.animation.addByPrefix("singDOWN miss", "skater dance DOWN miss", 24, false);
+			frostbeatSecond.animation.addByPrefix("singUP miss", "skater dance UP miss", 24, false);
+			frostbeatSecond.animation.addByPrefix("singLEFT miss", "skater dance LEFT miss", 24, false);
+			frostbeatSecond.animation.addByPrefix("singRIGHT miss", "skater dance RIGHT miss", 24, false);
+			frostbeatSecond.flipX = true;
+		}
+
+		frostbeatSecond.setPosition(FROSTBEAT_SECOND_BASE_X, FROSTBEAT_SECOND_BASE_Y);
+		frostbeatSecond.visible = false;
+		frostbeatSecond.exists = true;
+		frostbeatSecond.active = true;
+		frostbeatSecond.alpha = 1;
+		frostbeatSecond.animation.play("idle", true);
+
+		if(members.indexOf(frostbeatSecond) >= 0) {
+			remove(frostbeatSecond, true);
+		}
+
+		if(playstate.modifiableSprites != null) {
+			playstate.modifiableSprites.set("second", frostbeatSecond);
 		}
 	}
 
@@ -236,6 +310,15 @@ class CheesyStage extends StorageStage {
 			addAnimation("singUP_gf", "flying dance UP GF");
 			addAnimation("singLEFT_gf", "flying dance LEFT GF");
 			addAnimation("singRIGHT_gf", "flying dance RIGHT GF");
+			prewarmAnimationSet(boyfriend, "_gf", [
+				"idle",
+				"singDOWN",
+				"singUP",
+				"singLEFT",
+				"singRIGHT"
+			]);
+			boyfriend.setAnimationSetSuffix("");
+			boyfriend.queueAnimationSetSuffixSwitchOnNextNoteHit(907, "_gf");
 
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
@@ -260,6 +343,7 @@ class CheesyStage extends StorageStage {
 		}
 
 		applyFunkroadLayout(false);
+		ensureFrostbeatSecondSprite();
 	}
 
 	override function setCamPos(camPos:FlxPoint):FlxPoint {
@@ -322,6 +406,8 @@ class CheesyStage extends StorageStage {
 		if(stage == "funkroad") {
 			if(boyfriend != null) {
 				boyfriend.refresh(boyfriend.curCharacter, playstate.camPos);
+				boyfriend.setAnimationSetSuffix("");
+				boyfriend.queueAnimationSetSuffixSwitchOnNextNoteHit(907, "_gf");
 			}
 			if(dad != null) {
 				dad.refresh(dad.curCharacter, playstate.camPos);
@@ -344,6 +430,7 @@ class CheesyStage extends StorageStage {
 		funkroadBaseBoyfriendPos = null;
 		phase2_switch = false;
 		applyFunkroadLayout(false);
+		ensureFrostbeatSecondSprite();
 	}
 
 	override function update(elapsed:Float):Void {
@@ -374,6 +461,24 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function destroy():Void {
+		if(playstate != null && playstate.modifiableSprites != null) {
+			playstate.modifiableSprites.remove("second");
+		}
+
+		if(frostbeatSecond != null) {
+			if(members.indexOf(frostbeatSecond) >= 0) {
+				remove(frostbeatSecond, true);
+			}
+
+			frostbeatSecond = FlxDestroyUtil.destroy(frostbeatSecond);
+		}
+
+		if(Std.isOfType(frostbeatSecondFrames, CombinedAtlasFrames)) {
+			cast(frostbeatSecondFrames, CombinedAtlasFrames).destroy();
+		}
+
+		frostbeatSecondFrames = null;
+
 		super.destroy();
 
 		boyfriend = null;

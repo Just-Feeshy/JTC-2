@@ -247,9 +247,11 @@ class HelperStates extends FlxState {
 			playState.updateLuaVars();
 		}
 
-		setLua("curElapsed", elapsed);
-        setLua("curTicks", FlxG.game.ticks);
-		callLua("onUpdate", [elapsed]);
+		{
+			setLua("curElapsed", elapsed);
+        	setLua("curTicks", FlxG.game.ticks);
+			callLua("onUpdate", [elapsed]);
+		}
 
 		super.update(elapsed);
 	}

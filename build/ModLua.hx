@@ -69,6 +69,13 @@ typedef LuaOrbitSprite = {
     var angle:Float;
 }
 
+typedef LuaPausedSpriteAnimationState = {
+    var animation:String;
+    var frame:Int;
+    var reversed:Bool;
+    var finished:Bool;
+}
+
 typedef LuaPersistentRestartState = {
     var texts:Map<String, FlxText>;
     var sprites:Map<String, FlxSprite>;
@@ -105,8 +112,12 @@ class ModLua {
     public var luaOrbitSprites(default, null):Map<String, LuaOrbitSprite> = new Map<String, LuaOrbitSprite>();
 
     public var closed:Bool = false;
+    public var stateOwnsCreatedObjects:Bool = false;
     private var activeLuaCallbackName:String = null;
     private var lastLuaCallbackError:String = null;
+    private var pausedLuaSpriteAnimations:Map<String, LuaPausedSpriteAnimationState> = new Map<String, LuaPausedSpriteAnimationState>();
+    private var stateOwnedSpriteNames:Map<String, Bool> = new Map<String, Bool>();
+    private var stateOwnedTextNames:Map<String, Bool> = new Map<String, Bool>();
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
@@ -126,6 +137,92 @@ class ModLua {
         }
 
         return luaTexts;
+    }
+
+    inline function getStateSpriteStore():Map<String, FlxSprite> {
+        var curState = cast FlxG.state;
+
+        if(stateOwnsCreatedObjects && curState != null && curState is HelperStates) {
+            return curState.modifiableSprites;
+        }
+
+        return null;
+    }
+
+    inline function getStateTextStore():Map<String, FlxText> {
+        var curState = cast FlxG.state;
+
+        if(stateOwnsCreatedObjects && curState != null && curState is HelperStates) {
+            return curState.modifiableTexts;
+        }
+
+        return null;
+    }
+
+    inline function rememberStateOwnedSprite(name:String):Void {
+        if(name != null) {
+            stateOwnedSpriteNames.set(name, true);
+        }
+    }
+
+    inline function rememberStateOwnedText(name:String):Void {
+        if(name != null) {
+            stateOwnedTextNames.set(name, true);
+        }
+    }
+
+    inline function forgetStateOwnedSprite(name:String):Void {
+        if(name != null && stateOwnedSpriteNames.exists(name)) {
+            stateOwnedSpriteNames.remove(name);
+        }
+    }
+
+    inline function forgetStateOwnedText(name:String):Void {
+        if(name != null && stateOwnedTextNames.exists(name)) {
+            stateOwnedTextNames.remove(name);
+        }
+    }
+
+    function destroyStateOwnedRuntimeObjects():Void {
+        var curState = cast FlxG.state;
+
+        if(curState == null || !(curState is HelperStates)) {
+            stateOwnedSpriteNames.clear();
+            stateOwnedTextNames.clear();
+            return;
+        }
+
+        for(name in stateOwnedSpriteNames.keys()) {
+            if(curState.modifiableSprites != null && curState.modifiableSprites.exists(name)) {
+                var spr = curState.modifiableSprites.get(name);
+
+                if(spr != null) {
+                    curState.remove(spr);
+                    releaseReplacedFrames(spr.frames, null);
+                    spr.kill();
+                    spr.destroy();
+                }
+
+                curState.modifiableSprites.remove(name);
+            }
+        }
+
+        for(name in stateOwnedTextNames.keys()) {
+            if(curState.modifiableTexts != null && curState.modifiableTexts.exists(name)) {
+                var txt = curState.modifiableTexts.get(name);
+
+                if(txt != null) {
+                    curState.remove(txt);
+                    txt.kill();
+                    txt.destroy();
+                }
+
+                curState.modifiableTexts.remove(name);
+            }
+        }
+
+        stateOwnedSpriteNames.clear();
+        stateOwnedTextNames.clear();
     }
 
     inline function ensureLuaBitmapMap():Map<String, BitmapData> {
@@ -455,7 +552,11 @@ class ModLua {
 		});
 
         Lua_helper.add_callback(lua, "createSprite", function(name:String) {
-            var sprites = ensureLuaSpriteMap();
+            var sprites = getStateSpriteStore();
+
+            if(sprites == null) {
+                sprites = ensureLuaSpriteMap();
+            }
 
             if(sprites.exists(name)) {
                 return;
@@ -466,10 +567,18 @@ class ModLua {
             sprite.active = true;
 
             sprites.set(name, sprite);
+
+            if(sprites != luaSprites) {
+                rememberStateOwnedSprite(name);
+            }
         });
 
         Lua_helper.add_callback(lua, "createText", function(name:String, x:Float = 0, y:Float = 0, width:Float = 0, text:String = "", size:Int = 16) {
-            var texts = ensureLuaTextMap();
+            var texts = getStateTextStore();
+
+            if(texts == null) {
+                texts = ensureLuaTextMap();
+            }
 
             if(texts.exists(name)) {
                 return;
@@ -480,10 +589,18 @@ class ModLua {
             luaText.active = true;
 
             texts.set(name, luaText);
+
+            if(texts != luaTexts) {
+                rememberStateOwnedText(name);
+            }
         });
 
         Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
-            var sprites = ensureLuaSpriteMap();
+            var sprites = getStateSpriteStore();
+
+            if(sprites == null) {
+                sprites = ensureLuaSpriteMap();
+            }
 
             if(sprites.exists(name)) {
                 return;
@@ -514,6 +631,10 @@ class ModLua {
             sprite.active = true;
 
             sprites.set(name, sprite);
+
+            if(sprites != luaSprites) {
+                rememberStateOwnedSprite(name);
+            }
         });
 
         addProtectedLuaCallback("spriteExist", function(name:String) {
@@ -786,7 +907,14 @@ class ModLua {
 				return false;
 			}
 
-			spr.animation.play(animation, forced, reverse, startFrame);
+			var shouldForceRestart:Bool = forced;
+
+			if(!shouldForceRestart && spr.animation != null && spr.animation.curAnim != null) {
+				var currentAnim = spr.animation.curAnim;
+				shouldForceRestart = currentAnim.name == animation && !currentAnim.looped;
+			}
+
+			spr.animation.play(animation, shouldForceRestart, reverse, startFrame);
 
 			return true;
         });
@@ -1149,9 +1277,12 @@ class ModLua {
                 curState.modifiableSprites.remove(name);
             }
 
-            if(luaSprites.exists(name)) {
+            if(luaSprites != null && luaSprites.exists(name)) {
                 luaSprites.remove(name);
             }
+
+            forgetStateOwnedSprite(name);
+            forgetStateOwnedText(name);
         });
 
         Lua_helper.add_callback(lua, "setText", function(name:String, text:String) {
@@ -2886,8 +3017,10 @@ class ModLua {
 
         var spr:FlxSprite = luaSprites != null ? luaSprites.get(name) : null;
         var curState = cast FlxG.state;
+        var wasStateOwnedSprite:Bool = spr == null && curState != null && curState is HelperStates && curState.modifiableSprites != null
+            && curState.modifiableSprites.exists(name);
 
-        if(spr == null && curState != null && curState is HelperStates && curState.modifiableSprites != null) {
+        if(spr == null && wasStateOwnedSprite) {
             if(curState.modifiableSprites.exists(name))
                 spr = curState.modifiableSprites.get(name);
         }
@@ -2896,11 +3029,16 @@ class ModLua {
             return spr;
         } else if(spr != null && luaSprites != null && luaSprites.exists(name)) {
             luaSprites.remove(name);
+        } else if(spr != null && wasStateOwnedSprite) {
+            curState.modifiableSprites.remove(name);
+            forgetStateOwnedSprite(name);
         }
 
         spr = luaTexts != null ? luaTexts.get(name) : null;
+        var wasStateOwnedTextSprite:Bool = spr == null && curState != null && curState is HelperStates && curState.modifiableTexts != null
+            && curState.modifiableTexts.exists(name);
 
-        if(spr == null && curState != null && curState is HelperStates && curState.modifiableTexts != null) {
+        if(spr == null && wasStateOwnedTextSprite) {
             if(curState.modifiableTexts.exists(name))
                 spr = curState.modifiableTexts.get(name);
         }
@@ -2909,6 +3047,9 @@ class ModLua {
             return spr;
         } else if(spr != null && luaTexts != null && luaTexts.exists(name)) {
             luaTexts.remove(name);
+        } else if(spr != null && wasStateOwnedTextSprite) {
+            curState.modifiableTexts.remove(name);
+            forgetStateOwnedText(name);
         }
 
         if(curState != null && curState is PlayState) {
@@ -3015,6 +3156,7 @@ class ModLua {
 
         var text:FlxText = luaTexts.get(name);
         var curState = cast FlxG.state;
+        var wasStateOwnedText:Bool = text == null && curState is HelperStates && curState.modifiableTexts.exists(name);
 
         if(text == null && curState is HelperStates) {
             if(curState.modifiableTexts.exists(name))
@@ -3024,6 +3166,9 @@ class ModLua {
         if(text == null || !text.exists || text.scale == null) {
             if(text != null && luaTexts.exists(name)) {
                 luaTexts.remove(name);
+            } else if(text != null && wasStateOwnedText) {
+                curState.modifiableTexts.remove(name);
+                forgetStateOwnedText(name);
             }
 
             return null;
@@ -3045,11 +3190,106 @@ class ModLua {
         return spr.animation._animations != null && spr.animation._animations.exists(animation);
     }
 
+    public function pauseLuaSpriteAnimations():Void {
+        var sprites = luaSprites;
+        var pausedStates:Map<String, LuaPausedSpriteAnimationState> = new Map<String, LuaPausedSpriteAnimationState>();
+
+        if(sprites == null) {
+            pausedLuaSpriteAnimations = pausedStates;
+            return;
+        }
+
+        for(name in sprites.keys()) {
+            var spr:FlxSprite = sprites.get(name);
+
+            if(!isValidLuaSprite(spr)) {
+                continue;
+            }
+
+            if(spr.animation != null && spr.animation.curAnim != null) {
+                var currentAnim = spr.animation.curAnim;
+                pausedStates.set(name, {
+                    animation: currentAnim.name,
+                    frame: currentAnim.curFrame,
+                    reversed: currentAnim.reversed,
+                    finished: currentAnim.finished
+                });
+                spr.animation.pause();
+            }
+        }
+
+        pausedLuaSpriteAnimations = pausedStates;
+    }
+
+    public function resumeLuaSpriteAnimations():Void {
+        var sprites = luaSprites;
+        var pausedStates = pausedLuaSpriteAnimations;
+
+        if(sprites == null) {
+            pausedLuaSpriteAnimations = new Map<String, LuaPausedSpriteAnimationState>();
+            return;
+        }
+
+        for(name in sprites.keys()) {
+            var spr:FlxSprite = sprites.get(name);
+
+            if(!isValidLuaSprite(spr)) {
+                continue;
+            }
+
+            spr.active = true;
+            spr.exists = true;
+            spr.dirty = true;
+
+            if(spr.animation != null && spr.animation.curAnim != null) {
+                var pausedState:LuaPausedSpriteAnimationState = pausedStates != null ? pausedStates.get(name) : null;
+
+                if(pausedState != null && canPlaySpriteAnimation(spr, pausedState.animation)) {
+                    spr.animation.play(pausedState.animation, true, pausedState.reversed, pausedState.frame);
+
+                    if(pausedState.finished && spr.animation.curAnim != null) {
+                        spr.animation.curAnim.finish();
+                    }
+                } else {
+                    spr.animation.resume();
+                }
+            }
+        }
+
+        pausedLuaSpriteAnimations = new Map<String, LuaPausedSpriteAnimationState>();
+    }
+
+    public function pauseLuaTweens():Void {
+        if(luaTweens == null) {
+            return;
+        }
+
+        for(tween in luaTweens) {
+            if(tween != null) {
+                tween.active = false;
+            }
+        }
+    }
+
+    public function resumeLuaTweens():Void {
+        if(luaTweens == null) {
+            return;
+        }
+
+        for(tween in luaTweens) {
+            if(tween != null) {
+                tween.active = true;
+            }
+        }
+    }
+
     public function close():Void {
         #if (USING_LUA && cpp)
         if(lua == null) {
             return;
         }
+
+        destroyStateOwnedRuntimeObjects();
 
         if(luaOrbitSprites != null) {
             luaOrbitSprites.clear();

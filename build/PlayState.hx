@@ -74,6 +74,7 @@ import play.PauseSubState;
 import play.PlayInput;
 import play.PlayLua;
 import play.PlayScoreFeedback;
+import play.PlayScriptEvent;
 import play.PlayScrollSpeed;
 import template.CustomNote;
 import template.StageBuilder;
@@ -1770,7 +1771,52 @@ class PlayState extends MusicBeatState
 	var previousFrameTime:Int = 0;
 	var lastReportedPlayheadPosition:Int = 0;
 	var lastTrackedSongPos:Float = 0;
+	var pausedTrackedSongPos:Null<Float> = null;
 	var songTime:Float = 0;
+
+	private function cachePausedRuntimeState():Void {
+		pausedTrackedSongPos = Conductor.instance != null ? Conductor.instance.trackedSongPosition : null;
+	}
+
+	private function pauseGlobalRuntimeManagers():Void {
+		FlxTimer.globalManager.forEach(function(timer:FlxTimer) {
+			if(timer != null && !timer.finished) {
+				timer.active = false;
+			}
+		});
+
+		FlxTween.globalManager.forEach(function(tween:FlxTween) {
+			if(tween != null && !tween.finished) {
+				tween.active = false;
+			}
+		});
+	}
+
+	private function resumeGlobalRuntimeManagers():Void {
+		FlxTimer.globalManager.forEach(function(timer:FlxTimer) {
+			if(timer != null && !timer.finished) {
+				timer.active = true;
+			}
+		});
+
+		FlxTween.globalManager.forEach(function(tween:FlxTween) {
+			if(tween != null && !tween.finished) {
+				tween.active = true;
+			}
+		});
+	}
+
+	private function restorePausedRuntimeState():Void {
+		if(pausedTrackedSongPos == null || Conductor.instance == null) {
+			return;
+		}
+
+		Conductor.instance.update(pausedTrackedSongPos, false);
+		syncMusicBeatState(pausedTrackedSongPos);
+		lastTrackedSongPos = pausedTrackedSongPos;
+		previousFrameTime = FlxG.game.ticks;
+		pausedTrackedSongPos = null;
+	}
 
 	private function parseSongTrackSide(side:String):String {
 		return playAudio.parseSongTrackSide(side);
@@ -2262,16 +2308,17 @@ class PlayState extends MusicBeatState
 
 		if(paused && !isGameOverSubstate)
 		{
-			var substateName:String = Type.getClassName(Type.getClass(SubState));
-
+			cachePausedRuntimeState();
 			pauseMusic();
 			FlxG.camera.followLerp = 0;
+			pauseGlobalRuntimeManagers();
 
 			if(playLua != null)
 			{
-				playLua.set("substateOpenName", substateName);
-				playLua.call("onPause", [substateName]);
+				playLua.set("substateOpenName", Type.getClassName(Type.getClass(SubState)));
 			}
+
+			dispatchEvent(new PlayScriptEvent(PlayScriptEvent.PAUSE));
 		}
 
 		super.openSubState(SubState);
@@ -2282,19 +2329,16 @@ class PlayState extends MusicBeatState
 		var wasGameOverSubstate:Bool = Std.isOfType(subState, GameOverSubstate);
 		var shouldResume:Bool = paused && !wasGameOverSubstate;
 
-		if (shouldResume)
-		{
-			paused = false;
-		}
-
 		setupKeyStuff();
 
 		super.closeSubState();
 
 		if(shouldResume && !needsReset) {
+			paused = false;
 			persistentUpdate = true;
 			persistentDraw = true;
 			FlxG.camera.followLerp = getGameplayCameraFollowLerp();
+			restorePausedRuntimeState();
 
 			if (FlxG.sound.music != null && !startingSong && !inCutscene && !talking)
 			{
@@ -2302,17 +2346,19 @@ class PlayState extends MusicBeatState
 			}
 
 			Countdown.resumeCountdown();
+			resumeGlobalRuntimeManagers();
 
-			if(playLua != null) {
-				playLua.set("substateOpenName", "");
-			}
-
+			// Update Lua variables directly to ensure they're set even if hasScript() has issues
+			setLua("substateOpenName", "");
+			setLua("curStep", Conductor.instance.currentStep);
+			setLua("curBeat", Conductor.instance.currentBeat);
+			setLua("curStepFloat", Conductor.instance.currentStepTime);
+			setLua("curBeatFloat", Conductor.instance.currentBeatTime);
+			setLua("trackPos", Conductor.instance.trackedSongPosition);
 			updateLuaVars();
 			updatePerSectionLuaVars();
 
-			if(playLua != null) {
-				playLua.call('onResume', []);
-			}
+			dispatchEvent(new PlayScriptEvent(PlayScriptEvent.RESUME));
 
 			#if windows
 			if (startTimer != null && startTimer.finished)
@@ -2873,6 +2919,8 @@ class PlayState extends MusicBeatState
 										daNote.playAnyAnimation,
 										daNote.isSustainNote
 									);
+									updateLuaVars();
+									updatePerSectionLuaVars();
 									playLua.call("noteMiss", [daNote.noteData, daNote.tag]);
 								}
 							}
@@ -2928,6 +2976,8 @@ class PlayState extends MusicBeatState
 		if (SONG.needsVoices)
 			setOpponentVocalsVolume(1, note.tag);
 
+		updateLuaVars();
+		updatePerSectionLuaVars();
 		playLua.call("opponentNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
 		if(!note.isSustainNote) {
@@ -3056,6 +3106,8 @@ class PlayState extends MusicBeatState
 				if(CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 					songScore -= 30;
 				}else {
+					updateLuaVars();
+					updatePerSectionLuaVars();
 					playLua.call("noteMiss", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 					songScore -= 10;
 				}
@@ -3157,6 +3209,8 @@ class PlayState extends MusicBeatState
 				hits++;
 			}
 
+			updateLuaVars();
+			updatePerSectionLuaVars();
 			playLua.call("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
 			if (!note.isSustainNote) {
@@ -3473,8 +3527,48 @@ class PlayState extends MusicBeatState
 		playEvents.generateStaticLua();
 	}
 
+	override public function onCreate():Dynamic {
+		if(playLua != null && playLua.hasScript()) {
+			setLua("curElapsed", 0);
+			return callLua("onCreate", []);
+		}
+
+		return super.onCreate();
+	}
+
 	function makeNoteLua():Void {
 		playEvents.makeNoteLua();
+	}
+
+	override public function getModLua():ModLua {
+		return playLua != null ? playLua.getOwnedLua() : null;
+	}
+
+	override public function addCallback(name:String, method:Dynamic):Void {
+		var lua:ModLua = getModLua();
+		if(lua != null) {
+			lua.addCallback(name, method);
+		}
+	}
+
+	override public function callLua(name:String, args:Array<Dynamic>):Dynamic {
+		var lua:ModLua = getModLua();
+		return lua != null ? lua.call(name, args) : null;
+	}
+
+	override public function setLua(variable:String, data:Dynamic):Void {
+		var lua:ModLua = getModLua();
+		if(lua != null) {
+			lua.set(variable, data);
+		}
+	}
+
+	override public function attachSprite(name:String, spr:FlxSprite):Void {
+		var lua:ModLua = getModLua();
+
+		if(lua != null && lua.luaSprites != null && !lua.luaSprites.exists(name)) {
+			lua.luaSprites.set(name, spr);
+		}
 	}
 
 	public function updateLuaVars():Void {

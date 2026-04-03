@@ -27,6 +27,10 @@ class Character extends feshixl.FeshSprite {
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
 	public var animationAliases:Map<String, String>;
+	public var animationSetSuffix:String = "";
+	public var queuedAnimationSetSuffix:String = "";
+	public var queuedAnimationSetSwitchStep:Int = -1;
+	public var queuedAnimationSetSwitchOnNextNoteHit:Bool = false;
 	public var debugMode:Bool = false;
 	public var specialAnim:Bool = false;
 
@@ -163,6 +167,22 @@ class Character extends feshixl.FeshSprite {
 		animationAliases.set(sourceAnimation, targetAnimation);
 	}
 
+	public function setAnimationSetSuffix(suffix:String):Void {
+		animationSetSuffix = suffix != null ? suffix : "";
+	}
+
+	public function queueAnimationSetSuffixSwitchOnNextNoteHit(step:Int, suffix:String):Void {
+		queuedAnimationSetSwitchStep = step;
+		queuedAnimationSetSuffix = suffix != null ? suffix : "";
+		queuedAnimationSetSwitchOnNextNoteHit = true;
+	}
+
+	public function clearQueuedAnimationSetSuffixSwitch():Void {
+		queuedAnimationSetSuffix = "";
+		queuedAnimationSetSwitchStep = -1;
+		queuedAnimationSetSwitchOnNextNoteHit = false;
+	}
+
 	public function clearAnimationAlias(sourceAnimation:String):Void {
 		if(sourceAnimation == null || animationAliases == null) {
 			return;
@@ -172,12 +192,42 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	function resolveAnimationName(animName:String):String {
-		if(animName == null || animationAliases == null) {
+		if(animName == null) {
 			return animName;
 		}
 
-		var aliasName = animationAliases.get(animName);
-		return aliasName != null ? aliasName : animName;
+		var resolvedAnimName = animName;
+
+		if(animationAliases != null) {
+			var aliasName = animationAliases.get(animName);
+
+			if(aliasName != null) {
+				resolvedAnimName = aliasName;
+			}
+		}
+
+		if(animation != null && animationSetSuffix != null && animationSetSuffix != "") {
+			var suffixedAnimName = resolvedAnimName + animationSetSuffix;
+
+			if(animation.getByName(suffixedAnimName) != null) {
+				return suffixedAnimName;
+			}
+		}
+
+		return resolvedAnimName;
+	}
+
+	function applyQueuedAnimationSetSwitchOnNoteHit():Void {
+		if(!queuedAnimationSetSwitchOnNextNoteHit) {
+			return;
+		}
+
+		if(Conductor.instance == null || Conductor.instance.currentStep < queuedAnimationSetSwitchStep) {
+			return;
+		}
+
+		setAnimationSetSuffix(queuedAnimationSetSuffix);
+		clearQueuedAnimationSetSuffixSwitch();
 	}
 
 	public function playAnimation(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
@@ -531,6 +581,7 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	public function onNoteHit(direction:Int, ?suffix:String = ""):Void {
+		applyQueuedAnimationSetSwitchOnNoteHit();
 		playSingAnimation(direction, false, suffix);
 		holdTimer = 0;
 	}

@@ -88,6 +88,13 @@ local currentIntroCarY = baseFrostbiteCarY
 local introClearTween = nil
 local introWarmupIndex = 0
 local introWarmupDone = false
+local introCoverRemoved = false
+local introGirlfriendShotDone = false
+local introBoyfriendShotDone = false
+local introNoteRevealDone = false
+local introBaseCameraDone = false
+local introClearDone = false
+local secondActive = false
 local INTENSITY_MULTIPLIER = 1.5
 local BASE_GAME_BUMP = 0.015
 local BASE_HUD_BUMP = 0.03
@@ -238,10 +245,18 @@ local function init()
     introClearTween = nil
     introWarmupIndex = 0
     introWarmupDone = false
+    introCoverRemoved = false
+    introGirlfriendShotDone = false
+    introBoyfriendShotDone = false
+    introNoteRevealDone = false
+    introBaseCameraDone = false
+    introClearDone = false
+    secondActive = false
     baseGameZoom = getCameraZoom("camGAME") or 1
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
 	precacheCharacter("dad-car")
+	precacheAtlas("flying notes GF SINGS")
 	createJumpscare()
     buildPulseSteps()
     callEvent("setCameraBop", "0", "0")
@@ -407,6 +422,29 @@ local function updateIntroWarmup()
     end
 end
 
+local function performIntroWarmup()
+    if introWarmupDone then
+        return
+    end
+
+    ensureIntroWarmupCover()
+
+    applyIntroGirfriendFaceShot()
+    finishGPUCommands()
+
+    applyIntroBoyfriendFaceShot()
+    finishGPUCommands()
+
+    applyIntroBaseCameraShot()
+    finishGPUCommands()
+
+    applyIntroOpponentFaceShot()
+    finishGPUCommands()
+
+    introWarmupIndex = 4
+    introWarmupDone = true
+end
+
 local function updateIntroClearTween(elapsed)
     if introClearTween == nil then
         return
@@ -489,22 +527,13 @@ local function ensureFrostbiteCar()
     insertSpriteToStage(smallestIndex, "frostbiteCAR")
 end
 
-local function ensureSecondSprite()
-    destroyManagedSprite("second")
-    createSprite("second")
+local function resetSecondSprite()
+    if not spriteExist("second") then
+        return
+    end
+
     setSpritePosition("second", secondBaseX, secondBaseY)
-    createCombinedFrames("second-frames", "skater_assets", "skater_miss_notes", "sparrow", "sparrow")
-    addFramesToSprite("second", "second-frames")
-    addAnimationByPrefix("second", "idle", "skater dance IDLE0", 24, false)
-    addAnimationByPrefix("second", "singDOWN", "skater dance DOWN0", 24, false)
-    addAnimationByPrefix("second", "singUP", "skater dance UP0", 24, false)
-    addAnimationByPrefix("second", "singLEFT", "skater dance LEFT0", 24, false)
-    addAnimationByPrefix("second", "singRIGHT", "skater dance RIGHT0", 24, false)
-    addAnimationByPrefix("second", "singDOWN miss", "skater dance DOWN miss", 24, false)
-    addAnimationByPrefix("second", "singUP miss", "skater dance UP miss", 24, false)
-    addAnimationByPrefix("second", "singLEFT miss", "skater dance LEFT miss", 24, false)
-    addAnimationByPrefix("second", "singRIGHT miss", "skater dance RIGHT miss", 24, false)
-    spriteFlip("second", true, false)
+    setSpriteVisible("second", false)
     playAnimation("second", "idle")
     removeSpriteFromStage("second")
 end
@@ -526,13 +555,6 @@ end
 function generatedStage()
     init()
     staticShaderInstance = static_shader.new("static_shader"):init()
-
-    clearCharacterAnimationAlias("boyfriend", "idle")
-    clearCharacterAnimationAlias("boyfriend", "singDOWN")
-    clearCharacterAnimationAlias("boyfriend", "singUP")
-    clearCharacterAnimationAlias("boyfriend", "singLEFT")
-    clearCharacterAnimationAlias("boyfriend", "singRIGHT")
-
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
@@ -543,8 +565,9 @@ function generatedStage()
 
     ensureFrostbiteCar()
     applyIntroOpponentFaceShot()
+    performIntroWarmup()
 
-    ensureSecondSprite()
+    resetSecondSprite()
 
     setupPunchHealth(3)
     refreshFrostbeatRuntimeState()
@@ -552,31 +575,6 @@ end
 
 function onStepHit()
     jtc_camera.onStepHit(curStep)
-
-    if curStep == introBeginStep and spriteExist("introWarmupCover") then
-        removeSpriteFromState("introWarmupCover")
-        destroySprite("introWarmupCover")
-    end
-
-    if curStep == 26 then
-        applyIntroGirfriendFaceShot()
-    end
-
-    if curStep == 34 then
-        applyIntroBoyfriendFaceShot()
-    end
-
-    if curStep == introNoteRevealStartStep then
-        applyIntroNoteReveal()
-    end
-
-    if curStep == introBaseCameraStep then
-        applyIntroBaseCameraShot()
-    end
-
-    if curStep == introClearStep then
-        clearIntroCameraShot()
-    end
 
 	if curStep == 906 then
 		-- callEvent("character change", "flying GF sings", "boyfriend")
@@ -605,6 +603,7 @@ function onStepHit()
 		setSpriteVisible("frostbiteCAR", false)
         removeSpriteFromState("frostbiteCAR")
         daddyIsHere = true
+        secondActive = true
 
         -- Add second sprite right after character change
         if spriteExist("second") then
@@ -613,18 +612,14 @@ function onStepHit()
         end
     end
 
-	if curStep == 903 then
-        setCharacterAnimationAlias("boyfriend", "idle", "idle_gf")
-        setCharacterAnimationAlias("boyfriend", "singDOWN", "singDOWN_gf")
-        setCharacterAnimationAlias("boyfriend", "singUP", "singUP_gf")
-        setCharacterAnimationAlias("boyfriend", "singLEFT", "singLEFT_gf")
-        setCharacterAnimationAlias("boyfriend", "singRIGHT", "singRIGHT_gf")
-        playAnimation("boyfriend", "idle")
+    if curStep > 906 then
+        secondActive = false
     end
+
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
-	if curStep > 906 then
+	if not secondActive then
 		return
 	end
 
@@ -634,7 +629,7 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
 end
 
 function noteMiss(noteData, tag)
-	if curStep > 906 then
+	if not secondActive then
 		return
 	end
 
@@ -654,9 +649,38 @@ function onUpdate(elapsed)
         staticShaderInstance:setProperty("time", staticShaderTime)
     end
 
-    updateIntroWarmup()
-    jtc_camera.onUpdate(elapsed)
+    if not introCoverRemoved and curStep ~= nil and curStep >= introBeginStep and spriteExist("introWarmupCover") then
+        removeSpriteFromState("introWarmupCover")
+        destroySprite("introWarmupCover")
+        introCoverRemoved = true
+    end
 
+    if not introGirlfriendShotDone and curStep ~= nil and curStep >= 26 then
+        applyIntroGirfriendFaceShot()
+        introGirlfriendShotDone = true
+    end
+
+    if not introBoyfriendShotDone and curStep ~= nil and curStep >= 34 then
+        applyIntroBoyfriendFaceShot()
+        introBoyfriendShotDone = true
+    end
+
+    if not introNoteRevealDone and curStep ~= nil and curStep >= introNoteRevealStartStep then
+        applyIntroNoteReveal()
+        introNoteRevealDone = true
+    end
+
+    if not introBaseCameraDone and curStep ~= nil and curStep >= introBaseCameraStep then
+        applyIntroBaseCameraShot()
+        introBaseCameraDone = true
+    end
+
+    if not introClearDone and curStep ~= nil and curStep >= introClearStep then
+        clearIntroCameraShot()
+        introClearDone = true
+    end
+
+    jtc_camera.onUpdate(elapsed)
     updateIntroClearTween(elapsed)
     decayCameraZooms(elapsed)
 
@@ -688,6 +712,8 @@ function onUpdate(elapsed)
 end
 
 function onResume()
+    holdTimer = 0
+
     refreshFrostbiteCarAnimation()
 end
 

@@ -217,6 +217,12 @@ function jtc_camera.onStepHit(step)
 end
 
 function jtc_camera.onUpdate(elapsed)
+    local currentStep = curStep or -1
+
+    if jtc_camera.hidden and jtc_camera.revealStep ~= nil and currentStep >= jtc_camera.revealStep then
+        jtc_camera.showGameplayCameras()
+    end
+
     if jtc_camera.strumReveal == nil then
         return
     end
