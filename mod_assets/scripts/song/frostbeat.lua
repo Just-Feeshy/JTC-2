@@ -96,6 +96,7 @@ local introBaseCameraDone = false
 local introClearDone = false
 local secondActive = false
 local boyfriendGFSwitched = false
+local jtcVocalsSwitchedToPlayer = false
 local INTENSITY_MULTIPLIER = 1.5
 local BASE_GAME_BUMP = 0.015
 local BASE_HUD_BUMP = 0.03
@@ -254,6 +255,7 @@ local function init()
     introClearDone = false
     secondActive = false
     boyfriendGFSwitched = false
+    jtcVocalsSwitchedToPlayer = false
     baseGameZoom = getCameraZoom("camGAME") or 1
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
@@ -561,7 +563,7 @@ function generatedStage()
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)
-    addSongTrack("jtcVocals", "JTC_Voices", "player", 1)
+    addSongTrack("jtcVocals", "JTC_Voices", "opponent", 1)
     jtc_camera.hideGameplayUntilStep(12, false)
     setCameraVisible("camGame", true)
     ensureIntroWarmupCover()
@@ -609,6 +611,12 @@ function onStepHit()
             setSpriteVisible("second", true)
             addSpriteToStage("second")
         end
+    end
+
+    if curStep >= 630 and not jtcVocalsSwitchedToPlayer then
+        removeSongTrack("jtcVocals")
+        addSongTrack("jtcVocals", "JTC_Voices", "player", 1)
+        jtcVocalsSwitchedToPlayer = true
     end
 
     if curStep > 906 then
