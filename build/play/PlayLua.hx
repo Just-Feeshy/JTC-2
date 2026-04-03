@@ -119,6 +119,41 @@ class PlayLua
 			lua.set(variable, data);
 	}
 
+	public function resetElapsed():Void
+	{
+		set("curElapsed", 0);
+	}
+
+	public function syncResumeState():Void
+	{
+		updateDynamicVars();
+		updatePerSectionVars();
+	}
+
+	public function syncDefaultCharacterPositions():Void
+	{
+		if(playState == null)
+			return;
+
+		if(playState.boyfriend != null) {
+			set("defaultBoyfriendX", playState.boyfriend.x);
+			set("defaultBoyfriendY", playState.boyfriend.y);
+		}
+
+		if(playState.dad != null) {
+			set("defaultOpponentX", playState.dad.x);
+			set("defaultOpponentY", playState.dad.y);
+		}
+
+		if(playState.gf != null) {
+			set("defaultGirlfriendX", playState.gf.x);
+			set("defaultGirlfriendY", playState.gf.y);
+		} else {
+			set("defaultGirlfriendX", 0);
+			set("defaultGirlfriendY", 0);
+		}
+	}
+
 	public function addToNoteAngle(daAngle:Float, note:Note):Float
 	{
 		var xLua:Null<Float> = cast call("addToNoteAngle", [daAngle, note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
@@ -212,18 +247,7 @@ class PlayLua
 		set("hasCutscene", PlayState.SONG.video != null ? true : false);
 		set("inGameOver", false);
 
-		set("defaultBoyfriendX", playState.boyfriend.x);
-		set("defaultBoyfriendY", playState.boyfriend.y);
-		set("defaultOpponentX", playState.dad.x);
-		set("defaultOpponentY", playState.dad.y);
-
-		if(playState.gf != null) {
-			set("defaultGirlfriendX", playState.gf.x);
-			set("defaultGirlfriendY", playState.gf.y);
-		}else {
-			set("defaultGirlfriendX", 0);
-			set("defaultGirlfriendY", 0);
-		}
+		syncDefaultCharacterPositions();
 
 		playState.addCallback("checkKeyStatus", function(key:Int, status:Int) {
 			return FlxG.keys.checkStatus(key, status);
@@ -339,6 +363,28 @@ class PlayLua
 			characterSprite.active = true;
 
 			playState.modifiableCharacters.set(name, characterSprite);
+		});
+
+		playState.addCallback("addCharacterToList", function(name:String, type:String = "boyfriend") {
+			var charType:Int = 0;
+
+			switch(type.toLowerCase().trim()) {
+				case "dad", "opponent":
+					charType = 1;
+				case "gf", "girlfriend":
+					charType = 2;
+				default:
+					charType = 0;
+			}
+
+			var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(name);
+
+			if(resolvedCharacter == null) {
+				return false;
+			}
+
+			playState.addCharacterToList(resolvedCharacter, charType);
+			return true;
 		});
 
 		playState.addCallback("characterDance", function(name:String) {

@@ -90,10 +90,7 @@ class Character extends feshixl.FeshSprite {
 				else
 					_info = hardInfo;
 
-				if(_info.file.split(".")[1] == "xml")
-					frames = Paths.getSparrowAtlas(_info.file.split(".")[0], "shared", true);
-				else if(_info.file.split(".")[1] == "json")
-					frames = Paths.getPackerAtlas(_info.file.split(".")[0], "shared", true);
+				frames = loadCharacterFrames(_info.file);
 
 				setIndexis(curCharacter);
 
@@ -144,6 +141,51 @@ class Character extends feshixl.FeshSprite {
 
 		if (isPlayer)
 			flipX = !flipX;
+	}
+
+	static function loadCharacterFrames(fileList:String):FlxFramesCollection {
+		var files:Array<String> = [];
+
+		if(fileList != null) {
+			for(file in fileList.split(",")) {
+				var trimmedFile:String = file.trim();
+
+				if(trimmedFile.length > 0) {
+					files.push(trimmedFile);
+				}
+			}
+		}
+
+		if(files.length <= 1) {
+			return loadCharacterFrameCollection(files.length == 1 ? files[0] : fileList);
+		}
+
+		var frameCollections:Array<FlxFramesCollection> = [];
+
+		for(file in files) {
+			frameCollections.push(loadCharacterFrameCollection(file));
+		}
+
+		return FlxAnimationUtil.combineAtlas(frameCollections);
+	}
+
+	static function loadCharacterFrameCollection(file:String):FlxFramesCollection {
+		var trimmedFile:String = file != null ? file.trim() : "";
+		var extension:String = "";
+		var basePath:String = trimmedFile;
+		var extensionIndex:Int = trimmedFile.lastIndexOf(".");
+
+		if(extensionIndex >= 0) {
+			basePath = trimmedFile.substr(0, extensionIndex);
+			extension = trimmedFile.substr(extensionIndex + 1).toLowerCase();
+		}
+
+		return switch(extension) {
+			case "json":
+				Paths.getPackerAtlas(basePath, "shared", true);
+			default:
+				Paths.getSparrowAtlas(basePath, "shared", true);
+		};
 	}
 
 	public function isAnimationFinished():Bool {

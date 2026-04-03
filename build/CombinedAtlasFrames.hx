@@ -7,6 +7,7 @@ import flixel.graphics.frames.FlxFramesCollection.FlxFrameCollectionType;
 class CombinedAtlasFrames extends FlxFramesCollection
 {
 	var usedGraphics:Array<FlxGraphic> = [];
+	var destroyed:Bool = false;
 
 	public function new(collections:Array<FlxFramesCollection>)
 	{
@@ -54,6 +55,12 @@ class CombinedAtlasFrames extends FlxFramesCollection
 
 	override public function destroy():Void
 	{
+		if(destroyed) {
+			return;
+		}
+
+		destroyed = true;
+
 		while(usedGraphics.length > 0) {
 			var graphic:FlxGraphic = usedGraphics.pop();
 

@@ -2,7 +2,6 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
@@ -11,7 +10,6 @@ import flixel.tweens.FlxTween;
 import flixel.math.FlxMath;
 import lime.utils.Assets;
 import haxe.Json;
-import openfl.utils.Assets as OpenFlAssets;
 import CombinedAtlasFrames;
 
 using StringTools;
@@ -27,19 +25,6 @@ class CheesyStage extends StorageStage {
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
 		0xffe9ff48 //Joul The Cool
-	];
-
-	final flyingOffset:Map<String, Array<Float>> = [
-		"idle" => [0, 0],
-		"singDOWN" => [21, -11],
-		"singUP" => [-4, 5],
-		"singLEFT" => [10, 53],
-		"singRIGHT" => [-21, 14],
-
-		"singDOWNmiss" => [-6, -18],
-		"singUPmiss" => [-10, -27],
-		"singRIGHTmiss" => [11, -23],
-		"singLEFTmiss" => [-27, -15]
 	];
 
 	final funkroadDadPhaseOneOffset:Array<Float> = [-120, 30];
@@ -164,39 +149,6 @@ class CheesyStage extends StorageStage {
 		playstate.setLua("curBeatFloat", curBeat);
 	}
 
-	function addAnimation(anim:String, prefix:String):Void {
-		boyfriend.animation.addByPrefix(anim, prefix, 24, false);
-
-		if(boyfriend.hasAnimation(anim) && boyfriend.animations.indexOf(anim) < 0) {
-			boyfriend.animations.push(anim);
-		}
-	}
-
-	function prewarmAnimationSet(character:Character, suffix:String, animationNames:Array<String>):Void {
-		if(character == null || animationNames == null) {
-			return;
-		}
-
-		var previousSuffix:String = character.animationSetSuffix;
-		var previousAnimation:String = character.getAnimName();
-
-		character.setAnimationSetSuffix(suffix);
-
-		for(animationName in animationNames) {
-			if(character.hasAnimation(animationName)) {
-				character.playAnim(animationName, true);
-			}
-		}
-
-		character.setAnimationSetSuffix(previousSuffix);
-
-		if(previousAnimation != null && previousAnimation != "" && character.hasAnimation(previousAnimation)) {
-			character.playAnim(previousAnimation, true);
-		} else if(character.hasAnimation("idle")) {
-			character.playAnim("idle", true);
-		}
-	}
-
 	function cacheFunkroadBasePositions():Void {
 		if(stage != "funkroad" || dad == null || boyfriend == null) {
 			return;
@@ -276,50 +228,7 @@ class CheesyStage extends StorageStage {
 		boyfriend = Register.getInGameCharacter(BOYFRIEND);
 		dad = Register.getInGameCharacter(OPPONENT);
 
-		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
-			var oldGraphic:FlxGraphic = boyfriend.graphic;
-		    boyfriend.frames = FlxAnimationUtil.combineAtlas([
-				Paths.getSparrowAtlas("flying notes BF SINGS"),
-				Paths.getSparrowAtlas("flying notes GF SINGS")
-			]);
-			boyfriend.animation.destroyAnimations();
-			boyfriend.animations = [];
-			boyfriend.animOffsets = new Map<String, Array<Float>>();
-			if(oldGraphic != null && oldGraphic != boyfriend.graphic) {
-				oldGraphic.persist = false;
-				oldGraphic.destroyOnNoUse = true;
-				if(oldGraphic.assetsKey != null) {
-					OpenFlAssets.cache.removeBitmapData(oldGraphic.assetsKey);
-				} else if(oldGraphic.key != null) {
-					OpenFlAssets.cache.removeBitmapData(oldGraphic.key);
-				}
-			}
-			boyfriend.animOffsets = flyingOffset;
-
-			addAnimation("idle", "flying dance IDLE0");
-			addAnimation("singDOWN", "flying dance DOWN0");
-			addAnimation("singUP", "flying dance UP0");
-			addAnimation("singLEFT", "flying dance LEFT0");
-			addAnimation("singRIGHT", "flying dance RIGHT0");
-			addAnimation("singDOWNmiss", "flying miss DOWN0");
-			addAnimation("singUPmiss", "flying miss UP0");
-			addAnimation("singRIGHTmiss", "flying miss RIGHT0");
-			addAnimation("singLEFTmiss", "flying miss LEFT0");
-			addAnimation("idle_gf", "flying dance IDLE GF");
-			addAnimation("singDOWN_gf", "flying dance DOWN GF");
-			addAnimation("singUP_gf", "flying dance UP GF");
-			addAnimation("singLEFT_gf", "flying dance LEFT GF");
-			addAnimation("singRIGHT_gf", "flying dance RIGHT GF");
-			prewarmAnimationSet(boyfriend, "_gf", [
-				"idle",
-				"singDOWN",
-				"singUP",
-				"singLEFT",
-				"singRIGHT"
-			]);
-			boyfriend.setAnimationSetSuffix("");
-			boyfriend.queueAnimationSetSuffixSwitchOnNextNoteHit(907, "_gf");
-
+		if(stage == "funkroad" && PlayState.SONG.song.toLowerCase() == "frostbeat") {
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
 			boyfriend.playAnim("idle", true);
@@ -366,6 +275,15 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {
+		if(eventName == "character change") {
+			switch(eventValue2.toLowerCase()) {
+				case "bf" | "boyfriend" | "player":
+					boyfriend = Register.getInGameCharacter(BOYFRIEND);
+				case "dad" | "opponent":
+					dad = Register.getInGameCharacter(OPPONENT);
+			}
+		}
+
 		if(stage == "funkroad" && eventValue == "dad-car") {
 			phase2_switch = true;
 
@@ -406,8 +324,7 @@ class CheesyStage extends StorageStage {
 		if(stage == "funkroad") {
 			if(boyfriend != null) {
 				boyfriend.refresh(boyfriend.curCharacter, playstate.camPos);
-				boyfriend.setAnimationSetSuffix("");
-				boyfriend.queueAnimationSetSuffixSwitchOnNextNoteHit(907, "_gf");
+				boyfriend.playAnim("idle", true);
 			}
 			if(dad != null) {
 				dad.refresh(dad.curCharacter, playstate.camPos);

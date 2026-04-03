@@ -295,9 +295,14 @@ class PlayState extends MusicBeatState
 	public var gf:Character;
 	public var boyfriend:Boyfriend;
 	public var customDeathCharacter:play.DeathCharacter;
+	public var boyfriendMap:Map<String, Boyfriend> = new Map<String, Boyfriend>();
+	public var dadMap:Map<String, Character> = new Map<String, Character>();
+	public var gfMap:Map<String, Character> = new Map<String, Character>();
 
 	// Track character changes for proper reset
+	public var originalPlayer1:String = "";
 	public var originalPlayer2:String = "";
+	public var originalGirlfriend:String = "";
 	public var characterChangeDirty:Bool = false;
 
 	public var currentPlayer(get, never):Character;
@@ -563,7 +568,9 @@ class PlayState extends MusicBeatState
 
 		Cache.cacheCharacter(SONG.player2);
 		dad = new Character(100, 100, SONG.player2);
+		originalPlayer1 = SONG.player1;
 		originalPlayer2 = SONG.player2;
+		originalGirlfriend = gf != null ? gf.curCharacter : "";
 		characterChangeDirty = false;
 
 		camPos = new FlxPoint(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
@@ -585,6 +592,11 @@ class PlayState extends MusicBeatState
 		boyfriend.refresh(SONG.player1, camPos);
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
 		dad.refresh(SONG.player2, camPos);
+		boyfriendMap.set(boyfriend.curCharacter, boyfriend);
+		dadMap.set(dad.curCharacter, dad);
+		if(gf != null) {
+			gfMap.set(gf.curCharacter, gf);
+		}
 
 		stage.configStage();
 
@@ -1772,6 +1784,7 @@ class PlayState extends MusicBeatState
 	var lastReportedPlayheadPosition:Int = 0;
 	var lastTrackedSongPos:Float = 0;
 	var pausedTrackedSongPos:Null<Float> = null;
+	var pendingPauseExitToMenu:Bool = false;
 	var songTime:Float = 0;
 
 	private function cachePausedRuntimeState():Void {
@@ -2328,10 +2341,33 @@ class PlayState extends MusicBeatState
 	{
 		var wasGameOverSubstate:Bool = Std.isOfType(subState, GameOverSubstate);
 		var shouldResume:Bool = paused && !wasGameOverSubstate;
+		var shouldExitToMenu:Bool = pendingPauseExitToMenu && !wasGameOverSubstate;
+
+		if(shouldExitToMenu) {
+			pendingPauseExitToMenu = false;
+		}
 
 		setupKeyStuff();
 
 		super.closeSubState();
+
+		if(shouldExitToMenu) {
+			paused = false;
+			persistentUpdate = true;
+			persistentDraw = true;
+			FlxG.camera.followLerp = getGameplayCameraFollowLerp();
+			resumeGlobalRuntimeManagers();
+
+			if(playLua != null) {
+				playLua.set("substateOpenName", null);
+			}
+
+			FlxG.signals.preStateSwitch.addOnce(function() {
+				prepareForStateSwitch();
+			});
+			FlxG.switchState(new MainMenuState());
+			return;
+		}
 
 		if(shouldResume && !needsReset) {
 			paused = false;
@@ -2348,15 +2384,9 @@ class PlayState extends MusicBeatState
 			Countdown.resumeCountdown();
 			resumeGlobalRuntimeManagers();
 
-			// Update Lua variables directly to ensure they're set even if hasScript() has issues
-			setLua("substateOpenName", "");
-			setLua("curStep", Conductor.instance.currentStep);
-			setLua("curBeat", Conductor.instance.currentBeat);
-			setLua("curStepFloat", Conductor.instance.currentStepTime);
-			setLua("curBeatFloat", Conductor.instance.currentBeatTime);
-			setLua("trackPos", Conductor.instance.trackedSongPosition);
-			updateLuaVars();
-			updatePerSectionLuaVars();
+			if(playLua != null) {
+				playLua.syncResumeState();
+			}
 
 			dispatchEvent(new PlayScriptEvent(PlayScriptEvent.RESUME));
 
@@ -3529,7 +3559,7 @@ class PlayState extends MusicBeatState
 
 	override public function onCreate():Dynamic {
 		if(playLua != null && playLua.hasScript()) {
-			setLua("curElapsed", 0);
+			playLua.resetElapsed();
 			return callLua("onCreate", []);
 		}
 
@@ -3557,9 +3587,8 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function setLua(variable:String, data:Dynamic):Void {
-		var lua:ModLua = getModLua();
-		if(lua != null) {
-			lua.set(variable, data);
+		if(playLua != null) {
+			playLua.set(variable, data);
 		}
 	}
 
@@ -3599,14 +3628,191 @@ class PlayState extends MusicBeatState
 	}
 
 	public function revertCharacterChanges():Void {
-		if(!characterChangeDirty || originalPlayer2 == "" || dad == null)
+		if(!characterChangeDirty)
 			return;
 
-		// Call the character change event with the original character
-		// Need to call events.whenTriggered first (actual change logic), then event_Extra (callbacks)
-		events.whenTriggered("character change", originalPlayer2, "dad", this);
-		event_Extra("character change", originalPlayer2, "dad");
+		if(originalPlayer1 != "" && boyfriend != null && boyfriend.curCharacter != originalPlayer1) {
+			events.whenTriggered("character change", originalPlayer1, "boyfriend", this);
+			event_Extra("character change", originalPlayer1, "boyfriend");
+		}
+
+		if(originalPlayer2 != "" && dad != null && dad.curCharacter != originalPlayer2) {
+			events.whenTriggered("character change", originalPlayer2, "dad", this);
+			event_Extra("character change", originalPlayer2, "dad");
+		}
+
+		if(originalGirlfriend != "" && gf != null && gf.curCharacter != originalGirlfriend) {
+			events.whenTriggered("character change", originalGirlfriend, "gf", this);
+			event_Extra("character change", originalGirlfriend, "gf");
+		}
+
 		characterChangeDirty = false;
+	}
+
+	public function addCharacterToList(newCharacter:String, type:Int):Void {
+		if(newCharacter == null || newCharacter.trim() == "") {
+			return;
+		}
+
+		var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(newCharacter);
+
+		if(resolvedCharacter == null) {
+			return;
+		}
+
+		newCharacter = resolvedCharacter;
+
+		switch(type) {
+			case 0:
+				if(!boyfriendMap.exists(newCharacter)) {
+					var sourceBoyfriend:Boyfriend = boyfriend;
+					var baseX:Float = sourceBoyfriend != null ? sourceBoyfriend.x - sourceBoyfriend._info.position.get("x") : 770;
+					var baseY:Float = sourceBoyfriend != null ? sourceBoyfriend.y - sourceBoyfriend._info.position.get("y") : 100;
+					var newBoyfriend:Boyfriend = new Boyfriend(baseX, baseY, newCharacter);
+					var newCamPos:FlxPoint = FlxPoint.get();
+					newBoyfriend.refresh(newCharacter, newCamPos);
+					newCamPos.put();
+					newBoyfriend.alpha = 0.00001;
+					newBoyfriend.active = false;
+					boyfriendMap.set(newCharacter, newBoyfriend);
+
+					if(stage != null) {
+						var insertIndex:Int = sourceBoyfriend != null ? stage.members.indexOf(sourceBoyfriend) : -1;
+
+						if(insertIndex >= 0)
+							stage.insert(insertIndex, newBoyfriend);
+						else
+							stage.add(newBoyfriend);
+					}
+				}
+
+			case 1:
+				if(!dadMap.exists(newCharacter)) {
+					var sourceDad:Character = dad;
+					var baseX:Float = sourceDad != null ? sourceDad.x - sourceDad._info.position.get("x") : 100;
+					var baseY:Float = sourceDad != null ? sourceDad.y - sourceDad._info.position.get("y") : 100;
+					var newDad:Character = new Character(baseX, baseY, newCharacter);
+					var newCamPos:FlxPoint = FlxPoint.get();
+					newDad.refresh(newCharacter, newCamPos);
+					newCamPos.put();
+					newDad.alpha = 0.00001;
+					newDad.active = false;
+					dadMap.set(newCharacter, newDad);
+
+					if(stage != null) {
+						var insertIndex:Int = sourceDad != null ? stage.members.indexOf(sourceDad) : -1;
+
+						if(insertIndex >= 0)
+							stage.insert(insertIndex, newDad);
+						else
+							stage.add(newDad);
+					}
+				}
+
+			case 2:
+				if(gf != null && !gfMap.exists(newCharacter)) {
+					var sourceGf:Character = gf;
+					var baseX:Float = sourceGf != null ? sourceGf.x - sourceGf._info.position.get("x") : 400;
+					var baseY:Float = sourceGf != null ? sourceGf.y - sourceGf._info.position.get("y") : 130;
+					var newGf:Character = new Character(baseX, baseY, newCharacter);
+					var newCamPos:FlxPoint = FlxPoint.get();
+					newGf.refresh(newCharacter, newCamPos);
+					newCamPos.put();
+					newGf.alpha = 0.00001;
+					newGf.active = false;
+					gfMap.set(newCharacter, newGf);
+
+					if(stage != null) {
+						var insertIndex:Int = sourceGf != null ? stage.members.indexOf(sourceGf) : -1;
+
+						if(insertIndex >= 0)
+							stage.insert(insertIndex, newGf);
+						else
+							stage.add(newGf);
+					}
+				}
+		}
+	}
+
+	public function swapCharacterToLoaded(newCharacter:String, type:Int):Bool {
+		if(newCharacter == null || newCharacter.trim() == "") {
+			return false;
+		}
+
+		var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(newCharacter);
+
+		if(resolvedCharacter == null) {
+			return false;
+		}
+
+		newCharacter = resolvedCharacter;
+
+		addCharacterToList(newCharacter, type);
+
+		switch(type) {
+			case 0:
+				var nextBoyfriend:Boyfriend = boyfriendMap.get(newCharacter);
+
+				if(nextBoyfriend == null || boyfriend == nextBoyfriend) {
+					return false;
+				}
+
+				var lastAlpha:Float = boyfriend.alpha;
+				boyfriend.alpha = 0.00001;
+				boyfriend.active = false;
+				boyfriend = nextBoyfriend;
+				boyfriend.alpha = lastAlpha;
+				boyfriend.active = true;
+				modifiableCharacters.set("boyfriend", boyfriend);
+				if(playLua != null) {
+					playLua.syncDefaultCharacterPositions();
+				}
+				iconP1.character = boyfriend.curCharacter;
+				iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
+				return true;
+
+			case 1:
+				var nextDad:Character = dadMap.get(newCharacter);
+
+				if(nextDad == null || dad == nextDad) {
+					return false;
+				}
+
+				var lastAlpha:Float = dad.alpha;
+				dad.alpha = 0.00001;
+				dad.active = false;
+				dad = nextDad;
+				dad.alpha = lastAlpha;
+				dad.active = true;
+				modifiableCharacters.set("dad", dad);
+				if(playLua != null) {
+					playLua.syncDefaultCharacterPositions();
+				}
+				iconP2.character = dad.curCharacter;
+				iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
+				return true;
+
+			case 2:
+				var nextGf:Character = gfMap.get(newCharacter);
+
+				if(nextGf == null || gf == nextGf) {
+					return false;
+				}
+
+				var lastAlpha:Float = gf.alpha;
+				gf.alpha = 0.00001;
+				gf.active = false;
+				gf = nextGf;
+				gf.alpha = lastAlpha;
+				gf.active = true;
+				modifiableCharacters.set("gf", gf);
+				if(playLua != null) {
+					playLua.syncDefaultCharacterPositions();
+				}
+				return true;
+		}
+
+		return false;
 	}
 
 	function set_wobbleModPower(value:Float):Float {
@@ -3825,6 +4031,14 @@ class PlayState extends MusicBeatState
 		var stateCamNoteSustain:PlayCamera = ownedCamNoteSustain;
 		var stateCamHUD:PlayCamera = ownedCamHUD;
 
+		// Leaving gameplay while paused skips closeSubState(), so resume global managers here.
+		if(paused) {
+			paused = false;
+			persistentUpdate = true;
+			persistentDraw = true;
+			resumeGlobalRuntimeManagers();
+		}
+
 		removeBotplayOverlay();
 		resetScriptedCameraState(false);
 
@@ -3925,6 +4139,10 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	public function requestPauseExitToMenu():Void {
+		pendingPauseExitToMenu = true;
+	}
+
 	override public function destroy() {
 		var statePlayLua:PlayLua = playLua;
 		var stateCamNOTE:CameraNote = ownedCamNOTE;
@@ -3942,6 +4160,11 @@ class PlayState extends MusicBeatState
 
 		prepareForStateSwitch();
 		destroyAllSongTracks();
+
+		if(FlxG.sound.music != null) {
+			FlxG.sound.music.onComplete = null;
+			FlxG.sound.music.stop();
+		}
 
 		super.destroy();
 
@@ -3962,8 +4185,6 @@ class PlayState extends MusicBeatState
 		if(camHUD == stateCamHUD) {
 			camHUD = null;
 		}
-
-		FlxG.sound.destroy();
 
 		stage = FlxDestroyUtil.destroy(stage);
 		events = FlxDestroyUtil.destroy(events);
@@ -3989,7 +4210,7 @@ class PlayState extends MusicBeatState
             for(k in modifiableCharacters.keys()) {
                 var spr:Character = modifiableCharacters.get(k);
 
-                if(spr != null) {
+                if(spr != null && spr != boyfriend && spr != dad && spr != gf) {
                     spr.destroy();
                 }
             }
@@ -4000,5 +4221,20 @@ class PlayState extends MusicBeatState
             modifiableCharacters.clear();
             modifiableCharacters = null;
         }
+
+		if(boyfriendMap != null) {
+			boyfriendMap.clear();
+			boyfriendMap = null;
+		}
+
+		if(dadMap != null) {
+			dadMap.clear();
+			dadMap = null;
+		}
+
+		if(gfMap != null) {
+			gfMap.clear();
+			gfMap = null;
+		}
 	}
 }

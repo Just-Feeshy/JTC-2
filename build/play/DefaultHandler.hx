@@ -85,6 +85,32 @@ class DefaultHandler {
         return arrayer;
     }
 
+    static public function resolveCharacterJSON(name:String):String {
+        if(name == null) {
+            return null;
+        }
+
+        var trimmedName:String = StringTools.trim(name);
+
+        if(trimmedName.length == 0) {
+            return null;
+        }
+
+        var lowerName:String = trimmedName.toLowerCase();
+
+        for(characterName in getcharacterJSON()) {
+            if(characterName != null && characterName.toLowerCase() == lowerName) {
+                return characterName;
+            }
+        }
+
+        return null;
+    }
+
+    static public function hasCharacterJSON(name:String):Bool {
+        return resolveCharacterJSON(name) != null;
+    }
+
     static public function compilePosition(strum:Float):Float {
         var noteY:Float = strumOffset;
         noteY += (strum - strumOffset);

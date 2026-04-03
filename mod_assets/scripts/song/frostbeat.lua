@@ -95,6 +95,7 @@ local introNoteRevealDone = false
 local introBaseCameraDone = false
 local introClearDone = false
 local secondActive = false
+local boyfriendGFSwitched = false
 local INTENSITY_MULTIPLIER = 1.5
 local BASE_GAME_BUMP = 0.015
 local BASE_HUD_BUMP = 0.03
@@ -252,11 +253,13 @@ local function init()
     introBaseCameraDone = false
     introClearDone = false
     secondActive = false
+    boyfriendGFSwitched = false
     baseGameZoom = getCameraZoom("camGAME") or 1
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
 	precacheCharacter("dad-car")
-	precacheAtlas("flying notes GF SINGS")
+	precacheCharacter("flying BF sings gf")
+	addCharacterToList("flying BF sings gf", "boyfriend")
 	createJumpscare()
     buildPulseSteps()
     callEvent("setCameraBop", "0", "0")
@@ -576,10 +579,6 @@ end
 function onStepHit()
     jtc_camera.onStepHit(curStep)
 
-	if curStep == 906 then
-		-- callEvent("character change", "flying GF sings", "boyfriend")
-	end
-
     pulseCamera(curStep)
 
     if curStep == 606 then
@@ -619,6 +618,11 @@ function onStepHit()
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
+	if not boyfriendGFSwitched and curStep ~= nil and curStep >= 906 then
+		callEvent("character change", "flying BF sings gf", "boyfriend")
+		boyfriendGFSwitched = true
+	end
+
 	if not secondActive then
 		return
 	end
