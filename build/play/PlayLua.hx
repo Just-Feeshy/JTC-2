@@ -383,10 +383,70 @@ class PlayLua
 			playState.modifiableCharacters.set(name, characterSprite);
 		});
 
+		playState.addCallback("setCharacterAnimOffset", function(name:String, animation:String, x:Float, y:Float) {
+			var character:Character = playState.modifiableCharacters.get(name);
+
+			if(character == null || animation == null) {
+				return false;
+			}
+
+			character.addOffset(animation, x, y);
+			return true;
+		});
+
+		playState.addCallback("addCharacterOffset", function(name:String, animation:String, x:Float, y:Float) {
+			var character:Character = playState.modifiableCharacters.get(name);
+
+			if(character == null || animation == null) {
+				return false;
+			}
+
+			character.addOffset(animation, x, y);
+			return true;
+		});
+
 		playState.addCallback("warmCharacterAnimations", function(name:String, animations:Array<Dynamic>) {
 			var character:Character = playState.modifiableCharacters.get(name);
 
 			if(character == null || animations == null) {
+				return false;
+			}
+
+			var animationNames:Array<String> = [];
+
+			for(animation in animations) {
+				if(animation != null) {
+					animationNames.push(Std.string(animation));
+				}
+			}
+
+			character.warmAnimations(animationNames);
+			return true;
+		});
+
+		playState.addCallback("warmLoadedCharacterAnimations", function(name:String, type:String = "boyfriend", animations:Array<Dynamic>) {
+			if(name == null || animations == null) {
+				return false;
+			}
+
+			var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(name);
+
+			if(resolvedCharacter == null) {
+				return false;
+			}
+
+			var character:Character = null;
+
+			switch(type.toLowerCase().trim()) {
+				case "dad", "opponent":
+					character = playState.dadMap != null ? playState.dadMap.get(resolvedCharacter) : null;
+				case "gf", "girlfriend":
+					character = playState.gfMap != null ? playState.gfMap.get(resolvedCharacter) : null;
+				default:
+					character = playState.boyfriendMap != null ? playState.boyfriendMap.get(resolvedCharacter) : null;
+			}
+
+			if(character == null) {
 				return false;
 			}
 

@@ -12,19 +12,6 @@ using StringTools;
 
 @:access(MusicBeatState)
 class CheesyStage extends StorageStage {
-	private static final FROSTBEAT_SECOND_BASE_X:Float = 670;
-	private static final FROSTBEAT_SECOND_BASE_Y:Float = 130;
-	private static final FROSTBEAT_SECOND_REGULAR_CHARACTER:String = "frostbeat-second-base";
-	private static final FROSTBEAT_SECOND_EXTRA_CHARACTER:String = "frostbeat-second-extra";
-	private static final FROSTBEAT_SECOND_EXTRA_ANIMS:Array<String> = [
-		"idle",
-		"singDOWN miss",
-		"singRIGHT miss",
-		"singLEFT miss",
-		"singUP miss",
-		"punched"
-	];
-
 	final tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
@@ -39,11 +26,6 @@ class CheesyStage extends StorageStage {
 	var dad:Character;
 
 	var dadShouldDance:Bool = true;
-	var frostbeatSecondRegular:Character;
-	var frostbeatSecondExtra:Character;
-	var frostbeatSecondActive:Character;
-	var frostbeatSecondExtraAnimsWarmed:Bool = false;
-
 	var curStep:Float = 0;
 	var curBeat:Float = 0;
 
@@ -147,124 +129,6 @@ class CheesyStage extends StorageStage {
 		playstate.setLua("curBeatFloat", curBeat);
 	}
 
-	function createFrostbeatSecondCharacter(characterName:String):Character {
-		var character:Character = new Character(FROSTBEAT_SECOND_BASE_X, FROSTBEAT_SECOND_BASE_Y, characterName);
-		character.refresh(characterName, playstate.camPos);
-		character.shouldPlayDance = false;
-		character.active = true;
-		character.flipX = true;
-		return character;
-	}
-
-	function resetFrostbeatSecondCharacter(character:Character):Void {
-		if(character == null) {
-			return;
-		}
-
-		character.setPosition(FROSTBEAT_SECOND_BASE_X, FROSTBEAT_SECOND_BASE_Y);
-		character.visible = false;
-		character.exists = true;
-		character.active = true;
-		character.alpha = 1;
-		character.flipX = true;
-
-		if(character.hasAnimation("idle")) {
-			character.playAnimation("idle", true);
-		}
-
-		if(members.indexOf(character) >= 0) {
-			remove(character, true);
-		}
-	}
-
-	function setFrostbeatSecondActive(character:Character):Void {
-		if(character == null) {
-			return;
-		}
-
-		if(frostbeatSecondActive == character) {
-			if(playstate.modifiableCharacters != null) {
-				playstate.modifiableCharacters.set("second", character);
-			}
-			return;
-		}
-
-		var previous:Character = frostbeatSecondActive;
-		var stageIndex:Int = -1;
-		var wasOnStage:Bool = false;
-
-		if(previous != null) {
-			stageIndex = members.indexOf(previous);
-			wasOnStage = stageIndex >= 0;
-
-			if(wasOnStage) {
-				remove(previous, true);
-			}
-
-			character.setPosition(previous.x, previous.y);
-			character.visible = previous.visible;
-			character.exists = previous.exists;
-			character.active = previous.active;
-			character.alpha = previous.alpha;
-			character.flipX = previous.flipX;
-		}
-
-		frostbeatSecondActive = character;
-
-		if(wasOnStage && members.indexOf(character) < 0) {
-			insert(stageIndex, character);
-		}
-
-		if(playstate.modifiableCharacters != null) {
-			playstate.modifiableCharacters.set("second", character);
-		}
-	}
-
-	function ensureFrostbeatSecondSprite():Void {
-		if(stage != "funkroad" || PlayState.SONG.song.toLowerCase() != "frostbeat") {
-			return;
-		}
-
-		if(frostbeatSecondRegular == null) {
-			frostbeatSecondRegular = createFrostbeatSecondCharacter(FROSTBEAT_SECOND_REGULAR_CHARACTER);
-		}
-
-		if(frostbeatSecondExtra == null) {
-			frostbeatSecondExtra = createFrostbeatSecondCharacter(FROSTBEAT_SECOND_EXTRA_CHARACTER);
-		}
-
-		if(!frostbeatSecondExtraAnimsWarmed) {
-			frostbeatSecondExtra.warmAnimations(FROSTBEAT_SECOND_EXTRA_ANIMS);
-			frostbeatSecondExtraAnimsWarmed = true;
-		}
-
-		resetFrostbeatSecondCharacter(frostbeatSecondRegular);
-		resetFrostbeatSecondCharacter(frostbeatSecondExtra);
-		setFrostbeatSecondActive(frostbeatSecondRegular);
-	}
-
-	function isFrostbeatSecondExtraAnimation(animName:String):Bool {
-		return animName != null && (animName == "punched" || animName.endsWith(" miss"));
-	}
-
-	public function playFrostbeatSecondAnimation(animName:String, force:Bool = false, reverse:Bool = false, startFrame:Int = 0):Bool {
-		if(stage != "funkroad" || PlayState.SONG.song.toLowerCase() != "frostbeat") {
-			return false;
-		}
-
-		ensureFrostbeatSecondSprite();
-
-		var target:Character = isFrostbeatSecondExtraAnimation(animName) ? frostbeatSecondExtra : frostbeatSecondRegular;
-
-		if(target == null || !target.hasAnimation(animName)) {
-			return false;
-		}
-
-		setFrostbeatSecondActive(target);
-		target.playAnimation(animName, force, reverse, startFrame);
-		return true;
-	}
-
 	override function configStage():Void {
 		boyfriend = Register.getInGameCharacter(BOYFRIEND);
 		dad = Register.getInGameCharacter(OPPONENT);
@@ -282,7 +146,6 @@ class CheesyStage extends StorageStage {
 			tweenHealthBar(tripleIconColors, "player", playstate);
 		}
 
-		ensureFrostbeatSecondSprite();
 	}
 
 	override function hasGirlfriend():Bool {
@@ -355,7 +218,6 @@ class CheesyStage extends StorageStage {
 			tweenHealthBar(tripleIconColors, "player", playstate);
 		}
 
-		ensureFrostbeatSecondSprite();
 	}
 
 	override function update(elapsed:Float):Void {
@@ -385,20 +247,6 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function destroy():Void {
-		if(playstate != null && playstate.modifiableCharacters != null) {
-			playstate.modifiableCharacters.remove("second");
-		}
-
-		for(character in [frostbeatSecondRegular, frostbeatSecondExtra]) {
-			if(character != null && members.indexOf(character) >= 0) {
-				remove(character, true);
-			}
-		}
-
-		frostbeatSecondRegular = FlxDestroyUtil.destroy(frostbeatSecondRegular);
-		frostbeatSecondExtra = FlxDestroyUtil.destroy(frostbeatSecondExtra);
-		frostbeatSecondActive = null;
-
 		super.destroy();
 
 		boyfriend = null;

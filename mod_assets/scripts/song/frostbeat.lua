@@ -25,8 +25,9 @@ local phaseTwo = 643
 local daddyIsHere = false
 local daddyTrans = false
 
-local secondBaseX = 670
+local secondBaseX = 890
 local secondBaseY = 130
+local secondHiddenAlpha = 0.00001
 local secondWarmAnimations = {
     "idle",
     "singDOWN",
@@ -38,6 +39,14 @@ local secondWarmAnimations = {
     "singLEFT miss",
     "singUP miss",
     "punched"
+}
+local dadCarWarmAnimations = {
+    "idle",
+    "singDOWN",
+    "singRIGHT",
+    "singLEFT",
+    "singUP",
+    "punch"
 }
 local deathVariantStep = 630
 local deathVariantCurrent = ""
@@ -305,17 +314,39 @@ local function applyDeathCharacterVariant(variantName)
         return
     end
 
-    if createDeathCharacter == nil or loadDeathCharacterGraphic == nil or setDeathCharacterAnimations == nil then
+    if createDeathCharacter == nil or loadDeathCharacterGraphic == nil or setDeathCharacterAnimations == nil or addDeathCharacterAnimation == nil then
         return
     end
 
     createDeathCharacter()
 
+    if setDeathCharacterCameraOffset ~= nil then
+        setDeathCharacterCameraOffset(0, 0)
+    end
+
+    if setDeathCharacterCameraZoom ~= nil then
+        setDeathCharacterCameraZoom(1.0)
+    end
+
+    if setDeathCharacterOffset ~= nil then
+        setDeathCharacterOffset(0, 0)
+    end
+
+    if setDeathSounds ~= nil then
+        setDeathSounds("", "", "", "")
+    end
+
     if variantName == "demon" then
         loadDeathCharacterGraphic("skating and flying DEATHDEMON")
+        addDeathCharacterAnimation("firstDeathDad", "firstDeathDad", 24, false)
+        addDeathCharacterAnimation("deathLoopDad", "deathLoopDad", 24, true)
+        addDeathCharacterAnimation("deathConfirmDad", "deathConfirmDad", 24, false)
         setDeathCharacterAnimations("firstDeathDad", "deathLoopDad", "deathConfirmDad")
     else
         loadDeathCharacterGraphic("skating and flying DEATH")
+        addDeathCharacterAnimation("firstDeath", "firstDeath", 24, false)
+        addDeathCharacterAnimation("deathLoop", "deathLoop", 24, true)
+        addDeathCharacterAnimation("deathConfirm", "deathConfirm", 24, false)
         setDeathCharacterAnimations("firstDeath", "deathLoop", "deathConfirm")
     end
 
@@ -375,7 +406,11 @@ local function init()
     precacheCharacter("dad-car")
     precacheCharacter("frostbeat-second")
 	precacheCharacter("flying BF sings gf")
-    if clearCustomDeathCharacter ~= nil then
+    addCharacterToList("dad-car", "dad")
+    if warmLoadedCharacterAnimations ~= nil then
+        warmLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
+    end
+	if clearCustomDeathCharacter ~= nil then
         clearCustomDeathCharacter()
     end
 	addCharacterToList("flying BF sings gf", "boyfriend")
@@ -414,7 +449,8 @@ local function setupSecondSprite()
 
     spriteFlip("second", true, false)
     setSpritePosition("second", secondBaseX, secondBaseY)
-    setSpriteVisible("second", false)
+    setSpriteAlpha("second", secondHiddenAlpha)
+    setSpriteVisible("second", true)
     setCustomFieldToSprite("second", "active", false)
     playCharacterAnim("second", "idle", true)
 end
@@ -448,6 +484,7 @@ local function enterPhaseTwo()
     end
 
     callEvent("character change", "dad-car", "dad")
+	setSpriteY("dad", 100)
     setSpriteVisible("frostbiteCAR", false)
     removeSpriteFromState("frostbiteCAR")
     setGameplayCameraZoom(1.0, false, false)
@@ -457,6 +494,7 @@ local function enterPhaseTwo()
     applyPhaseTwoFunkroadLayout()
 
     if spriteExist("second") then
+        setSpriteAlpha("second", 1)
         setSpriteVisible("second", true)
         setCustomFieldToSprite("second", "active", true)
         local dadIndex = getSpriteIndexFromStage("dad")
@@ -466,6 +504,8 @@ local function enterPhaseTwo()
         else
             addSpriteToStage("second")
         end
+
+        playSecondAnimation("idle")
     end
 
     if setHealthIconAnimation ~= nil then
@@ -766,7 +806,8 @@ local function resetSecondSprite()
     end
 
     setSpritePosition("second", secondBaseX, secondBaseY)
-    setSpriteVisible("second", false)
+    setSpriteAlpha("second", secondHiddenAlpha)
+    setSpriteVisible("second", true)
     setCustomFieldToSprite("second", "active", false)
     playCharacterAnim("second", "idle", true)
     curAnimName = "idle"
