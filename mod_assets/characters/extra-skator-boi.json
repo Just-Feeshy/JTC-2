@@ -15,7 +15,7 @@
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				251,
+				284,
 				3
 			],
 			"looped": false
@@ -25,7 +25,7 @@
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				213,
+				613,
 				231
 			],
 			"looped": false
@@ -35,7 +35,7 @@
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				181,
+				283,
 				93
 			],
 			"looped": false
@@ -45,7 +45,7 @@
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				200,
+				463,
 				202
 			],
 			"looped": false
@@ -55,13 +55,13 @@
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				190,
+				302,
 				114
 			],
 			"looped": false
 		}
 	},
-	"isPlayer": false,
+	"isPlayer": true,
 	"pixel": false,
 	"position": {
 		"x": 0,

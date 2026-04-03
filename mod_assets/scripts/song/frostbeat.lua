@@ -39,6 +39,8 @@ local secondWarmAnimations = {
     "singUP miss",
     "punched"
 }
+local deathVariantStep = 630
+local deathVariantCurrent = ""
 local phaseTwoDadDeltaX = -120
 local phaseTwoDadDeltaY = 10
 local phaseTwoBoyfriendDeltaX = 240
@@ -298,6 +300,38 @@ local function createJumpscare()
 	addSpriteToStage("jumpscare")
 end
 
+local function applyDeathCharacterVariant(variantName)
+    if variantName == nil or variantName == deathVariantCurrent then
+        return
+    end
+
+    if createDeathCharacter == nil or loadDeathCharacterGraphic == nil or setDeathCharacterAnimations == nil then
+        return
+    end
+
+    createDeathCharacter()
+
+    if variantName == "demon" then
+        loadDeathCharacterGraphic("skating and flying DEATHDEMON")
+        setDeathCharacterAnimations("firstDeathDad", "deathLoopDad", "deathConfirmDad")
+    else
+        loadDeathCharacterGraphic("skating and flying DEATH")
+        setDeathCharacterAnimations("firstDeath", "deathLoop", "deathConfirm")
+    end
+
+    deathVariantCurrent = variantName
+end
+
+local function updateDeathCharacterVariant()
+    local stepValue = curStepFloat or curStep or 0
+
+    if stepValue < deathVariantStep then
+        applyDeathCharacterVariant("demon")
+    else
+        applyDeathCharacterVariant("normal")
+    end
+end
+
 local function init()
     beatSection = 0
     frost_modchart = {}
@@ -337,9 +371,13 @@ local function init()
     staticShaderActive = false
     staticShaderCleared = false
     staticShaderSoundPlayed = false
+    deathVariantCurrent = ""
     precacheCharacter("dad-car")
     precacheCharacter("frostbeat-second")
 	precacheCharacter("flying BF sings gf")
+    if clearCustomDeathCharacter ~= nil then
+        clearCustomDeathCharacter()
+    end
 	addCharacterToList("flying BF sings gf", "boyfriend")
 	createJumpscare()
     buildPulseSteps()
@@ -765,6 +803,7 @@ function generatedStage()
     setCameraVisible("camGame", true)
     ensureIntroWarmupCover()
     setupSecondSprite()
+    updateDeathCharacterVariant()
 
     ensureFrostbiteCar()
     applyIntroOpponentFaceShot()
@@ -778,6 +817,7 @@ end
 
 function onStepHit()
     jtc_camera.onStepHit(curStep)
+    updateDeathCharacterVariant()
 
     pulseCamera(curStep)
 
@@ -907,6 +947,7 @@ function onUpdate(elapsed)
     jtc_camera.onUpdate(elapsed)
     updateIntroClearTween(elapsed)
     decayCameraZooms(elapsed)
+    updateDeathCharacterVariant()
 
     if startsWith(curAnimName, "sing") then
         holdTimer = holdTimer + elapsed

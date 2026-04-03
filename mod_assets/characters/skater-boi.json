@@ -25,7 +25,7 @@
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				193,
+				-127,
 				-45
 			],
 			"looped": false
@@ -59,11 +59,13 @@
 		"y": -96,
 		"camPosX": 0
 	},
+	"clippingAdjustment": {},
 	"playAnim": "",
 	"file": "skater_assets.xml",
 	"icon": [
 		24,
 		30,
 		24
-	]
+	],
+	"iconFile": "iconGrid"
 }
