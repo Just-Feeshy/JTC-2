@@ -2300,7 +2300,8 @@ class ChartingState extends MusicBeatState
 		if (curSelectedNote != null) {
 			stepperSusLength.value = curSelectedNote[2];
 			lastSusLengthStepperValue = stepperSusLength.value;
-			noteTagInput.text = curSelectedNote[4];
+			noteTagInput.text = curSelectedNote[4] != null ? Std.string(curSelectedNote[4]) : "";
+			playAnimCheck.checked = curSelectedNote[5] != null ? curSelectedNote[5] : true;
 		}
 	}
 

@@ -53,6 +53,7 @@ local introBoyfriendFaceAnchorY = 0.48
 local introBoyfriendFaceOffsetX = 10
 local introBoyfriendFaceOffsetY = 310
 local introBoyfriendFaceZoom = 2.15
+local introWarmupIndex = 0
 local introBeginStep = 18
 
 local jtcStrumAnims = {
@@ -86,7 +87,6 @@ local currentIntroZoom = baseFunkroadCameraZoom
 local currentIntroCarX = baseFrostbiteCarX
 local currentIntroCarY = baseFrostbiteCarY
 local introClearTween = nil
-local introWarmupIndex = 0
 local introWarmupDone = false
 local introCoverRemoved = false
 local introGirlfriendShotDone = false
@@ -245,7 +245,6 @@ local function init()
     currentIntroCarX = baseFrostbiteCarX
     currentIntroCarY = baseFrostbiteCarY
     introClearTween = nil
-    introWarmupIndex = 0
     introWarmupDone = false
     introCoverRemoved = false
     introGirlfriendShotDone = false
@@ -403,9 +402,17 @@ local function ensureIntroWarmupCover()
 end
 
 local function updateIntroWarmup()
-    if introWarmupDone or curStep >= introBeginStep then
+    if introWarmupDone then
         return
     end
+
+    if curStep ~= nil and curStep >= introBeginStep then
+        introWarmupDone = true
+        applyIntroOpponentFaceShot()
+        return
+    end
+
+    ensureIntroWarmupCover()
 
     if introWarmupIndex == 0 then
         applyIntroGirfriendFaceShot()
@@ -413,11 +420,11 @@ local function updateIntroWarmup()
         applyIntroBoyfriendFaceShot()
     elseif introWarmupIndex == 2 then
         applyIntroBaseCameraShot()
-    elseif introWarmupIndex == 3 then
+    else
         applyIntroOpponentFaceShot()
     end
 
-	finishGPUCommands() -- This clears up the tiny lag spike
+    finishGPUCommands()
 
     introWarmupIndex = introWarmupIndex + 1
 
@@ -425,29 +432,6 @@ local function updateIntroWarmup()
         introWarmupDone = true
         applyIntroOpponentFaceShot()
     end
-end
-
-local function performIntroWarmup()
-    if introWarmupDone then
-        return
-    end
-
-    ensureIntroWarmupCover()
-
-    applyIntroGirfriendFaceShot()
-    finishGPUCommands()
-
-    applyIntroBoyfriendFaceShot()
-    finishGPUCommands()
-
-    applyIntroBaseCameraShot()
-    finishGPUCommands()
-
-    applyIntroOpponentFaceShot()
-    finishGPUCommands()
-
-    introWarmupIndex = 4
-    introWarmupDone = true
 end
 
 local function updateIntroClearTween(elapsed)
@@ -570,7 +554,6 @@ function generatedStage()
 
     ensureFrostbiteCar()
     applyIntroOpponentFaceShot()
-    performIntroWarmup()
 
     resetSecondSprite()
 
@@ -651,6 +634,8 @@ function noteMiss(noteData, tag)
 end
 
 function onUpdate(elapsed)
+    updateIntroWarmup()
+
     if not startedCountdown then
         return
     end

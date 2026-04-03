@@ -20,10 +20,6 @@ class DeathNote extends CustomNoteTemplate {
         return true;
     }
 
-    override function giveHealth(isSustain:Bool):Float {
-        return -2;
-    }
-
     override function playerShouldntHit():Bool {
         return true;
     }
