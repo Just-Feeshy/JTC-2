@@ -27,6 +27,18 @@ local daddyTrans = false
 
 local secondBaseX = 670
 local secondBaseY = 130
+local secondWarmAnimations = {
+    "idle",
+    "singDOWN",
+    "singRIGHT",
+    "singLEFT",
+    "singUP",
+    "singDOWN miss",
+    "singRIGHT miss",
+    "singLEFT miss",
+    "singUP miss",
+    "punched"
+}
 local phaseTwoDadDeltaX = -120
 local phaseTwoDadDeltaY = 10
 local phaseTwoBoyfriendDeltaX = 240
@@ -326,12 +338,47 @@ local function init()
     staticShaderCleared = false
     staticShaderSoundPlayed = false
     precacheCharacter("dad-car")
+    precacheCharacter("frostbeat-second")
 	precacheCharacter("flying BF sings gf")
 	addCharacterToList("flying BF sings gf", "boyfriend")
 	createJumpscare()
     buildPulseSteps()
     callEvent("setCameraBop", "0", "0")
     jtc_camera.reset()
+end
+
+local function setupSecondSprite()
+    if makeCharacter ~= nil then
+        if not spriteExist("second") then
+            makeCharacter("second", "frostbeat-second", secondBaseX, secondBaseY)
+        end
+    else
+        if not spriteExist("second") then
+            createCharacterSprite("second", "frostbeat-second", secondBaseX, secondBaseY)
+        end
+    end
+
+    if warmCharacterAnimations ~= nil then
+        warmCharacterAnimations("second", secondWarmAnimations)
+    end
+
+    if addCharacter ~= nil then
+        addCharacter("second", "dad")
+    else
+        local dadIndex = getSpriteIndexFromStage("dad")
+
+        if dadIndex ~= nil and dadIndex >= 0 then
+            insertSpriteToStage(dadIndex, "second")
+        else
+            addSpriteToStage("second")
+        end
+    end
+
+    spriteFlip("second", true, false)
+    setSpritePosition("second", secondBaseX, secondBaseY)
+    setSpriteVisible("second", false)
+    setCustomFieldToSprite("second", "active", false)
+    playCharacterAnim("second", "idle", true)
 end
 
 local function playSecondAnimation(animName)
@@ -373,6 +420,7 @@ local function enterPhaseTwo()
 
     if spriteExist("second") then
         setSpriteVisible("second", true)
+        setCustomFieldToSprite("second", "active", true)
         local dadIndex = getSpriteIndexFromStage("dad")
 
         if dadIndex ~= nil and dadIndex >= 0 then
@@ -681,8 +729,8 @@ local function resetSecondSprite()
 
     setSpritePosition("second", secondBaseX, secondBaseY)
     setSpriteVisible("second", false)
+    setCustomFieldToSprite("second", "active", false)
     playSecondAnimation("idle")
-    removeSpriteFromStage("second")
 end
 
 local function refreshFrostbeatRuntimeState()
@@ -714,6 +762,7 @@ function generatedStage()
     jtc_camera.hideGameplayUntilStep(12, false)
     setCameraVisible("camGame", true)
     ensureIntroWarmupCover()
+    setupSecondSprite()
 
     ensureFrostbiteCar()
     applyIntroOpponentFaceShot()
