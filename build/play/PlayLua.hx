@@ -424,6 +424,59 @@ class PlayLua
 			return true;
 		});
 
+		playState.addCallback("primeCharacterAnimations", function(name:String, animations:Array<Dynamic>) {
+			var character:Character = playState.modifiableCharacters.get(name);
+
+			if(character == null || animations == null) {
+				return false;
+			}
+
+			var animationNames:Array<String> = [];
+
+			for(animation in animations) {
+				if(animation != null) {
+					animationNames.push(Std.string(animation));
+				}
+			}
+
+			var originalAnim:String = character.getCurrentAnimation();
+			var originalFrame:Int = character.animation != null && character.animation.curAnim != null ? character.animation.curAnim.curFrame : 0;
+			var originalVisible:Bool = character.visible;
+			var originalActive:Bool = character.active;
+			var originalExists:Bool = character.exists;
+			var originalAlpha:Float = character.alpha;
+
+			character.exists = true;
+			character.visible = true;
+			character.active = true;
+
+			if(character.alpha <= 0) {
+				character.alpha = 0.00001;
+			}
+
+			for(animationName in animationNames) {
+				if(animationName == null || !character.hasAnimation(animationName)) {
+					continue;
+				}
+
+				character.playAnimation(animationName, true);
+				character.drawFrame(true);
+			}
+
+			if(originalAnim != null && originalAnim != "" && character.hasAnimation(originalAnim)) {
+				character.playAnimation(originalAnim, true, false, originalFrame);
+			} else if(character.hasAnimation("idle")) {
+				character.playAnimation("idle", true);
+			}
+
+			character.drawFrame(true);
+			character.visible = originalVisible;
+			character.active = originalActive;
+			character.exists = originalExists;
+			character.alpha = originalAlpha;
+			return true;
+		});
+
 		playState.addCallback("warmLoadedCharacterAnimations", function(name:String, type:String = "boyfriend", animations:Array<Dynamic>) {
 			if(name == null || animations == null) {
 				return false;
@@ -459,6 +512,78 @@ class PlayLua
 			}
 
 			character.warmAnimations(animationNames);
+			return true;
+		});
+
+		playState.addCallback("primeLoadedCharacterAnimations", function(name:String, type:String = "boyfriend", animations:Array<Dynamic>) {
+			if(name == null || animations == null) {
+				return false;
+			}
+
+			var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(name);
+
+			if(resolvedCharacter == null) {
+				return false;
+			}
+
+			var character:Character = null;
+
+			switch(type.toLowerCase().trim()) {
+				case "dad", "opponent":
+					character = playState.dadMap != null ? playState.dadMap.get(resolvedCharacter) : null;
+				case "gf", "girlfriend":
+					character = playState.gfMap != null ? playState.gfMap.get(resolvedCharacter) : null;
+				default:
+					character = playState.boyfriendMap != null ? playState.boyfriendMap.get(resolvedCharacter) : null;
+			}
+
+			if(character == null) {
+				return false;
+			}
+
+			var animationNames:Array<String> = [];
+
+			for(animation in animations) {
+				if(animation != null) {
+					animationNames.push(Std.string(animation));
+				}
+			}
+
+			var originalAnim:String = character.getCurrentAnimation();
+			var originalFrame:Int = character.animation != null && character.animation.curAnim != null ? character.animation.curAnim.curFrame : 0;
+			var originalVisible:Bool = character.visible;
+			var originalActive:Bool = character.active;
+			var originalExists:Bool = character.exists;
+			var originalAlpha:Float = character.alpha;
+
+			character.exists = true;
+			character.visible = true;
+			character.active = true;
+
+			if(character.alpha <= 0) {
+				character.alpha = 0.00001;
+			}
+
+			for(animationName in animationNames) {
+				if(animationName == null || !character.hasAnimation(animationName)) {
+					continue;
+				}
+
+				character.playAnimation(animationName, true);
+				character.drawFrame(true);
+			}
+
+			if(originalAnim != null && originalAnim != "" && character.hasAnimation(originalAnim)) {
+				character.playAnimation(originalAnim, true, false, originalFrame);
+			} else if(character.hasAnimation("idle")) {
+				character.playAnimation("idle", true);
+			}
+
+			character.drawFrame(true);
+			character.visible = originalVisible;
+			character.active = originalActive;
+			character.exists = originalExists;
+			character.alpha = originalAlpha;
 			return true;
 		});
 
@@ -766,6 +891,12 @@ class PlayLua
 		playState.addCallback("addDeathCharacterAnimation", function(name:String, prefix:String, frameRate:Int = 24, looped:Bool = false) {
 			if(playState.customDeathCharacter == null) return false;
 			playState.customDeathCharacter.addDeathAnimation(name, prefix, frameRate, looped);
+			return true;
+		});
+
+		playState.addCallback("setDeathCharacterAnimationOffset", function(name:String, x:Float, y:Float) {
+			if(playState.customDeathCharacter == null || name == null) return false;
+			playState.customDeathCharacter.addDeathOffset(name, x, y);
 			return true;
 		});
 

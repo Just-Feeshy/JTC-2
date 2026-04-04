@@ -104,7 +104,7 @@ class GameOverSubstate extends MusicBeatSubstate
         // Position at boyfriend's location if boyfriend exists
         if (parentPlayState.boyfriend != null)
         {
-          customDeathChar.copyPositionFrom(parentPlayState.boyfriend);
+          customDeathChar.copyCenterFrom(parentPlayState.boyfriend);
         }
 
         trace('[GameOver] Using custom death character');
@@ -198,8 +198,8 @@ class GameOverSubstate extends MusicBeatSubstate
       @:nullSafety(Off)
       FlxG.camera.target = null;
       FlxG.camera.follow(cameraFollowPoint, FlxCameraFollowStyle.LOCKON, Constants.DEFAULT_CAMERA_FOLLOW_RATE / 2);
+      FlxG.camera.focusOn(cameraFollowPoint.getPosition());
       targetCameraZoom = (parentPlayState?.currentStage?.camZoom ?? 1.0) * customDeathChar.cameraZoom;
-      FlxG.camera.zoom = targetCameraZoom;
       return;
     }
 
@@ -332,6 +332,23 @@ class GameOverSubstate extends MusicBeatSubstate
     {
       trace('[GameOver] Playing custom death character animation');
       customDeathChar.playFirstDeath();
+
+      var sourceBoyfriend = parentPlayState != null ? parentPlayState.boyfriend : null;
+
+      if (sourceBoyfriend != null)
+      {
+        customDeathChar.copyCenterFrom(sourceBoyfriend);
+      }
+
+      if (cameraFollowPoint != null)
+      {
+        var focusPoint = customDeathChar.getCameraFocusPoint();
+        cameraFollowPoint.x = focusPoint.x;
+        cameraFollowPoint.y = focusPoint.y;
+        FlxG.camera.focusOn(cameraFollowPoint.getPosition());
+        focusPoint.put();
+      }
+
       playBlueBalledSFX();
       return;
     }

@@ -115,6 +115,11 @@ local introBaseCameraDone = false
 local introClearDone = false
 local secondActive = false
 local boyfriendGFSwitched = false
+local phaseTwoFlyingCameraActive = false
+local phaseTwoFlyingCameraStartFocusX = nil
+local phaseTwoFlyingCameraStartFocusY = nil
+local phaseTwoFlyingCameraStartZoom = nil
+local phaseTwoFlyingCameraCompleted = false
 local jtcVocalsSwitchedToPlayer = false
 local jtcVocalsMutedForPunch = false
 local punchCount = 0
@@ -124,6 +129,10 @@ local BASE_GAME_BUMP = 0.015
 local BASE_HUD_BUMP = 0.03
 local BASE_NOTE_BUMP = 0.03
 local CAMERA_BOP_DECAY_RATE = 0.95
+local phaseTwoFlyingCameraStartStep = 906
+local phaseTwoFlyingCameraPeakStep = 1136
+local phaseTwoFlyingCameraEndStep = 1028
+local phaseTwoFlyingCameraPeakZoom = 1.2
 
 local B1 = 1 / 2.75
 local B2 = 2 / 2.75
@@ -152,6 +161,16 @@ local function addPulseStep(stepValue, intensity)
     pulseStepIntensity[stepValue] = intensity
 end
 
+local function addPulseSteps(steps, intensity)
+    if steps == nil then
+        return
+    end
+
+    for _, stepValue in ipairs(steps) do
+        addPulseStep(stepValue, intensity)
+    end
+end
+
 local function addPulseRange(startStep, endStep, everySteps, intensity)
     if everySteps == nil or everySteps <= 0 then
         return
@@ -165,12 +184,39 @@ local function addPulseRange(startStep, endStep, everySteps, intensity)
     end
 end
 
+local drumPulseDualSteps = {
+    150, 158, 166, 170, 174, 183, 187, 191, 199, 203, 220, 224, 232, 236, 240, 257, 261, 265, 269, 273, 306, 331, 339, 346,
+    364, 372, 384, 388, 405, 438, 450, 454, 462, 471, 485, 487, 493, 495, 510, 512, 518, 520, 526, 528, 531, 545, 551, 559,
+    561, 567, 578, 584, 586, 592, 594, 597, 600, 602, 622, 633, 660, 668, 676, 701, 709, 726, 734, 742, 746, 779, 783, 800,
+    816, 833, 849, 857, 866, 906, 1145, 1154, 1162, 1170, 1174, 1178, 1195, 1203, 1211, 1228, 1236, 1244, 1252, 1269, 1273, 1277, 1293, 1302,
+    1310, 1318, 1326, 1335, 1351, 1376, 1396, 1409, 1425, 1433, 1450, 1458, 1462, 1466, 1491, 1499, 1524, 1528, 1532, 1540, 1565, 1573, 1598, 1606,
+    1623, 1627, 1631, 1639, 1660, 1664, 1675, 1738, 1741, 1774, 1777, 1807, 1818, 1820, 1823, 1826
+}
+
+local drumPulseKickSteps = {
+    294, 310, 318, 327, 343, 351, 360, 376, 393, 397, 409, 426, 442, 458, 475, 479, 490, 498, 502, 504, 535, 537, 556, 564,
+    569, 575, 638, 656, 672, 689, 705, 718, 722, 738, 755, 769, 788, 792, 804, 821, 837, 845, 862, 870, 882, 886, 899, 903,
+    967, 1005, 1019, 1038, 1050, 1058, 1071, 1083, 1091, 1099, 1104, 1121, 1136, 1150, 1166, 1182, 1187, 1199, 1207, 1215, 1219, 1232, 1240, 1248,
+    1257, 1261, 1265, 1281, 1285, 1298, 1314, 1331, 1343, 1347, 1355, 1364, 1384, 1388, 1405, 1421, 1487, 1561, 1672, 1688, 1705, 1708, 1724, 1754,
+    1771, 1787, 1804, 1828, 1830
+}
+
+local drumPulseSnareSteps = {
+    153, 161, 172, 178, 195, 197, 205, 207, 211, 215, 228, 238, 244, 248, 252, 263, 276, 281, 290, 298, 302, 313, 322, 334,
+    355, 367, 379, 400, 412, 417, 421, 424, 429, 433, 445, 465, 543, 548, 553, 581, 608, 611, 630, 635, 643, 647, 652, 684,
+    693, 697, 712, 750, 753, 759, 775, 786, 807, 819, 824, 840, 852, 915, 1024, 1141, 1157, 1160, 1190, 1193, 1226, 1289, 1291, 1322,
+    1324, 1338, 1341, 1349, 1357, 1359, 1367, 1372, 1374, 1380, 1390, 1392, 1398, 1400, 1412, 1417, 1429, 1436, 1441, 1445, 1453, 1470, 1474, 1479,
+    1502, 1507, 1511, 1516, 1519, 1522, 1536, 1543, 1548, 1552, 1557, 1568, 1576, 1581, 1585, 1588, 1590, 1593, 1601, 1609, 1614, 1618, 1621, 1634,
+    1642, 1647, 1650, 1653, 1655, 1667, 1670, 1678, 1683, 1686, 1695, 1697, 1703, 1711, 1716, 1719, 1727, 1730, 1733, 1744, 1746, 1749, 1752, 1760,
+    1762, 1779, 1782, 1785, 1790, 1793, 1795, 1798, 1810, 1815
+}
+
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-	addPulseRange(150, 212, 4, 0.67)
-	addPulseRange(216, 282, 4, 1.0)
-	addPulseRange(286, 474, 4, 1.41)
+    addPulseSteps(drumPulseDualSteps, 1.2)
+    addPulseSteps(drumPulseKickSteps, 1.0)
+    addPulseSteps(drumPulseSnareSteps, 0.75)
 end
 
 local function pulseCamera(stepValue)
@@ -309,8 +355,16 @@ local function createJumpscare()
 	addSpriteToStage("jumpscare")
 end
 
+local function getDeathCameraZoomMultiplier()
+    if daddyIsHere then
+        return 0.5
+    end
+
+    return 1.0
+end
+
 local function applyDeathCharacterVariant(variantName)
-    if variantName == nil or variantName == deathVariantCurrent then
+    if variantName == nil then
         return
     end
 
@@ -325,7 +379,7 @@ local function applyDeathCharacterVariant(variantName)
     end
 
     if setDeathCharacterCameraZoom ~= nil then
-        setDeathCharacterCameraZoom(1.0)
+        setDeathCharacterCameraZoom(getDeathCameraZoomMultiplier())
     end
 
     if setDeathCharacterOffset ~= nil then
@@ -336,11 +390,19 @@ local function applyDeathCharacterVariant(variantName)
         setDeathSounds("", "", "", "")
     end
 
+    if variantName == deathVariantCurrent then
+        return
+    end
+
     if variantName == "demon" then
         loadDeathCharacterGraphic("skating and flying DEATHDEMON")
         addDeathCharacterAnimation("firstDeathDad", "firstDeathDad", 24, false)
         addDeathCharacterAnimation("deathLoopDad", "deathLoopDad", 24, true)
         addDeathCharacterAnimation("deathConfirmDad", "deathConfirmDad", 24, false)
+        if setDeathCharacterAnimationOffset ~= nil then
+            setDeathCharacterAnimationOffset("firstDeathDad", 886, 378)
+            setDeathCharacterAnimationOffset("deathConfirmDad", 4, 0)
+        end
         setDeathCharacterAnimations("firstDeathDad", "deathLoopDad", "deathConfirmDad")
     else
         loadDeathCharacterGraphic("skating and flying DEATH")
@@ -391,6 +453,11 @@ local function init()
     introClearDone = false
     secondActive = false
     boyfriendGFSwitched = false
+    phaseTwoFlyingCameraActive = false
+    phaseTwoFlyingCameraStartFocusX = nil
+    phaseTwoFlyingCameraStartFocusY = nil
+    phaseTwoFlyingCameraStartZoom = nil
+    phaseTwoFlyingCameraCompleted = false
     jtcVocalsSwitchedToPlayer = false
     jtcVocalsMutedForPunch = false
     punchCount = 0
@@ -410,6 +477,10 @@ local function init()
     if warmLoadedCharacterAnimations ~= nil then
         warmLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
     end
+    if primeLoadedCharacterAnimations ~= nil then
+        primeLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
+    end
+    finishGPUCommands()
 	if clearCustomDeathCharacter ~= nil then
         clearCustomDeathCharacter()
     end
@@ -434,6 +505,9 @@ local function setupSecondSprite()
     if warmCharacterAnimations ~= nil then
         warmCharacterAnimations("second", secondWarmAnimations)
     end
+    if primeCharacterAnimations ~= nil then
+        primeCharacterAnimations("second", secondWarmAnimations)
+    end
 
     if addCharacter ~= nil then
         addCharacter("second", "dad")
@@ -453,6 +527,7 @@ local function setupSecondSprite()
     setSpriteVisible("second", true)
     setCustomFieldToSprite("second", "active", false)
     playCharacterAnim("second", "idle", true)
+    finishGPUCommands()
 end
 
 local function playSecondAnimation(animName)
@@ -586,6 +661,26 @@ local function getIntroGirlfriendFaceFocus()
         girlfriendY + (girlfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
 end
 
+local function getPhaseTwoFlyingGfFocus()
+    local boyfriendX = getSpriteX("boyfriend")
+    local boyfriendY = getSpriteY("boyfriend")
+    local boyfriendWidth = getSpriteWidth("boyfriend")
+    local boyfriendHeight = getSpriteHeight("boyfriend")
+
+    return boyfriendX + (boyfriendWidth * introGirlfriendFaceAnchorX) + introGirlfriendFaceOffsetX,
+        boyfriendY + (boyfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
+end
+
+local function getPhaseTwoDadCarFocus()
+    local dadX = getSpriteX("dad")
+    local dadY = getSpriteY("dad")
+    local dadWidth = getSpriteWidth("dad")
+    local dadHeight = getSpriteHeight("dad")
+
+    return dadX + (dadWidth * introOpponentFaceAnchorX) + introOpponentFaceOffsetX,
+        dadY + (dadHeight * introOpponentFaceAnchorY) + introOpponentFaceOffsetY
+end
+
 local function getIntroCompensatedCarPosition(focusX, focusY, zoom)
     local originalHalfWidth = windowWidth / (2 * baseFunkroadCameraZoom)
     local originalHalfHeight = windowHeight / (2 * baseFunkroadCameraZoom)
@@ -672,6 +767,45 @@ local function clearIntroCameraShot()
         targetCarX = baseFrostbiteCarX,
         targetCarY = baseFrostbiteCarY
     }
+end
+
+local function updatePhaseTwoFlyingCamera()
+    if not phaseTwoFlyingCameraActive or phaseTwoFlyingCameraCompleted or curStepFloat == nil then
+        return
+    end
+
+    local gfFocusX, gfFocusY = getPhaseTwoFlyingGfFocus()
+    local centerFocusX = baseFunkroadCameraX
+    local centerFocusY = baseFunkroadCameraY
+    setGameplayCameraFocusLerp(0)
+
+    if curStepFloat < phaseTwoFlyingCameraPeakStep then
+        local progress = math.max(0, math.min((curStepFloat - phaseTwoFlyingCameraStartStep) / math.max(phaseTwoFlyingCameraPeakStep - phaseTwoFlyingCameraStartStep, 1), 1))
+        local eased = smootherStep(progress)
+        local focusX = lerp(phaseTwoFlyingCameraStartFocusX or centerFocusX, gfFocusX, eased)
+        local focusY = lerp(phaseTwoFlyingCameraStartFocusY or centerFocusY, gfFocusY, eased)
+        local zoom = lerp(phaseTwoFlyingCameraStartZoom or 1.0, phaseTwoFlyingCameraPeakZoom, eased)
+
+        setGameplayCameraFocus(focusX, focusY, true)
+        setGameplayCameraZoom(zoom, true, true)
+        return
+    end
+
+    local progress = math.max(0, math.min((curStepFloat - phaseTwoFlyingCameraPeakStep) / math.max(phaseTwoFlyingCameraEndStep - phaseTwoFlyingCameraPeakStep, 1), 1))
+    local eased = smootherStep(progress)
+    local focusX = lerp(gfFocusX, centerFocusX, eased)
+    local focusY = lerp(gfFocusY, centerFocusY, eased)
+    local zoom = lerp(phaseTwoFlyingCameraPeakZoom, 1.0, eased)
+
+    setGameplayCameraFocus(focusX, focusY, true)
+    setGameplayCameraZoom(zoom, true, true)
+
+    if progress >= 1 then
+        phaseTwoFlyingCameraCompleted = true
+        setGameplayCameraFocus(centerFocusX, centerFocusY, true)
+        setGameplayCameraFocusLerp(baseFunkroadCameraFocusLerp)
+        clearGameplayCameraZoom(true)
+    end
 end
 
 local function ensureIntroWarmupCover()
@@ -897,6 +1031,11 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
         if setHealthIconAnimation ~= nil then
             setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
         end
+		phaseTwoFlyingCameraActive = true
+		phaseTwoFlyingCameraStartFocusX = cameraX or baseFunkroadCameraX
+		phaseTwoFlyingCameraStartFocusY = cameraY or baseFunkroadCameraY
+		phaseTwoFlyingCameraStartZoom = getCameraZoom("camGAME") or 1.0
+		phaseTwoFlyingCameraCompleted = false
 		boyfriendGFSwitched = true
 	end
 
@@ -987,6 +1126,7 @@ function onUpdate(elapsed)
 
     jtc_camera.onUpdate(elapsed)
     updateIntroClearTween(elapsed)
+    updatePhaseTwoFlyingCamera()
     decayCameraZooms(elapsed)
     updateDeathCharacterVariant()
 

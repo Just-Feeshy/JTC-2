@@ -19,6 +19,7 @@ class DeathCharacter extends FlxSprite {
     public var cameraOffsetX:Float = 0;
     public var cameraOffsetY:Float = 0;
     public var cameraZoom:Float = 1.0;
+    public var animOffsets:Map<String, Array<Float>>;
 
     // Animation names (can be overridden via Lua)
     public var firstDeathAnim:String = "firstDeath";
@@ -37,6 +38,7 @@ class DeathCharacter extends FlxSprite {
 
     public function new(x:Float = 0, y:Float = 0) {
         super(x, y);
+        animOffsets = new Map<String, Array<Float>>();
         antialiasing = SaveData.getData(SaveType.GRAPHICS);
     }
 
@@ -84,6 +86,10 @@ class DeathCharacter extends FlxSprite {
         animation.addByIndices(name, prefix, indices, "", frameRate, looped);
     }
 
+    public function addDeathOffset(name:String, x:Float = 0, y:Float = 0):Void {
+        animOffsets.set(name, [x, y]);
+    }
+
     /**
      * Play an animation
      */
@@ -93,6 +99,13 @@ class DeathCharacter extends FlxSprite {
         currentAnimName = name;
         isAnimationFinished = false;
         animation.play(name, force);
+
+        var animOffset = animOffsets.get(name);
+        if (animOffset != null) {
+            offset.set(animOffset[0], animOffset[1]);
+        } else {
+            offset.set(0, 0);
+        }
 
         animation.finishCallback = function(animName:String) {
             if (animName == currentAnimName) {
@@ -148,8 +161,8 @@ class DeathCharacter extends FlxSprite {
      */
     public function getCameraFocusPoint():FlxPoint {
         return FlxPoint.get(
-            x + (width / 2) + cameraOffsetX,
-            y + (height / 2) + cameraOffsetY
+            x - offset.x + (frameWidth * 0.5) + cameraOffsetX,
+            y - offset.y + (frameHeight * 0.5) + cameraOffsetY
         );
     }
 
@@ -170,6 +183,16 @@ class DeathCharacter extends FlxSprite {
         y = sprite.y + offsetY;
     }
 
+    /**
+     * Copy center position from another sprite.
+     * Useful for oversized death atlases whose top-left should not match the source sprite.
+     */
+    public function copyCenterFrom(sprite:FlxSprite, offsetX:Float = 0, offsetY:Float = 0):Void {
+        if (sprite == null) return;
+        x = (sprite.x + (sprite.width * 0.5)) - (width * 0.5) + offsetX;
+        y = (sprite.y + (sprite.height * 0.5)) - (height * 0.5) + offsetY;
+    }
+
     override function update(elapsed:Float):Void {
         super.update(elapsed);
 
@@ -182,6 +205,11 @@ class DeathCharacter extends FlxSprite {
     }
 
     override function destroy():Void {
+        if (animOffsets != null) {
+            animOffsets.clear();
+            animOffsets = null;
+        }
+
         super.destroy();
     }
 }

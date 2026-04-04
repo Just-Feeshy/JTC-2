@@ -184,6 +184,25 @@ class ModLua {
         }
     }
 
+    inline function detachSpriteFromStateContainers(spr:FlxSprite):Void {
+        if(spr == null || FlxG.state == null) {
+            return;
+        }
+
+        FlxG.state.remove(spr);
+
+        var curState:Dynamic = FlxG.state;
+        var stageGroup:Dynamic = Reflect.getProperty(curState, "stage");
+
+        if(stageGroup != null) {
+            var removeMethod:Dynamic = Reflect.field(stageGroup, "remove");
+
+            if(removeMethod != null) {
+                Reflect.callMethod(stageGroup, removeMethod, [spr]);
+            }
+        }
+    }
+
     function destroyStateOwnedRuntimeObjects():Void {
         var curState = cast FlxG.state;
 
@@ -1266,9 +1285,13 @@ class ModLua {
                 return;
             }
 
+            detachSpriteFromStateContainers(spr);
             releaseReplacedFrames(spr.frames, null);
+            spr.visible = false;
+            spr.active = false;
+            spr.exists = false;
+            spr.cameras = [];
             spr.kill();
-            spr.destroy();
 
             if(curState is HelperStates && curState.modifiableSprites.exists(name)) {
                 curState.modifiableSprites.remove(name);
@@ -1352,7 +1375,7 @@ class ModLua {
                 return;
             }
 
-            FlxG.state.remove(spr);
+            detachSpriteFromStateContainers(spr);
         });
 
         Lua_helper.add_callback(lua, "doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {

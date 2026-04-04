@@ -274,6 +274,10 @@ class FeshSprite extends FlxSprite {
 
     @:noCompletion
     override function drawComplex(camera:FlxCamera):Void {
+        if(_frame == null || _frame.parent == null || _frame.parent.bitmap == null || camera == null || camera.canvas == null) {
+            return;
+        }
+
 		_frame.prepareMatrix(_matrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
 		_matrix.translate(-origin.x, -origin.y);
 		_matrix.scale(scale.x + engineWidth, scale.y + engineHeight);
