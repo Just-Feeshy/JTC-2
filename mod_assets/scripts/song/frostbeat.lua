@@ -572,7 +572,7 @@ local function enterPhaseTwo()
     if removeLoadedCharacter ~= nil then
         removeLoadedCharacter(originalDadCharacter, "dad")
     end
-    setSpriteY("dad", 120)
+    setSpriteY("dad", 90)
     setSpriteVisible("frostbiteCAR", false)
     removeSpriteFromState("frostbiteCAR")
     setGameplayCameraZoom(1.0, false, false)
