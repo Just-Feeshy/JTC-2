@@ -609,6 +609,27 @@ class PlayLua
 			return true;
 		});
 
+		playState.addCallback("removeLoadedCharacter", function(name:String, type:String = "boyfriend") {
+			var charType:Int = 0;
+
+			switch(type.toLowerCase().trim()) {
+				case "dad", "opponent":
+					charType = 1;
+				case "gf", "girlfriend":
+					charType = 2;
+				default:
+					charType = 0;
+			}
+
+			var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(name);
+
+			if(resolvedCharacter == null) {
+				return false;
+			}
+
+			return playState.removeLoadedCharacter(resolvedCharacter, charType);
+		});
+
 		playState.addCallback("addCharacter", function(name:String, insertBefore:String = null) {
 			var character:Character = playState.modifiableCharacters.get(name);
 

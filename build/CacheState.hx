@@ -37,8 +37,14 @@ class CacheState extends HelperStates {
 	}
 
 	function switchToTarget():Void {
-		Cache.purgeCache(true);
+		queuePurgeOnStateSwitch();
 		FlxG.switchState(target);
+	}
+
+	static function queuePurgeOnStateSwitch():Void {
+		FlxG.signals.preStateSwitch.addOnce(function() {
+			Cache.purgeCache(true);
+		});
 	}
 
 	static public function loadAndSwitchState(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
@@ -72,13 +78,13 @@ class CacheState extends HelperStates {
 
 		// Handle video cutscenes
 		if(PlayState.SONG.video != null && !exception && !SaveData.getData(SaveType.SKIP_CUTSCENES)) {
+			queuePurgeOnStateSwitch();
 			FlxG.switchState(new VideoState(new PlayState(), PlayState.SONG.video));
 			return;
 		}
 
-		// Direct switch to PlayState - no cache state needed
-		Cache.purgeCache(true);
-		FlxG.switchState(new PlayState());
+		queuePurgeOnStateSwitch();
+		FlxG.switchState(target);
 	}
 
 	static public function loadAndSwitchStateF(target:FlxState, ?stopMusic:Bool = true, ?exception:Bool = false):Void {
@@ -98,8 +104,7 @@ class CacheState extends HelperStates {
 			FlxG.sound.music.stop();
 		}
 
-		// Direct switch - no cache state needed
-		Cache.purgeCache(true);
-		FlxG.switchState(new PlayState());
+		queuePurgeOnStateSwitch();
+		FlxG.switchState(target);
 	}
 }

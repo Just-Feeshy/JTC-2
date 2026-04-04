@@ -85,6 +85,7 @@ class PlayFlow
 		FlxG.camera.followLerp = 0;
 		FlxG.camera.zoom = playState.defaultCamZoom;
 		playState.playLua.set("inGameOver", true);
+		playState.dispatchEvent(new PlayScriptEvent(PlayScriptEvent.GAME_OVER));
 		playState.openSubState(new GameOverSubstate());
 
 		#if windows

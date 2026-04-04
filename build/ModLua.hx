@@ -556,10 +556,19 @@ class ModLua {
 				if(rawJson != null) {
 					var info:Dynamic = Json.parse(rawJson);
 					if(info != null && info.file != null) {
-						var fileParts:Array<String> = cast(info.file, String).split(".");
-						if(fileParts.length >= 2) {
-							var basePath = fileParts[0];
-							var ext = fileParts[1].toLowerCase();
+						for(fileEntry in cast(info.file, String).split(",")) {
+							var trimmedEntry:String = fileEntry != null ? fileEntry.trim() : "";
+							if(trimmedEntry == "") {
+								continue;
+							}
+
+							var extensionIndex:Int = trimmedEntry.lastIndexOf(".");
+							if(extensionIndex < 0) {
+								continue;
+							}
+
+							var basePath:String = trimmedEntry.substr(0, extensionIndex);
+							var ext:String = trimmedEntry.substr(extensionIndex + 1).toLowerCase();
 							if(ext == "xml") {
 								Paths.getSparrowAtlas(basePath, "shared", true);
 							} else if(ext == "json") {

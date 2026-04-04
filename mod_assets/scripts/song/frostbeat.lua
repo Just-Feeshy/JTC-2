@@ -28,8 +28,19 @@ local daddyTrans = false
 local secondBaseX = 890
 local secondBaseY = 130
 local secondHiddenAlpha = 0.00001
+local phaseTwoDadCarCacheStep = 548
+local phaseTwoDadCarLoadStep = 556
+local phaseTwoDadCarWarmStep = 564
+local phaseTwoDadCarPrimeStep = 572
+local phaseTwoSecondCacheStep = 580
+local phaseTwoSecondCreateStep = 588
+local phaseTwoSecondWarmStep = 596
+local phaseTwoSecondPrimeStep = 604
+local originalDadCharacter = "joul"
+local originalBoyfriendCharacter = "flying BF sings"
 local secondWarmAnimations = {
     "idle",
+    "idleExtra",
     "singDOWN",
     "singRIGHT",
     "singLEFT",
@@ -84,6 +95,7 @@ local introBoyfriendFaceOffsetY = 310
 local introBoyfriendFaceZoom = 2.15
 local introWarmupIndex = 0
 local introBeginStep = 18
+local introWarmupTotalSteps = 12
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -100,6 +112,10 @@ local shaderTrans = { --In steps
 local STATIC_SHADER_NAME = "static_shader"
 local STATIC_SHADER_CAMERA = "camHUD"
 
+local updatePhaseTwoPreparation
+local preparePhaseTwoAssets
+local prepareFlyingGfCharacter
+
 local currentIntroFocusX = baseFunkroadCameraX
 local currentIntroFocusY = baseFunkroadCameraY
 local currentIntroZoom = baseFunkroadCameraZoom
@@ -114,6 +130,16 @@ local introNoteRevealDone = false
 local introBaseCameraDone = false
 local introClearDone = false
 local secondActive = false
+local phaseTwoDadCarCached = false
+local phaseTwoDadCarLoaded = false
+local phaseTwoDadCarWarmed = false
+local phaseTwoDadCarPrimed = false
+local phaseTwoSecondCached = false
+local phaseTwoSecondCreated = false
+local phaseTwoSecondWarmed = false
+local phaseTwoSecondPrimed = false
+local phaseTwoAssetsPrepared = false
+local flyingGfPrepared = false
 local boyfriendGFSwitched = false
 local phaseTwoFlyingCameraActive = false
 local phaseTwoFlyingCameraStartFocusX = nil
@@ -419,25 +445,13 @@ local function updateDeathCharacterVariant()
     local stepValue = curStepFloat or curStep or 0
 
     if stepValue < deathVariantStep then
-        applyDeathCharacterVariant("demon")
+        return "demon"
     else
-        applyDeathCharacterVariant("normal")
+        return "normal"
     end
 end
 
-local function init()
-    beatSection = 0
-    frost_modchart = {}
-    pulseStepIntensity = {}
-    staticShaderTime = 0
-    curAnimName = ""
-    baseFunkroadCameraFocusLerp = 0.09
-    holdTimer = 0
-    multipler = 6.1
-    stunned = false
-    notDancing = false
-    daddyIsHere = false
-    daddyTrans = false
+local function resetIntroRuntimeState()
     currentIntroFocusX = baseFunkroadCameraX
     currentIntroFocusY = baseFunkroadCameraY
     currentIntroZoom = baseFunkroadCameraZoom
@@ -451,17 +465,44 @@ local function init()
     introNoteRevealDone = false
     introBaseCameraDone = false
     introClearDone = false
+end
+
+local function resetPhaseTwoRuntimeState()
+    daddyIsHere = false
+    daddyTrans = false
     secondActive = false
+    phaseTwoDadCarCached = false
+    phaseTwoDadCarLoaded = false
+    phaseTwoDadCarWarmed = false
+    phaseTwoDadCarPrimed = false
+    phaseTwoSecondCached = false
+    phaseTwoSecondCreated = false
+    phaseTwoSecondWarmed = false
+    phaseTwoSecondPrimed = false
+    phaseTwoAssetsPrepared = false
+    flyingGfPrepared = false
     boyfriendGFSwitched = false
     phaseTwoFlyingCameraActive = false
     phaseTwoFlyingCameraStartFocusX = nil
     phaseTwoFlyingCameraStartFocusY = nil
     phaseTwoFlyingCameraStartZoom = nil
     phaseTwoFlyingCameraCompleted = false
+end
+
+local function resetPunchRuntimeState()
+    curAnimName = ""
+    holdTimer = 0
+    multipler = 6.1
+    stunned = false
+    notDancing = false
     jtcVocalsSwitchedToPlayer = false
     jtcVocalsMutedForPunch = false
     punchCount = 0
     punchIconNames = {}
+end
+
+local function resetShaderRuntimeState()
+    staticShaderTime = 0
     baseGameZoom = getCameraZoom("camGAME") or 1
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
@@ -469,15 +510,21 @@ local function init()
     staticShaderActive = false
     staticShaderCleared = false
     staticShaderSoundPlayed = false
+end
+
+local function init()
+    beatSection = 0
+    frost_modchart = {}
+    pulseStepIntensity = {}
+    baseFunkroadCameraFocusLerp = 0.09
+    resetIntroRuntimeState()
+    resetPhaseTwoRuntimeState()
+    resetPunchRuntimeState()
+    resetShaderRuntimeState()
     deathVariantCurrent = ""
-    precacheCharacter("dad-car")
-    precacheCharacter("frostbeat-second")
-	precacheCharacter("flying BF sings gf")
-    addCharacterToList("dad-car", "dad")
 	if clearCustomDeathCharacter ~= nil then
         clearCustomDeathCharacter()
     end
-	addCharacterToList("flying BF sings gf", "boyfriend")
 	createJumpscare()
     buildPulseSteps()
     callEvent("setCameraBop", "0", "0")
@@ -542,7 +589,11 @@ local function enterPhaseTwo()
         return
     end
 
+    preparePhaseTwoAssets()
     callEvent("character change", "dad-car", "dad")
+    if removeLoadedCharacter ~= nil then
+        removeLoadedCharacter(originalDadCharacter, "dad")
+    end
     setSpriteY("dad", 170)
     setSpriteVisible("frostbiteCAR", false)
     removeSpriteFromState("frostbiteCAR")
@@ -798,12 +849,6 @@ local function updateIntroWarmup()
         return
     end
 
-    if curStep ~= nil and curStep >= introBeginStep then
-        introWarmupDone = true
-        applyIntroOpponentFaceShot()
-        return
-    end
-
     ensureIntroWarmupCover()
 
     if introWarmupIndex == 0 then
@@ -812,6 +857,24 @@ local function updateIntroWarmup()
         applyIntroBoyfriendFaceShot()
     elseif introWarmupIndex == 2 then
         applyIntroBaseCameraShot()
+    elseif introWarmupIndex == 3 then
+        applyIntroOpponentFaceShot()
+    elseif introWarmupIndex == 4 then
+        updatePhaseTwoPreparation(phaseTwoDadCarCacheStep)
+    elseif introWarmupIndex == 5 then
+        updatePhaseTwoPreparation(phaseTwoDadCarLoadStep)
+    elseif introWarmupIndex == 6 then
+        updatePhaseTwoPreparation(phaseTwoDadCarWarmStep)
+    elseif introWarmupIndex == 7 then
+        updatePhaseTwoPreparation(phaseTwoDadCarPrimeStep)
+    elseif introWarmupIndex == 8 then
+        updatePhaseTwoPreparation(phaseTwoSecondCacheStep)
+    elseif introWarmupIndex == 9 then
+        updatePhaseTwoPreparation(phaseTwoSecondCreateStep)
+    elseif introWarmupIndex == 10 then
+        updatePhaseTwoPreparation(phaseTwoSecondWarmStep)
+    elseif introWarmupIndex == 11 then
+        updatePhaseTwoPreparation(phaseTwoSecondPrimeStep)
     else
         applyIntroOpponentFaceShot()
     end
@@ -820,7 +883,7 @@ local function updateIntroWarmup()
 
     introWarmupIndex = introWarmupIndex + 1
 
-    if introWarmupIndex >= 4 then
+    if introWarmupIndex >= introWarmupTotalSteps then
         introWarmupDone = true
         applyIntroOpponentFaceShot()
     end
@@ -920,6 +983,77 @@ local function resetSecondSprite()
     holdTimer = 0
 end
 
+updatePhaseTwoPreparation = function(stepValue)
+    if stepValue == nil then
+        return
+    end
+
+    if not phaseTwoDadCarCached and stepValue >= phaseTwoDadCarCacheStep then
+        precacheCharacter("dad-car")
+        phaseTwoDadCarCached = true
+    end
+
+    if not phaseTwoDadCarLoaded and stepValue >= phaseTwoDadCarLoadStep then
+        addCharacterToList("dad-car", "dad")
+        phaseTwoDadCarLoaded = true
+    end
+
+    if not phaseTwoDadCarWarmed and stepValue >= phaseTwoDadCarWarmStep then
+        if warmLoadedCharacterAnimations ~= nil then
+            warmLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
+        end
+        phaseTwoDadCarWarmed = true
+    end
+
+    if not phaseTwoDadCarPrimed and stepValue >= phaseTwoDadCarPrimeStep then
+        if primeLoadedCharacterAnimations ~= nil then
+            primeLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
+        end
+        phaseTwoDadCarPrimed = true
+    end
+
+    if not phaseTwoSecondCached and stepValue >= phaseTwoSecondCacheStep then
+        precacheCharacter("frostbeat-second")
+        phaseTwoSecondCached = true
+    end
+
+    if not phaseTwoSecondCreated and stepValue >= phaseTwoSecondCreateStep then
+        setupSecondSprite()
+        resetSecondSprite()
+        phaseTwoSecondCreated = true
+    end
+
+    if not phaseTwoSecondWarmed and stepValue >= phaseTwoSecondWarmStep then
+        if warmCharacterAnimations ~= nil and spriteExist("second") then
+            warmCharacterAnimations("second", secondWarmAnimations)
+        end
+        phaseTwoSecondWarmed = true
+    end
+
+    if not phaseTwoSecondPrimed and stepValue >= phaseTwoSecondPrimeStep then
+        if primeCharacterAnimations ~= nil and spriteExist("second") then
+            primeCharacterAnimations("second", secondWarmAnimations)
+        end
+        phaseTwoSecondPrimed = true
+    end
+
+    phaseTwoAssetsPrepared = phaseTwoDadCarPrimed and phaseTwoSecondPrimed
+end
+
+preparePhaseTwoAssets = function()
+    updatePhaseTwoPreparation(phaseTwoSecondPrimeStep)
+end
+
+prepareFlyingGfCharacter = function()
+    if flyingGfPrepared then
+        return
+    end
+
+    precacheCharacter("flying BF sings gf")
+    addCharacterToList("flying BF sings gf", "boyfriend")
+    flyingGfPrepared = true
+end
+
 local function refreshFrostbeatRuntimeState()
     frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
 
@@ -949,22 +1083,18 @@ function generatedStage()
     jtc_camera.hideGameplayUntilStep(12, false)
     setCameraVisible("camGame", true)
     ensureIntroWarmupCover()
-    setupSecondSprite()
-    updateDeathCharacterVariant()
 
     ensureFrostbiteCar()
     applyIntroOpponentFaceShot()
 
-    resetSecondSprite()
-
     setupPunchHealth(3)
     refreshFrostbeatRuntimeState()
     ensureStaticShader()
+    prepareFlyingGfCharacter()
 end
 
 function onStepHit()
     jtc_camera.onStepHit(curStep)
-    updateDeathCharacterVariant()
 
     pulseCamera(curStep)
 
@@ -984,6 +1114,8 @@ function onStepHit()
         enterPhaseTwo()
     end
 
+    updatePhaseTwoPreparation(curStep)
+
     if curStep >= 630 and not jtcVocalsSwitchedToPlayer then
         removeSongTrack("jtcVocals")
         addSongTrack("jtcVocals", "JTC_Voices", "player", 1)
@@ -998,8 +1130,12 @@ end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
 	if not boyfriendGFSwitched and curStep ~= nil and curStep >= 906 then
+        prepareFlyingGfCharacter()
             baseFunkroadCameraFocusLerp = 0.18
 	    callEvent("character change", "flying BF sings gf", "boyfriend")
+        if removeLoadedCharacter ~= nil then
+            removeLoadedCharacter(originalBoyfriendCharacter, "boyfriend")
+        end
         if setHealthIconAnimation ~= nil then
             setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
         end
@@ -1051,6 +1187,8 @@ function onUpdate(elapsed)
         end
     end
 
+    updatePhaseTwoPreparation(curStepFloat)
+
     if curStepFloat ~= nil and curStepFloat >= shaderTrans[1] and curStepFloat < shaderTrans[2] then
         startStaticShaderEffect()
     end
@@ -1100,13 +1238,12 @@ function onUpdate(elapsed)
     updateIntroClearTween(elapsed)
     updatePhaseTwoFlyingCamera()
     decayCameraZooms(elapsed)
-    updateDeathCharacterVariant()
 
     if startsWith(curAnimName, "sing") then
         holdTimer = holdTimer + elapsed
     end
 
-    if jtcVocalsMutedForPunch and curAnimName == "punched" and sprAnimFinished("second") then
+    if spriteExist("second") and jtcVocalsMutedForPunch and curAnimName == "punched" and sprAnimFinished("second") then
         if hasSongTrack ~= nil and hasSongTrack("jtcVocals") and setSongTrackBaseVolume ~= nil then
             setSongTrackBaseVolume("jtcVocals", 1)
         end
@@ -1118,7 +1255,7 @@ function onUpdate(elapsed)
         holdTimer = 0
     end
 
-    if not stunned and not startsWith(curAnimName, "sing") and sprAnimFinished("second") then
+    if spriteExist("second") and not stunned and not startsWith(curAnimName, "sing") and sprAnimFinished("second") then
         if curStep < 906 then
             playSecondAnimation("idle")
         else
@@ -1150,6 +1287,10 @@ function onResume()
     holdTimer = 0
 
     refreshFrostbiteCarAnimation()
+end
+
+function onGameOver()
+    applyDeathCharacterVariant(updateDeathCharacterVariant())
 end
 
 function setupPunchHealth(amount)

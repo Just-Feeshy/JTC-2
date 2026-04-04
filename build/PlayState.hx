@@ -1078,6 +1078,7 @@ class PlayState extends MusicBeatState
 	var defaultPlayerStrumState:Array<StrumResetState> = [];
 	var defaultOpponentStrumState:Array<StrumResetState> = [];
 	var restartVwooshActive:Bool = false;
+	var restartRequestedFromGameOver:Bool = false;
 
 	function setupModifiers():Void {
 		DefaultHandler.modifiers.customHell.enabled = #if TOGGLEABLE_MODIFIERS SaveData.getData(SaveType.CUSTOM_HELL_MOD) #else false #end;
@@ -1602,6 +1603,9 @@ class PlayState extends MusicBeatState
 	}
 
 	function restartSongInPlace():Void {
+		var fromGameOver:Bool = restartRequestedFromGameOver;
+		restartRequestedFromGameOver = false;
+
 		needsReset = false;
 
 		persistentUpdate = true;
@@ -1707,7 +1711,11 @@ class PlayState extends MusicBeatState
 			restartIntroTimer = null;
 		}
 
-		vwooshNotesOut();
+		if(!fromGameOver) {
+			vwooshNotesOut();
+		} else {
+			clearRestartVwooshNotes();
+		}
 
 		Conductor.instance.forceBPM(null);
 		Conductor.instance.mapTimeChangesFromSong(SONG);
@@ -3736,6 +3744,84 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	private function destroyLoadedCharacterInstance(character:Character):Void {
+		if(character == null) {
+			return;
+		}
+
+		if(stage != null && stage.members.indexOf(character) >= 0) {
+			stage.remove(character, true);
+		}
+
+		if(modifiableCharacters != null) {
+			var removeKeys:Array<String> = [];
+
+			for(key in modifiableCharacters.keys()) {
+				if(modifiableCharacters.get(key) == character) {
+					removeKeys.push(key);
+				}
+			}
+
+			for(key in removeKeys) {
+				modifiableCharacters.remove(key);
+			}
+		}
+
+		character.exists = false;
+		character.visible = false;
+		character.active = false;
+		character.destroy();
+	}
+
+	public function removeLoadedCharacter(characterName:String, type:Int):Bool {
+		if(characterName == null || characterName.trim() == "") {
+			return false;
+		}
+
+		var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(characterName);
+
+		if(resolvedCharacter == null) {
+			return false;
+		}
+
+		switch(type) {
+			case 0:
+				var loadedBoyfriend:Boyfriend = boyfriendMap != null ? boyfriendMap.get(resolvedCharacter) : null;
+
+				if(loadedBoyfriend == null || loadedBoyfriend == boyfriend) {
+					return false;
+				}
+
+				boyfriendMap.remove(resolvedCharacter);
+				destroyLoadedCharacterInstance(loadedBoyfriend);
+				return true;
+
+			case 1:
+				var loadedDad:Character = dadMap != null ? dadMap.get(resolvedCharacter) : null;
+
+				if(loadedDad == null || loadedDad == dad) {
+					return false;
+				}
+
+				dadMap.remove(resolvedCharacter);
+				destroyLoadedCharacterInstance(loadedDad);
+				return true;
+
+			case 2:
+				var loadedGf:Character = gfMap != null ? gfMap.get(resolvedCharacter) : null;
+
+				if(loadedGf == null || loadedGf == gf) {
+					return false;
+				}
+
+				gfMap.remove(resolvedCharacter);
+				destroyLoadedCharacterInstance(loadedGf);
+				return true;
+		}
+
+		return false;
+	}
+
 	private function syncLoadedCharacterTransform(currentChar:Character, nextChar:Character):Void {
 		if(currentChar == null || nextChar == null) {
 			return;
@@ -4107,6 +4193,7 @@ class PlayState extends MusicBeatState
 	}
 
 	public function requestSongRestart():Void {
+		restartRequestedFromGameOver = false;
 		needsReset = true;
 		persistentUpdate = true;
 		persistentDraw = true;
@@ -4141,6 +4228,7 @@ class PlayState extends MusicBeatState
 	}
 
 	public function requestGameOverRestart():Void {
+		restartRequestedFromGameOver = true;
 		needsReset = true;
 		persistentUpdate = true;
 		persistentDraw = false;

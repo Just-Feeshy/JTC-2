@@ -3,14 +3,15 @@ package;
 import openfl.events.Event;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
-import openfl.system.System;
 import flixel.math.FlxMath;
 
 class Memory extends TextField {
 	private var units:Array<String> = ["Bytes", "kB", "MB", "GB", "TB", "PB"];
 
-    public var memPeak(default, null):Float = 0;
-    public var memory(default, null):Float = 0;
+    public var gcPeak(default, null):Float = 0;
+    public var gcMemory(default, null):Float = 0;
+    public var taskPeak(default, null):Float = 0;
+    public var taskMemory(default, null):Float = 0;
 
     public function new(x:Float = 10.0, y:Float = 10.0, color:Int = 0x000000) {
         super();
@@ -24,19 +25,31 @@ class Memory extends TextField {
 
         addEventListener(Event.ENTER_FRAME, onEnter);
 
-		width = 200;
-		height = 70;
+		width = 260;
+		height = 90;
     }
 
     function onEnter(_) {
-        memory = System.totalMemoryNumber;
+        gcMemory = MemoryUtil.getGCMemory();
+        taskMemory = MemoryUtil.supportsTaskMem() ? MemoryUtil.getTaskMemory() : 0;
 
-		if (memory > Math.abs(memPeak)) {
-            memPeak = memory;
+		if (gcMemory > Math.abs(gcPeak)) {
+            gcPeak = gcMemory;
+        }
+
+		if (taskMemory > Math.abs(taskPeak)) {
+            taskPeak = taskMemory;
         }
 
         if (visible) {
-            text = "GC MEM: " + formatBytes(memory).toLowerCase() + "\nMEM peak: " + formatBytes(memPeak).toLowerCase();
+            var lines:Array<String> = [];
+            lines.push("GC MEM: " + formatBytes(gcMemory).toLowerCase() + " / " + formatBytes(gcPeak).toLowerCase());
+
+            if (MemoryUtil.supportsTaskMem()) {
+                lines.push("TASK MEM: " + formatBytes(taskMemory).toLowerCase() + " / " + formatBytes(taskPeak).toLowerCase());
+            }
+
+            text = lines.join("\n");
         }
     }
 

@@ -7,6 +7,7 @@ import flixel.animation.FlxAnimationController;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.math.FlxMath;
 import flixel.tweens.FlxEase;
+import flixel.util.FlxColor;
 
 /**
 * All these are extremely simple (Except Death).
@@ -15,6 +16,7 @@ import flixel.tweens.FlxEase;
 class DeathNote extends CustomNoteTemplate {
     private static inline var TRANSITION_START_OFFSET:Int = 350;
     private static inline var TRANSITION_SPIN_OFFSET:Int = 175;
+    private static final REGULAR_TRANSITION_TINT:FlxColor = FlxColor.fromRGB(214, 214, 214);
     private static var combinedFrames:FlxFramesCollection;
 
     function setupRegularPrefixes(animation:FlxAnimationController):Void {
@@ -62,6 +64,15 @@ class DeathNote extends CustomNoteTemplate {
         }
     }
 
+    inline function updateRevealTint(note:Note, transitionProgress:Float):Void {
+        if(transitionProgress < 0.5) {
+            var tintProgress:Float = FlxMath.bound(transitionProgress / 0.5, 0, 1);
+            note.color = FlxColor.interpolate(FlxColor.WHITE, REGULAR_TRANSITION_TINT, tintProgress);
+        } else {
+            note.color = FlxColor.WHITE;
+        }
+    }
+
     function setupCombinedAnimations(animation:FlxAnimationController):Void {
         animation.destroyAnimations();
         setupRegularPrefixes(animation);
@@ -77,6 +88,7 @@ class DeathNote extends CustomNoteTemplate {
         setupCombinedAnimations(note.animation);
         note.antialiasing = currentAntialiasing;
         updateRevealAnimation(note, 0);
+        updateRevealTint(note, 0);
     }
 
     override function setNoteAngle(note:Note, value:Float):Float {
@@ -90,7 +102,9 @@ class DeathNote extends CustomNoteTemplate {
     }
 
     override function noteUpdate(note:Note):Void {
-        updateRevealAnimation(note, note.getTransitionProgress(TRANSITION_START_OFFSET));
+        var transitionProgress = note.getTransitionProgress(TRANSITION_START_OFFSET);
+        updateRevealAnimation(note, transitionProgress);
+        updateRevealTint(note, transitionProgress);
     }
 
     override function useCustomPrefix(animation:FlxAnimationController):Bool {

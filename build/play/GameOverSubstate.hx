@@ -443,7 +443,7 @@ class GameOverSubstate extends MusicBeatSubstate
           if (pixel) RetroCameraFade.fadeBlack(FlxG.camera, 10, 1);
           else
             FlxG.camera.fade(FlxColor.BLACK, 1, true, null, true);
-          if (parentPlayState != null) parentPlayState.needsReset = true;
+          if (parentPlayState != null) parentPlayState.requestGameOverRestart();
 
           // Clean up custom death character (don't restore, it stays with PlayState)
           if (usingCustomDeath && customDeathChar != null)
