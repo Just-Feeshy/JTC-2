@@ -1,5 +1,55 @@
 {
 	"animations": {
+		"idle-alt": {
+			"prefix": "JTC IDLE",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				190
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "JTC SITTING DOWN",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				-1
+			],
+			"looped": false
+		},
+		"singRIGHT-alt": {
+			"prefix": "JTC STANDING RIGHT",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				1,
+				134
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "JTC SITTING UP",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				22
+			],
+			"looped": false
+		},
+		"singLEFT-alt": {
+			"prefix": "JTC STANDING LEFT",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				1,
+				85
+			],
+			"looped": false
+		},
 		"idle": {
 			"prefix": "JTC SITTING IDLE",
 			"name": null,
@@ -20,13 +70,13 @@
 			],
 			"looped": false
 		},
-		"singDOWN": {
-			"prefix": "JTC SITTING DOWN",
+		"singDOWN-alt": {
+			"prefix": "JTC STANDING DOWN",
 			"name": null,
 			"framerate": 24,
 			"offset": [
-				0,
-				-1
+				1,
+				-25
 			],
 			"looped": false
 		},
@@ -40,13 +90,23 @@
 			],
 			"looped": false
 		},
-		"singUP": {
-			"prefix": "JTC SITTING UP",
+		"singUP-alt": {
+			"prefix": "JTC STANDING UP",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				2,
+				205
+			],
+			"looped": false
+		},
+		"stand": {
+			"prefix": "JOUL STANDING UP TRANSITION",
 			"name": null,
 			"framerate": 24,
 			"offset": [
 				0,
-				22
+				190
 			],
 			"looped": false
 		}
@@ -61,7 +121,7 @@
 	},
 	"clippingAdjustment": {},
 	"playAnim": "idle",
-	"file": "school_house/JTC sit.xml",
+	"file": "school_house/JTC sit.xml, school_house/jtc standing animation.xml, school_house/JTC_standing.xml",
 	"icon": [
 		24,
 		25,

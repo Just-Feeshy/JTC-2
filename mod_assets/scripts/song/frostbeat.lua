@@ -194,33 +194,24 @@ local function addPulseSteps(steps, intensity)
     end
 end
 
-local function addPulseRange(startStep, endStep, everySteps, intensity)
-    if everySteps == nil or everySteps <= 0 then
-        return
-    end
-
-    local stepValue = startStep
-
-    while stepValue <= endStep do
-        addPulseStep(stepValue, intensity)
-        stepValue = stepValue + everySteps
-    end
-end
-
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-    addPulseRange(148, 276, 4, 0.72)
-    addPulseRange(292, 432, 4, 0.95)
-    addPulseRange(436, 604, 4, 1.05)
-    addPulseRange(608, 632, 4, 1.15)
-    addPulseRange(636, 908, 4, 0.98)
-    addPulseRange(968, 1128, 4, 0.82)
-    addPulseRange(1132, 1288, 4, 1.10)
-    addPulseRange(1292, 1468, 4, 0.92)
-    addPulseRange(1488, 1668, 4, 1.08)
-    addPulseRange(1672, 1832, 4, 1.18)
-    addPulseSteps({906, 1136, 1456, 1672, 1828}, 1.28)
+    addPulseSteps({
+        187, 228, 294, 304, 339, 370, 372, 397, 438, 445, 463, 504,
+        518, 520, 545, 578, 584, 633, 652, 656, 689, 693, 734, 738,
+        775, 800, 837, 870, 1199, 1207, 1302, 1347, 1483, 1528, 1532,
+        1594, 1639
+    }, 0.78)
+
+    addPulseSteps({
+        154, 158, 191, 195, 199, 224, 232, 257, 265, 298, 331, 364,
+        376, 405, 409, 430, 442, 512, 551, 553, 586, 660, 726, 792,
+        804, 840, 1162, 1170, 1203, 1236, 1240, 1269, 1277, 1310,
+        1343, 1376, 1384, 1409, 1417, 1450, 1454, 1458, 1487, 1491,
+        1520, 1524, 1561, 1565, 1598, 1602, 1631, 1635, 1664, 1744,
+        1777, 1810
+    }, 1.08)
 end
 
 local function pulseCamera(stepValue)
