@@ -128,8 +128,17 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     Note.AFFECTED_SCROLLSPEED = targetScrollSpeed;
                 }
             case "sicko shake":
-                DefaultHandler.shakeCamTimer = Std.parseInt(eventValue);
-			    DefaultHandler.shakeCamTimerHUD = Std.parseInt(eventValue2);
+                var gameShake:Float = Std.parseFloat(eventValue);
+                var hudShake:Float = Std.parseFloat(eventValue2);
+
+                if(Math.isNaN(gameShake))
+                    gameShake = 0;
+
+                if(Math.isNaN(hudShake))
+                    hudShake = 0;
+
+                DefaultHandler.shakeCamTimer = gameShake;
+			    DefaultHandler.shakeCamTimerHUD = hudShake;
             case "time freeze":
                 if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing) {
                     playState.resyncVocals();
@@ -159,44 +168,22 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     }
                 }));
             case "character change":
-				var sync = GL.fenceSync(GL.SYNC_GPU_COMMANDS_COMPLETE, 0);
-				GL.flush();
-				GL.waitSync(sync, 0, GL.TIMEOUT_IGNORED);
+                var resolvedCharacter:String = DefaultHandler.resolveCharacterJSON(eventValue);
 
                 switch(eventValue2.toLowerCase()) {
                     case "gf" | "girlfriend":
-                        if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                            playState.remove(playState.gf);
-                            playState.gf.destroy();
-                            playState.gf = new Character(400, 130, eventValue);
-                            playState.gf.refresh(eventValue, playState.camPos);
-                            playState.add(playState.gf);
+                        if(resolvedCharacter != null) {
+                            playState.swapCharacterToLoaded(resolvedCharacter, 2);
                         }
                     case "bf" | "boyfriend" | "player":
-                        if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                            playState.remove(playState.boyfriend);
-                            playState.boyfriend.destroy();
-                            playState.boyfriend = new Boyfriend(100, 100, eventValue);
-                            playState.boyfriend.refresh(eventValue, playState.camPos);
-                            playState.add(playState.boyfriend);
-
-                            playState.iconP1.character = eventValue;
-                            playState.iconP1.createAnim(playState.boyfriend.curCharacter, playState.boyfriend._info.icon, true);
+                        if(resolvedCharacter != null) {
+                            playState.swapCharacterToLoaded(resolvedCharacter, 0);
                         }
                     default:
-                        if(DefaultHandler.getcharacterJSON().contains(eventValue.toLowerCase())) {
-                            playState.remove(playState.dad);
-                            playState.dad.destroy();
-                            playState.dad = new Character(100, 100, eventValue);
-                            playState.dad.refresh(eventValue, playState.camPos);
-                            playState.stage.add(playState.dad);
-
-                            playState.iconP2.character = eventValue;
-                            playState.iconP2.createAnim(eventValue, playState.dad._info.icon, false);
+                        if(resolvedCharacter != null) {
+                            playState.swapCharacterToLoaded(resolvedCharacter, 1);
                         }
                 }
-
-				GL.deleteSync(sync);
             case "bump per beat":
                 playState.bumpPerBeat = Std.parseInt(eventValue);
                 playState.bumpForce = Std.parseInt(eventValue2);

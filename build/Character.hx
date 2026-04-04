@@ -6,9 +6,11 @@ import flixel.math.FlxRect;
 import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
 import flixel.animation.FlxBaseAnimation;
+import flixel.animation.FlxAnimation;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFilterFrames;
+import flixel.graphics.frames.FlxFrame;
 import feshixl.ui.FeshFramesHelper;
 import openfl.filters.BitmapFilter;
 import openfl.utils.Assets;
@@ -26,6 +28,11 @@ class Character extends feshixl.FeshSprite {
 
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
+	public var animationAliases:Map<String, String>;
+	public var animationSetSuffix:String = "";
+	public var queuedAnimationSetSuffix:String = "";
+	public var queuedAnimationSetSwitchStep:Int = -1;
+	public var queuedAnimationSetSwitchOnNextNoteHit:Bool = false;
 	public var debugMode:Bool = false;
 	public var specialAnim:Bool = false;
 
@@ -69,6 +76,7 @@ class Character extends feshixl.FeshSprite {
 
 		animOffsets = new Map<String, Array<Float>>();
 		animations = new Array<String>();
+		animationAliases = new Map<String, String>();
 		curCharacter = character;
 		this.isPlayer = isPlayer;
 
@@ -84,10 +92,7 @@ class Character extends feshixl.FeshSprite {
 				else
 					_info = hardInfo;
 
-				if(_info.file.split(".")[1] == "xml")
-					frames = Paths.getSparrowAtlas(_info.file.split(".")[0], "shared", true);
-				else if(_info.file.split(".")[1] == "json")
-					frames = Paths.getPackerAtlas(_info.file.split(".")[0], "shared", true);
+				frames = loadCharacterFrames(_info.file);
 
 				setIndexis(curCharacter);
 
@@ -140,6 +145,51 @@ class Character extends feshixl.FeshSprite {
 			flipX = !flipX;
 	}
 
+	static function loadCharacterFrames(fileList:String):FlxFramesCollection {
+		var files:Array<String> = [];
+
+		if(fileList != null) {
+			for(file in fileList.split(",")) {
+				var trimmedFile:String = file.trim();
+
+				if(trimmedFile.length > 0) {
+					files.push(trimmedFile);
+				}
+			}
+		}
+
+		if(files.length <= 1) {
+			return loadCharacterFrameCollection(files.length == 1 ? files[0] : fileList);
+		}
+
+		var frameCollections:Array<FlxFramesCollection> = [];
+
+		for(file in files) {
+			frameCollections.push(loadCharacterFrameCollection(file));
+		}
+
+		return FlxAnimationUtil.combineAtlas(frameCollections);
+	}
+
+	static function loadCharacterFrameCollection(file:String):FlxFramesCollection {
+		var trimmedFile:String = file != null ? file.trim() : "";
+		var extension:String = "";
+		var basePath:String = trimmedFile;
+		var extensionIndex:Int = trimmedFile.lastIndexOf(".");
+
+		if(extensionIndex >= 0) {
+			basePath = trimmedFile.substr(0, extensionIndex);
+			extension = trimmedFile.substr(extensionIndex + 1).toLowerCase();
+		}
+
+		return switch(extension) {
+			case "json":
+				Paths.getPackerAtlas(basePath, "shared", true);
+			default:
+				Paths.getSparrowAtlas(basePath, "shared", true);
+		};
+	}
+
 	public function isAnimationFinished():Bool {
 		if(animation.curAnim == null) {
 			return false;
@@ -149,7 +199,115 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	public function hasAnimation(animName:String):Bool {
-		return animation != null && animation.getByName(animName) != null;
+		var resolvedAnimName = resolveAnimationName(animName);
+		return animation != null && animation.getByName(resolvedAnimName) != null;
+	}
+
+	public function setAnimationAlias(sourceAnimation:String, targetAnimation:String):Void {
+		if(sourceAnimation == null || targetAnimation == null) {
+			return;
+		}
+
+		animationAliases.set(sourceAnimation, targetAnimation);
+	}
+
+	public function setAnimationSetSuffix(suffix:String):Void {
+		animationSetSuffix = suffix != null ? suffix : "";
+	}
+
+	public function queueAnimationSetSuffixSwitchOnNextNoteHit(step:Int, suffix:String):Void {
+		queuedAnimationSetSwitchStep = step;
+		queuedAnimationSetSuffix = suffix != null ? suffix : "";
+		queuedAnimationSetSwitchOnNextNoteHit = true;
+	}
+
+	public function clearQueuedAnimationSetSuffixSwitch():Void {
+		queuedAnimationSetSuffix = "";
+		queuedAnimationSetSwitchStep = -1;
+		queuedAnimationSetSwitchOnNextNoteHit = false;
+	}
+
+	public function clearAnimationAlias(sourceAnimation:String):Void {
+		if(sourceAnimation == null || animationAliases == null) {
+			return;
+		}
+
+		animationAliases.remove(sourceAnimation);
+	}
+
+	public function warmAnimationFrames(animName:String):Void {
+		var resolvedAnimName:String = resolveAnimationName(animName);
+
+		if(animation == null || frames == null || frames.frames == null) {
+			return;
+		}
+
+		var anim:FlxAnimation = animation.getByName(resolvedAnimName);
+
+		if(anim == null || anim.frames == null) {
+			return;
+		}
+
+		for(frameIndex in anim.frames) {
+			if(frameIndex < 0 || frameIndex >= frames.frames.length) {
+				continue;
+			}
+
+			var frame:FlxFrame = frames.frames[frameIndex];
+
+			if(frame != null) {
+				@:privateAccess frame.cacheFrameMatrix();
+			}
+		}
+	}
+
+	public function warmAnimations(animNames:Array<String>):Void {
+		if(animNames == null) {
+			return;
+		}
+
+		for(animName in animNames) {
+			warmAnimationFrames(animName);
+		}
+	}
+
+	function resolveAnimationName(animName:String):String {
+		if(animName == null) {
+			return animName;
+		}
+
+		var resolvedAnimName = animName;
+
+		if(animationAliases != null) {
+			var aliasName = animationAliases.get(animName);
+
+			if(aliasName != null) {
+				resolvedAnimName = aliasName;
+			}
+		}
+
+		if(animation != null && animationSetSuffix != null && animationSetSuffix != "") {
+			var suffixedAnimName = resolvedAnimName + animationSetSuffix;
+
+			if(animation.getByName(suffixedAnimName) != null) {
+				return suffixedAnimName;
+			}
+		}
+
+		return resolvedAnimName;
+	}
+
+	function applyQueuedAnimationSetSwitchOnNoteHit():Void {
+		if(!queuedAnimationSetSwitchOnNextNoteHit) {
+			return;
+		}
+
+		if(Conductor.instance == null || Conductor.instance.currentStep < queuedAnimationSetSwitchStep) {
+			return;
+		}
+
+		setAnimationSetSuffix(queuedAnimationSetSuffix);
+		clearQueuedAnimationSetSuffixSwitch();
 	}
 
 	public function playAnimation(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
@@ -290,9 +448,14 @@ class Character extends feshixl.FeshSprite {
 			animOffsets.clear();
 		}
 
+		if(animationAliases != null) {
+			animationAliases.clear();
+		}
+
 		curCharacter = null;
 
 		animOffsets = null;
+		animationAliases = null;
 		animations = null;
 		_info = null;
 	}
@@ -408,22 +571,27 @@ class Character extends feshixl.FeshSprite {
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		specialAnim = false;
+		var resolvedAnimName = resolveAnimationName(AnimName);
 
 		if(animations.length == 0) {
 			return;
 		}
 
-		if(AnimName.startsWith('sing')) {
+		if(resolvedAnimName.startsWith('sing')) {
 			dancing = false;
 			animation.reset();
 		}
 
-		super.playAnim(AnimName, Force, Reversed, Frame);
+		super.playAnim(resolvedAnimName, Force, Reversed, Frame);
 		//animation.play(AnimName, Force, Reversed, Frame);
 
 		var daOffset = animOffsets.get(AnimName);
 
-		if (animOffsets.exists(AnimName)) {
+		if(daOffset == null) {
+			daOffset = animOffsets.get(resolvedAnimName);
+		}
+
+		if (daOffset != null) {
 			offset.set(daOffset[0], daOffset[1]);
 		}else {
 			offset.set(0, 0);
@@ -493,6 +661,7 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	public function onNoteHit(direction:Int, ?suffix:String = ""):Void {
+		applyQueuedAnimationSetSwitchOnNoteHit();
 		playSingAnimation(direction, false, suffix);
 		holdTimer = 0;
 	}

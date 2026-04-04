@@ -13,6 +13,7 @@ local graffitiFading = {}
 local graffitiFullRevealTime = {}
 local graffitiBitmapWidths = {}
 local graffitiBitmapHeights = {}
+local pendingSongLaunchIndex = nil
 local graffitiCanName = "graffiti_can"
 local activeGraffitiIndex = nil
 local TOP_SECTION_CARET = "freeplay_section_caret_top"
@@ -265,6 +266,31 @@ end
 
 function onUpdate(elapsed)
     updateGraffitiAnimation(elapsed)
+end
+
+function onFreeplayAccept(index, difficulty)
+    if index == nil or not graffitiHas[index] then
+        return false
+    end
+
+    pendingSongLaunchIndex = index
+    hideInactiveGraffiti(index)
+    resetSprayCan()
+
+    graffitiRevealed[index] = false
+    graffitiRevealActive[index] = false
+    graffitiFading[index] = false
+    graffitiRevealTime[index] = 0
+    graffitiFullRevealTime[index] = 0
+
+    local sprName = graffitiSprites[index]
+    if sprName ~= nil then
+        clearGraffitiRevealShader(index)
+        setSpriteAlpha(sprName, 0)
+    end
+
+    startGraffitiReveal(index)
+    return true
 end
 
 function onFreeplaySelectionChange(index, change)
@@ -692,6 +718,11 @@ function updateGraffitiAnimation(elapsed)
                 clearGraffitiRevealShader(i)
                 setSpriteAlpha(graffitiSprites[i], 1)
 
+                if pendingSongLaunchIndex == i and startSelectedFreeplaySong ~= nil then
+                    pendingSongLaunchIndex = nil
+                    startSelectedFreeplaySong()
+                end
+
                 if activeGraffitiIndex == i then
                     activeGraffitiIndex = nil
                 end
@@ -718,6 +749,7 @@ function destroyStuff()
     end
 
     activeGraffitiIndex = nil
+    pendingSongLaunchIndex = nil
 
     destroySprite(FREEPLAY_SECTOR_NAME)
     destroySprite(graffitiCanName)

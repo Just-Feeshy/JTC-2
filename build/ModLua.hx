@@ -39,6 +39,8 @@ import lime.graphics.Image;
 import lime.math.Rectangle;
 import lime.ui.Window;
 import lime.utils.Log;
+import haxe.Json;
+import play.PlayCamera;
 
 #if sys
 import sys.FileSystem;
@@ -66,6 +68,13 @@ typedef LuaOrbitSprite = {
     var offsetY:Float;
     var angularSpeed:Float;
     var angle:Float;
+}
+
+typedef LuaPausedSpriteAnimationState = {
+    var animation:String;
+    var frame:Int;
+    var reversed:Bool;
+    var finished:Bool;
 }
 
 typedef LuaPersistentRestartState = {
@@ -104,8 +113,12 @@ class ModLua {
     public var luaOrbitSprites(default, null):Map<String, LuaOrbitSprite> = new Map<String, LuaOrbitSprite>();
 
     public var closed:Bool = false;
+    public var stateOwnsCreatedObjects:Bool = false;
     private var activeLuaCallbackName:String = null;
     private var lastLuaCallbackError:String = null;
+    private var pausedLuaSpriteAnimations:Map<String, LuaPausedSpriteAnimationState> = new Map<String, LuaPausedSpriteAnimationState>();
+    private var stateOwnedSpriteNames:Map<String, Bool> = new Map<String, Bool>();
+    private var stateOwnedTextNames:Map<String, Bool> = new Map<String, Bool>();
 
     public function new(luaScript:String) {
         this.luaScript = luaScript;
@@ -125,6 +138,111 @@ class ModLua {
         }
 
         return luaTexts;
+    }
+
+    inline function getStateSpriteStore():Map<String, FlxSprite> {
+        var curState = cast FlxG.state;
+
+        if(stateOwnsCreatedObjects && curState != null && curState is HelperStates) {
+            return curState.modifiableSprites;
+        }
+
+        return null;
+    }
+
+    inline function getStateTextStore():Map<String, FlxText> {
+        var curState = cast FlxG.state;
+
+        if(stateOwnsCreatedObjects && curState != null && curState is HelperStates) {
+            return curState.modifiableTexts;
+        }
+
+        return null;
+    }
+
+    inline function rememberStateOwnedSprite(name:String):Void {
+        if(name != null) {
+            stateOwnedSpriteNames.set(name, true);
+        }
+    }
+
+    inline function rememberStateOwnedText(name:String):Void {
+        if(name != null) {
+            stateOwnedTextNames.set(name, true);
+        }
+    }
+
+    inline function forgetStateOwnedSprite(name:String):Void {
+        if(name != null && stateOwnedSpriteNames.exists(name)) {
+            stateOwnedSpriteNames.remove(name);
+        }
+    }
+
+    inline function forgetStateOwnedText(name:String):Void {
+        if(name != null && stateOwnedTextNames.exists(name)) {
+            stateOwnedTextNames.remove(name);
+        }
+    }
+
+    inline function detachSpriteFromStateContainers(spr:FlxSprite):Void {
+        if(spr == null || FlxG.state == null) {
+            return;
+        }
+
+        FlxG.state.remove(spr);
+
+        var curState:Dynamic = FlxG.state;
+        var stageGroup:Dynamic = Reflect.getProperty(curState, "stage");
+
+        if(stageGroup != null) {
+            var removeMethod:Dynamic = Reflect.field(stageGroup, "remove");
+
+            if(removeMethod != null) {
+                Reflect.callMethod(stageGroup, removeMethod, [spr]);
+            }
+        }
+    }
+
+    function destroyStateOwnedRuntimeObjects():Void {
+        var curState = cast FlxG.state;
+
+        if(curState == null || !(curState is HelperStates)) {
+            stateOwnedSpriteNames.clear();
+            stateOwnedTextNames.clear();
+            return;
+        }
+
+        for(name in stateOwnedSpriteNames.keys()) {
+            if(curState.modifiableSprites != null && curState.modifiableSprites.exists(name)) {
+                var spr = curState.modifiableSprites.get(name);
+
+                if(spr != null) {
+                    curState.remove(spr);
+                    releaseReplacedFrames(spr.frames, null);
+                    spr.kill();
+                    spr.destroy();
+                }
+
+                curState.modifiableSprites.remove(name);
+            }
+        }
+
+        for(name in stateOwnedTextNames.keys()) {
+            if(curState.modifiableTexts != null && curState.modifiableTexts.exists(name)) {
+                var txt = curState.modifiableTexts.get(name);
+
+                if(txt != null) {
+                    curState.remove(txt);
+                    txt.kill();
+                    txt.destroy();
+                }
+
+                curState.modifiableTexts.remove(name);
+            }
+        }
+
+        stateOwnedSpriteNames.clear();
+        stateOwnedTextNames.clear();
     }
 
     inline function ensureLuaBitmapMap():Map<String, BitmapData> {
@@ -404,8 +522,70 @@ class ModLua {
 			}
 		});
 
+		// Pre-cache functions to avoid lag spikes during gameplay
+		Lua_helper.add_callback(lua, "precacheImage", function(path:String, ?library:String) {
+			if(path == null || path.trim() == "") return;
+			if(library == null) library = "shared";
+			Paths.image(path, library);
+		});
+
+		Lua_helper.add_callback(lua, "precacheAtlas", function(path:String, atlasType:String = "sparrow", ?library:String) {
+			if(path == null || path.trim() == "") return;
+			if(library == null) library = "shared";
+
+			switch(atlasType.toLowerCase().trim()) {
+				case "packer" | "packeratlas" | "pac":
+					Paths.getPackerAtlas(path, library);
+				default:
+					Paths.getSparrowAtlas(path, library);
+			}
+		});
+
+		Lua_helper.add_callback(lua, "precacheCharacter", function(characterName:String) {
+			if(characterName == null || characterName.trim() == "") return;
+
+			var charPath:String = 'characters/$characterName';
+			var infoPath = Paths.getPreloadPath(charPath + '.json');
+
+			if(!Paths.assetExists(infoPath, TEXT)) {
+				infoPath = Paths.getPath(charPath + '.json', TEXT, "shared");
+			}
+
+			if(Paths.assetExists(infoPath, TEXT)) {
+				var rawJson = Paths.readText(infoPath);
+				if(rawJson != null) {
+					var info:Dynamic = Json.parse(rawJson);
+					if(info != null && info.file != null) {
+						for(fileEntry in cast(info.file, String).split(",")) {
+							var trimmedEntry:String = fileEntry != null ? fileEntry.trim() : "";
+							if(trimmedEntry == "") {
+								continue;
+							}
+
+							var extensionIndex:Int = trimmedEntry.lastIndexOf(".");
+							if(extensionIndex < 0) {
+								continue;
+							}
+
+							var basePath:String = trimmedEntry.substr(0, extensionIndex);
+							var ext:String = trimmedEntry.substr(extensionIndex + 1).toLowerCase();
+							if(ext == "xml") {
+								Paths.getSparrowAtlas(basePath, "shared", true);
+							} else if(ext == "json") {
+								Paths.getPackerAtlas(basePath, "shared", true);
+							}
+						}
+					}
+				}
+			}
+		});
+
         Lua_helper.add_callback(lua, "createSprite", function(name:String) {
-            var sprites = ensureLuaSpriteMap();
+            var sprites = getStateSpriteStore();
+
+            if(sprites == null) {
+                sprites = ensureLuaSpriteMap();
+            }
 
             if(sprites.exists(name)) {
                 return;
@@ -416,10 +596,18 @@ class ModLua {
             sprite.active = true;
 
             sprites.set(name, sprite);
+
+            if(sprites != luaSprites) {
+                rememberStateOwnedSprite(name);
+            }
         });
 
         Lua_helper.add_callback(lua, "createText", function(name:String, x:Float = 0, y:Float = 0, width:Float = 0, text:String = "", size:Int = 16) {
-            var texts = ensureLuaTextMap();
+            var texts = getStateTextStore();
+
+            if(texts == null) {
+                texts = ensureLuaTextMap();
+            }
 
             if(texts.exists(name)) {
                 return;
@@ -430,10 +618,18 @@ class ModLua {
             luaText.active = true;
 
             texts.set(name, luaText);
+
+            if(texts != luaTexts) {
+                rememberStateOwnedText(name);
+            }
         });
 
         Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
-            var sprites = ensureLuaSpriteMap();
+            var sprites = getStateSpriteStore();
+
+            if(sprites == null) {
+                sprites = ensureLuaSpriteMap();
+            }
 
             if(sprites.exists(name)) {
                 return;
@@ -464,6 +660,10 @@ class ModLua {
             sprite.active = true;
 
             sprites.set(name, sprite);
+
+            if(sprites != luaSprites) {
+                rememberStateOwnedSprite(name);
+            }
         });
 
         addProtectedLuaCallback("spriteExist", function(name:String) {
@@ -598,10 +798,6 @@ class ModLua {
 		Lua_helper.add_callback(lua, "addAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null) {
-                return;
-            }
-
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
             */
@@ -632,10 +828,6 @@ class ModLua {
         Lua_helper.add_callback(lua, "playAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null) {
-                return;
-            }
-
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
             */
@@ -650,10 +842,6 @@ class ModLua {
 
 		Lua_helper.add_callback(lua, "addAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
             var spr:FlxSprite = getSprite(name);
-
-            if(spr == null) {
-                return;
-            }
 
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
@@ -687,10 +875,6 @@ class ModLua {
 
         Lua_helper.add_callback(lua, "playAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
             var spr:FlxSprite = getSprite(name);
-
-            if(spr == null) {
-                return;
-            }
 
             /**
             * While making this, I was using an older version of `HaxeFlixel`.
@@ -726,15 +910,11 @@ class ModLua {
         addProtectedLuaCallback("playAnim", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null || !canPlaySpriteAnimation(spr, animation)) {
+            if(!canPlaySpriteAnimation(spr, animation)) {
                 return false;
             }
 
-            if(Std.isOfType(spr, Character)) {
-                var obj:Dynamic = spr;
-				var spr:Character = obj;
-                spr.playNoDanceAnim(animation, forced, reverse, startFrame);
-            }else if(Std.isOfType(spr, feshixl.FeshSprite)) {
+            if(Std.isOfType(spr, feshixl.FeshSprite)) {
                 var obj:Dynamic = spr;
 				var spr:feshixl.FeshSprite = obj;
                 spr.playAnim(animation, forced, reverse, startFrame);
@@ -745,42 +925,49 @@ class ModLua {
             return true;
         });
 
-		addProtectedLuaCallback("playAnimRaw", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
-				var spr:FlxSprite = getSprite(name);
+        addProtectedLuaCallback("playAnimRaw", function(name:String, animation:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0) {
+			var spr:FlxSprite = getSprite(name);
 
-				if(spr == null || !canPlaySpriteAnimation(spr, animation)) {
-				    return false;
-				}
+			if(!canPlaySpriteAnimation(spr, animation)) {
+				return false;
+			}
 
-				spr.animation.play(animation, forced, reverse, startFrame);
+			var shouldForceRestart:Bool = forced;
 
-				return true;
-		});
+			if(!shouldForceRestart && spr.animation != null && spr.animation.curAnim != null) {
+				var currentAnim = spr.animation.curAnim;
+				shouldForceRestart = currentAnim.name == animation && !currentAnim.looped;
+			}
 
-		addProtectedLuaCallback("stopAnim", function(name:String) {
-				var spr:FlxSprite = getSprite(name);
+			spr.animation.play(animation, shouldForceRestart, reverse, startFrame);
 
-				if(spr == null || spr.animation == null) {
-				    return;
-				}
+			return true;
+        });
 
-				spr.animation.stop();
-		});
+        addProtectedLuaCallback("stopAnim", function(name:String) {
+                        var spr:FlxSprite = getSprite(name);
 
-		addProtectedLuaCallback("setAnimFrame", function(name:String, frame:Int) {
-				var spr:FlxSprite = getSprite(name);
+                        if(spr.animation == null) {
+                            return;
+                        }
 
-				if(spr == null || spr.animation == null) {
-				    return;
-				}
+                        spr.animation.stop();
+        });
 
-				spr.animation.frameIndex = frame;
-		});
+        addProtectedLuaCallback("setAnimFrame", function(name:String, frame:Int) {
+                        var spr:FlxSprite = getSprite(name);
+
+                        if(spr.animation == null) {
+                            return;
+                        }
+
+                        spr.animation.frameIndex = frame;
+        });
 
         addProtectedLuaCallback("getAnimFrame", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
-            if(spr == null || spr.animation == null) {
+            if(spr.animation == null) {
                 return 0;
             }
 
@@ -801,16 +988,16 @@ class ModLua {
             return spr.animation.curAnim.finished;
         });
 
-		addProtectedLuaCallback("spriteFlip", function(name:String, flipX:Bool, flipY:Bool) {
-		    var spr:FlxSprite = getSprite(name);
+        addProtectedLuaCallback("spriteFlip", function(name:String, flipX:Bool, flipY:Bool) {
+            var spr:FlxSprite = getSprite(name);
 
-			if(spr == null) {
-				return;
-			}
+                if(spr == null) {
+                        return;
+                }
 
-			spr.flipX = flipX;
-			spr.flipY = flipY;
-		});
+                spr.flipX = flipX;
+                spr.flipY = flipY;
+        });
 
         addProtectedLuaCallback("setCustomFieldToSprite", function(name:String, prop:String, value:Dynamic) {
             var spr:FlxSprite = getSprite(name);
@@ -1107,17 +1294,24 @@ class ModLua {
                 return;
             }
 
+            detachSpriteFromStateContainers(spr);
             releaseReplacedFrames(spr.frames, null);
+            spr.visible = false;
+            spr.active = false;
+            spr.exists = false;
+            spr.cameras = [];
             spr.kill();
-            spr.destroy();
 
             if(curState is HelperStates && curState.modifiableSprites.exists(name)) {
                 curState.modifiableSprites.remove(name);
             }
 
-            if(luaSprites.exists(name)) {
+            if(luaSprites != null && luaSprites.exists(name)) {
                 luaSprites.remove(name);
             }
+
+            forgetStateOwnedSprite(name);
+            forgetStateOwnedText(name);
         });
 
         Lua_helper.add_callback(lua, "setText", function(name:String, text:String) {
@@ -1190,7 +1384,7 @@ class ModLua {
                 return;
             }
 
-            FlxG.state.remove(spr);
+            detachSpriteFromStateContainers(spr);
         });
 
         Lua_helper.add_callback(lua, "doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
@@ -1573,6 +1767,10 @@ class ModLua {
                 return false;
             }
 
+            if(luaShaderSources == null) {
+                return false;
+            }
+
             luaShaderSources.set(name, {
                 vertexSource: vertexSource == null ? "" : vertexSource,
                 fragmentSource: fragmentSource
@@ -1606,6 +1804,10 @@ class ModLua {
 
         addProtectedLuaCallback("removeCameraShader", function(cameraName:String) {
             return removeShaderFromCamera(cameraName);
+        });
+
+        addProtectedLuaCallback("clearCameraShaders", function(cameraName:String) {
+            return clearShadersFromCamera(cameraName);
         });
 
         Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, cameraName:String) {
@@ -1818,6 +2020,11 @@ class ModLua {
 
     function storeShaders(name:String, shader:String, path:String = "shaders", ?glslVersion:Null<UInt>):Bool {
         #if sys
+        if(luaShaderSources == null) {
+            Log.error('Cannot initialize shader - luaShaderSources is null (ModLua may have been destroyed)');
+            return false;
+        }
+
         if(luaShaderSources.exists(name)) {
             Log.info('Shader `$name` was already stored!');
 			return true;
@@ -1857,6 +2064,11 @@ class ModLua {
     }
 
     function createShaderInstance(name:String, ?tag:String):FeshShader {
+        if(luaShaderSources == null) {
+            Log.error('Cannot create shader - luaShaderSources is null');
+            return null;
+        }
+
         var shaderSource:LuaShaderSource = luaShaderSources.get(name);
 
         if(shaderSource == null) {
@@ -2294,6 +2506,35 @@ class ModLua {
         cam.setFilters(strippedFilters);
         luaCameraShaderFilters.remove(cameraName);
         luaShaders.remove(cameraName);
+        return true;
+    }
+
+    function clearShadersFromCamera(cameraName:String):Bool {
+        var cam:FlxCamera = getCamera(cameraName);
+
+        if(cam == null) {
+            return false;
+        }
+
+        if(Std.isOfType(cam, PlayCamera)) {
+            (cast cam:PlayCamera).eraseFilters();
+        } else {
+            cam.setFilters([]);
+        }
+
+        if(cam.flashSprite != null) {
+            cam.flashSprite.filters = null;
+            @:privateAccess cam.flashSprite.__setRenderDirty();
+        }
+
+        if(luaCameraShaderFilters != null) {
+            luaCameraShaderFilters.remove(cameraName);
+        }
+
+        if(luaShaders != null) {
+            luaShaders.remove(cameraName);
+        }
+
         return true;
     }
 
@@ -2838,8 +3079,10 @@ class ModLua {
 
         var spr:FlxSprite = luaSprites != null ? luaSprites.get(name) : null;
         var curState = cast FlxG.state;
+        var wasStateOwnedSprite:Bool = spr == null && curState != null && curState is HelperStates && curState.modifiableSprites != null
+            && curState.modifiableSprites.exists(name);
 
-        if(spr == null && curState != null && curState is HelperStates && curState.modifiableSprites != null) {
+        if(spr == null && wasStateOwnedSprite) {
             if(curState.modifiableSprites.exists(name))
                 spr = curState.modifiableSprites.get(name);
         }
@@ -2848,11 +3091,16 @@ class ModLua {
             return spr;
         } else if(spr != null && luaSprites != null && luaSprites.exists(name)) {
             luaSprites.remove(name);
+        } else if(spr != null && wasStateOwnedSprite) {
+            curState.modifiableSprites.remove(name);
+            forgetStateOwnedSprite(name);
         }
 
         spr = luaTexts != null ? luaTexts.get(name) : null;
+        var wasStateOwnedTextSprite:Bool = spr == null && curState != null && curState is HelperStates && curState.modifiableTexts != null
+            && curState.modifiableTexts.exists(name);
 
-        if(spr == null && curState != null && curState is HelperStates && curState.modifiableTexts != null) {
+        if(spr == null && wasStateOwnedTextSprite) {
             if(curState.modifiableTexts.exists(name))
                 spr = curState.modifiableTexts.get(name);
         }
@@ -2861,6 +3109,9 @@ class ModLua {
             return spr;
         } else if(spr != null && luaTexts != null && luaTexts.exists(name)) {
             luaTexts.remove(name);
+        } else if(spr != null && wasStateOwnedTextSprite) {
+            curState.modifiableTexts.remove(name);
+            forgetStateOwnedText(name);
         }
 
         if(curState != null && curState is PlayState) {
@@ -2967,6 +3218,7 @@ class ModLua {
 
         var text:FlxText = luaTexts.get(name);
         var curState = cast FlxG.state;
+        var wasStateOwnedText:Bool = text == null && curState is HelperStates && curState.modifiableTexts.exists(name);
 
         if(text == null && curState is HelperStates) {
             if(curState.modifiableTexts.exists(name))
@@ -2976,6 +3228,9 @@ class ModLua {
         if(text == null || !text.exists || text.scale == null) {
             if(text != null && luaTexts.exists(name)) {
                 luaTexts.remove(name);
+            } else if(text != null && wasStateOwnedText) {
+                curState.modifiableTexts.remove(name);
+                forgetStateOwnedText(name);
             }
 
             return null;
@@ -2997,11 +3252,106 @@ class ModLua {
         return spr.animation._animations != null && spr.animation._animations.exists(animation);
     }
 
+    public function pauseLuaSpriteAnimations():Void {
+        var sprites = luaSprites;
+        var pausedStates:Map<String, LuaPausedSpriteAnimationState> = new Map<String, LuaPausedSpriteAnimationState>();
+
+        if(sprites == null) {
+            pausedLuaSpriteAnimations = pausedStates;
+            return;
+        }
+
+        for(name in sprites.keys()) {
+            var spr:FlxSprite = sprites.get(name);
+
+            if(!isValidLuaSprite(spr)) {
+                continue;
+            }
+
+            if(spr.animation != null && spr.animation.curAnim != null) {
+                var currentAnim = spr.animation.curAnim;
+                pausedStates.set(name, {
+                    animation: currentAnim.name,
+                    frame: currentAnim.curFrame,
+                    reversed: currentAnim.reversed,
+                    finished: currentAnim.finished
+                });
+                spr.animation.pause();
+            }
+        }
+
+        pausedLuaSpriteAnimations = pausedStates;
+    }
+
+    public function resumeLuaSpriteAnimations():Void {
+        var sprites = luaSprites;
+        var pausedStates = pausedLuaSpriteAnimations;
+
+        if(sprites == null) {
+            pausedLuaSpriteAnimations = new Map<String, LuaPausedSpriteAnimationState>();
+            return;
+        }
+
+        for(name in sprites.keys()) {
+            var spr:FlxSprite = sprites.get(name);
+
+            if(!isValidLuaSprite(spr)) {
+                continue;
+            }
+
+            spr.active = true;
+            spr.exists = true;
+            spr.dirty = true;
+
+            if(spr.animation != null && spr.animation.curAnim != null) {
+                var pausedState:LuaPausedSpriteAnimationState = pausedStates != null ? pausedStates.get(name) : null;
+
+                if(pausedState != null && canPlaySpriteAnimation(spr, pausedState.animation)) {
+                    spr.animation.play(pausedState.animation, true, pausedState.reversed, pausedState.frame);
+
+                    if(pausedState.finished && spr.animation.curAnim != null) {
+                        spr.animation.curAnim.finish();
+                    }
+                } else {
+                    spr.animation.resume();
+                }
+            }
+        }
+
+        pausedLuaSpriteAnimations = new Map<String, LuaPausedSpriteAnimationState>();
+    }
+
+    public function pauseLuaTweens():Void {
+        if(luaTweens == null) {
+            return;
+        }
+
+        for(tween in luaTweens) {
+            if(tween != null) {
+                tween.active = false;
+            }
+        }
+    }
+
+    public function resumeLuaTweens():Void {
+        if(luaTweens == null) {
+            return;
+        }
+
+        for(tween in luaTweens) {
+            if(tween != null) {
+                tween.active = true;
+            }
+        }
+    }
+
     public function close():Void {
         #if (USING_LUA && cpp)
         if(lua == null) {
             return;
         }
+
+        destroyStateOwnedRuntimeObjects();
 
         if(luaOrbitSprites != null) {
             luaOrbitSprites.clear();

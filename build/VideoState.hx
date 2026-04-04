@@ -34,6 +34,8 @@ class VideoState extends HelperStates {
     var path:String;
 
     var skip:Bool = false;
+    var requestedExit:Bool = false;
+    var cleanedUpVideo:Bool = false;
 
     #if cpp
 	var bitmap:Video;
@@ -141,7 +143,7 @@ class VideoState extends HelperStates {
     override function update(elapsed:Float) {
 		#if cpp
 		if(bitmap.isPlaying && controls.ACCEPT) {
-		     FlxG.switchState(state);
+		     requestExit();
 		}
 		#end
 
@@ -160,23 +162,38 @@ class VideoState extends HelperStates {
     }
 
     function finishedVideo() {
+        requestExit();
+    }
+
+    function requestExit():Void {
+        if(requestedExit) {
+            return;
+        }
+
+        requestedExit = true;
         FlxG.switchState(state);
     }
 
     #if cpp
     @:noCompletion function onVLCComplete() {
-		bitmap.onEndReached.remove(finishedVideo);
-		bitmap.onEncounteredError.remove(onVLCError);
+        if(cleanedUpVideo) {
+            return;
+        }
 
-		FlxG.signals.postUpdate.remove(postUpdate);
-        FlxG.game.removeChild(bitmap);
+        cleanedUpVideo = true;
 
-        bitmap.stop();
-        bitmap.dispose();
+		if(bitmap != null) {
+			bitmap.onEndReached.remove(finishedVideo);
+			bitmap.onEncounteredError.remove(onVLCError);
+			FlxG.signals.postUpdate.remove(postUpdate);
+			if(FlxG.game.contains(bitmap)) {
+				FlxG.game.removeChild(bitmap);
+			}
+			bitmap.stop();
+			bitmap.dispose();
+		}
 
         bitmap = null;
-
-        FlxG.switchState(state);
     }
 
     @:noCompletion function onVLCError(message:String) {

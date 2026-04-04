@@ -31,6 +31,20 @@ class PauseSubState extends MusicBeatSubstate
 
 	var pauseMusic:FlxSound;
 
+	private function cleanupPauseMusic():Void
+	{
+		if (pauseMusic == null)
+			return;
+
+		pauseMusic.stop();
+
+		if (FlxG.sound.list != null)
+			FlxG.sound.list.remove(pauseMusic);
+
+		pauseMusic.destroy();
+		pauseMusic = null;
+	}
+
 	public function new(x:Float, y:Float)
 	{
 		super();
@@ -147,15 +161,11 @@ class PauseSubState extends MusicBeatSubstate
 			switch (daSelected)
 			{
 				case "Resume":
-					pauseMusic.stop();
-                    FlxG.sound.list.remove(pauseMusic);
-                    pauseMusic = null;
+					cleanupPauseMusic();
 
 					close();
 				case "Restart Song":
-					pauseMusic.stop();
-                    FlxG.sound.list.remove(pauseMusic);
-                    pauseMusic = null;
+					cleanupPauseMusic();
 
 					var playState:PlayState = Std.isOfType(_parentState, PlayState) ? cast _parentState : null;
 
@@ -165,7 +175,15 @@ class PauseSubState extends MusicBeatSubstate
 
 					close();
 				case "Exit to menu":
-					FlxG.switchState(new MainMenuState());
+					cleanupPauseMusic();
+
+					var playState:PlayState = Std.isOfType(_parentState, PlayState) ? cast _parentState : null;
+
+					if(playState != null) {
+						playState.requestPauseExitToMenu();
+					}
+
+					close();
 				case "Change Controls":
 					FlxG.sound.play(Paths.sound("scrollMenu"), 0.4);
 
@@ -223,9 +241,7 @@ class PauseSubState extends MusicBeatSubstate
 			pauseLua = null;
 		}
 
-		if(pauseMusic != null) {
-			pauseMusic.destroy();
-		}
+		cleanupPauseMusic();
 
 		super.destroy();
 	}

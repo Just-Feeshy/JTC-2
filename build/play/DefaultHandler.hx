@@ -33,6 +33,9 @@ private typedef Modifiers = {
 }
 
 class DefaultHandler {
+    private static inline var SHAKE_DECAY:Float = 0.12;
+    private static inline var SHAKE_RANGE_MULTIPLIER:Float = 140;
+
     public static var modifiers:Modifiers;
 
     public static var strumOffset:Float = 0;
@@ -83,6 +86,32 @@ class DefaultHandler {
         #end
 
         return arrayer;
+    }
+
+    static public function resolveCharacterJSON(name:String):String {
+        if(name == null) {
+            return null;
+        }
+
+        var trimmedName:String = StringTools.trim(name);
+
+        if(trimmedName.length == 0) {
+            return null;
+        }
+
+        var lowerName:String = trimmedName.toLowerCase();
+
+        for(characterName in getcharacterJSON()) {
+            if(characterName != null && characterName.toLowerCase() == lowerName) {
+                return characterName;
+            }
+        }
+
+        return null;
+    }
+
+    static public function hasCharacterJSON(name:String):Bool {
+        return resolveCharacterJSON(name) != null;
     }
 
     static public function compilePosition(strum:Float):Float {
@@ -158,14 +187,14 @@ class DefaultHandler {
         var camHUD:PlayCamera = cast PlayState.camHUD;
         var noteCam:PlayCamera = cast PlayState.camNOTE;
 
-        mainCam.engineAngle = camAngle[0] + caculateShake(50, shakeCamTimer);
-        camHUD.engineAngle = camAngle[1] + caculateShake(50, -shakeCamTimerHUD);
+        mainCam.engineAngle = camAngle[0] + caculateShake(35, shakeCamTimer);
+        camHUD.engineAngle = camAngle[1] + caculateShake(30, shakeCamTimerHUD);
         noteCam.engineAngle = camAngle[2];
 
         mainCam.engineX = camPos[0];
         camHUD.engineX = camPos[1];
 
-        noteCam.engineX = camPos[2] + caculateShake(5, shakeCamTimer);
+        noteCam.engineX = camPos[2] + caculateShake(3, shakeCamTimer);
 
         eventHandler();
 
@@ -189,19 +218,19 @@ class DefaultHandler {
 
     static private function eventHandler():Void {
         if(shakeCamTimer > 0)
-            shakeCamTimer -= 0.2;
+            shakeCamTimer = Math.max(0, shakeCamTimer - SHAKE_DECAY);
 
         if(shakeCamTimerHUD > 0)
-            shakeCamTimerHUD -= 0.2;
+            shakeCamTimerHUD = Math.max(0, shakeCamTimerHUD - SHAKE_DECAY);
 
         if(sizeTimer > 0)
             sizeTimer -= 1;
     }
 
     static private function caculateShake(divider:Int, shaker:Float):Float { //This was a lazy way of doing it
-        if(shakeCamTimer > 0)
-            return FlxG.random.float(-shakeCamTimer * 100, shakeCamTimer * 100) / divider;
-        else
-            return 0;
+        if(shaker > 0)
+            return FlxG.random.float(-shaker * SHAKE_RANGE_MULTIPLIER, shaker * SHAKE_RANGE_MULTIPLIER) / divider;
+
+        return 0;
     }
 }

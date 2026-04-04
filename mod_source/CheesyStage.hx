@@ -2,46 +2,21 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.graphics.FlxGraphic;
-import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
-import flixel.math.FlxMath;
 import lime.utils.Assets;
 import haxe.Json;
-import openfl.utils.Assets as OpenFlAssets;
 
 using StringTools;
 
 @:access(MusicBeatState)
 class CheesyStage extends StorageStage {
-	private static final DEFAULT_STAGE_CAMERA_FOCUS:Array<Float> = [785, 458.5];
-	private static final DEFAULT_STAGE_CAMERA_FOCUS_LERP:Float = 0.09;
-
 	final tripleIconColors:Array<Int> = [
 		0xff31b0d1, //Boyfriend
 		0xffa5004d, //Girlfriend
 		0xffe9ff48 //Joul The Cool
 	];
-
-	final flyingOffset:Map<String, Array<Float>> = [
-		"idle" => [0, 0],
-		"singDOWN" => [21, -11],
-		"singUP" => [-4, 5],
-		"singLEFT" => [10, 53],
-		"singRIGHT" => [-21, 14],
-
-		"singDOWNmiss" => [-6, -18],
-		"singUPmiss" => [-10, -27],
-		"singRIGHTmiss" => [11, -23],
-		"singLEFTmiss" => [-27, -15]
-	];
-
-	final funkroadDadPhaseOneOffset:Array<Float> = [-120, 30];
-	final funkroadDadPhaseTwoOffset:Array<Float> = [-220, 40];
-	final funkroadBoyfriendPhaseOneOffset:Array<Float> = [120, 60];
-	final funkroadBoyfriendPhaseTwoOffset:Array<Float> = [180, 70];
 
 	var tweenIndex:UInt = 0;
 
@@ -51,10 +26,6 @@ class CheesyStage extends StorageStage {
 	var dad:Character;
 
 	var dadShouldDance:Bool = true;
-	var phase2_switch:Bool = false;
-	var funkroadBaseBoyfriendPos:BasicPoint;
-	var funkroadBaseDadPos:BasicPoint;
-
 	var curStep:Float = 0;
 	var curBeat:Float = 0;
 
@@ -158,113 +129,23 @@ class CheesyStage extends StorageStage {
 		playstate.setLua("curBeatFloat", curBeat);
 	}
 
-	function addAnimation(anim:String, prefix:String):Void {
-		boyfriend.animations.push(anim);
-		boyfriend.animation.addByPrefix(anim, prefix, 24, false);
-	}
-
-	function cacheFunkroadBasePositions():Void {
-		if(stage != "funkroad" || dad == null || boyfriend == null) {
-			return;
-		}
-
-		if(funkroadBaseDadPos == null) {
-			funkroadBaseDadPos = {x: dad.x, y: dad.y};
-		}
-
-		if(funkroadBaseBoyfriendPos == null) {
-			funkroadBaseBoyfriendPos = {x: boyfriend.x, y: boyfriend.y};
-		}
-	}
-
-	function applyFunkroadLayout(phaseTwo:Bool = false):Void {
-		if(stage != "funkroad") {
-			return;
-		}
-
-		cacheFunkroadBasePositions();
-
-		if(dad != null && funkroadBaseDadPos != null) {
-			var dadOffset = phaseTwo ? funkroadDadPhaseTwoOffset : funkroadDadPhaseOneOffset;
-			dad.setPosition(funkroadBaseDadPos.x + dadOffset[0], funkroadBaseDadPos.y + dadOffset[1]);
-		}
-
-		if(boyfriend != null && funkroadBaseBoyfriendPos != null) {
-			var boyfriendOffset = phaseTwo ? funkroadBoyfriendPhaseTwoOffset : funkroadBoyfriendPhaseOneOffset;
-			boyfriend.setPosition(funkroadBaseBoyfriendPos.x + boyfriendOffset[0], funkroadBaseBoyfriendPos.y + boyfriendOffset[1]);
-		}
-	}
-
 	override function configStage():Void {
 		boyfriend = Register.getInGameCharacter(BOYFRIEND);
 		dad = Register.getInGameCharacter(OPPONENT);
 
-		if(PlayState.SONG.song.toLowerCase() == "frostbeat") {
-			var oldGraphic:FlxGraphic = boyfriend.graphic;
-		    boyfriend.frames = FlxAnimationUtil.combineAtlas([
-				Paths.getSparrowAtlas("flying notes BF SINGS"),
-				Paths.getSparrowAtlas("flying notes GF SINGS")
-			]);
-			boyfriend.animation.destroyAnimations();
-			boyfriend.animations = [];
-			boyfriend.animOffsets = new Map<String, Array<Float>>();
-			if(oldGraphic != null && oldGraphic != boyfriend.graphic) {
-				oldGraphic.persist = false;
-				oldGraphic.destroyOnNoUse = true;
-				if(oldGraphic.assetsKey != null) {
-					OpenFlAssets.cache.removeBitmapData(oldGraphic.assetsKey);
-				} else if(oldGraphic.key != null) {
-					OpenFlAssets.cache.removeBitmapData(oldGraphic.key);
-				}
-			}
-			boyfriend.animOffsets = flyingOffset;
-
-			addAnimation("idle", "flying dance IDLE0");
-			addAnimation("singDOWN", "flying dance DOWN0");
-			addAnimation("singUP", "flying dance UP0");
-			addAnimation("singLEFT", "flying dance LEFT0");
-			addAnimation("singRIGHT", "flying dance RIGHT0");
-			addAnimation("singDOWNmiss", "flying miss DOWN0");
-			addAnimation("singUPmiss", "flying miss UP0");
-			addAnimation("singRIGHTmiss", "flying miss RIGHT0");
-			addAnimation("singLEFTmiss", "flying miss LEFT0");
-
+		if(stage == "funkroad" && PlayState.SONG.song.toLowerCase() == "frostbeat") {
 			boyfriend.shouldPlayDance = false;
 			dad.shouldPlayDance = false;
 			boyfriend.playAnim("idle", true);
 		}
-
-		if(stage == "funkroad") {
-			applyFunkroadLayout(false);
-		}
-	}
-
-	override function configIcons(iconP1:HealthIcon, iconP2:HealthIcon):Void {
-		if(stage == "funkroad") {
-			iconP1.createAnim("flying BF sings", [31, 32, 31], true);
-		}
 	}
 
 	override function whenCreatingScene():Void {
-		if(playstate.iconP1.iconAnimInfo[0] == 31 && playstate.iconP1.iconAnimInfo[1] == 32) {
+		if(stage == "funkroad" && PlayState.SONG.song.toLowerCase() == "frostbeat") {
 			playstate.healthBar.filledColor = tripleIconColors[0];
 			tweenHealthBar(tripleIconColors, "player", playstate);
 		}
 
-		if(PlayState.SONG.song.toLowerCase() != "funk-off" && PlayState.SONG.song.toLowerCase() != "ping-pong") {
-			playstate.iconP2.createAnim("joul", [24, 30, 24]);
-		}
-	}
-
-	override function setCamPos(camPos:FlxPoint):FlxPoint {
-		if(stage == "funkroad") {
-			return FlxPoint.get(
-				FlxMath.lerp(DEFAULT_STAGE_CAMERA_FOCUS[0], camPos.x, DEFAULT_STAGE_CAMERA_FOCUS_LERP),
-				FlxMath.lerp(DEFAULT_STAGE_CAMERA_FOCUS[1], camPos.y, DEFAULT_STAGE_CAMERA_FOCUS_LERP)
-			);
-		}
-
-		return null;
 	}
 
 	override function hasGirlfriend():Bool {
@@ -276,10 +157,16 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {
-		if(stage == "funkroad" && (curStep >= 630 && curStep < 632) && eventValue == "dad-car" && !phase2_switch) {
-			phase2_switch = true;
+		if(eventName == "character change") {
+			switch(eventValue2.toLowerCase()) {
+				case "bf" | "boyfriend" | "player":
+					boyfriend = Register.getInGameCharacter(BOYFRIEND);
+				case "dad" | "opponent":
+					dad = Register.getInGameCharacter(OPPONENT);
+			}
+		}
 
-			playstate.iconP1.createAnim("flying BF sings", [28, 29, 28], true);
+		if(stage == "funkroad" && eventValue == "dad-car") {
 			playstate.healthBar.emptyColor = 0xffaf66ce;
 			healthBarArrayLength = 3;
 
@@ -299,8 +186,38 @@ class CheesyStage extends StorageStage {
 				}
 			});
 
-			applyFunkroadLayout(true);
+			// Update dad reference since character changed; Frostbeat phase-two positioning is handled in Lua.
+			dad = Register.getInGameCharacter(OPPONENT);
 		}
+	}
+
+	override function resetStage():Void {
+		// Update character references in case they changed
+		boyfriend = Register.getInGameCharacter(BOYFRIEND);
+		dad = Register.getInGameCharacter(OPPONENT);
+
+		// Reset characters to their base positions.
+		if(stage == "funkroad") {
+			if(boyfriend != null) {
+				boyfriend.refresh(boyfriend.curCharacter, playstate.camPos);
+				boyfriend.playAnim("idle", true);
+			}
+
+			if(dad != null) {
+				dad.refresh(dad.curCharacter, playstate.camPos);
+			}
+
+			// Reset health bar settings to phase 1
+			healthBarArrayLength = 2;
+			playstate.healthBar.filledColor = tripleIconColors[0];
+
+			// Cancel existing health bar color tween
+			cleanTween();
+
+			// Restart the health bar tween with original colors
+			tweenHealthBar(tripleIconColors, "player", playstate);
+		}
+
 	}
 
 	override function update(elapsed:Float):Void {
@@ -318,7 +235,6 @@ class CheesyStage extends StorageStage {
 			dad.scale.set(1.1, 1.1);
 			dad.updateHitbox();
 			dad.shouldPlayDance = false;
-			applyFunkroadLayout(phase2_switch);
 		}
 
 		if(boyfriend.animation.curAnim != null) {
@@ -339,5 +255,3 @@ class CheesyStage extends StorageStage {
 		cleanTween();
 	}
 }
-
-private typedef BasicPoint = { x:Float, y:Float };
