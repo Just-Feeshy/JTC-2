@@ -3678,7 +3678,6 @@ class PlayState extends MusicBeatState
 					newBoyfriend.refresh(newCharacter, newCamPos);
 					newCamPos.put();
 					newBoyfriend.alpha = 0.00001;
-					newBoyfriend.active = false;
 					boyfriendMap.set(newCharacter, newBoyfriend);
 
 					if(stage != null) {
@@ -3701,7 +3700,6 @@ class PlayState extends MusicBeatState
 					newDad.refresh(newCharacter, newCamPos);
 					newCamPos.put();
 					newDad.alpha = 0.00001;
-					newDad.active = false;
 					dadMap.set(newCharacter, newDad);
 
 					if(stage != null) {
@@ -3724,7 +3722,6 @@ class PlayState extends MusicBeatState
 					newGf.refresh(newCharacter, newCamPos);
 					newCamPos.put();
 					newGf.alpha = 0.00001;
-					newGf.active = false;
 					gfMap.set(newCharacter, newGf);
 
 					if(stage != null) {
