@@ -1799,6 +1799,7 @@ class PlayState extends MusicBeatState
 	var pausedTrackedSongPos:Null<Float> = null;
 	var pendingPauseExitToMenu:Bool = false;
 	var songTime:Float = 0;
+	var preparedForStateSwitch:Bool = false;
 
 	private function cachePausedRuntimeState():Void {
 		pausedTrackedSongPos = Conductor.instance != null ? Conductor.instance.trackedSongPosition : null;
@@ -4128,6 +4129,12 @@ class PlayState extends MusicBeatState
 	}
 
 	public function prepareForStateSwitch():Void {
+		if(preparedForStateSwitch) {
+			return;
+		}
+
+		preparedForStateSwitch = true;
+
 		var stateCamNOTE:CameraNote = ownedCamNOTE;
 		var stateCamNoteSustain:PlayCamera = ownedCamNoteSustain;
 		var stateCamHUD:PlayCamera = ownedCamHUD;
