@@ -474,13 +474,6 @@ local function init()
     precacheCharacter("frostbeat-second")
 	precacheCharacter("flying BF sings gf")
     addCharacterToList("dad-car", "dad")
-    if warmLoadedCharacterAnimations ~= nil then
-        warmLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
-    end
-    if primeLoadedCharacterAnimations ~= nil then
-        primeLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
-    end
-    finishGPUCommands()
 	if clearCustomDeathCharacter ~= nil then
         clearCustomDeathCharacter()
     end
@@ -502,13 +495,6 @@ local function setupSecondSprite()
         end
     end
 
-    if warmCharacterAnimations ~= nil then
-        warmCharacterAnimations("second", secondWarmAnimations)
-    end
-    if primeCharacterAnimations ~= nil then
-        primeCharacterAnimations("second", secondWarmAnimations)
-    end
-
     if addCharacter ~= nil then
         addCharacter("second", "dad")
     else
@@ -525,9 +511,7 @@ local function setupSecondSprite()
     setSpritePosition("second", secondBaseX, secondBaseY)
     setSpriteAlpha("second", secondHiddenAlpha)
     setSpriteVisible("second", true)
-    setCustomFieldToSprite("second", "active", false)
     playCharacterAnim("second", "idle", true)
-    finishGPUCommands()
 end
 
 local function playSecondAnimation(animName)
@@ -571,7 +555,6 @@ local function enterPhaseTwo()
     if spriteExist("second") then
         setSpriteAlpha("second", 1)
         setSpriteVisible("second", true)
-        setCustomFieldToSprite("second", "active", true)
         local dadIndex = getSpriteIndexFromStage("dad")
 
         if dadIndex ~= nil and dadIndex >= 0 then
@@ -627,7 +610,7 @@ local function triggerDeathNotePunch()
 	playSound("punch", 2)
 
     if punchCount >= 3 then
-        -- instaKillPlayer()
+        instaKillPlayer()
     end
 end
 
@@ -669,16 +652,6 @@ local function getPhaseTwoFlyingGfFocus()
 
     return boyfriendX + (boyfriendWidth * introGirlfriendFaceAnchorX) + introGirlfriendFaceOffsetX,
         boyfriendY + (boyfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
-end
-
-local function getPhaseTwoDadCarFocus()
-    local dadX = getSpriteX("dad")
-    local dadY = getSpriteY("dad")
-    local dadWidth = getSpriteWidth("dad")
-    local dadHeight = getSpriteHeight("dad")
-
-    return dadX + (dadWidth * introOpponentFaceAnchorX) + introOpponentFaceOffsetX,
-        dadY + (dadHeight * introOpponentFaceAnchorY) + introOpponentFaceOffsetY
 end
 
 local function getIntroCompensatedCarPosition(focusX, focusY, zoom)
@@ -942,7 +915,6 @@ local function resetSecondSprite()
     setSpritePosition("second", secondBaseX, secondBaseY)
     setSpriteAlpha("second", secondHiddenAlpha)
     setSpriteVisible("second", true)
-    setCustomFieldToSprite("second", "active", false)
     playCharacterAnim("second", "idle", true)
     curAnimName = "idle"
     holdTimer = 0
