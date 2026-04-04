@@ -543,7 +543,7 @@ local function enterPhaseTwo()
     end
 
     callEvent("character change", "dad-car", "dad")
-	setSpriteY("dad", 100)
+    setSpriteY("dad", 170)
     setSpriteVisible("frostbiteCAR", false)
     removeSpriteFromState("frostbiteCAR")
     setGameplayCameraZoom(1.0, false, false)
@@ -1119,7 +1119,11 @@ function onUpdate(elapsed)
     end
 
     if not stunned and not startsWith(curAnimName, "sing") and sprAnimFinished("second") then
-        playSecondAnimation("idle")
+        if curStep < 906 then
+            playSecondAnimation("idle")
+        else
+            playSecondAnimation("idleExtra")
+		end
     end
 
     if sprAnimFinished("frostbiteCAR") and daddyTrans then
