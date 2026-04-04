@@ -318,6 +318,11 @@ class PlayState extends MusicBeatState
 	public var bumpForce:Float = 1;
 	public var bumpOffset:Int = 0;
 
+	private static inline var CAMERA_BUMP_GAME_ZOOM:Float = 0.02;
+	private static inline var CAMERA_BUMP_HUD_ZOOM:Float = 0.04;
+	private static inline var ICON_BUMP_SIZE:Int = 45;
+	private static inline var ICON_BUMP_LERP:Float = 0.08;
+
 	private var strumLine:FlxSprite;
 	public var camFollow:FlxObject;
 
@@ -2595,8 +2600,8 @@ class PlayState extends MusicBeatState
 		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
 
 			if(!hudIconsStatic) {
-				iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.width, 150, 0.1/(Main.framerate/100))));
-				iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.width, 150, 0.1/(Main.framerate/100))));
+				iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.width, 150, ICON_BUMP_LERP/(Main.framerate/100))));
+				iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.width, 150, ICON_BUMP_LERP/(Main.framerate/100))));
 
 				iconP1.updateHitbox();
 				iconP2.updateHitbox();
