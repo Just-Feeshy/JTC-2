@@ -194,39 +194,33 @@ local function addPulseSteps(steps, intensity)
     end
 end
 
-local drumPulseDualSteps = {
-    150, 158, 166, 170, 174, 183, 187, 191, 199, 203, 220, 224, 232, 236, 240, 257, 261, 265, 269, 273, 306, 331, 339, 346,
-    364, 372, 384, 388, 405, 438, 450, 454, 462, 471, 485, 487, 493, 495, 510, 512, 518, 520, 526, 528, 531, 545, 551, 559,
-    561, 567, 578, 584, 586, 592, 594, 597, 600, 602, 622, 633, 660, 668, 676, 701, 709, 726, 734, 742, 746, 779, 783, 800,
-    816, 833, 849, 857, 866, 906, 1145, 1154, 1162, 1170, 1174, 1178, 1195, 1203, 1211, 1228, 1236, 1244, 1252, 1269, 1273, 1277, 1293, 1302,
-    1310, 1318, 1326, 1335, 1351, 1376, 1396, 1409, 1425, 1433, 1450, 1458, 1462, 1466, 1491, 1499, 1524, 1528, 1532, 1540, 1565, 1573, 1598, 1606,
-    1623, 1627, 1631, 1639, 1660, 1664, 1675, 1738, 1741, 1774, 1777, 1807, 1818, 1820, 1823, 1826
-}
+local function addPulseRange(startStep, endStep, everySteps, intensity)
+    if everySteps == nil or everySteps <= 0 then
+        return
+    end
 
-local drumPulseKickSteps = {
-    294, 310, 318, 327, 343, 351, 360, 376, 393, 397, 409, 426, 442, 458, 475, 479, 490, 498, 502, 504, 535, 537, 556, 564,
-    569, 575, 638, 656, 672, 689, 705, 718, 722, 738, 755, 769, 788, 792, 804, 821, 837, 845, 862, 870, 882, 886, 899, 903,
-    967, 1005, 1019, 1038, 1050, 1058, 1071, 1083, 1091, 1099, 1104, 1121, 1136, 1150, 1166, 1182, 1187, 1199, 1207, 1215, 1219, 1232, 1240, 1248,
-    1257, 1261, 1265, 1281, 1285, 1298, 1314, 1331, 1343, 1347, 1355, 1364, 1384, 1388, 1405, 1421, 1487, 1561, 1672, 1688, 1705, 1708, 1724, 1754,
-    1771, 1787, 1804, 1828, 1830
-}
+    local stepValue = startStep
 
-local drumPulseSnareSteps = {
-    153, 161, 172, 178, 195, 197, 205, 207, 211, 215, 228, 238, 244, 248, 252, 263, 276, 281, 290, 298, 302, 313, 322, 334,
-    355, 367, 379, 400, 412, 417, 421, 424, 429, 433, 445, 465, 543, 548, 553, 581, 608, 611, 630, 635, 643, 647, 652, 684,
-    693, 697, 712, 750, 753, 759, 775, 786, 807, 819, 824, 840, 852, 915, 1024, 1141, 1157, 1160, 1190, 1193, 1226, 1289, 1291, 1322,
-    1324, 1338, 1341, 1349, 1357, 1359, 1367, 1372, 1374, 1380, 1390, 1392, 1398, 1400, 1412, 1417, 1429, 1436, 1441, 1445, 1453, 1470, 1474, 1479,
-    1502, 1507, 1511, 1516, 1519, 1522, 1536, 1543, 1548, 1552, 1557, 1568, 1576, 1581, 1585, 1588, 1590, 1593, 1601, 1609, 1614, 1618, 1621, 1634,
-    1642, 1647, 1650, 1653, 1655, 1667, 1670, 1678, 1683, 1686, 1695, 1697, 1703, 1711, 1716, 1719, 1727, 1730, 1733, 1744, 1746, 1749, 1752, 1760,
-    1762, 1779, 1782, 1785, 1790, 1793, 1795, 1798, 1810, 1815
-}
+    while stepValue <= endStep do
+        addPulseStep(stepValue, intensity)
+        stepValue = stepValue + everySteps
+    end
+end
 
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-    addPulseSteps(drumPulseDualSteps, 1.2)
-    addPulseSteps(drumPulseKickSteps, 1.0)
-    addPulseSteps(drumPulseSnareSteps, 0.75)
+    addPulseRange(148, 276, 4, 0.72)
+    addPulseRange(292, 432, 4, 0.95)
+    addPulseRange(436, 604, 4, 1.05)
+    addPulseRange(608, 632, 4, 1.15)
+    addPulseRange(636, 908, 4, 0.98)
+    addPulseRange(968, 1128, 4, 0.82)
+    addPulseRange(1132, 1288, 4, 1.10)
+    addPulseRange(1292, 1468, 4, 0.92)
+    addPulseRange(1488, 1668, 4, 1.08)
+    addPulseRange(1672, 1832, 4, 1.18)
+    addPulseSteps({906, 1136, 1456, 1672, 1828}, 1.28)
 end
 
 local function pulseCamera(stepValue)
@@ -328,14 +322,15 @@ local function clearStaticShaderEffect()
     end
 
 	if spriteExist("jumpscare") then
-		setSpriteAlpha("jumpscare", 0)
-		removeSpriteFromState("jumpscare")
+            setSpriteAlpha("jumpscare", 0)
+            removeSpriteFromState("jumpscare")
 	end
 
     if staticShaderActive then
         setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
     end
 
+    playSoundAt("pop", 750, 2)
     staticShaderCleared = true
 end
 
@@ -1135,38 +1130,35 @@ function onStepHit()
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
-	if not boyfriendGFSwitched and curStep ~= nil and curStep >= 906 then
-            prepareFlyingGfCharacter()
-            recoverPunchCharge()
-            baseFunkroadCameraFocusLerp = 0.18
-	    callEvent("character change", "flying BF sings gf", "boyfriend")
-        if removeLoadedCharacter ~= nil then
-            removeLoadedCharacter(originalBoyfriendCharacter, "boyfriend")
-        end
-        if setHealthIconAnimation ~= nil then
-            setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
-        end
-            phaseTwoFlyingCameraActive = true
-            phaseTwoFlyingCameraStartFocusX = cameraX or baseFunkroadCameraX
-            phaseTwoFlyingCameraStartFocusY = cameraY or baseFunkroadCameraY
-            phaseTwoFlyingCameraStartZoom = getCameraZoom("camGAME") or 1.0
-            phaseTwoFlyingCameraCompleted = false
-            boyfriendGFSwitched = true
-	end
-
-	if noteAbstract == "death" then
-                triggerDeathNotePunch()
-		return
-	end
-
-    if noteAbstract == "regular" and not isSustainNote then
+    if not boyfriendGFSwitched and curStep ~= nil and curStep >= 906 then
+        prepareFlyingGfCharacter()
+        recoverPunchCharge()
+        baseFunkroadCameraFocusLerp = 0.18
+        callEvent("character change", "flying BF sings gf", "boyfriend")
+    if removeLoadedCharacter ~= nil then
+        removeLoadedCharacter(originalBoyfriendCharacter, "boyfriend")
+    end
+    if setHealthIconAnimation ~= nil then
+        setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
+    end
+        phaseTwoFlyingCameraActive = true
+        phaseTwoFlyingCameraStartFocusX = cameraX or baseFunkroadCameraX
+        phaseTwoFlyingCameraStartFocusY = cameraY or baseFunkroadCameraY
+        phaseTwoFlyingCameraStartZoom = getCameraZoom("camGAME") or 1.0
+        phaseTwoFlyingCameraCompleted = false
+        boyfriendGFSwitched = true
     end
 
-	if not secondActive or isSecondPunchLocked() then
-		return
-	end
+    if noteAbstract == "death" then
+            triggerDeathNotePunch()
+            return
+    end
 
-	playSecondAnimation(jtcStrumAnims[noteData + 1])
+    if not secondActive or isSecondPunchLocked() then
+            return
+    end
+
+    playSecondAnimation(jtcStrumAnims[noteData + 1])
 end
 
 function noteMiss(noteData, tag)
