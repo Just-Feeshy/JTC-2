@@ -4091,9 +4091,9 @@ class PlayState extends MusicBeatState
 
 		if(bumpPerBeat > 0 && curBeat >= bumpOffset && (curBeat - bumpOffset) % bumpPerBeat == 0) {
 			if (camZooming && FlxG.camera.zoom < 1.35) {
-				FlxG.camera.zoom += 0.015 * bumpForce;
-				camHUD.zoom += 0.03 * bumpForce;
-				camNOTE.zoom += 0.03 * bumpForce;
+				FlxG.camera.zoom += CAMERA_BUMP_GAME_ZOOM * bumpForce;
+				camHUD.zoom += CAMERA_BUMP_HUD_ZOOM * bumpForce;
+				camNOTE.zoom += CAMERA_BUMP_HUD_ZOOM * bumpForce;
 			}
 
 			if(playLua.hasScript()) {
@@ -4102,8 +4102,8 @@ class PlayState extends MusicBeatState
 		}
 
 		if(!hudIconsStatic) {
-			iconP1.setGraphicSize(Std.int(iconP1.width + 30));
-			iconP2.setGraphicSize(Std.int(iconP2.width + 30));
+			iconP1.setGraphicSize(150 + ICON_BUMP_SIZE, 150 + ICON_BUMP_SIZE);
+			iconP2.setGraphicSize(150 + ICON_BUMP_SIZE, 150 + ICON_BUMP_SIZE);
 			iconP1.updateHitbox();
 			iconP2.updateHitbox();
 		}
