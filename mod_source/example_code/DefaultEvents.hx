@@ -128,8 +128,17 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     Note.AFFECTED_SCROLLSPEED = targetScrollSpeed;
                 }
             case "sicko shake":
-                DefaultHandler.shakeCamTimer = Std.parseInt(eventValue);
-			    DefaultHandler.shakeCamTimerHUD = Std.parseInt(eventValue2);
+                var gameShake:Float = Std.parseFloat(eventValue);
+                var hudShake:Float = Std.parseFloat(eventValue2);
+
+                if(Math.isNaN(gameShake))
+                    gameShake = 0;
+
+                if(Math.isNaN(hudShake))
+                    hudShake = 0;
+
+                DefaultHandler.shakeCamTimer = gameShake;
+			    DefaultHandler.shakeCamTimerHUD = hudShake;
             case "time freeze":
                 if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing) {
                     playState.resyncVocals();

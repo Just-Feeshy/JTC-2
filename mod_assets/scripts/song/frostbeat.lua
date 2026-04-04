@@ -330,7 +330,7 @@ local function clearStaticShaderEffect()
         setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
     end
 
-    playSoundAt("pop", 750, 2)
+    playSoundAt("pop", 600, 2)
     staticShaderCleared = true
 end
 
@@ -650,7 +650,6 @@ local function triggerDeathNotePunch()
 
     punchCount = punchCount + 1
     updatePunchIcon(punchCount)
-	callEvent("sicko shake", 0.5, 1.0)
 	playSound("punch", 2)
 
     if punchCount >= 3 then
