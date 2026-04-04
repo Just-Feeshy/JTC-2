@@ -25,7 +25,7 @@ class Memory extends TextField {
 
         addEventListener(Event.ENTER_FRAME, onEnter);
 
-		width = 260;
+		width = 360;
 		height = 90;
     }
 
