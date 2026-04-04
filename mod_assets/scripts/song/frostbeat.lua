@@ -4,7 +4,6 @@
 local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
 local frost_modchart = {}
 
-local beatSection = 0
 local pulseStepIntensity = {}
 local baseGameZoom = 1
 local staticShaderInitialized = false
@@ -19,9 +18,7 @@ local curAnimName = ""
 local holdTimer = 0
 local multipler = 6.1
 local stunned = false
-local notDancing = false
 
-local phaseTwo = 643
 local daddyIsHere = false
 local daddyTrans = false
 
@@ -194,19 +191,6 @@ local function addPulseSteps(steps, intensity)
 
     for _, stepValue in ipairs(steps) do
         addPulseStep(stepValue, intensity)
-    end
-end
-
-local function addPulseRange(startStep, endStep, everySteps, intensity)
-    if everySteps == nil or everySteps <= 0 then
-        return
-    end
-
-    local stepValue = startStep
-
-    while stepValue <= endStep do
-        addPulseStep(stepValue, intensity)
-        stepValue = stepValue + everySteps
     end
 end
 
@@ -513,7 +497,6 @@ local function resetShaderRuntimeState()
 end
 
 local function init()
-    beatSection = 0
     frost_modchart = {}
     pulseStepIntensity = {}
     baseFunkroadCameraFocusLerp = 0.09
@@ -594,7 +577,7 @@ local function enterPhaseTwo()
     if removeLoadedCharacter ~= nil then
         removeLoadedCharacter(originalDadCharacter, "dad")
     end
-    setSpriteY("dad", 170)
+    setSpriteY("dad", 120)
     setSpriteVisible("frostbiteCAR", false)
     removeSpriteFromState("frostbiteCAR")
     setGameplayCameraZoom(1.0, false, false)
@@ -640,6 +623,20 @@ local function updatePunchIcon(index)
     scaleSprite(iconName, 0.7, 0.7)
 end
 
+local function refreshPunchIcons()
+    for index, iconName in ipairs(punchIconNames) do
+        if iconName ~= nil and spriteExist(iconName) then
+            if index <= punchCount then
+                loadGraphic(iconName, "daddy_fisted")
+            else
+                loadGraphic(iconName, "daddy_fist")
+            end
+
+            scaleSprite(iconName, 0.7, 0.7)
+        end
+    end
+end
+
 local function triggerDeathNotePunch()
     if daddyIsHere then
 		playCharacterAnim("dad", "punch", true)
@@ -663,6 +660,15 @@ local function triggerDeathNotePunch()
     if punchCount >= 3 then
         instaKillPlayer()
     end
+end
+
+local function recoverPunchCharge()
+    if punchCount <= 0 then
+        return
+    end
+
+    punchCount = math.max(punchCount - 1, 0)
+    refreshPunchIcons()
 end
 
 local function getIntroOpponentFaceFocus()
@@ -1130,7 +1136,8 @@ end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
 	if not boyfriendGFSwitched and curStep ~= nil and curStep >= 906 then
-        prepareFlyingGfCharacter()
+            prepareFlyingGfCharacter()
+            recoverPunchCharge()
             baseFunkroadCameraFocusLerp = 0.18
 	    callEvent("character change", "flying BF sings gf", "boyfriend")
         if removeLoadedCharacter ~= nil then
@@ -1139,26 +1146,27 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
         if setHealthIconAnimation ~= nil then
             setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
         end
-		phaseTwoFlyingCameraActive = true
-		phaseTwoFlyingCameraStartFocusX = cameraX or baseFunkroadCameraX
-		phaseTwoFlyingCameraStartFocusY = cameraY or baseFunkroadCameraY
-		phaseTwoFlyingCameraStartZoom = getCameraZoom("camGAME") or 1.0
-		phaseTwoFlyingCameraCompleted = false
-		boyfriendGFSwitched = true
+            phaseTwoFlyingCameraActive = true
+            phaseTwoFlyingCameraStartFocusX = cameraX or baseFunkroadCameraX
+            phaseTwoFlyingCameraStartFocusY = cameraY or baseFunkroadCameraY
+            phaseTwoFlyingCameraStartZoom = getCameraZoom("camGAME") or 1.0
+            phaseTwoFlyingCameraCompleted = false
+            boyfriendGFSwitched = true
 	end
 
 	if noteAbstract == "death" then
-        triggerDeathNotePunch()
+                triggerDeathNotePunch()
 		return
 	end
+
+    if noteAbstract == "regular" and not isSustainNote then
+    end
 
 	if not secondActive or isSecondPunchLocked() then
 		return
 	end
 
 	playSecondAnimation(jtcStrumAnims[noteData + 1])
-
-	notDancing = true
 end
 
 function noteMiss(noteData, tag)
@@ -1167,7 +1175,6 @@ function noteMiss(noteData, tag)
 	end
 
 	playSecondAnimation(jtcStrumAnims[noteData + 1] .. " miss")
-	notDancing = true
 end
 
 function onUpdate(elapsed)
