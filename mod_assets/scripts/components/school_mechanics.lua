@@ -7,10 +7,79 @@ local function activateOpponentAltMode()
 end
 
 local METER_OFFSET = {x = 6, y = -271}
-local HUD_ICON_SIZE_RATIO = 0.07
+local METER_JITTER_DEGREES = 2.25
+local METER_JITTER_SPEED = 18.0
+local HUD_ICON_SIZE_RATIO = 0.06
 local HUD_ICON_Y_OFFSET_BASE = 100
 local HUD_ICON_GAP_RATIO = 0.01
 local HUD_ICON_LEFT_NUDGE_RATIO = 0.006
+local meterNoiseTime = 0
+local meter_angle_offset = 180
+
+local function clamp(value, minValue, maxValue)
+    return math.max(math.min(value, maxValue), minValue)
+end
+
+local function mix(a, b, t)
+    return a + (b - a) * t
+end
+
+local function atan2Degrees(y, x)
+    if math.atan2 ~= nil then
+        return math.deg(math.atan2(y, x))
+    end
+
+    if x == 0 then
+        if y > 0 then
+            return 90
+        elseif y < 0 then
+            return -90
+        else
+            return 0
+        end
+    end
+
+    local angle = math.deg(math.atan(y / x))
+    if x < 0 then
+        angle = angle + 180
+    elseif y < 0 then
+        angle = angle + 360
+    end
+
+    return angle
+end
+
+local function getCenterPoint(name)
+    local point = getSpriteCenterPoint(name)
+
+    if point ~= nil and point.x ~= nil and point.y ~= nil then
+        return point
+    end
+
+    return {
+        x = getMidpointX(name),
+        y = getMidpointY(name)
+    }
+end
+
+local function updateMeterAngle(elapsed)
+    if not spriteExist("schoolMeterHUD") or not spriteExist("iconP1") or not spriteExist("iconP2") then
+        return
+    end
+
+    meterNoiseTime = meterNoiseTime + elapsed * METER_JITTER_SPEED
+
+    local iconP2Center = getCenterPoint("iconP2")
+    local iconP1Center = getCenterPoint("iconP1")
+    local healthLerp = clamp(getHealthNormalized(), 0, 1)
+    local targetLerp = healthLerp
+    local targetAngle = mix(-45, 45, targetLerp)
+    local jitter = (math.sin(meterNoiseTime * 2.1) * 0.55
+        + math.sin(meterNoiseTime * 5.3 + 0.9) * 0.3
+        + math.sin(meterNoiseTime * 9.7 + 2.2) * 0.15) * METER_JITTER_DEGREES
+
+    setOrbitSpriteAngle("schoolMeterHUD", targetAngle + jitter)
+end
 
 local function setHudSpriteVisible(spriteName, visible)
     if spriteExist(spriteName) then
@@ -56,6 +125,11 @@ local function applyHudLayout()
     positionHudIcons()
 end
 
+local function registerMeterOrbit()
+    unregisterOrbitSprite("schoolMeterHUD")
+    registerOrbitSprite("schoolMeterHUD", METER_OFFSET.x, METER_OFFSET.y, 0, 0)
+end
+
 local function buildWeirdMenuHud()
 	createSprite("schoolWeirdMenuHUD")
 	loadGraphic("schoolWeirdMenuHUD", "school_house/menu/weird-menu")
@@ -88,7 +162,6 @@ local function buildMeter()
 	setSpriteSize("schoolMeterHUD", windowWidth, windowHeight)
 	setSpritePosition("schoolMeterHUD", 0, 0)
 	setSpriteToCamera("schoolMeterHUD", "camHUD")
-	addSpriteToStage("schoolMeterHUD")
 
 	if downscroll then
 		spriteFlip("schoolMeterHUD", false, true)
@@ -96,17 +169,19 @@ local function buildMeter()
 end
 
 function school_mechanics.onCreate()
-	opponentStandTransitionActive = false
+    opponentStandTransitionActive = false
 
-	if downscroll then
-		METER_OFFSET.y = METER_OFFSET.y * -1
-	end
+    if downscroll then
+	    METER_OFFSET.y = METER_OFFSET.y * -1
+    end
 
-	buildWeirdMenuHud()
-	buildBar()
-	buildMeter()
+    buildWeirdMenuHud()
+    buildBar()
+    buildMeter()
     applyHudLayout()
-    registerOrbitSprite("schoolMeterHUD", METER_OFFSET.x, METER_OFFSET.y, 1, 0)
+    addSpriteToStage("schoolMeterHUD")
+    registerMeterOrbit()
+    updateMeterAngle(0)
 end
 
 function school_mechanics.onStep(step)
@@ -132,6 +207,8 @@ function school_mechanics.onStep(step)
 end
 
 function school_mechanics.onUpdate(elapsed)
+	updateMeterAngle(elapsed)
+
 	if opponentStandTransitionActive and sprAnimFinished("dad") then
 		opponentStandTransitionActive = false
 		setCharacterSpecialAnim("dad", false)
@@ -140,6 +217,12 @@ function school_mechanics.onUpdate(elapsed)
 		playOpponentIdle()
 		callEvent("time freeze", "0", "1.45")
 	end
+end
+
+function school_mechanics.onResume()
+	applyHudLayout()
+    registerMeterOrbit()
+	updateMeterAngle(0)
 end
 
 return school_mechanics

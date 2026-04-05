@@ -1077,6 +1077,20 @@ class ModLua {
             updateOrbitSprite(name, 0);
         });
 
+        addProtectedLuaCallback("setOrbitSpriteAngle", function(name:String, angleDegrees:Float) {
+            if(luaOrbitSprites == null || !luaOrbitSprites.exists(name)) {
+                return;
+            }
+
+            var orbit = luaOrbitSprites.get(name);
+            if(orbit == null || Math.isNaN(angleDegrees)) {
+                return;
+            }
+
+            orbit.angle = angleDegrees * Math.PI / 180;
+            updateOrbitSprite(name, 0);
+        });
+
         addProtectedLuaCallback("unregisterOrbitSprite", function(name:String) {
             if(luaOrbitSprites.exists(name)) {
                 luaOrbitSprites.remove(name);
@@ -1190,6 +1204,23 @@ class ModLua {
             }
 
             return 0;
+        });
+
+        Lua_helper.add_callback(lua, "getSpriteCenterPoint", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr != null) {
+                var midpoint = spr.getMidpoint();
+                return {
+                    x: midpoint.x,
+                    y: midpoint.y
+                };
+            }
+
+            return {
+                x: 0,
+                y: 0
+            };
         });
 
         Lua_helper.add_callback(lua, "setSpriteClipRect", function(name:String, x:Float = 0, y:Float = 0, ?width:Float, ?height:Float) {

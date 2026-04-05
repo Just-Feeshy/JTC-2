@@ -844,6 +844,17 @@ class PlayLua
 			return true;
 		});
 
+		playState.addCallback("getHealthNormalized", function() {
+			var normalizedHealth:Float = playState.health / 2;
+			if(normalizedHealth < 0) {
+				normalizedHealth = 0;
+			}else if(normalizedHealth > 1) {
+				normalizedHealth = 1;
+			}
+
+			return normalizedHealth;
+		});
+
 		playState.addCallback("getCharacterIsPlayer", function(name:String) {
 			var character:Character = playState.modifiableCharacters.get(name);
 			return character != null ? character.isPlayer : false;
