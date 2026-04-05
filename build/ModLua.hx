@@ -1289,6 +1289,17 @@ class ModLua {
             spr.cameras = [cam];
         });
 
+        Lua_helper.add_callback(lua, "setTextToCamera", function(name:String, camera:String) {
+            var cam:FlxCamera = getCamera(camera);
+            var txt:FlxText = getText(name);
+
+            if(txt == null || cam == null) {
+                return;
+            }
+
+            txt.cameras = [cam];
+        });
+
         Lua_helper.add_callback(lua, "getSpriteIndexFromState", function(name:String) {
 			var spr:FlxSprite = getSprite(name);
 
@@ -1311,6 +1322,18 @@ class ModLua {
             }
         });
 
+        Lua_helper.add_callback(lua, "addTextToState", function(name:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            if(FlxG.state.members.indexOf(txt) < 0) {
+                FlxG.state.add(txt);
+            }
+        });
+
         Lua_helper.add_callback(lua, "insertSpriteToState", function(position:Int, name:String) {
             var spr:FlxSprite = getSprite(name);
 
@@ -1320,6 +1343,18 @@ class ModLua {
 
             if(FlxG.state.members.indexOf(spr) < 0) {
                 FlxG.state.insert(position, spr);
+            }
+        });
+
+        Lua_helper.add_callback(lua, "insertTextToState", function(position:Int, name:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            if(FlxG.state.members.indexOf(txt) < 0) {
+                FlxG.state.insert(position, txt);
             }
         });
 
@@ -1359,6 +1394,26 @@ class ModLua {
             }
 
             txt.text = text;
+        });
+
+        Lua_helper.add_callback(lua, "setTextPosition", function(name:String, x:Float, y:Float) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            txt.setPosition(x, y);
+        });
+
+        Lua_helper.add_callback(lua, "setTextVisible", function(name:String, visible:Bool) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            txt.visible = visible;
         });
 
         Lua_helper.add_callback(lua, "setTextFont", function(name:String, font:String) {
@@ -1422,6 +1477,16 @@ class ModLua {
             }
 
             detachSpriteFromStateContainers(spr);
+        });
+
+        Lua_helper.add_callback(lua, "removeTextFromState", function(name:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            FlxG.state.remove(txt, true);
         });
 
         Lua_helper.add_callback(lua, "doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
@@ -1958,6 +2023,17 @@ class ModLua {
 			}
 
             return confirm;
+        });
+
+        Lua_helper.add_callback(lua, "mouseOverSprite", function(name:String, ?cameraName:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null) {
+                return false;
+            }
+
+            var cam:FlxCamera = cameraName != null ? getCamera(cameraName) : null;
+            return cam != null ? FlxG.mouse.overlaps(spr, cam) : FlxG.mouse.overlaps(spr);
         });
 
         Lua_helper.add_callback(lua, "keyboardJustPressed", function(name:String) {
