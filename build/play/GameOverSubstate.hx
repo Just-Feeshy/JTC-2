@@ -31,6 +31,8 @@ class GameOverSubstate extends MusicBeatSubstate
 {
   public static var instance:Null<GameOverSubstate> = null;
   public static var animationSuffix:String = '';
+  public static var characterName:String = '';
+  public static var deathAnimationName:String = '';
   public static var musicSuffix:String = '';
   public static var blueBallSuffix:String = '';
   static var blueballed:Bool = false;
@@ -59,6 +61,8 @@ class GameOverSubstate extends MusicBeatSubstate
   public static function reset():Void
   {
     animationSuffix = '';
+    characterName = '';
+    deathAnimationName = '';
     musicSuffix = '';
     blueBallSuffix = '';
     blueballed = false;

@@ -1776,7 +1776,7 @@ class PlayState extends MusicBeatState
 		camGame.engineAlpha = modifierCheckList('blind effect') ? 0 : 1;
 
 		var restartCountdownLeadIn:Float = Conductor.instance.beatLengthMs * -5;
-		if(!skipRestartVwoosh) {
+		if(!fromGameOver) {
 			restartCountdownLeadIn -= RESTART_NOTE_INTRO_TIME * 1000;
 		}
 		Conductor.instance.update(startTimestamp + restartCountdownLeadIn);
@@ -1794,7 +1794,7 @@ class PlayState extends MusicBeatState
 			restoreRestartScriptedCameraState(true);
 		}
 
-		if(skipRestartVwoosh) {
+		if(fromGameOver) {
 			restartVwooshActive = false;
 			disableInputs = false;
 			spawnVisibleNotes();
@@ -4245,7 +4245,6 @@ class PlayState extends MusicBeatState
 	public function requestSongRestart():Void {
 		restartRequestedFromGameOver = false;
 		needsReset = true;
-		restartFromGameOver = false;
 		persistentUpdate = true;
 		persistentDraw = true;
 	}
@@ -4281,7 +4280,6 @@ class PlayState extends MusicBeatState
 	public function requestGameOverRestart():Void {
 		restartRequestedFromGameOver = true;
 		needsReset = true;
-		restartFromGameOver = true;
 		persistentUpdate = true;
 		persistentDraw = false;
 		paused = false;

@@ -529,6 +529,12 @@ class ModLua {
 			Paths.image(path, library);
 		});
 
+		Lua_helper.add_callback(lua, "precacheSound", function(path:String, ?library:String) {
+			if(path == null || path.trim() == "") return;
+			if(library == null) library = "shared";
+			Paths.sound(path, library);
+		});
+
 		Lua_helper.add_callback(lua, "precacheAtlas", function(path:String, atlasType:String = "sparrow", ?library:String) {
 			if(path == null || path.trim() == "") return;
 			if(library == null) library = "shared";

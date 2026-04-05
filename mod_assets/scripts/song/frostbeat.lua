@@ -5,6 +5,7 @@ local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
 local frost_modchart = {}
 
 local pulseStepIntensity = {}
+local lastPulseStep = -1
 local baseGameZoom = 1
 local staticShaderInitialized = false
 local staticShaderActive = false
@@ -92,7 +93,7 @@ local introBoyfriendFaceOffsetY = 310
 local introBoyfriendFaceZoom = 2.15
 local introWarmupIndex = 0
 local introBeginStep = 18
-local introWarmupTotalSteps = 12
+local introWarmupTotalSteps = 13
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -228,6 +229,26 @@ local function pulseCamera(stepValue)
     setCameraZoom("camGAME", gameZoom + (BASE_GAME_BUMP * intensity))
     setCameraZoom("camHUD", hudZoom + (BASE_HUD_BUMP * intensity))
     setCameraZoom("camNOTE", noteZoom + (BASE_NOTE_BUMP * intensity))
+end
+
+local function updatePulseCamera()
+    if curStepFloat == nil then
+        return
+    end
+
+    local currentPulseStep = math.floor(curStepFloat)
+
+    if currentPulseStep < 0 or currentPulseStep <= lastPulseStep then
+        return
+    end
+
+    local startPulseStep = math.max(lastPulseStep + 1, 0)
+
+    for pulseStep = startPulseStep, currentPulseStep do
+        pulseCamera(pulseStep)
+    end
+
+    lastPulseStep = currentPulseStep
 end
 
 local function decayCameraZooms(elapsed)
@@ -482,9 +503,14 @@ local function resetShaderRuntimeState()
     staticShaderSoundPlayed = false
 end
 
+local function resetPulseRuntimeState()
+    pulseStepIntensity = {}
+    lastPulseStep = -1
+end
+
 local function init()
     frost_modchart = {}
-    pulseStepIntensity = {}
+    resetPulseRuntimeState()
     baseFunkroadCameraFocusLerp = 0.09
     resetIntroRuntimeState()
     resetPhaseTwoRuntimeState()
@@ -867,6 +893,15 @@ local function updateIntroWarmup()
         updatePhaseTwoPreparation(phaseTwoSecondWarmStep)
     elseif introWarmupIndex == 11 then
         updatePhaseTwoPreparation(phaseTwoSecondPrimeStep)
+    elseif introWarmupIndex == 12 then
+        if precacheImage ~= nil then
+            precacheImage("daddy_fist")
+            precacheImage("daddy_fisted")
+        end
+
+        if precacheSound ~= nil then
+            precacheSound("punch")
+        end
     else
         applyIntroOpponentFaceShot()
     end
@@ -1088,8 +1123,6 @@ end
 function onStepHit()
     jtc_camera.onStepHit(curStep)
 
-    pulseCamera(curStep)
-
     if curStep == 606 then
         daddyTrans = true
     end
@@ -1166,6 +1199,8 @@ function onUpdate(elapsed)
     if not startedCountdown then
         return
     end
+
+    updatePulseCamera()
 
     if curStepFloat ~= nil and curStepFloat >= 630 then
         enterPhaseTwo()

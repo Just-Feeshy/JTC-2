@@ -220,6 +220,5 @@ function onBeatHit()
 end
 
 function onUpdate(elapsed)
-	print("hi")
 	school_mechanics.onUpdate(elapsed)
 end
