@@ -2527,15 +2527,39 @@ class PlayState extends MusicBeatState
 		var noteCacurations:Float = (-0.45 * (downscroll ? -1 : 1))
 			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.instance.trackedSongPosition)
 			* FlxMath.roundDecimal(note.howSpeed, 2);
-		return noteCacurations;
+		var yAddon:Float = 0;
+
+		if(note.height < 50 && note.isSustainNote) {
+			yAddon -= (Note.swagWidth - note.height) * 0.5;
+
+			if(note.downscrollNote) {
+				yAddon -= ((Note.swagWidth - note.height) * 0.5);
+			}else {
+				yAddon += ((Note.swagWidth - note.height) * 0.5);
+				yAddon *= -1;
+			}
+		}
+		return noteCacurations - yAddon;
 	}
 
 	function cutOff(note:Note, downscroll:Bool):Float {
 		var noteCacurations:Float = (-0.45 * (downscroll ? -1 : 1))
 			* PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(note.strumTime), Conductor.instance.trackedSongPosition)
 			* FlxMath.roundDecimal(note.howSpeed, 2);
+		var yAddon:Float = 0;
 
-		return noteCacurations;
+		if(note.height < 50 && note.isSustainNote) {
+			yAddon += (Note.swagWidth - note.height) * 0.5;
+
+			if(note.downscrollNote) {
+				yAddon += ((Note.swagWidth - note.height));
+				yAddon *= -1;
+			}else {
+				yAddon -= ((Note.swagWidth - note.height) * 0.5);
+			}
+		}
+
+		return noteCacurations - yAddon;
 	}
 
 	function addToNoteX(alreadyX:Float, note:Note):Float {
