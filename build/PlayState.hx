@@ -525,7 +525,7 @@ class PlayState extends MusicBeatState
 		
 		// Updating Discord Rich Presence.
 		#if windows
-		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
+		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
 		#end
 
 		if(SONG.stage == null)
@@ -1610,7 +1610,6 @@ class PlayState extends MusicBeatState
 	function restartSongInPlace():Void {
 		var fromGameOver:Bool = restartRequestedFromGameOver;
 		restartRequestedFromGameOver = false;
-
 		needsReset = false;
 
 		persistentUpdate = true;
@@ -1771,7 +1770,11 @@ class PlayState extends MusicBeatState
 		camNOTE.zoom = 1;
 		camGame.engineAlpha = modifierCheckList('blind effect') ? 0 : 1;
 
-		Conductor.instance.update(startTimestamp - (RESTART_NOTE_INTRO_TIME * 1000) + (Conductor.instance.beatLengthMs * -5));
+		var restartCountdownLeadIn:Float = Conductor.instance.beatLengthMs * -5;
+		if(!skipRestartVwoosh) {
+			restartCountdownLeadIn -= RESTART_NOTE_INTRO_TIME * 1000;
+		}
+		Conductor.instance.update(startTimestamp + restartCountdownLeadIn);
 		lastTrackedSongPos = Conductor.instance.trackedSongPosition;
 		syncMusicBeatState(Conductor.instance.trackedSongPosition);
 
@@ -1786,16 +1789,23 @@ class PlayState extends MusicBeatState
 			restoreRestartScriptedCameraState(true);
 		}
 
-		restartVwooshActive = true;
-		disableInputs = true;
-		restartIntroTimer = new FlxTimer().start(RESTART_NOTE_INTRO_TIME, function(_) {
-			restartIntroTimer = null;
+		if(skipRestartVwoosh) {
 			restartVwooshActive = false;
-			spawnVisibleNotes();
-			vwooshNotesIn();
 			disableInputs = false;
+			spawnVisibleNotes();
 			beginCountdownSequence(false);
-		});
+		}else {
+			restartVwooshActive = true;
+			disableInputs = true;
+			restartIntroTimer = new FlxTimer().start(RESTART_NOTE_INTRO_TIME, function(_) {
+				restartIntroTimer = null;
+				restartVwooshActive = false;
+				spawnVisibleNotes();
+				vwooshNotesIn();
+				disableInputs = false;
+				beginCountdownSequence(false);
+			});
+		}
 	}
 
 	var previousFrameTime:Int = 0;
@@ -2414,11 +2424,11 @@ class PlayState extends MusicBeatState
 			{
 				songLength = FlxG.sound.music.length;
 
-				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, - songLength);
+				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC, true, - songLength);
 			}
 			else
 			{
-				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
+				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
 			}
 			#end
 		}
@@ -2431,11 +2441,11 @@ class PlayState extends MusicBeatState
 		{
 			if (Conductor.instance.trackedSongPosition > 0.0)
 			{
-				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC, true, songLength - Conductor.instance.trackedSongPosition);
+				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC, true, songLength - Conductor.instance.trackedSongPosition);
 			}
 			else
 			{
-				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
+				DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
 			}
 		}
 		#end
@@ -2448,7 +2458,7 @@ class PlayState extends MusicBeatState
 		#if windows
 		if (health > 0 && !paused)
 		{
-			DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")\n Acc: " + accTotal + "%", iconRPC);
+			DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
 		}
 		#end
 
@@ -2562,7 +2572,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(FlxG.save.data.showstuff) {
-			counterTxt.text = 'Accuracy: ' + accTotal + '%' + '       ' + 'Miss Clicks: ' + missClicks + '       ' + 'Misses: ' + misses + '       ' + 'Score: ' + songScore;
+			counterTxt.text = 'Misses: ' + misses + '       ' + 'Score: ' + songScore;
 			counterTxt.screenCenter(X);
 		}else
 			counterTxt.text = "Score: " + songScore;
@@ -4230,6 +4240,7 @@ class PlayState extends MusicBeatState
 	public function requestSongRestart():Void {
 		restartRequestedFromGameOver = false;
 		needsReset = true;
+		restartFromGameOver = false;
 		persistentUpdate = true;
 		persistentDraw = true;
 	}
@@ -4265,6 +4276,7 @@ class PlayState extends MusicBeatState
 	public function requestGameOverRestart():Void {
 		restartRequestedFromGameOver = true;
 		needsReset = true;
+		restartFromGameOver = true;
 		persistentUpdate = true;
 		persistentDraw = false;
 		paused = false;

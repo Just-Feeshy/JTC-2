@@ -1312,6 +1312,15 @@ class PlayLua
 
 		set('cameraX', playState.camFollow.x);
 		set('cameraY', playState.camFollow.y);
+		set("health", playState.health);
+
+		var normalizedHealth:Float = playState.health / 2;
+		if(normalizedHealth < 0) {
+			normalizedHealth = 0;
+		}else if(normalizedHealth > 1) {
+			normalizedHealth = 1;
+		}
+		set("healthNormalized", normalizedHealth);
 
 		set("score", playState.songScore);
 		set("misses", playState.misses);
