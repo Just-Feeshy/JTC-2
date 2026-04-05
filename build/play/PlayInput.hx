@@ -28,7 +28,7 @@ class PlayInput
 
 	public function controllerInput():Void
 	{
-		if(playState.modifierCheckList('bot mode')) {
+		if(playState.startingSong || playState.modifierCheckList('bot mode')) {
 			return;
 		}
 
@@ -53,7 +53,7 @@ class PlayInput
 
 	public function getReleased(event:Event):Void
 	{
-		if(playState.paused || playState.inCutscene || playState.modifierCheckList('bot mode'))
+		if(playState.paused || playState.inCutscene || playState.startingSong || playState.modifierCheckList('bot mode'))
 			return;
 
 		var getEvent:KeyboardEvent = cast event;
@@ -78,7 +78,7 @@ class PlayInput
 
 	public function defaultGameStuff():Void
 	{
-		if(playState.paused || playState.inCutscene)
+		if(playState.paused || playState.inCutscene || playState.startingSong)
 			return;
 
 		var botMode:Bool = playState.modifierCheckList('bot mode');
@@ -98,7 +98,7 @@ class PlayInput
 
 	public function getPressed(event:Event):Void
 	{
-		if(playState.paused || playState.inCutscene || playState.disableInputs || playState.modifierCheckList('bot mode')) {
+		if(playState.paused || playState.inCutscene || playState.startingSong || playState.disableInputs || playState.modifierCheckList('bot mode')) {
 			return;
 		}
 
@@ -270,6 +270,11 @@ class PlayInput
 
 	function processInputQueue(controlHoldArray:Array<Bool>):Void
 	{
+		if(playState.startingSong) {
+			playState.inputQueue = [];
+			return;
+		}
+
 		if(playState.inputQueue.length == 0) {
 			return;
 		}

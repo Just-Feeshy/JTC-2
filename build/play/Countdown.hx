@@ -76,11 +76,6 @@ class Countdown
 			if(countdownStep == AFTER)
 			{
 				stopCountdown();
-
-				if(!stepCancelled && activePlayState.startingSong && !activePlayState.inCutscene && !activePlayState.talking)
-				{
-					activePlayState.startSong();
-				}
 			}
 		}, 5);
 
@@ -140,12 +135,6 @@ class Countdown
 			{
 				playState.startTimer = null;
 			}
-
-			playState.isInCountdown = false;
-			if(playState.playLua != null && playState.playLua.hasScript())
-			{
-				playState.playLua.set("isInCountdown", false);
-			}
 		}
 	}
 
@@ -163,11 +152,6 @@ class Countdown
 		playState.syncMusicBeatState(Conductor.instance.trackedSongPosition);
 		playState.updateLuaVars();
 		playState.updatePerSectionLuaVars();
-
-		if(playState.startingSong && !playState.inCutscene && !playState.talking)
-		{
-			playState.startSong();
-		}
 	}
 
 	public static function resetCountdown():Void

@@ -828,6 +828,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function resetHeldLaneKeys():Void {
+		inputQueue = [];
 		heldLaneKeys = [];
 
 		var index:Int = 0;
@@ -1217,6 +1218,7 @@ class PlayState extends MusicBeatState
 	function clearGeneratedSongState():Void {
 		Countdown.stopCountdown();
 		Countdown.reset();
+		isInCountdown = false;
 		restartVwooshActive = false;
 
 		if(restartIntroTimer != null) {
@@ -1620,6 +1622,7 @@ class PlayState extends MusicBeatState
 		talking = false;
 		startingSong = true;
 		startedCountdown = false;
+		isInCountdown = false;
 		startTimestamp = 0;
 		waitForFinishPlayer = false;
 		waitForFinishOpponent = false;
@@ -1708,6 +1711,7 @@ class PlayState extends MusicBeatState
 
 		Countdown.stopCountdown();
 		Countdown.reset();
+		isInCountdown = false;
 
 		if(restartIntroTimer != null) {
 			restartIntroTimer.cancel();
@@ -2887,7 +2891,7 @@ class PlayState extends MusicBeatState
 					opponentNoteHit(daNote);
 				}
 
-				if(botMode && shouldBotplayHitPlayerNote(daNote)) {
+				if(!startingSong && botMode && shouldBotplayHitPlayerNote(daNote)) {
 					goodNoteHit(daNote, daNote.getNoteTime());
 				}
 
@@ -2956,7 +2960,7 @@ class PlayState extends MusicBeatState
 					daNote.cameras = [camNOTE];
 				}
 
-				var detector:Bool = Conductor.instance.trackedSongPosition > DefaultHandler.getNoteTime(daNote.strumTime) + 260;
+				var detector:Bool = !startingSong && Conductor.instance.trackedSongPosition > DefaultHandler.getNoteTime(daNote.strumTime) + 260;
 
 				if (detector) {
 					if (daNote.isSustainNote && daNote.wasGoodHit) {
@@ -4328,6 +4332,7 @@ class PlayState extends MusicBeatState
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, getReleased);
 
 		Countdown.stopCountdown();
+		isInCountdown = false;
 		clearRestartVwooshNotes();
 		if(instance == this) {
 			instance = null;
