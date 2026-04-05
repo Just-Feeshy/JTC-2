@@ -10,9 +10,9 @@ local METER_OFFSET = {x = 6, y = -271}
 local METER_JITTER_DEGREES = 2.25
 local METER_JITTER_SPEED = 18.0
 local HUD_ICON_SIZE_RATIO = 0.06
-local HUD_ICON_Y_OFFSET_BASE = 100
+local HUD_ICON_Y_OFFSET_BASE = 97
 local HUD_ICON_GAP_RATIO = 0.01
-local HUD_ICON_LEFT_NUDGE_RATIO = 0.006
+local HUD_ICON_LEFT_NUDGE_RATIO = 0.012
 local meterNoiseTime = 0
 
 local function clamp(value, minValue, maxValue)
@@ -90,10 +90,57 @@ local function applyHudLayout()
     positionHudIcons()
 end
 
+local function getFirstHudIconIndex()
+    local iconP1Index = getSpriteIndexFromState("iconP1")
+    local iconP2Index = getSpriteIndexFromState("iconP2")
+
+    if iconP1Index < 0 then
+        return iconP2Index
+    end
+
+    if iconP2Index < 0 then
+        return iconP1Index
+    end
+
+    if iconP1Index < iconP2Index then
+        return iconP1Index
+    end
+
+    return iconP2Index
+end
+
+local function getLastHudIconIndex()
+    local iconP1Index = getSpriteIndexFromState("iconP1")
+    local iconP2Index = getSpriteIndexFromState("iconP2")
+
+    if iconP1Index > iconP2Index then
+        return iconP1Index
+    end
+
+    return iconP2Index
+end
+
 local function ensureHudSpritesAttached()
-    addSpriteToState("schoolWeirdMenuHUD")
-    addSpriteToState("schoolBarHUD")
-    addSpriteToState("schoolMeterHUD")
+    local firstIconIndex = getFirstHudIconIndex()
+    local lastIconIndex = getLastHudIconIndex()
+
+    removeSpriteFromState("schoolWeirdMenuHUD")
+    removeSpriteFromState("schoolBarHUD")
+    removeSpriteFromState("schoolMeterHUD")
+
+    if firstIconIndex >= 0 then
+        insertSpriteToState(firstIconIndex, "schoolWeirdMenuHUD")
+        insertSpriteToState(firstIconIndex + 1, "schoolBarHUD")
+    else
+        addSpriteToState("schoolWeirdMenuHUD")
+        addSpriteToState("schoolBarHUD")
+    end
+
+    if lastIconIndex >= 0 then
+        insertSpriteToState(lastIconIndex + 1, "schoolMeterHUD")
+    else
+        addSpriteToState("schoolMeterHUD")
+    end
 end
 
 local function buildWeirdMenuHud()
@@ -145,7 +192,7 @@ function school_mechanics.onCreate()
     buildBar()
     buildMeter()
     applyHudLayout()
-    addSpriteToState("schoolMeterHUD")
+    ensureHudSpritesAttached()
     updateMeterAngle(0)
 end
 
@@ -172,22 +219,16 @@ function school_mechanics.onStep(step)
 end
 
 function school_mechanics.onUpdate(elapsed)
-	updateMeterAngle(elapsed)
+    updateMeterAngle(elapsed)
 
-	if opponentStandTransitionActive and sprAnimFinished("dad") then
-		opponentStandTransitionActive = false
-		setCharacterSpecialAnim("dad", false)
-		setCharacterCustomAnimation("dad", false)
-		activateOpponentAltMode()
-		playOpponentIdle()
-		callEvent("time freeze", "0", "1.45")
-	end
-end
-
-function school_mechanics.onResume()
-    ensureHudSpritesAttached()
-	applyHudLayout()
-	updateMeterAngle(0)
+    if opponentStandTransitionActive and sprAnimFinished("dad") then
+	opponentStandTransitionActive = false
+	setCharacterSpecialAnim("dad", false)
+	setCharacterCustomAnimation("dad", false)
+	activateOpponentAltMode()
+	playOpponentIdle()
+	callEvent("time freeze", "0", "1.45")
+    end
 end
 
 return school_mechanics

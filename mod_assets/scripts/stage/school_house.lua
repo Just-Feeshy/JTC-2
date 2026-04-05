@@ -223,15 +223,3 @@ function onUpdate(elapsed)
 	print("hi")
 	school_mechanics.onUpdate(elapsed)
 end
-
-function onResume()
-    if school_mechanics.onResume ~= nil then
-        school_mechanics.onResume()
-    end
-end
-
-function onPause()
-    if school_mechanics.onPause ~= nil then
-        school_mechanics.onPause()
-    end
-end
