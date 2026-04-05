@@ -28,8 +28,6 @@ local function updateMeterAngle(elapsed)
         return
     end
 
-    print(getHealthNormalized())
-
     meterNoiseTime = meterNoiseTime + elapsed * METER_JITTER_SPEED
     local healthLerp = clamp(getHealthNormalized(), 0, 1)
     local targetLerp = healthLerp
@@ -38,7 +36,14 @@ local function updateMeterAngle(elapsed)
         + math.sin(meterNoiseTime * 5.3 + 0.9) * 0.3
         + math.sin(meterNoiseTime * 9.7 + 2.2) * 0.15) * METER_JITTER_DEGREES
 
-    setOrbitSpriteAngle("schoolMeterHUD", targetAngle + jitter)
+    local finalAngle = targetAngle + jitter
+    local radians = math.rad(finalAngle)
+    local cosine = math.cos(radians)
+    local sine = math.sin(radians)
+    local meterX = (cosine * METER_OFFSET.x - sine * METER_OFFSET.y) - METER_OFFSET.x
+    local meterY = (sine * METER_OFFSET.x + cosine * METER_OFFSET.y) - METER_OFFSET.y
+
+    setSpriteTransform("schoolMeterHUD", meterX, meterY, finalAngle)
 end
 
 local function setHudSpriteVisible(spriteName, visible)
@@ -85,9 +90,10 @@ local function applyHudLayout()
     positionHudIcons()
 end
 
-local function registerMeterOrbit()
-    unregisterOrbitSprite("schoolMeterHUD")
-    registerOrbitSprite("schoolMeterHUD", METER_OFFSET.x, METER_OFFSET.y, 0, 0)
+local function ensureHudSpritesAttached()
+    addSpriteToState("schoolWeirdMenuHUD")
+    addSpriteToState("schoolBarHUD")
+    addSpriteToState("schoolMeterHUD")
 end
 
 local function buildWeirdMenuHud()
@@ -96,7 +102,7 @@ local function buildWeirdMenuHud()
 	setSpriteSize("schoolWeirdMenuHUD", windowWidth, windowHeight)
 	setSpritePosition("schoolWeirdMenuHUD", 0, 0)
 	setSpriteToCamera("schoolWeirdMenuHUD", "camHUD")
-	addSpriteToStage("schoolWeirdMenuHUD")
+	addSpriteToState("schoolWeirdMenuHUD")
 
 	if downscroll then
 		spriteFlip("schoolWeirdMenuHUD", false, true)
@@ -109,7 +115,7 @@ local function buildBar()
 	setSpriteSize("schoolBarHUD", windowWidth, windowHeight)
 	setSpritePosition("schoolBarHUD", 0, 0)
 	setSpriteToCamera("schoolBarHUD", "camHUD")
-	addSpriteToStage("schoolBarHUD")
+	addSpriteToState("schoolBarHUD")
 
 	if downscroll then
 		spriteFlip("schoolBarHUD", false, true)
@@ -139,8 +145,7 @@ function school_mechanics.onCreate()
     buildBar()
     buildMeter()
     applyHudLayout()
-    addSpriteToStage("schoolMeterHUD")
-    registerMeterOrbit()
+    addSpriteToState("schoolMeterHUD")
     updateMeterAngle(0)
 end
 
@@ -180,8 +185,8 @@ function school_mechanics.onUpdate(elapsed)
 end
 
 function school_mechanics.onResume()
+    ensureHudSpritesAttached()
 	applyHudLayout()
-    registerMeterOrbit()
 	updateMeterAngle(0)
 end
 
