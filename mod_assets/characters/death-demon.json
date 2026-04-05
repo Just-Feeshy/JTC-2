@@ -1,7 +1,17 @@
 {
 	"animations": {
-		"deathConfirm": {
+		"deathLoop": {
 			"prefix": "deathLoopDad",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				4,
+				0
+			],
+			"looped": true
+		},
+		"deathConfirm": {
+			"prefix": "deathConfirmDad",
 			"name": "",
 			"framerate": 24,
 			"offset": [

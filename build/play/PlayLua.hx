@@ -349,6 +349,37 @@ class PlayLua
 			playState.gameOverScreen();
 		});
 
+		playState.addCallback("setGameOverAnimationSuffix", function(suffix:String = "") {
+			GameOverSubstate.animationSuffix = suffix != null ? suffix : "";
+		});
+
+		playState.addCallback("setGameOverCharacter", function(character:String = "", animation:String = "") {
+			GameOverSubstate.characterName = character != null ? character.trim() : "";
+			GameOverSubstate.deathAnimationName = animation != null ? animation.trim() : "";
+		});
+
+		playState.addCallback("setGameOverDeathAnimation", function(animation:String = "") {
+			GameOverSubstate.deathAnimationName = animation != null ? animation.trim() : "";
+		});
+
+		playState.addCallback("setGameOverMusicSuffix", function(suffix:String = "") {
+			GameOverSubstate.musicSuffix = suffix != null ? suffix : "";
+		});
+
+		playState.addCallback("setGameOverBlueBallSuffix", function(suffix:String = "") {
+			GameOverSubstate.blueBallSuffix = suffix != null ? suffix : "";
+		});
+
+		playState.addCallback("setGameOverSuffixes", function(animation:String = "", music:String = "", blueBall:String = "") {
+			GameOverSubstate.animationSuffix = animation != null ? animation : "";
+			GameOverSubstate.musicSuffix = music != null ? music : "";
+			GameOverSubstate.blueBallSuffix = blueBall != null ? blueBall : "";
+		});
+
+		playState.addCallback("resetGameOverConfig", function() {
+			GameOverSubstate.reset();
+		});
+
 		playState.addCallback("createCharacterSprite", function(name:String, characterName:String, x:Float, y:Float, isPlayer:Bool = false) {
 			if(playState.modifiableCharacters.exists(name))
 				return;

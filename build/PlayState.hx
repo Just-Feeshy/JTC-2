@@ -726,6 +726,7 @@ class PlayState extends MusicBeatState
 		healthBar.createFilledBar(opponentIconColor, playerIconColor);
 
 		createScene();
+		GameOverSubstate.reset();
 
 		getLuaScript();
 
