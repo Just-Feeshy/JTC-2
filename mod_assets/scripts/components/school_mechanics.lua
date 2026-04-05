@@ -4,7 +4,6 @@ local opponentStandTransitionActive = false
 local function activateOpponentAltMode()
 	setOpponentAltAnim("-alt")
 	setCharacterIdleSuffix("dad", "-alt")
-	playOpponentIdle()
 end
 
 local METER_OFFSET = {x = 6, y = -271}
@@ -98,7 +97,6 @@ end
 
 function school_mechanics.onCreate()
 	opponentStandTransitionActive = false
-	opponentStandTransitionFinished = false
 
 	if downscroll then
 		METER_OFFSET.y = METER_OFFSET.y * -1
@@ -116,8 +114,10 @@ function school_mechanics.onStep(step)
 		callEvent("jumpspeed", "0.75", "67")
 	end
 	if step == 632 then
-		callEvent("time freeze", "1", "1.75")
-		playAnimRaw("dad", "stand")
+		callEvent("time freeze", "1", "1.45")
+		playAnim("dad", "stand", true)
+		setCharacterCustomAnimation("dad", true)
+		setCharacterSpecialAnim("dad", true)
 		opponentStandTransitionActive = true
 	end
 	if step == 764 then
@@ -134,8 +134,11 @@ end
 function school_mechanics.onUpdate(elapsed)
 	if opponentStandTransitionActive and sprAnimFinished("dad") then
 		opponentStandTransitionActive = false
+		setCharacterSpecialAnim("dad", false)
+		setCharacterCustomAnimation("dad", false)
 		activateOpponentAltMode()
-		callEvent("time freeze", "0", "1.75")
+		playOpponentIdle()
+		callEvent("time freeze", "0", "1.45")
 	end
 end
 

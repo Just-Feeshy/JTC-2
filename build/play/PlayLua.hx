@@ -776,6 +776,69 @@ class PlayLua
 			return true;
 		});
 
+		playState.addCallback("setCharacterShouldPlayDance", function(name:String, enabled:Bool = true) {
+			var character:Character = null;
+
+			switch(name != null ? name.toLowerCase().trim() : "") {
+				case "dad", "opponent":
+					character = playState.dad;
+				case "boyfriend", "bf", "player":
+					character = playState.boyfriend;
+				case "gf", "girlfriend":
+					character = playState.gf;
+				default:
+					character = playState.modifiableCharacters.get(name);
+			}
+
+			if(character == null)
+				return false;
+
+			character.shouldPlayDance = enabled;
+			return true;
+		});
+
+		playState.addCallback("setCharacterSpecialAnim", function(name:String, enabled:Bool = true) {
+			var character:Character = null;
+
+			switch(name != null ? name.toLowerCase().trim() : "") {
+				case "dad", "opponent":
+					character = playState.dad;
+				case "boyfriend", "bf", "player":
+					character = playState.boyfriend;
+				case "gf", "girlfriend":
+					character = playState.gf;
+				default:
+					character = playState.modifiableCharacters.get(name);
+			}
+
+			if(character == null)
+				return false;
+
+			character.specialAnim = enabled;
+			return true;
+		});
+
+		playState.addCallback("setCharacterCustomAnimation", function(name:String, enabled:Bool = true) {
+			var character:Character = null;
+
+			switch(name != null ? name.toLowerCase().trim() : "") {
+				case "dad", "opponent":
+					character = playState.dad;
+				case "boyfriend", "bf", "player":
+					character = playState.boyfriend;
+				case "gf", "girlfriend":
+					character = playState.gf;
+				default:
+					character = playState.modifiableCharacters.get(name);
+			}
+
+			if(character == null)
+				return false;
+
+			character.customAnimation = enabled;
+			return true;
+		});
+
 		playState.addCallback("playOpponentIdle", function() {
 			playState.playOpponentIdle();
 			return true;

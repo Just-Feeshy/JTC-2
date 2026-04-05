@@ -393,6 +393,14 @@ class Character extends feshixl.FeshSprite {
 		var currentAnimation:String = getAnimName();
 
 		if(currentAnimation != "") {
+			if(specialAnim && isAnimationFinished()) {
+				if(!customAnimation) {
+					specialAnim = false;
+					dance();
+					currentAnimation = getAnimName();
+				}
+			}
+
 			if(isAnimationFinished()
 				&& !currentAnimation.endsWith(Constants.ANIMATION_HOLD_SUFFIX)
 				&& hasAnimation(currentAnimation + Constants.ANIMATION_HOLD_SUFFIX)) {
@@ -479,6 +487,10 @@ class Character extends feshixl.FeshSprite {
 		if (!debugMode)
 		{
 			if(!force) {
+				if(specialAnim) {
+					return;
+				}
+
 				if(isSinging()) {
 					return;
 				}

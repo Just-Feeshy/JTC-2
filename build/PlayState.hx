@@ -3010,7 +3010,7 @@ class PlayState extends MusicBeatState
 				altAnim = '-alt';
 		}
 
-		if(note.playAnyAnimation) {
+		if(note.playAnyAnimation && !currentOpponent.specialAnim && !currentOpponent.customAnimation) {
 			currentOpponent.onNoteHit(Std.int(Math.abs(note.noteData)), altAnim);
 		}
 
@@ -3049,6 +3049,10 @@ class PlayState extends MusicBeatState
 	public function playOpponentIdle():Void
 	{
 		if(dad == null) {
+			return;
+		}
+
+		if(dad.specialAnim || dad.customAnimation) {
 			return;
 		}
 
