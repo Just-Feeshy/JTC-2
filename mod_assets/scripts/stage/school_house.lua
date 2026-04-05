@@ -205,13 +205,6 @@ function generatedStage()
     addSpriteToStage("schoolVignette")
 end
 
-function onCreatePost()
-    if spriteExist("gf") then
-        setSpritePosition("gf", -9999, -9999)
-        scaleSprite("gf", 0, 0)
-    end
-end
-
 function onStepHit()
 	school_mechanics.onStep(curStep)
 end

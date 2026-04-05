@@ -16,10 +16,17 @@ using StringTools;
 class PlayAudio
 {
 	private var playState:PlayState;
+	private var freezePausedAudio:Bool = false;
+	private var currentPlaybackRate:Float = 1;
 
 	public function new(playState:PlayState)
 	{
 		this.playState = playState;
+	}
+
+	public inline function isTimeFreezeAudioPaused():Bool
+	{
+		return freezePausedAudio;
 	}
 
 	public function parseSongTrackSide(side:String):String
@@ -181,6 +188,7 @@ class PlayAudio
 		playState.syncedSongTrackMap = new Map<String, SongTrackInfo>();
 		playState.vocals = new FlxSound();
 		playState.opponentVocals = null;
+		freezePausedAudio = false;
 	}
 
 	public function playSongTrack(track:SongTrackInfo, ?startTime:Null<Float>):Void
@@ -329,6 +337,11 @@ class PlayAudio
 	{
 		var boundedRate:Float = Math.min(1, Math.max(0.0001, rate));
 
+		if(Math.abs(currentPlaybackRate - boundedRate) < 0.0005)
+			return;
+
+		currentPlaybackRate = boundedRate;
+
 		if (FlxG.sound.music != null)
 			setSoundPlaybackRate(FlxG.sound.music, boundedRate);
 
@@ -337,6 +350,59 @@ class PlayAudio
 			if (track.sound != null)
 				setSoundPlaybackRate(track.sound, boundedRate);
 		}
+	}
+
+	private function resumeAudioFromTimeFreeze():Void
+	{
+		var resumeTime:Float = Math.max(0, Conductor.instance.trackedSongPosition - Conductor.instance.combinedOffset);
+
+		if(FlxG.sound.music == null)
+		{
+			startInstrumentTrack(resumeTime);
+		}
+		else if(FlxG.sound.music.length <= 0)
+		{
+			startInstrumentTrack(resumeTime);
+		}
+		else
+		{
+			FlxG.sound.music.time = resumeTime;
+			FlxG.sound.music.play();
+		}
+
+		if(PlayState.muteInst && FlxG.sound.music != null)
+			FlxG.sound.music.volume = 0;
+
+		if(FlxG.sound.music != null) {
+			setSongPosition(FlxG.sound.music.time);
+			setVocalsTime(FlxG.sound.music.time);
+			playVocals(FlxG.sound.music.time);
+		}
+
+		freezePausedAudio = false;
+	}
+
+	public function applyTimeFreezeValue(previousFreeze:Float, nextFreeze:Float):Void
+	{
+		if(nextFreeze >= 1)
+		{
+			if(!freezePausedAudio)
+			{
+				if (FlxG.sound.music != null)
+					FlxG.sound.music.pause();
+
+				pauseVocals();
+				freezePausedAudio = true;
+			}
+
+			currentPlaybackRate = playState.getTimeFreezePlaybackRate(nextFreeze);
+			return;
+		}
+
+		if(freezePausedAudio)
+			resumeAudioFromTimeFreeze();
+
+		setSongPlaybackRate(playState.getTimeFreezePlaybackRate(nextFreeze));
 	}
 
 	inline function isSongAudioBlocked():Bool
@@ -360,6 +426,8 @@ class PlayAudio
 		FlxG.sound.music.volume = PlayState.muteInst ? 0 : 1;
 		FlxG.sound.music.play(false, startTime == null ? 0 : startTime);
 		setSoundPlaybackRate(FlxG.sound.music, playState.getTimeFreezePlaybackRate());
+		currentPlaybackRate = playState.getTimeFreezePlaybackRate();
+		freezePausedAudio = false;
 		FlxG.sound.music.onComplete = playState.whenSongFinished.bind();
 	}
 
@@ -406,6 +474,7 @@ class PlayAudio
 			pauseVocals();
 		}
 
+		freezePausedAudio = false;
 		Countdown.pauseCountdown();
 	}
 
@@ -443,6 +512,7 @@ class PlayAudio
 		setVocalsTime(FlxG.sound.music.time);
 		playVocals(FlxG.sound.music.time);
 		setSongPlaybackRate(playState.getTimeFreezePlaybackRate());
+		freezePausedAudio = false;
 	}
 
 	public function setSongPosition(time:Float):Void

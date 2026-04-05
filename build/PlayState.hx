@@ -1590,7 +1590,13 @@ class PlayState extends MusicBeatState
 	}
 
 	function updateGameplayConductor(elapsed:Float):Void {
-		if(paused || FlxG.sound.music == null || !FlxG.sound.music.playing) {
+		if(paused || FlxG.sound.music == null) {
+			return;
+		}
+
+		var allowFreezeDrivenUpdate:Bool = timeFreeze > 0 && playAudio != null && playAudio.isTimeFreezeAudioPaused();
+
+		if(!FlxG.sound.music.playing && !allowFreezeDrivenUpdate) {
 			return;
 		}
 
@@ -2488,8 +2494,9 @@ class PlayState extends MusicBeatState
 	}
 
 	public function setTimeFreezeValue(value:Float):Void {
+		var previousFreeze:Float = timeFreeze;
 		timeFreeze = FlxMath.bound(value, 0, 1);
-		playAudio.setSongPlaybackRate(getTimeFreezePlaybackRate(timeFreeze));
+		playAudio.applyTimeFreezeValue(previousFreeze, timeFreeze);
 	}
 
 	function longConditionForNote(daNote:Note, center:Float):Bool {

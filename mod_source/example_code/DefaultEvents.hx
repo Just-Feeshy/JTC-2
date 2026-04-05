@@ -153,22 +153,11 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 
                 targetFreeze = FlxMath.bound(targetFreeze, 0, 1);
                 var durationSeconds:Float = (Conductor.instance.beatLengthMs / 500) * durationBeats;
-                var songIsPlaying:Bool = FlxG.sound.music != null && FlxG.sound.music.playing;
-
-                if(targetFreeze < 1 && !songIsPlaying) {
-                    playState.resyncVocals(true);
-                    playState.setTimeFreezeValue(playState.timeFreeze);
-                }
 
                 cancelTween(eventName);
 
                 if(durationSeconds <= 0) {
                     playState.setTimeFreezeValue(targetFreeze);
-
-                    if(targetFreeze >= 1) {
-                        playState.pauseMusic();
-                    }
-
                     return;
                 }
 
@@ -176,11 +165,6 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                     ease: FlxEase.sineInOut,
                     onComplete: function(tween:FlxTween) {
                         playState.setTimeFreezeValue(targetFreeze);
-
-                        if(targetFreeze >= 1) {
-                            playState.pauseMusic();
-                        }
-
                         cancelTween(eventName);
                     }
                 }, function(value:Float) {
