@@ -1,6 +1,6 @@
 package;
 
-#if windows
+#if false
 import Discord.DiscordClient;
 #end
 import Section.SwagSection;
@@ -524,7 +524,7 @@ class PlayState extends MusicBeatState
 		detailsPausedText = "Paused - " + detailsText;
 		
 		// Updating Discord Rich Presence.
-		#if windows
+		#if false
 		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
 		#end
 
@@ -2430,7 +2430,7 @@ class PlayState extends MusicBeatState
 
 			dispatchEvent(new PlayScriptEvent(PlayScriptEvent.RESUME));
 
-			#if windows
+			#if false
 			if (startTimer != null && startTimer.finished)
 			{
 				songLength = FlxG.sound.music.length;
@@ -2452,7 +2452,7 @@ class PlayState extends MusicBeatState
 			Countdown.resumeCountdown();
 		}
 
-		#if windows
+		#if false
 		if (health > 0 && !paused)
 		{
 			if (Conductor.instance.trackedSongPosition > 0.0)
@@ -2476,7 +2476,7 @@ class PlayState extends MusicBeatState
 			Countdown.pauseCountdown();
 		}
 
-		#if windows
+		#if false
 		if (health > 0 && !paused)
 		{
 			DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")", iconRPC);
@@ -2650,7 +2650,7 @@ class PlayState extends MusicBeatState
 
 			FlxG.switchState(new ChartingState());
 
-			#if windows
+			#if false
 			DiscordClient.changePresence("Chart Editor", null, null, true);
 			#end
 		}

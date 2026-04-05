@@ -234,6 +234,10 @@ class StoryMenuState extends MusicBeatState
 			basedWeekChange(shouldFlicker);
 		});
 
+		addCallback("changeWeek", function(value:Int) {
+			changeWeek(value);
+		});
+
 		addCallback("changeDifficulty", function(value:Int) {
 			changeDifficulty(value);
 		});
@@ -480,6 +484,10 @@ class StoryMenuState extends MusicBeatState
 
 	function changeWeek(change:Int = 0):Void
 	{
+		if(stopspamming) {
+			return;
+		}
+
 		curWeek += change;
 
 		stopspamming = true;
@@ -522,7 +530,10 @@ class StoryMenuState extends MusicBeatState
 
 				stopspamming = false;
 			}
-		}	
+		}
+
+		setLua("curWeek", curWeek);
+		callLua("changedWeek", []);
 
 		var bullShit:Int = 0;
 

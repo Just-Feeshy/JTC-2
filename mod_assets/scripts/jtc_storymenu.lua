@@ -4,6 +4,7 @@ local menu_background = require("mod_assets/scripts/utils/menuBackground")
 local tweenCounter = 0
 local yCons = 50
 local tickCounter = 0
+local curSelect = 0
 local STORY_PURPLE_NAME = "storyPurpleBG"
 local STORY_PURPLE_COLOR = "0xFF4E2A84"
 local STORY_PURPLE_SCALE = 1.08
@@ -11,8 +12,45 @@ local STORY_PURPLE_SCALE = 1.08
 local stopSpam = false
 local selectedWeek = false
 
-local function canChangeDifficulty()
-    return difficultyCount ~= nil and difficultyCount > 1
+local graphicsSpr = {
+	["bfIcon"] = { "menu/BF-Icon", "school_house/story/bfIcon" },
+	["jtcIcon"] = { "menu/JTC-Icon", "school_house/story/jtcIcon" }
+}
+
+local weeks = {
+	"menu",
+	"school_house/story"
+}
+
+local function resetIcon()
+	for name, paths in pairs(graphicsSpr) do
+		loadGraphic(name, paths[curSelect + 1])
+        setSpritePosition(name, -getSpriteWidth(name), getScreenCenter(name, "y") - 75 + yCons)
+	end
+
+	doTweenX("jtcTween", "jtcIcon", getScreenCenter("jtcIcon", "x") - getSpriteWidth("jtcIcon") + 40, 0.45, "elasticout")
+	doTweenX("bfTween", "bfIcon", getScreenCenter("bfIcon", "x") + getSpriteWidth("bfIcon") - 60, 0.45, "elasticout")
+end
+
+local function refreshStatic()
+    loadGraphic("staticText", weeks[curSelect + 1] .. "/story-week-static-text")
+    loadGraphic("trackList", weeks[curSelect + 1] .. "/story-week-track-list")
+end
+
+local function createPhaseOne()
+	createSprite("lightningIcon")
+	loadGraphic("lightningIcon", "menu/Lightning")
+	addSpriteToState("lightningIcon")
+	setSpritePosition("lightningIcon", getScreenCenter("lightningIcon", "x"), windowHeight)
+
+	for name, paths in pairs(graphicsSpr) do
+		createSprite(name)
+		loadGraphic(name, paths[curSelect + 1])
+		addSpriteToState(name)
+        setSpritePosition(name, -getSpriteWidth(name), getScreenCenter(name, "y") - 75 + yCons)
+	end
+
+    setSpriteAlpha("staticText", 0)
 end
 
 function onCreate()
@@ -30,24 +68,31 @@ function onCreate()
 
     createSprite("fadeBlackSprite")
     makeGraphic("fadeBlackSprite", windowWidth, windowHeight, "0xFF000000")
-    insertSpriteToState(0, "fadeBlackSprite")
 
+    createSprite("staticText")
     createSprite("trackList")
-    loadGraphic("trackList", "menu/story-week-track-list")
-    insertSpriteToState(0, "trackList")
+	refreshStatic()
 
     createSprite("cheese")
     loadGraphic("cheese", "menu/story-mode-cheese")
-    insertSpriteToState(0, "cheese")
 
-    createSprite("staticText")
-    loadGraphic("staticText", "menu/story-week-static-text")
-    setSpriteAlpha("staticText", 0)
-    addSpriteToState("staticText")
 
     createSprite(STORY_PURPLE_NAME)
     makeGraphic(STORY_PURPLE_NAME, windowWidth, windowHeight, STORY_PURPLE_COLOR)
     setSpritePosition(STORY_PURPLE_NAME, 0, 0)
+
+	createPhaseOne()
+
+	-- State Adder
+    insertSpriteToState(0, "fadeBlackSprite")
+    insertSpriteToState(0, "trackList")
+    insertSpriteToState(0, "cheese")
+    addSpriteToState("staticText")
+
+	createSprite("betterDifficulty")
+	setDifficultySprite()
+	setSpritePosition("betterDifficulty", windowWidth / 2, 50)
+	addSpriteToState("betterDifficulty")
 end
 
 function finishedTransitionIn()
@@ -73,12 +118,12 @@ function onUpdate(elapsed)
             playSound("confirmMenu", 1, "confirm")
         end
 
-        if canChangeDifficulty() and getControl("right-press") then
-            changeDifficulty(1)
+        if getControl("up-press") then
+            changeWeek(1)
         end
 
-        if canChangeDifficulty() and getControl("left-press") then
-            changeDifficulty(-1)
+        if getControl("down-press") then
+            changeWeek(-1)
         end
 
         setSpritePosition("scoreText", getMidpointX("bubble") - (getSpriteWidth("scoreText") / 2) - 25, getMidpointY("bubble") - (getSpriteHeight("scoreText") / 2) + 15)
@@ -100,11 +145,6 @@ function onTweenCompleted(name)
             doTweenX("storyPurpleX", STORY_PURPLE_NAME, -(windowWidth * (STORY_PURPLE_SCALE - 1)) / 2, 0.75, "quadOut")
             doTweenY("storyPurpleY", STORY_PURPLE_NAME, -(windowHeight * (STORY_PURPLE_SCALE - 1)) / 2, 0.75, "quadOut")
             doTweenY("fadeTween", "fadeBlackSprite", -windowHeight, 0.3, "quadOut")
-
-            createSprite("betterDifficulty")
-            setDifficultySprite()
-            setSpritePosition("betterDifficulty", windowWidth / 2, 50)
-            addSpriteToState("betterDifficulty")
         end
 
         if tweenCounter == 1 then
@@ -112,23 +152,9 @@ function onTweenCompleted(name)
             doTweenY("staticGrpTween", "grpWeekText", -120, 0.3, "quadOut")
             doTweenAlpha("staticTextTween", "staticText", 1, 0.3, "quadOut")
 
-            createSprite("lightningIcon")
-            loadGraphic("lightningIcon", "menu/Lightning")
-            addSpriteToState("lightningIcon")
-            setSpritePosition("lightningIcon", getScreenCenter("lightningIcon", "x"), windowHeight)
+			-- Tween only for icons
             doTweenY("lightningTween", "lightningIcon", 200 + yCons, 0.4, "quadOut")
-
-            createSprite("jtcIcon")
-            loadGraphic("jtcIcon", "menu/JTC-Icon")
-            addSpriteToState("jtcIcon")
-            setSpritePosition("jtcIcon", -getSpriteWidth("jtcIcon"), getScreenCenter("jtcIcon", "y") - 75 + yCons)
-            doTweenX("jtcTween", "jtcIcon", getScreenCenter("jtcIcon", "x") - getSpriteWidth("jtcIcon") + 40, 0.45, "elasticout")
-
-            createSprite("bfIcon")
-            loadGraphic("bfIcon", "menu/BF-Icon")
-            addSpriteToState("bfIcon")
-            setSpritePosition("bfIcon", windowWidth + getSpriteWidth("bfIcon"), getScreenCenter("bfIcon", "y") - 75 + yCons)
-            doTweenX("bfTween", "bfIcon", getScreenCenter("bfIcon", "x") + getSpriteWidth("bfIcon") - 60, 0.45, "elasticout")
+			resetIcon()
 
             createSprite("bubble")
             loadGraphic("bubble", "menu/bubble-story")
@@ -158,6 +184,12 @@ function onTweenCompleted(name)
     if name == "finishY" then
         selectWeekFromLua(false)
     end
+end
+
+function changedWeek()
+	curSelect = curWeek
+	resetIcon()
+	refreshStatic()
 end
 
 function changedDifficulty()

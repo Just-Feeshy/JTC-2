@@ -73,7 +73,15 @@
                 "Funk-Off",
                 "Ping-Pong",
                 "I-Am-Blue",
-				"Frostbeat",
+				"Frostbeat"
+            ]
+        },
+        "week_1": {
+            "week_name": "Under Your Spell",
+            "week_background": "Graffiti/wall",
+            "week_unlocked": true,
+
+            "week_data": [
                 "Under-Your-Spell"
             ]
         }
