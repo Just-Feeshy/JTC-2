@@ -14,7 +14,6 @@ local HUD_ICON_Y_OFFSET_BASE = 97
 local HUD_ICON_GAP_RATIO = 0.01
 local HUD_ICON_LEFT_NUDGE_RATIO = 0.012
 local meterNoiseTime = 0
-local cameraOffset = 0
 
 local function clamp(value, minValue, maxValue)
     return math.max(math.min(value, maxValue), minValue)
@@ -146,15 +145,17 @@ end
 
 local function buildWeirdMenuHud()
 	createSprite("schoolWeirdMenuHUD")
-	loadGraphic("schoolWeirdMenuHUD", "school_house/menu/weird-menu")
+
+	if downscroll then
+		loadGraphic("schoolWeirdMenuHUD", "school_house/menu/weird-menu-downscroll")
+	else
+		loadGraphic("schoolWeirdMenuHUD", "school_house/menu/weird-menu")
+	end
+
 	setSpriteSize("schoolWeirdMenuHUD", windowWidth, windowHeight)
 	setSpritePosition("schoolWeirdMenuHUD", 0, 0)
 	setSpriteToCamera("schoolWeirdMenuHUD", "camHUD")
 	addSpriteToState("schoolWeirdMenuHUD")
-
-	if downscroll then
-		spriteFlip("schoolWeirdMenuHUD", false, true)
-	end
 end
 
 local function buildBar()
@@ -184,7 +185,6 @@ end
 
 function school_mechanics.onCreate()
     opponentStandTransitionActive = false
-	cameraOffset = 0
 
     if downscroll then
 	    METER_OFFSET.y = METER_OFFSET.y * -1
@@ -227,8 +227,6 @@ function school_mechanics.onUpdate(elapsed)
     updateMeterAngle(elapsed)
 
     if opponentStandTransitionActive then
-		print(getAnimFrame("dad") / getAnimTotalFrames("dad"))
-		cameraOffset = mix(0, -150, getAnimFrame("dad") / getAnimTotalFrames("dad"))
 
 		if sprAnimFinished("dad") then
 			opponentStandTransitionActive = false
@@ -239,10 +237,6 @@ function school_mechanics.onUpdate(elapsed)
 			callEvent("time freeze", "0", "1.45")
 		end
     end
-end
-
-function school_mechanics.getCameraY()
-	return cameraOffset
 end
 
 return school_mechanics

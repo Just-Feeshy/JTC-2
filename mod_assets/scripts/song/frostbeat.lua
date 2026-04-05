@@ -1320,6 +1320,11 @@ end
 
 function setupPunchHealth(amount)
     local punchIcons = {}
+	local iconOffset = -10
+
+	if downscroll then
+		iconOffset = 10
+	end
 
     for i = 1, amount do
         local iconX = getSpriteX("healthBarBG") + getSpriteWidth("healthBarBG") + 50
@@ -1330,7 +1335,7 @@ function setupPunchHealth(amount)
         setSpriteToCamera("punchIcon" .. i, "camHUD")
         scaleSprite("punchIcon" .. i, 0.7, 0.7)
         addSpriteToStage("punchIcon" .. i)
-        setSpritePosition("punchIcon" .. i, iconX + (i - 1) * getSpriteWidth("punchIcon"  .. i) * 1.05, iconY - 10)
+        setSpritePosition("punchIcon" .. i, iconX + (i - 1) * getSpriteWidth("punchIcon"  .. i) * 1.05, iconY + iconOffset)
         table.insert(punchIcons, "punchIcon" .. i)
     end
 

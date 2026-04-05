@@ -5,6 +5,9 @@ local school_mechanics = {}
 
 -- Ok to touch variable
 local BF_AND_GF_POS = {x = 100, y = 0}
+local BOYFRIEND_LAYOUT = {x = 1452, y = 888}
+local PICO_PROP_LAYOUT = {x = 1478, y = 222}
+local LITTLE_HEANCHY_LAYOUT = {x = 487, y = 425}
 
 -- Broken Variables (Don't touch)
 local ARTBOARD_WIDTH = 2362
@@ -12,13 +15,10 @@ local ARTBOARD_HEIGHT = 1496
 local STAGE_LAYOUT_SCALE_MULTIPLIER = 2.15
 local DEFAULT_STAGE_CAMERA_ZOOM = 0.6
 local STAGE_SAFE_FRAME_MULTIPLIER = 1.0
-local DEFAULT_STAGE_CAMERA_FOCUS = {x = ARTBOARD_WIDTH * 0.5, y = ARTBOARD_HEIGHT * 0.505 + 100}
+local DEFAULT_STAGE_CAMERA_FOCUS = {x = ARTBOARD_WIDTH * 0.5, y = ARTBOARD_HEIGHT * 0.505 + 50}
 local DEFAULT_STAGE_CAMERA_FOCUS_LERP = 0.09
 local DAD_LAYOUT = {x = 288, y = 557}
 local GF_LAYOUT = {x = 1102, y = 696}
-local BOYFRIEND_LAYOUT = {x = 1452, y = 888}
-local PICO_PROP_LAYOUT = {x = 1478, y = 222}
-local LITTLE_HEANCHY_LAYOUT = {x = 487, y = 425}
 
 local stageScale = 1
 local stageOriginX = 0
@@ -161,7 +161,7 @@ local function buildSpeakers()
 end
 
 local function applyGameplayCameraSetup()
-    setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y) + school_mechanics.getCameraY(), true)
+    setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y), true)
     setGameplayCameraFocusLerp(DEFAULT_STAGE_CAMERA_FOCUS_LERP)
     setGameplayCameraZoom(DEFAULT_STAGE_CAMERA_ZOOM, false, true)
 end

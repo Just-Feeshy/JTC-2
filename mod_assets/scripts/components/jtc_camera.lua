@@ -106,8 +106,28 @@ local function moveStrumsOffscreenTop()
     end
 end
 
+local function moveStrumsOffscreenBottom()
+    if #jtc_camera.strumDefaults == 0 then
+        captureStrumDefaults()
+    end
+
+    for id = 0, strumCount - 1 do
+        local defaultPos = jtc_camera.strumDefaults[id + 1]
+
+        if defaultPos ~= nil then
+            setNoteStrumPos(id, defaultPos.x, windowHeight + (getNotePosY(id) / 2.0))
+            setNoteAlpha(id, 0)
+        end
+    end
+end
+
 local function startStrumReveal(duration, delay)
-    moveStrumsOffscreenTop()
+    if downscroll then
+        moveStrumsOffscreenBottom()
+    else
+        moveStrumsOffscreenTop()
+    end
+
     setNoteCameraVisibility(true)
     jtc_camera.strumReveal = {
         elapsed = 0,
