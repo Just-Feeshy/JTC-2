@@ -1,10 +1,17 @@
 local school_mechanics = {}
+local opponentStandTransitionActive = false
+
+local function activateOpponentAltMode()
+	setOpponentAltAnim("-alt")
+	setCharacterIdleSuffix("dad", "-alt")
+	playOpponentIdle()
+end
 
 local METER_OFFSET = {x = 6, y = -271}
 local HUD_ICON_SIZE_RATIO = 0.07
 local HUD_ICON_Y_OFFSET_BASE = 100
 local HUD_ICON_GAP_RATIO = 0.01
-local HUD_ICON_LEFT_NUDGE_RATIO = 0.003
+local HUD_ICON_LEFT_NUDGE_RATIO = 0.006
 
 local function setHudSpriteVisible(spriteName, visible)
     if spriteExist(spriteName) then
@@ -16,11 +23,6 @@ local function hideDefaultHud()
     setHudSpriteVisible("healthBarBG", false)
     setHudSpriteVisible("healthBar", false)
     setHudSpriteVisible("counterTxt", false)
-end
-
-local function hideHudIcons()
-    setHudSpriteVisible("iconP1", false)
-    setHudSpriteVisible("iconP2", false)
 end
 
 local function positionHudIcons()
@@ -95,6 +97,9 @@ local function buildMeter()
 end
 
 function school_mechanics.onCreate()
+	opponentStandTransitionActive = false
+	opponentStandTransitionFinished = false
+
 	if downscroll then
 		METER_OFFSET.y = METER_OFFSET.y * -1
 	end
@@ -110,6 +115,11 @@ function school_mechanics.onStep(step)
 	if step == 504 then
 		callEvent("jumpspeed", "0.75", "67")
 	end
+	if step == 632 then
+		callEvent("time freeze", "1", "1.75")
+		playAnimRaw("dad", "stand")
+		opponentStandTransitionActive = true
+	end
 	if step == 764 then
 		callEvent("jumpspeed", "0.61", "21")
 	end
@@ -122,6 +132,11 @@ function school_mechanics.onStep(step)
 end
 
 function school_mechanics.onUpdate(elapsed)
+	if opponentStandTransitionActive and sprAnimFinished("dad") then
+		opponentStandTransitionActive = false
+		activateOpponentAltMode()
+		callEvent("time freeze", "0", "1.75")
+	end
 end
 
 return school_mechanics

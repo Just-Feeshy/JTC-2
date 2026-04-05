@@ -91,6 +91,18 @@ class PlayAudio
 			track.sound.volume = track.baseVolume * track.stateVolume;
 	}
 
+	private function setSoundPlaybackRate(sound:FlxSound, rate:Float):Void
+	{
+		if (sound == null)
+			return;
+
+		#if lime
+		@:privateAccess
+		if (sound._channel != null && sound._channel.__audioSource != null)
+			sound._channel.__audioSource.pitch = rate;
+		#end
+	}
+
 	public function songTrackMatchesTag(track:SongTrackInfo, noteTag:String):Bool
 	{
 		if (track == null || track.tagFilters == null || track.tagFilters.length == 0)
@@ -180,6 +192,7 @@ class PlayAudio
 			track.sound.time = startTime;
 
 		track.sound.play(false, startTime != null ? startTime : track.sound.time);
+		setSoundPlaybackRate(track.sound, playState.getTimeFreezePlaybackRate());
 		applySongTrackVolume(track);
 	}
 
@@ -312,6 +325,20 @@ class PlayAudio
 		}
 	}
 
+	public function setSongPlaybackRate(rate:Float):Void
+	{
+		var boundedRate:Float = Math.min(1, Math.max(0.0001, rate));
+
+		if (FlxG.sound.music != null)
+			setSoundPlaybackRate(FlxG.sound.music, boundedRate);
+
+		for (track in playState.syncedSongTracks)
+		{
+			if (track.sound != null)
+				setSoundPlaybackRate(track.sound, boundedRate);
+		}
+	}
+
 	inline function isSongAudioBlocked():Bool
 	{
 		return playState.inCutscene || playState.talking;
@@ -332,6 +359,7 @@ class PlayAudio
 		FlxG.sound.music.group = FlxG.sound.defaultMusicGroup;
 		FlxG.sound.music.volume = PlayState.muteInst ? 0 : 1;
 		FlxG.sound.music.play(false, startTime == null ? 0 : startTime);
+		setSoundPlaybackRate(FlxG.sound.music, playState.getTimeFreezePlaybackRate());
 		FlxG.sound.music.onComplete = playState.whenSongFinished.bind();
 	}
 
@@ -381,9 +409,9 @@ class PlayAudio
 		Countdown.pauseCountdown();
 	}
 
-	public function resyncVocals():Void
+	public function resyncVocals(force:Bool = false):Void
 	{
-		if(playState.timeFreeze > 0 || isSongAudioBlocked())
+		if((playState.timeFreeze > 0 && !force) || isSongAudioBlocked())
 		{
 			pauseVocals();
 			return;
@@ -414,6 +442,7 @@ class PlayAudio
 		setSongPosition(FlxG.sound.music.time);
 		setVocalsTime(FlxG.sound.music.time);
 		playVocals(FlxG.sound.music.time);
+		setSongPlaybackRate(playState.getTimeFreezePlaybackRate());
 	}
 
 	public function setSongPosition(time:Float):Void

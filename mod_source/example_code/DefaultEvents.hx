@@ -140,18 +140,51 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 DefaultHandler.shakeCamTimer = gameShake;
 			    DefaultHandler.shakeCamTimerHUD = hudShake;
             case "time freeze":
-                if(Std.parseInt(eventValue) == 0 && !FlxG.sound.music.playing) {
-                    playState.resyncVocals();
+                var targetFreeze:Float = Std.parseFloat(eventValue);
+                var durationBeats:Float = Std.parseFloat(eventValue2);
+
+                if(Math.isNaN(targetFreeze)) {
+                    targetFreeze = 0;
                 }
 
-                storeTween(eventName, FlxTween.tween(playState, {timeFreeze : Std.parseFloat(eventValue)}, (Conductor.instance.beatLengthMs/500) * Std.parseFloat(eventValue2), {
+                if(Math.isNaN(durationBeats)) {
+                    durationBeats = 0;
+                }
+
+                targetFreeze = FlxMath.bound(targetFreeze, 0, 1);
+                var durationSeconds:Float = (Conductor.instance.beatLengthMs / 500) * durationBeats;
+                var songIsPlaying:Bool = FlxG.sound.music != null && FlxG.sound.music.playing;
+
+                if(targetFreeze < 1 && !songIsPlaying) {
+                    playState.resyncVocals(true);
+                    playState.setTimeFreezeValue(playState.timeFreeze);
+                }
+
+                cancelTween(eventName);
+
+                if(durationSeconds <= 0) {
+                    playState.setTimeFreezeValue(targetFreeze);
+
+                    if(targetFreeze >= 1) {
+                        playState.pauseMusic();
+                    }
+
+                    return;
+                }
+
+                storeTween(eventName, FlxTween.num(playState.timeFreeze, targetFreeze, durationSeconds, {
+                    ease: FlxEase.sineInOut,
                     onComplete: function(tween:FlxTween) {
-                        if(Std.parseInt(eventValue) == 1) {
+                        playState.setTimeFreezeValue(targetFreeze);
+
+                        if(targetFreeze >= 1) {
                             playState.pauseMusic();
                         }
 
                         cancelTween(eventName);
                     }
+                }, function(value:Float) {
+                    playState.setTimeFreezeValue(value);
                 }));
             case "strum bounce":
                 offsetBounce = Std.parseInt(eventValue2);

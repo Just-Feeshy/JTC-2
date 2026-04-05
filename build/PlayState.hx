@@ -1653,7 +1653,7 @@ class PlayState extends MusicBeatState
 		opponentAltAnim = "";
 		playerAltAnim = "";
 		flipWiggle = 1;
-		timeFreeze = 0;
+		setTimeFreezeValue(0);
 		wobbleModPower = 30;
 
 		// Revert character changes on restart
@@ -2459,12 +2459,22 @@ class PlayState extends MusicBeatState
 		playAudio.pauseMusic();
 	}
 
-	public function resyncVocals():Void {
-		playAudio.resyncVocals();
+	public function resyncVocals(force:Bool = false):Void {
+		playAudio.resyncVocals(force);
 	}
 
 	function setSongPosition(time:Float):Void {
 		playAudio.setSongPosition(time);
+	}
+
+	public function getTimeFreezePlaybackRate(?freezeAmount:Null<Float>):Float {
+		var amount:Float = freezeAmount == null ? timeFreeze : freezeAmount;
+		return Math.min(1, Math.max(0.0001, 1 - FlxMath.bound(amount, 0, 1)));
+	}
+
+	public function setTimeFreezeValue(value:Float):Void {
+		timeFreeze = FlxMath.bound(value, 0, 1);
+		playAudio.setSongPlaybackRate(getTimeFreezePlaybackRate(timeFreeze));
 	}
 
 	function longConditionForNote(daNote:Note, center:Float):Bool {
