@@ -1,7 +1,7 @@
 -- This is from the learned mistakes of frostbeat
 -- I really screwed up the code for that song, it's just a jumbled mess
 
-local school_mechanics = require("mod_assets/scripts/components/school_mechanics")
+local school_mechanics = {}
 
 -- Ok to touch variable
 local BF_AND_GF_POS = {x = 0, y = -100}
@@ -167,6 +167,7 @@ local function applyGameplayCameraSetup()
 end
 
 function generatedStage()
+	school_mechanics = require("mod_assets/scripts/components/school_mechanics")
 	school_mechanics.onCreate()
     setOpponentAltAnim("")
     setCharacterIdleSuffix("dad", "")
@@ -219,6 +220,7 @@ function onBeatHit()
 end
 
 function onUpdate(elapsed)
+	print("hi")
 	school_mechanics.onUpdate(elapsed)
 end
 

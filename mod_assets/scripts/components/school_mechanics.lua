@@ -14,7 +14,6 @@ local HUD_ICON_Y_OFFSET_BASE = 100
 local HUD_ICON_GAP_RATIO = 0.01
 local HUD_ICON_LEFT_NUDGE_RATIO = 0.006
 local meterNoiseTime = 0
-local meter_angle_offset = 180
 
 local function clamp(value, minValue, maxValue)
     return math.max(math.min(value, maxValue), minValue)
@@ -24,53 +23,14 @@ local function mix(a, b, t)
     return a + (b - a) * t
 end
 
-local function atan2Degrees(y, x)
-    if math.atan2 ~= nil then
-        return math.deg(math.atan2(y, x))
-    end
-
-    if x == 0 then
-        if y > 0 then
-            return 90
-        elseif y < 0 then
-            return -90
-        else
-            return 0
-        end
-    end
-
-    local angle = math.deg(math.atan(y / x))
-    if x < 0 then
-        angle = angle + 180
-    elseif y < 0 then
-        angle = angle + 360
-    end
-
-    return angle
-end
-
-local function getCenterPoint(name)
-    local point = getSpriteCenterPoint(name)
-
-    if point ~= nil and point.x ~= nil and point.y ~= nil then
-        return point
-    end
-
-    return {
-        x = getMidpointX(name),
-        y = getMidpointY(name)
-    }
-end
-
 local function updateMeterAngle(elapsed)
-    if not spriteExist("schoolMeterHUD") or not spriteExist("iconP1") or not spriteExist("iconP2") then
+    if not spriteExist("schoolMeterHUD") then
         return
     end
 
-    meterNoiseTime = meterNoiseTime + elapsed * METER_JITTER_SPEED
+    print(getHealthNormalized())
 
-    local iconP2Center = getCenterPoint("iconP2")
-    local iconP1Center = getCenterPoint("iconP1")
+    meterNoiseTime = meterNoiseTime + elapsed * METER_JITTER_SPEED
     local healthLerp = clamp(getHealthNormalized(), 0, 1)
     local targetLerp = healthLerp
     local targetAngle = mix(-45, 45, targetLerp)
