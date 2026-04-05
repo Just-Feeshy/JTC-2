@@ -57,7 +57,6 @@ using StringTools;
 class ChartingState extends MusicBeatState
 {
 	private var muteInGame:Bool = PlayState.muteInst;
-
 	private var mainGrid:Int = 8;
 	private var totalGrids:Int = 1;
 
@@ -204,6 +203,7 @@ class ChartingState extends MusicBeatState
 	private var selectingShader:BuiltInShaders;
 
 	var zoomText:FlxText;
+	var adjustNotes5kButton:FlxButton;
 
 	var gridLayout:FlxTypedGroup<FlxSprite>;
 
@@ -272,11 +272,7 @@ class ChartingState extends MusicBeatState
 		add(bg);
 
 		bpmTxt = new FlxText(1000, 50, 0, "", 14);
-
-		if(_song.fifthKey) {
-			bpmTxt.x = 1050;
-			mainGrid = 10;
-		}
+		refreshChartLaneLayout();
 
 		dummyArrow = new FlxSprite().makeGraphic(GRID_SIZE, GRID_SIZE);
 
@@ -356,11 +352,6 @@ class ChartingState extends MusicBeatState
 		UI_box.resize(325, 420);
 		UI_Modifiers.resize(275, 275);
 
-		if(_song.fifthKey)
-			UI_box.x = FlxG.width / 2 + GRID_SIZE;
-		else
-			UI_box.x = FlxG.width / 2;
-
 		selectingShader = new BuiltInShaders();
 		selectingShader.shader = ShaderType.GLIM_SELECTION;
 
@@ -384,14 +375,10 @@ class ChartingState extends MusicBeatState
 		UI_box.y = 20;
 		add(UI_box);
 
-		if(_song.fifthKey)
-			UI_Modifiers.x = FlxG.width / 2 + GRID_SIZE + UI_box.width;
-		else
-			UI_Modifiers.x = FlxG.width / 2 + UI_box.width;
-
 		UI_Modifiers.y = UI_box.height - UI_Modifiers.height + 20;
 
 		add(UI_Modifiers);
+		refreshChartLaneLayout();
 
 		super.create();
 
@@ -865,17 +852,7 @@ class ChartingState extends MusicBeatState
 		check_fifth.callback = function()
 		{
 			_song.fifthKey = check_fifth.checked;
-
-			if(check_fifth.checked) {
-				UI_box.x = FlxG.width / 2 + GRID_SIZE;
-				bpmTxt.x = 1050;
-				mainGrid = 10;
-			}else {
-				UI_box.x = FlxG.width / 2;
-				bpmTxt.x = 1000;
-				mainGrid = 8;
-			}
-
+			refreshChartLaneLayout();
 			updateGrid();
 		};
 
@@ -934,6 +911,16 @@ class ChartingState extends MusicBeatState
 			clearEvents(true);
     	});
 
+		adjustNotes5kButton = new FlxButton(restart.x, restart.y + 30, "Adjust Notes 5k", function()
+		{
+			adjustChartNotesToFiveKey();
+			check_fifth.checked = _song.fifthKey;
+			refreshChartLaneLayout();
+			updateGrid();
+		});
+		adjustNotes5kButton.label.size = 8;
+		refreshChartLaneLayout();
+
 		var loadAutosaveBtn:FlxButton = new FlxButton(reloadSongJson.x, reloadSongJson.y + 30, 'load autosave', loadAutosave);
 
 		stepperSpeed = new FlxUINumericStepper(10, 80, 0.1, 1, 0.1, 10, 1);
@@ -976,6 +963,7 @@ class ChartingState extends MusicBeatState
 		tab_group_song.add(check_hit_left);
 		tab_group_song.add(metronome_check);
 		tab_group_song.add(check_fifth);
+		tab_group_song.add(adjustNotes5kButton);
 		tab_group_song.add(saveButton);
 		tab_group_song.add(reloadSong);
 		tab_group_song.add(reloadSongJson);
@@ -1462,6 +1450,110 @@ class ChartingState extends MusicBeatState
 		rightIcon.setPosition(halfWidth + (halfWidth * 0.5) - (rightIcon.width * 0.5), -100);
 	}
 
+	inline function getChartLaneCountPerSide():Int
+	{
+		return _song.fifthKey ? 5 : 4;
+	}
+
+	inline function getChartGridCount():Int
+	{
+		return getChartLaneCountPerSide() * 2;
+	}
+
+	inline function getDisplayLaneCountPerSide():Int
+	{
+		return getChartLaneCountPerSide();
+	}
+
+	inline function getDisplayGridCount():Int
+	{
+		return getDisplayLaneCountPerSide() * 2;
+	}
+
+	inline function usesExpandedGridLayout():Bool
+	{
+		return _song.fifthKey;
+	}
+
+	inline function shouldHideCompactFourKeyOverflow():Bool
+	{
+		return !_song.fifthKey;
+	}
+
+	function getDisplayColumnFromStoredData(noteData:Int):Int
+	{
+		return noteData;
+	}
+
+	function getStoredDataFromDisplayColumn(column:Int):Int
+	{
+		if (column < 0 || column >= getDisplayGridCount())
+			return -1;
+
+		return column;
+	}
+
+	function getDisplayColumnFromMouseX(mouseX:Float):Int
+	{
+		return Math.floor((mouseX - gridBG.x) / GRID_SIZE);
+	}
+
+	function getStoredDataFromNoteX(noteX:Float):Int
+	{
+		return getStoredDataFromDisplayColumn(Math.floor((noteX - gridBG.x) / GRID_SIZE));
+	}
+
+	function refreshChartLaneLayout():Void
+	{
+		mainGrid = getDisplayGridCount();
+
+		if (bpmTxt != null)
+			bpmTxt.x = usesExpandedGridLayout() ? 1050 : 1000;
+
+		if (UI_box != null)
+			UI_box.x = usesExpandedGridLayout() ? FlxG.width / 2 + GRID_SIZE : FlxG.width / 2;
+
+		if (UI_Modifiers != null && UI_box != null)
+			UI_Modifiers.x = usesExpandedGridLayout() ? FlxG.width / 2 + GRID_SIZE + UI_box.width : FlxG.width / 2 + UI_box.width;
+
+		if (instrucTxt != null && UI_box != null)
+			instrucTxt.x = UI_box.x;
+
+		if (camFollow != null)
+			camFollow.x = usesExpandedGridLayout() ? 400 : 360;
+
+		positionChartIcons();
+	}
+
+	function adjustChartNotesToFiveKey():Void
+	{
+		if (_song.fifthKey)
+			return;
+
+		for (section in _song.notes)
+		{
+			if (section == null || section.sectionNotes == null)
+				continue;
+
+			for (note in section.sectionNotes)
+			{
+				if (note == null || note.length < 2 || note[1] == null)
+					continue;
+
+				var noteData:Int = Std.int(note[1]);
+				var side:Int = noteData >= 4 ? 1 : 0;
+				var lane:Int = noteData % 4;
+
+				if (lane >= 2)
+					lane += 1;
+
+				note[1] = lane + (side * 5);
+			}
+		}
+
+		_song.fifthKey = true;
+	}
+
 	function generateUI():Void
 	{
 		while (bullshitUI.members.length > 0)
@@ -1688,7 +1780,7 @@ class ChartingState extends MusicBeatState
 							var note = _song.notes[curSection].sectionNotes[n];
 							if (note == null)
 								continue;
-							if (note[0] == Conductor.instance.trackedSongPosition && note[1] % (mainGrid/2) == i)
+							if (note[0] == Conductor.instance.trackedSongPosition && note[1] % getChartLaneCountPerSide() == i)
 							{
 								trace('GAMING');
 								_song.notes[curSection].sectionNotes.remove(note);
@@ -1759,7 +1851,7 @@ class ChartingState extends MusicBeatState
 			&& FlxG.mouse.y > gridBG.y
 			&& FlxG.mouse.y < gridBG.y + checkSectionsY() * (zoomList[zoomMeter]/100))
 		{
-			dummyArrow.x = Math.floor(FlxG.mouse.x / GRID_SIZE) * GRID_SIZE;
+			dummyArrow.x = getDisplayColumnFromMouseX(FlxG.mouse.x) * GRID_SIZE;
 			if (FlxG.keys.pressed.SHIFT && !check_extra_stuff.checked)
 				dummyArrow.y = FlxG.mouse.y;
 			else
@@ -2153,7 +2245,7 @@ class ChartingState extends MusicBeatState
 			var strum = note[0] + (sectionStartTime(daSec) - sectionStartTime(daSec - sectionNum));
 			var copiedNote:Array<Dynamic>;
 
-			note[1] = (note[1] + (mainGrid/2)) % mainGrid;
+			note[1] = (note[1] + getChartLaneCountPerSide()) % getChartGridCount();
 			copiedNote = [strum, note[1], note[2], note[3]];
 
 			if(sectionNum != 0)
@@ -2368,11 +2460,7 @@ class ChartingState extends MusicBeatState
 		 */
 
 		if(camFollow != null) {
-
-			if(_song.fifthKey)
-				camFollow.x = 400;
-			else
-				camFollow.x = 360;
+			camFollow.x = usesExpandedGridLayout() ? 400 : 360;
 		}
 
 		gridLayout.remove(gridBG2);
@@ -2404,14 +2492,14 @@ class ChartingState extends MusicBeatState
 			
 		setupNotes(sectionInfo, curSection, 0);
 
-		if(curRenderedNotes.members[0] != null && !_song.fifthKey) {
+		if(curRenderedNotes.members[0] != null && shouldHideCompactFourKeyOverflow()) {
 			for(i in 0...curRenderedNotes.length) {
 				if(curRenderedNotes.members[i].x >= 320)
 					curRenderedNotes.members[i].visible = false;
 			}
 		}
 
-		if(curRenderedSustains.members[0] != null && !_song.fifthKey) {
+		if(curRenderedSustains.members[0] != null && shouldHideCompactFourKeyOverflow()) {
 			for(i in 0...curRenderedSustains.length) {
 				if(curRenderedSustains.members[i].x > 320)
 					curRenderedSustains.members[i].visible = false;
@@ -2479,11 +2567,11 @@ class ChartingState extends MusicBeatState
 			var daTag = i[4];
 			var daAnimPlay = i[5];
 
-			var note:Note = new Note(daStrumTime, daNoteInfo % Math.floor(mainGrid/2), null, false, daNoteType);
+			var note:Note = new Note(daStrumTime, daNoteInfo % getChartLaneCountPerSide(), null, false, daNoteType);
 			note.sustainLength = daSus;
 			note.setGraphicSize(GRID_SIZE, GRID_SIZE);
 			note.updateHitbox();
-			note.x = Math.floor(daNoteInfo * GRID_SIZE);
+			note.x = Math.floor(getDisplayColumnFromStoredData(daNoteInfo) * GRID_SIZE);
 			note.y = getYfromNotes((daStrumTime - sectionStartTime(section))) + yOffset;
 			
 			if(daTag != null) {
@@ -2519,13 +2607,13 @@ class ChartingState extends MusicBeatState
 			}
 		}
 
-		if(curRenderedNotes.members[0] != null && !_song.fifthKey) {
+		if(curRenderedNotes.members[0] != null && shouldHideCompactFourKeyOverflow()) {
 			for(i in 0...curRenderedNotes.length) {
 				if(curRenderedNotes.members[i].x >= 320)
 					curRenderedNotes.members[i].visible = false;
 			}
 		}
-		if(curRenderedSustains.members[0] != null && !_song.fifthKey) {
+		if(curRenderedSustains.members[0] != null && shouldHideCompactFourKeyOverflow()) {
 			for(i in 0...curRenderedSustains.length) {
 				if(curRenderedSustains.members[i].x > 320)
 					curRenderedSustains.members[i].visible = false;
@@ -2573,9 +2661,11 @@ class ChartingState extends MusicBeatState
 
 	function selectNote(note:Note):Void
 	{
+		var storedNoteData:Int = getStoredDataFromNoteX(note.x);
+
 		for (i in _song.notes[curSection].sectionNotes)
 		{
-			if (i[0] == note.strumTime && i[1] == Math.floor(note.x / GRID_SIZE))
+			if (i[0] == note.strumTime && i[1] == storedNoteData)
 			{
 				prevSelectedNote = curSelectedNote;
 				curSelectedNote = i;
@@ -2594,8 +2684,10 @@ class ChartingState extends MusicBeatState
 
 
 	function removeNoteSec(note:Note, section:Int):Void {
+		var storedNoteData:Int = getStoredDataFromNoteX(note.x);
+
 		for (i in _song.notes[section].sectionNotes) {
-			if (i[0] == note.strumTime && i[1] % mainGrid == Math.floor(note.x / GRID_SIZE)) {
+			if (i[0] == note.strumTime && i[1] == storedNoteData) {
 				if(i == curSelectedNote) {
 					curSelectedNote = null;
 				}
@@ -2647,10 +2739,14 @@ class ChartingState extends MusicBeatState
 		final extraSection:Int = Math.floor(dummyArrow.y / (gridBG.y + gridBG.height));
 
 		var noteStrum = getStrumTime(dummyArrow.y % (gridBG.y + gridBG.height)) + sectionStartTime(curSection + extraSection);
-		var noteData = Math.floor(FlxG.mouse.x / GRID_SIZE);
+		var noteData = getStoredDataFromDisplayColumn(getDisplayColumnFromMouseX(FlxG.mouse.x));
 		var noteTag:String = null;
 		var playAnyAnim:Bool = true;
 		var noteSus = 0;
+
+		if (n == null && noteData < 0) {
+			return;
+		}
 			
 		if(check_extra_stuff.checked) {
 			noteTag = noteTagInput.text;
@@ -2659,7 +2755,7 @@ class ChartingState extends MusicBeatState
 
 		if (n != null) {
 			n.noteAbstract = wtfIsNote;
-			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? mainGrid/2 : 0), n.sustainLength, n.noteAbstract, n.tag, n.playAnyAnimation]);
+			_song.notes[curSection + extraSection].sectionNotes.push([n.strumTime, n.noteData + (n.mustPress ? getChartLaneCountPerSide() : 0), n.sustainLength, n.noteAbstract, n.tag, n.playAnyAnimation]);
 		}else {
 			_song.notes[curSection + extraSection].sectionNotes.push([noteStrum, noteData, noteSus, wtfIsNote, noteTag, playAnyAnim]);
 		}

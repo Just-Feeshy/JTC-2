@@ -14,6 +14,7 @@ local HUD_ICON_Y_OFFSET_BASE = 97
 local HUD_ICON_GAP_RATIO = 0.01
 local HUD_ICON_LEFT_NUDGE_RATIO = 0.012
 local meterNoiseTime = 0
+local cameraOffset = 0
 
 local function clamp(value, minValue, maxValue)
     return math.max(math.min(value, maxValue), minValue)
@@ -183,6 +184,7 @@ end
 
 function school_mechanics.onCreate()
     opponentStandTransitionActive = false
+	cameraOffset = 0
 
     if downscroll then
 	    METER_OFFSET.y = METER_OFFSET.y * -1
@@ -197,6 +199,9 @@ function school_mechanics.onCreate()
 end
 
 function school_mechanics.onStep(step)
+	if step == 0 then
+		callEvent("jumpspeed", "1", "0")
+	end
 	if step == 504 then
 		callEvent("jumpspeed", "0.75", "67")
 	end
@@ -221,14 +226,23 @@ end
 function school_mechanics.onUpdate(elapsed)
     updateMeterAngle(elapsed)
 
-    if opponentStandTransitionActive and sprAnimFinished("dad") then
-	opponentStandTransitionActive = false
-	setCharacterSpecialAnim("dad", false)
-	setCharacterCustomAnimation("dad", false)
-	activateOpponentAltMode()
-	playOpponentIdle()
-	callEvent("time freeze", "0", "1.45")
+    if opponentStandTransitionActive then
+		print(getAnimFrame("dad") / getAnimTotalFrames("dad"))
+		cameraOffset = mix(0, -150, getAnimFrame("dad") / getAnimTotalFrames("dad"))
+
+		if sprAnimFinished("dad") then
+			opponentStandTransitionActive = false
+			setCharacterSpecialAnim("dad", false)
+			setCharacterCustomAnimation("dad", false)
+			activateOpponentAltMode()
+			playOpponentIdle()
+			callEvent("time freeze", "0", "1.45")
+		end
     end
+end
+
+function school_mechanics.getCameraY()
+	return cameraOffset
 end
 
 return school_mechanics

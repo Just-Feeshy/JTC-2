@@ -4,7 +4,7 @@
 local school_mechanics = {}
 
 -- Ok to touch variable
-local BF_AND_GF_POS = {x = 0, y = -100}
+local BF_AND_GF_POS = {x = 100, y = 0}
 
 -- Broken Variables (Don't touch)
 local ARTBOARD_WIDTH = 2362
@@ -12,13 +12,13 @@ local ARTBOARD_HEIGHT = 1496
 local STAGE_LAYOUT_SCALE_MULTIPLIER = 2.15
 local DEFAULT_STAGE_CAMERA_ZOOM = 0.6
 local STAGE_SAFE_FRAME_MULTIPLIER = 1.0
-local DEFAULT_STAGE_CAMERA_FOCUS = {x = ARTBOARD_WIDTH * 0.5, y = ARTBOARD_HEIGHT * 0.505}
+local DEFAULT_STAGE_CAMERA_FOCUS = {x = ARTBOARD_WIDTH * 0.5, y = ARTBOARD_HEIGHT * 0.505 + 100}
 local DEFAULT_STAGE_CAMERA_FOCUS_LERP = 0.09
-local DAD_LAYOUT = {x = 238, y = 520}
-local GF_LAYOUT = {x = 1102, y = 786}
-local BOYFRIEND_LAYOUT = {x = 1452, y = 908}
-local PICO_PROP_LAYOUT = {x = 1478, y = 122}
-local LITTLE_HEANCHY_LAYOUT = {x = 390, y = 430}
+local DAD_LAYOUT = {x = 288, y = 557}
+local GF_LAYOUT = {x = 1102, y = 696}
+local BOYFRIEND_LAYOUT = {x = 1452, y = 888}
+local PICO_PROP_LAYOUT = {x = 1478, y = 222}
+local LITTLE_HEANCHY_LAYOUT = {x = 487, y = 425}
 
 local stageScale = 1
 local stageOriginX = 0
@@ -129,7 +129,7 @@ end
 local function addLittleHeanchy()
     createSprite("schoolLittleHeanchy")
     compileSpriteSheet("schoolLittleHeanchy", "school_house/little heanchy", "sparrow")
-    addAnimationByPrefix("schoolLittleHeanchy", "idle", "3 little guys", 14, true)
+    addAnimationByPrefix("schoolLittleHeanchy", "idle", "Stupid little guys", 14, true)
     playAnim("schoolLittleHeanchy", "idle", true)
     scaleSprite("schoolLittleHeanchy", stageScale * 0.82, stageScale * 0.82)
     setSpritePosition("schoolLittleHeanchy", placeX(LITTLE_HEANCHY_LAYOUT.x), placeY(LITTLE_HEANCHY_LAYOUT.y))
@@ -161,7 +161,7 @@ local function buildSpeakers()
 end
 
 local function applyGameplayCameraSetup()
-    setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y), true)
+    setGameplayCameraFocus(placeX(DEFAULT_STAGE_CAMERA_FOCUS.x), placeY(DEFAULT_STAGE_CAMERA_FOCUS.y) + school_mechanics.getCameraY(), true)
     setGameplayCameraFocusLerp(DEFAULT_STAGE_CAMERA_FOCUS_LERP)
     setGameplayCameraZoom(DEFAULT_STAGE_CAMERA_ZOOM, false, true)
 end
@@ -183,17 +183,18 @@ function generatedStage()
     addLittleHeanchy()
     buildSpeakers()
     addStaticLayer("schoolWindowGlow", "school_house/BG/window blur", 838, 118, 0.88)
-    addAnimatedLayer("schoolSmokeBack", "school_house/BG/Smoke", "idle", "bg smoke_ring_animation", 210, 736, 1, 0.72, true, 16)
     buildCharacterProps()
-    addBackSprite("schoolGirlfriendProp")
     addBackSprite("schoolPicoProp")
+    addAnimatedLayer("schoolSmokeBack", "school_house/BG/Smoke", "idle", "bg smoke_ring_animation", 210, 736, 1, 0.72, true, 16)
 
-    createSprite("schoolSmokeFront")
+    addBackSprite("schoolGirlfriendProp")
+
+	createSprite("schoolSmokeFront")
     compileSpriteSheet("schoolSmokeFront", "school_house/BG/Smoke2", "sparrow")
     addAnimationByPrefix("schoolSmokeFront", "idle", "fg smoke_ring_animation copy", 16, true)
     playAnim("schoolSmokeFront", "idle", true)
     scaleSprite("schoolSmokeFront", stageScale, stageScale)
-    setSpritePosition("schoolSmokeFront", placeX(350), placeY(1320))
+    setSpritePosition("schoolSmokeFront", placeX(350), placeY(1230))
     addSpriteToStage("schoolSmokeFront")
 
     createSprite("schoolVignette")

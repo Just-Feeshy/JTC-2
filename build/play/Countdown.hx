@@ -19,6 +19,8 @@ class Countdown
 	public static var graphicSuffix:String = "";
 
 	static var countdownTimer:FlxTimer = null;
+	static var countdownGraphicSprite:FlxSprite = null;
+	static var countdownGraphicTween:FlxTween = null;
 
 	public static function performCountdown():Bool
 	{
@@ -109,6 +111,11 @@ class Countdown
 		{
 			countdownTimer.active = false;
 		}
+
+		if(countdownGraphicTween != null)
+		{
+			countdownGraphicTween.active = false;
+		}
 	}
 
 	public static function resumeCountdown():Void
@@ -116,6 +123,11 @@ class Countdown
 		if(countdownTimer != null && !countdownTimer.finished)
 		{
 			countdownTimer.active = true;
+		}
+
+		if(countdownGraphicTween != null)
+		{
+			countdownGraphicTween.active = true;
 		}
 	}
 
@@ -167,6 +179,8 @@ class Countdown
 		countdownStep = BEFORE;
 		soundSuffix = "";
 		graphicSuffix = "";
+		countdownGraphicSprite = null;
+		countdownGraphicTween = null;
 	}
 
 	public static function stepToString(step:CountdownStep):String
@@ -249,14 +263,27 @@ class Countdown
 		countdownSprite.updateHitbox();
 		countdownSprite.screenCenter();
 		playState.add(countdownSprite);
+		countdownGraphicSprite = countdownSprite;
 
-		FlxTween.tween(countdownSprite, {y: countdownSprite.y + 100, alpha: 0}, Conductor.instance.beatLengthMs / 1000, {
+		var activeTween:FlxTween = null;
+		activeTween = FlxTween.tween(countdownSprite, {y: countdownSprite.y + 100, alpha: 0}, Conductor.instance.beatLengthMs / 1000, {
 			ease: FlxEase.cubeInOut,
 			onComplete: function(_)
 			{
+				if(countdownGraphicSprite == countdownSprite)
+				{
+					countdownGraphicSprite = null;
+				}
+
+				if(countdownGraphicTween == activeTween)
+				{
+					countdownGraphicTween = null;
+				}
+
 				countdownSprite.destroy();
 			}
 		});
+		countdownGraphicTween = activeTween;
 	}
 
 	public static function playCountdownSound(step:CountdownStep):FlxSound

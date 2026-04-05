@@ -980,6 +980,16 @@ class ModLua {
             return spr.animation.frameIndex;
         });
 
+        addProtectedLuaCallback("getAnimTotalFrames", function(name:String) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr.animation == null) {
+                return 0;
+            }
+
+            return spr.animation.frames;
+        });
+
         addProtectedLuaCallback("sprAnimFinished", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 

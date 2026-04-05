@@ -2447,6 +2447,11 @@ class PlayState extends MusicBeatState
 
 	override public function onFocus():Void
 	{
+		if(!paused && isInCountdown)
+		{
+			Countdown.resumeCountdown();
+		}
+
 		#if windows
 		if (health > 0 && !paused)
 		{
@@ -2466,6 +2471,11 @@ class PlayState extends MusicBeatState
 	
 	override public function onFocusLost():Void
 	{
+		if(!paused && isInCountdown)
+		{
+			Countdown.pauseCountdown();
+		}
+
 		#if windows
 		if (health > 0 && !paused)
 		{
