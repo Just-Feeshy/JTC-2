@@ -751,6 +751,36 @@ class PlayLua
 				character.holdTimer = value;
 		});
 
+		playState.addCallback("setOpponentAltAnim", function(suffix:String = "") {
+			playState.opponentAltAnim = suffix != null ? suffix : "";
+		});
+
+		playState.addCallback("setCharacterIdleSuffix", function(name:String, suffix:String = "") {
+			var character:Character = null;
+
+			switch(name != null ? name.toLowerCase().trim() : "") {
+				case "dad", "opponent":
+					character = playState.dad;
+				case "boyfriend", "bf", "player":
+					character = playState.boyfriend;
+				case "gf", "girlfriend":
+					character = playState.gf;
+				default:
+					character = playState.modifiableCharacters.get(name);
+			}
+
+			if(character == null)
+				return false;
+
+			character.idleSuffix = suffix != null ? suffix : "";
+			return true;
+		});
+
+		playState.addCallback("playOpponentIdle", function() {
+			playState.playOpponentIdle();
+			return true;
+		});
+
 		playState.addCallback("getCharacterIsPlayer", function(name:String) {
 			var character:Character = playState.modifiableCharacters.get(name);
 			return character != null ? character.isPlayer : false;

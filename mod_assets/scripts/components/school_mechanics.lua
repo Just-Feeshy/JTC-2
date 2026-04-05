@@ -117,7 +117,7 @@ function school_mechanics.onStep(step)
 		callEvent("jumpspeed", "1.0", "41")
 	end
 	if step == 1064 then
-		callEvent("jumpspeed", "1.1", "89")
+		callEvent("jumpspeed", "0.9", "89")
 	end
 end
 

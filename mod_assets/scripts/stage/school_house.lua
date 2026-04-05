@@ -1,3 +1,6 @@
+-- This is from the learned mistakes of frostbeat
+-- I really screwed up the code for that song, it's just a jumbled mess
+
 local school_mechanics = require("mod_assets/scripts/components/school_mechanics")
 
 -- Ok to touch variable
@@ -21,6 +24,7 @@ local stageScale = 1
 local stageOriginX = 0
 local stageOriginY = 0
 local backInsertIndex = 0
+local opponentAltActive = false
 
 local schoolSpeakerNames = {
     "schoolSpeakerLeftA",
@@ -165,6 +169,9 @@ end
 
 function generatedStage()
 	school_mechanics.onCreate()
+    opponentAltActive = false
+    setOpponentAltAnim("")
+    setCharacterIdleSuffix("dad", "")
 
     setupStageMetrics()
     applyCharacterLayout()
@@ -208,6 +215,13 @@ end
 
 function onStepHit()
 	school_mechanics.onStep(curStep)
+
+    if not opponentAltActive and curStep >= 639 then
+        opponentAltActive = true
+        setOpponentAltAnim("-alt")
+        setCharacterIdleSuffix("dad", "-alt")
+        playOpponentIdle()
+    end
 end
 
 function onBeatHit()

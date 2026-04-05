@@ -8,6 +8,7 @@ import openfl.media.Sound;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
 import openfl.utils.ByteArray;
+import ModInitialize;
 
 using StringTools;
 
@@ -597,6 +598,28 @@ class Cache
 	{
 		if (characterPath == null || characterPath == "")
 			return;
+
+		var characterInfo:ConfigCharacters = null;
+
+		try {
+			characterInfo = Character.loadInfo('characters/$characterPath');
+		} catch (e) {}
+
+		if(characterInfo != null && characterInfo.file != null && characterInfo.file.trim() != "") {
+			var fileList:String = characterInfo.file;
+
+			for(file in fileList.split(",")) {
+				var trimmedFile:String = file.trim();
+				var extensionIndex:Int = trimmedFile.lastIndexOf(".");
+				var basePath:String = extensionIndex >= 0 ? trimmedFile.substr(0, extensionIndex) : trimmedFile;
+				var graphicKey = Paths.getPath('images/$basePath.png', AssetType.IMAGE, null);
+
+				if (graphicKey != null && graphicKey != "")
+					cacheTexture(graphicKey);
+			}
+
+			return;
+		}
 
 		var graphicKey = Paths.getPath('images/characters/$characterPath.png', AssetType.IMAGE, null);
 		if (graphicKey != null && graphicKey != "")

@@ -3036,6 +3036,15 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	public function playOpponentIdle():Void
+	{
+		if(dad == null) {
+			return;
+		}
+
+		dad.playPreferredIdle(true);
+	}
+
 	function shouldBotplayHitPlayerNote(note:Note):Bool {
 		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead || note.ignore) {
 			return false;
@@ -4048,7 +4057,7 @@ class PlayState extends MusicBeatState
 
 		if(dad.animation.curAnim != null) {
 			if (curBeat % dad.danceBeatTimer == 0 && !dad.isSinging() && !dad.stunned && dad.shouldPlayDance) {
-				dad.dance();
+				playOpponentIdle();
 			}
 		}
 

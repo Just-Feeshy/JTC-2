@@ -54,6 +54,7 @@ class Character extends feshixl.FeshSprite {
 	public var stunned:Bool = false;
 	public var shouldPlayDance:Bool = true;
 	public var hasBePlayer:String = "";
+	public var idleSuffix:String = "";
 
 	@:isVar public var _info(get, default):ConfigCharacters;
 
@@ -182,6 +183,12 @@ class Character extends feshixl.FeshSprite {
 			extension = trimmedFile.substr(extensionIndex + 1).toLowerCase();
 		}
 
+		var imagePath:String = Paths.getPath('images/$basePath.png', IMAGE, "shared");
+		var dataPath:String = Paths.getPath('images/$basePath.${extension == "json" ? "json" : "xml"}', extension == "json" ? TEXT : TEXT, "shared");
+
+		if(!Paths.assetExists(imagePath, IMAGE) || !Paths.assetExists(dataPath, TEXT)) {
+			return null;
+		}
 		return switch(extension) {
 			case "json":
 				Paths.getPackerAtlas(basePath, "shared", true);
@@ -377,9 +384,7 @@ class Character extends feshixl.FeshSprite {
 
 		animation.play(null);
 
-		if(hasAnimation("idle")) {
-			playAnim("idle", true);
-		}
+		playPreferredIdle(true);
 	}
 
 	override function update(elapsed:Float) {
@@ -498,9 +503,9 @@ class Character extends feshixl.FeshSprite {
 						danced = !danced;
 
 						if (danced)
-							playAnim('danceRight');
+							playAnim(resolveIdleAnimationName('danceRight'));
 						else
-							playAnim('danceLeft');
+							playAnim(resolveIdleAnimationName('danceLeft'));
 					}
 
 				case 'gf-christmas':
@@ -509,9 +514,9 @@ class Character extends feshixl.FeshSprite {
 						danced = !danced;
 
 						if (danced)
-							playAnim('danceRight');
+							playAnim(resolveIdleAnimationName('danceRight'));
 						else
-							playAnim('danceLeft');
+							playAnim(resolveIdleAnimationName('danceLeft'));
 					}
 
 				case 'gf-car':
@@ -520,9 +525,9 @@ class Character extends feshixl.FeshSprite {
 						danced = !danced;
 
 						if (danced)
-							playAnim('danceRight');
+							playAnim(resolveIdleAnimationName('danceRight'));
 						else
-							playAnim('danceLeft');
+							playAnim(resolveIdleAnimationName('danceLeft'));
 					}
 				case 'gf-pixel':
 					if (!animation.curAnim.name.startsWith('hair'))
@@ -530,20 +535,20 @@ class Character extends feshixl.FeshSprite {
 						danced = !danced;
 
 						if (danced)
-							playAnim('danceRight');
+							playAnim(resolveIdleAnimationName('danceRight'));
 						else
-							playAnim('danceLeft');
+							playAnim(resolveIdleAnimationName('danceLeft'));
 					}
 
 				case 'spooky':
 					danced = !danced;
 
 					if (danced)
-						playAnim('danceRight');
+						playAnim(resolveIdleAnimationName('danceRight'));
 					else
-						playAnim('danceLeft');
+						playAnim(resolveIdleAnimationName('danceLeft'));
 				default:
-					playAnim('idle');
+					playAnim(resolveIdleAnimationName('idle'));
 			}
 		}
 	}
@@ -554,6 +559,22 @@ class Character extends feshixl.FeshSprite {
 		}
 
 		return animation.curAnim.name;
+	}
+
+	public function playPreferredIdle(force:Bool = false):Void {
+		dance(force);
+	}
+
+	function resolveIdleAnimationName(baseName:String):String {
+		if(idleSuffix != null && idleSuffix != "") {
+			var suffixedName:String = baseName + idleSuffix;
+
+			if(hasAnimation(suffixedName)) {
+				return suffixedName;
+			}
+		}
+
+		return baseName;
 	}
 
 	public function playNoDanceAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
