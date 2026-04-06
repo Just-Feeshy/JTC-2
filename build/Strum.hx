@@ -111,11 +111,13 @@ class Strum extends feshixl.FeshSprite {
 	public function setupAnimations():Void {
 		addAnimationWithFallback('static', [
 			getModernPrefix('static'),
-			'arrow' + direction.toUpperCase()
+			'arrow' + direction.toUpperCase(),
+			direction + ' static'
 		], 24, false);
 		addAnimationWithFallback('pressed', [
 			getModernPrefix('press'),
-			direction + ' press'
+			direction + ' press',
+			'arrow' + direction.toUpperCase() + ' press'
 		], 24, false);
 		addAnimationWithFallback('confirm', [
 			getModernPrefix('confirm'),
@@ -190,7 +192,7 @@ class Strum extends feshixl.FeshSprite {
 			}
 		}
 
-		if(Main.feeshmoraModifiers && DefaultHandler.modifiers != null) {
+		if(Main.feeshmoraModifiers && DefaultHandler.modifiers != null && animation.curAnim != null) {
 			if((animation.curAnim.name == 'static' || animation.curAnim.name == 'pressed') && DefaultHandler.modifiers.blindEffect.enabled) {
 				visible = false;
 			}
