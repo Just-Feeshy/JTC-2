@@ -1158,24 +1158,6 @@ class PlayLua
 				});
 			});
 
-			playState.addCallback("setNoteStrumAngleX", function(id:Int, angle:Float) {
-				return withStrumById(id, function(strumOBJ:Strum) {
-					strumOBJ.xAngle = angle;
-				});
-			});
-
-			playState.addCallback("setNoteStrumAngleY", function(id:Int, angle:Float) {
-				return withStrumById(id, function(strumOBJ:Strum) {
-					strumOBJ.yAngle = angle;
-				});
-			});
-
-			playState.addCallback("setNoteStrumAngleZ", function(id:Int, angle:Float) {
-				return withStrumById(id, function(strumOBJ:Strum) {
-					strumOBJ.angle = angle;
-				});
-			});
-
 			playState.addCallback("setNoteStrumAngle", function(id:Int, angle:Float) {
 				return withStrumById(id, function(strumOBJ:Strum) {
 					strumOBJ.angle = angle;
@@ -1202,21 +1184,6 @@ class PlayLua
 						strumOBJ.updateHitbox();
 				});
 			});
-
-		playState.addCallback("getNoteStrumAngleX", function(id:Int) {
-			var strumOBJ:Strum = getStrumById(id);
-			return strumOBJ != null ? strumOBJ.xAngle : 0;
-		});
-
-		playState.addCallback("getNoteStrumAngleY", function(id:Int) {
-			var strumOBJ:Strum = getStrumById(id);
-			return strumOBJ != null ? strumOBJ.yAngle : 0;
-		});
-
-		playState.addCallback("getNoteStrumAngleZ", function(id:Int) {
-			var strumOBJ:Strum = getStrumById(id);
-			return strumOBJ != null ? strumOBJ.angle : 0;
-		});
 
 		playState.addCallback("getNoteStrumAngle", function(id:Int) {
 			var strumOBJ:Strum = getStrumById(id);

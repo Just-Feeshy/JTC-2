@@ -16,15 +16,13 @@ import flixel.util.FlxDestroyUtil;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import feshixl.math.FeshMath;
-import feshixl.FeshSprite;
-import feshixl.FeshCamera;
 
 import template.CustomNote;
 import SaveData.SaveType;
 
 using StringTools;
 
-class Note extends FeshSprite {
+class Note extends feshixl.FeshMinSprite {
 	public static final swagWidth:Float = 160 * 0.7;
 	public static final PURP_NOTE:Int = 0;
 	public static final GREEN_NOTE:Int = 2;
@@ -94,8 +92,6 @@ class Note extends FeshSprite {
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?noteType:String = "regular",  ?ifcircle:Bool, ?ifPlayState:Bool)
 	{
 		super();
-
-		useAdvanceClipping = false;
 
 		noteOffset = FlxPoint.get();
 		visualOffset = FlxPoint.get();

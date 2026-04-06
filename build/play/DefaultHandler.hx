@@ -198,18 +198,6 @@ class DefaultHandler {
 
         eventHandler();
 
-        if(jitStrumSize || sizeTimer > 0) {
-            PlayState.opponentStrums.forEachAlive(function(spr:Strum) {
-                spr.engineWidth = strumSize[spr.ID][0];
-                spr.engineHeight = strumSize[spr.ID][1] + (sizeTimer/100);
-            });
-
-            PlayState.playerStrums.forEachAlive(function(spr:Strum) {
-                spr.engineWidth = strumSize[spr.ID+4][0];
-                spr.engineHeight = strumSize[spr.ID+4][1] + (sizeTimer/100);
-            });
-        }
-
         PlayState.opponentStrums.x = strumOffsetArray[0][0] + strumOffsetEvent[0];
         PlayState.playerStrums.x = strumOffsetArray[0][1] + strumOffsetEvent[0];
         PlayState.opponentStrums.y = strumOffsetArray[1][0] + strumOffsetEvent[1];

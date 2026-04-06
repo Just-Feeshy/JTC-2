@@ -1,6 +1,7 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.math.FlxPoint;
@@ -20,8 +21,8 @@ import ModInitialize;
 
 using StringTools;
 
-class Character extends feshixl.FeshSprite {
-	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 0.75;
+class Character extends feshixl.FeshMinSprite {
+	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 1.0;
 	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT", "SPACE"];
 	private var finalizedX:Float;
 	private var finalizedY:Float;
@@ -70,8 +71,6 @@ class Character extends feshixl.FeshSprite {
 	{
 		super(x, y);
 
-		useAdvanceClipping = false;
-
 		finalizedX = x;
 		finalizedY = y;
 
@@ -119,16 +118,6 @@ class Character extends feshixl.FeshSprite {
 					antialiasing = !_info.pixel;
 				else
 					antialiasing = false;
-
-				//#if windows // mac has a high DPI which does the fix for me
-				#if (windows)
-				if(frameOffsetApply && _info.clippingAdjustment.toString() != "{}") {
-					ogFrames = FeshFramesHelper.copyFrames(frames);
-				    frames = FeshFramesHelper.addOffsetInfo(ogFrames, _info.clippingAdjustment, false);
-				    @:privateAccess animation.destroyAnimations();
-					refreshAnims();
-				}
-				#end
 
 				playAnim(_info.playAnim);
 				flipX = _info.isPlayer;
@@ -189,6 +178,7 @@ class Character extends feshixl.FeshSprite {
 		if(!Paths.assetExists(imagePath, IMAGE) || !Paths.assetExists(dataPath, TEXT)) {
 			return null;
 		}
+
 		return switch(extension) {
 			case "json":
 				Paths.getPackerAtlas(basePath, "shared", true);

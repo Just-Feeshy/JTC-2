@@ -5,9 +5,9 @@ import flixel.FlxSprite;
 import flixel.FlxCamera;
 import flixel.util.FlxColor;
 import flixel.graphics.FlxGraphic;
-import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
+import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.graphics.frames.FlxFrame;
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
@@ -33,29 +33,12 @@ import Std.is as isOfType;
 /**
 * This sprite class was made to make `FlxSprite` easier to configure
 * which would also allow the user to easily cutomize said sprite for there mod.
+* Only issue, it overrides stuff
 *
 * WARNING: This class is for experimental purposes only.
-* TODO: Get animations from json too.
-*
 * @author Feeshy
 */
-class FeshSprite extends FlxSprite {
-
-    /**
-    * Rotate angle's pitch axis.
-    */
-    public var xAngle(default, set):Float = 0;
-
-    /**
-    * Rotate angle's yaw axis.
-    */
-    public var yAngle(default, set):Float = 0;
-
-    /**
-    * Rotate angle's row axis.
-    */
-    public var zAngle(get, set):Float;
-
+class FeshSprite extends FeshMinSprite {
     public var defaultCompiler:Void->Void;
     public var completeCallback:Void->Void;
 
@@ -186,34 +169,6 @@ class FeshSprite extends FlxSprite {
         return frameName;
     }
 
-    public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
-		animation.play(AnimName, Force, Reversed, Frame);
-	}
-
-    @:noCompletion
-    function set_xAngle(Value:Float):Float {
-        var newAngle = (xAngle != Value);
-		var ret = Value;
-		if (newAngle) {
-			_angleChanged = true;
-		}
-
-        xAngle = ret;
-		return ret;
-    }
-
-    @:noCompletion
-    function set_yAngle(Value:Float):Float {
-        var newAngle = (yAngle != Value);
-		var ret = Value;
-		if (newAngle) {
-			_angleChanged = true;
-		}
-
-        yAngle = ret;
-		return ret % Math.PI * 2;
-    }
-
     @:noCompletion
     override function set_angle(Value:Float):Float {
         var newAngle = (angle != Value);
@@ -224,17 +179,6 @@ class FeshSprite extends FlxSprite {
 
         angle = ret;
 		return ret % Math.PI * 2;
-    }
-
-    @:noCompletion
-    function get_zAngle():Float {
-        return angle;
-    }
-
-    @:noCompletion
-    function set_zAngle(Value:Float):Float {
-        angle = Value;
-        return Value % Math.PI * 2;
     }
 
     @:noCompletion

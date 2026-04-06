@@ -108,8 +108,6 @@ typedef StrumResetState =
 	var y:Float;
 	var alpha:Float;
 	var angle:Float;
-	var xAngle:Float;
-	var yAngle:Float;
 	var directionAngle:Float;
 	var scaleX:Float;
 	var scaleY:Float;
@@ -1311,8 +1309,6 @@ class PlayState extends MusicBeatState
 			y: finalY,
 			alpha: finalAlpha,
 			angle: strum.angle,
-			xAngle: strum.xAngle,
-			yAngle: strum.yAngle,
 			directionAngle: strum.directionAngle,
 			scaleX: strum.scale.x,
 			scaleY: strum.scale.y
@@ -1324,16 +1320,12 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		strum.engineWidth = 0;
-		strum.engineHeight = 0;
 		strum.scale.set(state.scaleX, state.scaleY);
 		strum.updateHitbox();
 		strum.x = state.x;
 		strum.y = state.y;
 		strum.alpha = state.alpha;
 		strum.angle = state.angle;
-		strum.xAngle = state.xAngle;
-		strum.yAngle = state.yAngle;
 		strum.directionAngle = state.directionAngle;
 		strum.onlyFans = 1;
 		strum.holdTimer = 0;
@@ -2960,10 +2952,6 @@ class PlayState extends MusicBeatState
 					daNote.setNoteAngle(currentStrum.angle, sustainNoteAngle);
 					daNote.setNoteAlpha(currentStrum.onlyFans, fadeInValue);
 
-					//Nothing planned for now.
-					daNote.xAngle = 0;
-					daNote.yAngle = 0;
-
 					if (daNote.isSustainNote) {
 						daNote.setXaxisSustain(currentStrums.members, currentStrum.x, currentStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
 					}
@@ -2985,10 +2973,6 @@ class PlayState extends MusicBeatState
 
 					daNote.setNoteAngle(oppositeStrum.angle, sustainNoteAngle);
 					daNote.setNoteAlpha(oppositeStrum.onlyFans, fadeInValue);
-
-					//Nothing planned for now.
-					daNote.xAngle = 0;
-					daNote.yAngle = 0;
 
 					if (daNote.isSustainNote) {
 						daNote.setXaxisSustain(oppositeStrums.members, oppositeStrum.x, oppositeStrum.x + (Note.swagWidth / 3), sustainDirectionAngle);
