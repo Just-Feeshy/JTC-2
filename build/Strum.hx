@@ -38,7 +38,7 @@ class Strum extends feshixl.FeshSprite {
 
 	override function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
 		if(AnimName == 'confirm' && !rendered) {
-			updateFrameSizeOffset(0, -1, 'confirm');
+			updateFrameSizeOffset(0, -2, 'confirm');
 			rendered = true;
 		}
 
