@@ -12,7 +12,7 @@ import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFilterFrames;
 import flixel.graphics.frames.FlxFrame;
-import feshixl.ui.FeshFramesHelper;
+import feshixl.FeshMinSprite;
 import openfl.filters.BitmapFilter;
 import openfl.utils.Assets;
 import json2object.JsonParser;
@@ -21,7 +21,7 @@ import ModInitialize;
 
 using StringTools;
 
-class Character extends feshixl.FeshMinSprite {
+class Character extends FeshMinSprite {
 	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 1.0;
 	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT", "SPACE"];
 	private var finalizedX:Float;
@@ -149,42 +149,16 @@ class Character extends feshixl.FeshMinSprite {
 		}
 
 		if(files.length <= 1) {
-			return loadCharacterFrameCollection(files.length == 1 ? files[0] : fileList);
+			return FeshMinSprite.loadFrameCollection(files.length == 1 ? files[0] : fileList);
 		}
 
 		var frameCollections:Array<FlxFramesCollection> = [];
 
 		for(file in files) {
-			frameCollections.push(loadCharacterFrameCollection(file));
+			frameCollections.push(FeshMinSprite.loadFrameCollection(file));
 		}
 
 		return FlxAnimationUtil.combineAtlas(frameCollections);
-	}
-
-	static function loadCharacterFrameCollection(file:String):FlxFramesCollection {
-		var trimmedFile:String = file != null ? file.trim() : "";
-		var extension:String = "";
-		var basePath:String = trimmedFile;
-		var extensionIndex:Int = trimmedFile.lastIndexOf(".");
-
-		if(extensionIndex >= 0) {
-			basePath = trimmedFile.substr(0, extensionIndex);
-			extension = trimmedFile.substr(extensionIndex + 1).toLowerCase();
-		}
-
-		var imagePath:String = Paths.getPath('images/$basePath.png', IMAGE, "shared");
-		var dataPath:String = Paths.getPath('images/$basePath.${extension == "json" ? "json" : "xml"}', extension == "json" ? TEXT : TEXT, "shared");
-
-		if(!Paths.assetExists(imagePath, IMAGE) || !Paths.assetExists(dataPath, TEXT)) {
-			return null;
-		}
-
-		return switch(extension) {
-			case "json":
-				Paths.getPackerAtlas(basePath, "shared", true);
-			default:
-				Paths.getSparrowAtlas(basePath, "shared", true);
-		};
 	}
 
 	public function isAnimationFinished():Bool {

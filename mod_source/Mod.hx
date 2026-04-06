@@ -12,6 +12,9 @@ class Mod {
     static function onInit() {
         Register.setStageForMod(CheesyStage); // Remove unwanted data from the game.
 
+		// Add custom fifth key
+		Register.addStrumFiles("notes/fifth/Fifth key");
+
 		// Add the lua files to the game
         Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));
         Register.attachLuaToState(MainMenuState, Paths.lua("jtc_menu"));

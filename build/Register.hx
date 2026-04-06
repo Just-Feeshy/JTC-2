@@ -57,7 +57,7 @@ class Register {
     @:allow(PlayState) private static var events:Array<Class<IFeshEvent>> = [];
     @:allow(PlayState) private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
     @:allow(PlayState) private static var stage:Class<StageBuilder> = DefaultStage;
-	@:allow(Strum) private static var strumAnimation:Array<String> = [];
+	@:allow(Strum) private static var strumFiles:Array<String> = [];
     @:allow(Main) private static var initialState:Class<HelperStates> = TitleState;
 
     @:allow(Preloader)
@@ -133,8 +133,8 @@ class Register {
         return null;
     }
 
-	public inline static function addStrumFrames(name:String):Void {
-		strumAnimation.push(name);
+	public inline static function addStrumFiles(name:String):Void {
+		strumFiles.push(name);
 	}
 
     public inline static function setStageForMod(stage:Class<StageBuilder>):Void {

@@ -3,6 +3,8 @@ package;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
+import flixel.graphics.frames.FlxFramesCollection;
+import feshixl.FeshMinSprite;
 
 using StringTools;
 
@@ -34,6 +36,14 @@ class Strum extends feshixl.FeshSprite {
 		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.blindEffect.enabled) {
 			visible = false;
 		}
+
+		var frameCollections:Array<FlxFramesCollection> = [];
+
+		for(file in Register.strumFiles) {
+			frameCollections.push(FeshMinSprite.loadFrameCollection(file));
+		}
+
+		frames = FlxAnimationUtil.combineAtlas(frameCollections);
 	}
 
 	override function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
