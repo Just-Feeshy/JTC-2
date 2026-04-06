@@ -14,6 +14,7 @@ local HUD_ICON_Y_OFFSET_BASE = 97
 local HUD_ICON_GAP_RATIO = 0.01
 local HUD_ICON_LEFT_NUDGE_RATIO = 0.012
 local meterNoiseTime = 0
+local notesHit = 0
 
 local function clamp(value, minValue, maxValue)
     return math.max(math.min(value, maxValue), minValue)
@@ -31,7 +32,8 @@ local function updateMeterAngle(elapsed)
     meterNoiseTime = meterNoiseTime + elapsed * METER_JITTER_SPEED
     local healthLerp = clamp(getHealthNormalized(), 0, 1)
     local targetLerp = healthLerp
-    local targetAngle = mix(-45, 45, targetLerp)
+	local downscroll_angle = downscroll and -1 or 1
+    local targetAngle = mix(-45, 45, targetLerp) * downscroll_angle
     local jitter = (math.sin(meterNoiseTime * 2.1) * 0.55
         + math.sin(meterNoiseTime * 5.3 + 0.9) * 0.3
         + math.sin(meterNoiseTime * 9.7 + 2.2) * 0.15) * METER_JITTER_DEGREES
@@ -185,6 +187,7 @@ end
 
 function school_mechanics.onCreate()
     opponentStandTransitionActive = false
+	notesHit = 0
 
     if downscroll then
 	    METER_OFFSET.y = METER_OFFSET.y * -1
@@ -237,6 +240,10 @@ function school_mechanics.onUpdate(elapsed)
 			callEvent("time freeze", "0", "1.45")
 		end
     end
+end
+
+function school_mechanics.onGoodNote()
+	notesHit += 1;
 end
 
 return school_mechanics

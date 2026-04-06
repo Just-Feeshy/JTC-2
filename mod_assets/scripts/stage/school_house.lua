@@ -210,9 +210,10 @@ function onStepHit()
 	school_mechanics.onStep(curStep)
 end
 
-function onBeatHit()
-end
-
 function onUpdate(elapsed)
 	school_mechanics.onUpdate(elapsed)
+end
+
+function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
+	school_mechanics.onGoodNote()
 end

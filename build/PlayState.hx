@@ -2194,6 +2194,7 @@ class PlayState extends MusicBeatState
 
 		unspawnNotes.sort(sortByShit);
 		totalNotesLoaded = unspawnNotes.length;
+		playLua.set("totalNotesLoaded", totalNotesLoaded);
 		loadedSplashAnimations = [];
 		generatedMusic = true;
 	}

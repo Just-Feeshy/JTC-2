@@ -436,9 +436,9 @@ local function updateDeathCharacterVariant()
     local stepValue = curStepFloat or curStep or 0
 
     if stepValue < deathVariantStep then
-        return "demon"
-    else
         return "normal"
+    else
+        return "death"
     end
 end
 
@@ -1103,6 +1103,7 @@ function generatedStage()
     else
         removeCameraShader(STATIC_SHADER_CAMERA)
     end
+
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     addSongTrack("gfVocals", "GF_Voices", "extra", 1)

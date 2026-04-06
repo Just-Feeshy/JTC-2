@@ -171,6 +171,7 @@ class PlayFlow
 				if(playState.videoSwitchState == "" || playState.videoSwitchState == null || SaveData.getData(SaveType.SKIP_CUTSCENES)) {
 					CacheState.loadAndSwitchState(new PlayState());
 				}else {
+					trace("WENT TO VIDEO");
 					CacheState.loadAndSwitchState(new VideoState(new PlayState(), playState.videoSwitchState));
 				}
 			}
