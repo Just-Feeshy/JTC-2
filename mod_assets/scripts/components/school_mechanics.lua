@@ -243,7 +243,7 @@ function school_mechanics.onUpdate(elapsed)
 end
 
 function school_mechanics.onGoodNote()
-	notesHit += 1;
+	notesHit = notesHit + 1;
 end
 
 return school_mechanics

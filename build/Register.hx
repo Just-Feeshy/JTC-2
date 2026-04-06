@@ -57,7 +57,7 @@ class Register {
     @:allow(PlayState) private static var events:Array<Class<IFeshEvent>> = [];
     @:allow(PlayState) private static var dialogues:Map<String, Class<IDialogue>> = new Map<String, Class<IDialogue>>();
     @:allow(PlayState) private static var stage:Class<StageBuilder> = DefaultStage;
-	@:allow(Strum) private static var strumFiles:Array<String> = [];
+	@:allow(Strum) @:allow(PlayState) private static var strumFiles:Array<String> = [];
     @:allow(Main) private static var initialState:Class<HelperStates> = TitleState;
 
     @:allow(Preloader)

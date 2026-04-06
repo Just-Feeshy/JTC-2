@@ -64,6 +64,7 @@ class Strum extends feshixl.FeshSprite {
 			case "down": "Down";
 			case "up": "Up";
 			case "right": "Right";
+			case "space": "Space";
 			default: null;
 		}
 
@@ -112,7 +113,8 @@ class Strum extends feshixl.FeshSprite {
 		addAnimationWithFallback('static', [
 			getModernPrefix('static'),
 			'arrow' + direction.toUpperCase(),
-			direction + ' static'
+			direction + ' static',
+			direction + ' press'
 		], 24, false);
 		addAnimationWithFallback('pressed', [
 			getModernPrefix('press'),

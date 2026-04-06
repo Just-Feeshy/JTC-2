@@ -21,7 +21,7 @@ import ModInitialize;
 
 using StringTools;
 
-class Character extends FeshMinSprite {
+class Character extends feshixl.FeshSprite {
 	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 1.0;
 	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT", "SPACE"];
 	private var finalizedX:Float;
@@ -70,6 +70,8 @@ class Character extends FeshMinSprite {
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters, frameOffsetApply:Bool = true)
 	{
 		super(x, y);
+
+		useAdvanceClipping = false;
 
 		finalizedX = x;
 		finalizedY = y;
