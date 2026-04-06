@@ -37,13 +37,25 @@ class Strum extends feshixl.FeshSprite {
 			visible = false;
 		}
 
-		var frameCollections:Array<FlxFramesCollection> = [];
+		reloadFrames('NOTE_assets');
+	}
+
+	public function reloadFrames(defaultAsset:String):Void {
+		var collections:Array<FlxFramesCollection> = [];
+		collections.push(Paths.getSparrowAtlas(defaultAsset, null, true));
 
 		for(file in Register.strumFiles) {
-			frameCollections.push(FeshMinSprite.loadFrameCollection(file));
+			var collection = FeshMinSprite.loadFrameCollection(file);
+			if(collection != null) {
+				collections.push(collection);
+			}
 		}
 
-		frames = FlxAnimationUtil.combineAtlas(frameCollections);
+		if(collections.length <= 1) {
+			frames = collections[0];
+		} else {
+			frames = FlxAnimationUtil.combineAtlas(collections);
+		}
 	}
 
 	override function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {

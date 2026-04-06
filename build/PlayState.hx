@@ -30,6 +30,8 @@ import flixel.addons.effects.chainable.FlxWaveEffect;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.graphics.atlas.FlxAtlas;
 import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.graphics.frames.FlxFramesCollection;
+import feshixl.FeshMinSprite;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
@@ -2258,7 +2260,7 @@ class PlayState extends MusicBeatState
 								babyArrow.animation.add('confirm', [15, 19], 24, false);
 						}
 					default:
-						babyArrow.frames = Paths.getSparrowAtlas('NOTE_assets', null, true);
+						babyArrow.reloadFrames('NOTE_assets');
 
 						babyArrow.antialiasing = true;
 						babyArrow.setGraphicSize(Std.int(babyArrow.width * 0.7));
@@ -2303,7 +2305,7 @@ class PlayState extends MusicBeatState
 								babyArrow.animation.add('confirm', [15, 19], 24, false);
 						}
 					default:
-						babyArrow.frames = Paths.getSparrowAtlas('NOTE_assets', null, true);
+						babyArrow.reloadFrames('NOTE_assets');
 
 						babyArrow.antialiasing = FlxG.save.data.showAntialiasing;
 						babyArrow.setGraphicSize(Std.int(babyArrow.width * 0.7));

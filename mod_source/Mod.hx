@@ -13,7 +13,7 @@ class Mod {
         Register.setStageForMod(CheesyStage); // Remove unwanted data from the game.
 
 		// Add custom fifth key
-		Register.addStrumFiles("notes/fifth/Fifth key");
+		Register.addStrumFiles("notes/fifth/Fifth key.xml");
 
 		// Add the lua files to the game
         Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));
