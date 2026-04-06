@@ -852,6 +852,10 @@ class Note extends feshixl.FeshMinSprite {
 			modifiedSymbol.visible = Value;
 		}
 
+		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.blindEffect.enabled) {
+			return visible = false;
+		}
+
 		return visible = Value;
 	}
 
