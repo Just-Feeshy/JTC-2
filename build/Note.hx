@@ -61,6 +61,7 @@ class Note extends feshixl.FeshMinSprite {
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
 	public var wasSustainNote:Bool = false;
+	public var sustainChainMissed:Bool = false;
 	public var ignore:Bool = false;
 
 	public var noteScore:Float = 1;

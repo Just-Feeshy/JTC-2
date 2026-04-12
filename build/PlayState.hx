@@ -1990,6 +1990,224 @@ class PlayState extends MusicBeatState
 		combo = 0;
 	}
 
+	private inline function getSustainSegmentDurationMs(note:Note):Float
+	{
+		if(note == null || note.prevNote == null) {
+			return Conductor.instance.stepLengthMs;
+		}
+
+		var segmentDurationMs:Float = Math.abs(note.getNoteTime() - note.prevNote.getNoteTime());
+		return segmentDurationMs > 0 ? segmentDurationMs : Conductor.instance.stepLengthMs;
+	}
+
+	private inline function getSustainSegmentDurationSec(note:Note):Float
+	{
+		return getSustainSegmentDurationMs(note) / Constants.MS_PER_SEC;
+	}
+
+	private function keepCharacterSingingForSustain(character:Character, note:Note, ?suffix:String = ""):Void
+	{
+		if(character == null || note == null || !note.playAnyAnimation) {
+			return;
+		}
+
+		if(character.isSinging()) {
+			character.holdTimer = 0;
+		}else {
+			character.onNoteHit(Std.int(Math.abs(note.noteData)), suffix);
+		}
+	}
+
+	private function isSustainChainDescendantOf(candidate:Note, chainNote:Note):Bool
+	{
+		if(candidate == null || chainNote == null || !candidate.isSustainNote) {
+			return false;
+		}
+
+		var current:Note = candidate;
+		while(current != null) {
+			if(current == chainNote) {
+				return true;
+			}
+
+			if(current.prevNote == null || current.prevNote == current) {
+				break;
+			}
+
+			// Stop at head notes - don't cross into different sustain chains
+			// Head notes link to the previous song note which may be from a different chain
+			if(!current.prevNote.isSustainNote) {
+				break;
+			}
+
+			current = current.prevNote;
+		}
+
+		return false;
+	}
+
+	private function markRemainingSustainChainMissed(chainNote:Note):Void
+	{
+		if(chainNote == null || !chainNote.isSustainNote) {
+			return;
+		}
+
+		chainNote.sustainChainMissed = true;
+
+		for(candidate in notes.members) {
+			if(candidate != null && isSustainChainDescendantOf(candidate, chainNote)) {
+				candidate.sustainChainMissed = true;
+			}
+		}
+
+		for(candidate in unspawnNotes) {
+			if(candidate != null && isSustainChainDescendantOf(candidate, chainNote)) {
+				candidate.sustainChainMissed = true;
+			}
+		}
+	}
+
+	private function handlePlayerSustainDrop(note:Note):Void
+	{
+		if(note == null || !note.isSustainNote || note.sustainChainMissed) {
+			return;
+		}
+
+		markRemainingSustainChainMissed(note);
+
+		// Calculate actual remaining length like Funkin does:
+		// The end time of this segment is strumTime + sustainLength
+		// The actual remaining is (endTime - currentSongPosition)
+		var sustainEndTime:Float = note.getNoteTime() + note.sustainLength;
+		var actualRemainingMs:Float = Math.max(0, sustainEndTime - Conductor.instance.trackedSongPosition);
+
+		if(actualRemainingMs <= Constants.HOLD_DROP_PENALTY_THRESHOLD_MS) {
+			return;
+		}
+
+		var remainingLengthSec:Float = actualRemainingMs / Constants.MS_PER_SEC;
+		var healthChangeUncapped:Float = remainingLengthSec * Constants.HEALTH_HOLD_DROP_PENALTY_PER_SECOND;
+		var healthChangeMax:Float = Constants.HEALTH_HOLD_DROP_PENALTY_MAX - (note.prevNote != null && note.prevNote.wasGoodHit ? -Constants.HEALTH_MISS_PENALTY : 0);
+		var healthChange:Float = FlxMath.bound(healthChangeUncapped, healthChangeMax, 0);
+		var scoreChange:Int = Std.int(Constants.SCORE_HOLD_DROP_PENALTY_PER_SECOND * remainingLengthSec);
+
+		breakComboOnMiss();
+		missesHold += 1;
+		setHealth(health + healthChange);
+		songScore += scoreChange;
+		applyPlayerMissFeedback(Std.int(Math.abs(note.noteData)), note.tag, true, note.playAnyAnimation, true);
+		updateLuaVars();
+		updatePerSectionLuaVars();
+		playLua.call("noteMiss", [note.noteData, note.tag]);
+	}
+
+	/**
+	 * Funkin-style immediate sustain drop handling.
+	 * Called when the player releases a key while holding a sustain.
+	 */
+	public function onSustainKeyReleased(lane:Int):Void
+	{
+		if(startingSong || modifierCheckList('bot mode')) {
+			return;
+		}
+
+		var currentSongTime:Float = Conductor.instance.trackedSongPosition;
+		var droppedNote:Note = null;
+
+		// Find the first active sustain segment on this lane that was being held
+		notes.forEachAlive(function(daNote:Note) {
+			if(droppedNote != null) {
+				return; // Already found one
+			}
+
+			if(daNote.mustPress
+				&& daNote.isSustainNote
+				&& daNote.noteData == lane
+				&& !daNote.sustainChainMissed
+				&& !daNote.wasGoodHit
+				&& daNote.prevNote != null
+				&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)) {
+				droppedNote = daNote;
+			}
+		});
+
+		if(droppedNote == null) {
+			return;
+		}
+
+		// Find the head note of this sustain chain
+		var headNote:Note = findSustainHeadNote(droppedNote);
+
+		// Handle the drop penalty (this also marks the chain as missed)
+		handlePlayerSustainDrop(droppedNote);
+
+		// Immediately remove ALL sustain segments connected to this head note (Funkin-style)
+		var notesToRemove:Array<Note> = [];
+
+		notes.forEachAlive(function(daNote:Note) {
+			if(daNote.isSustainNote && daNote.noteData == lane && belongsToSustainChain(daNote, headNote)) {
+				daNote.visible = false;
+				daNote.alpha = 0;
+				notesToRemove.push(daNote);
+			}
+		});
+
+		for(note in notesToRemove) {
+			removeNote(note);
+		}
+
+		// Also remove from unspawned notes
+		var unspawnedToRemove:Array<Note> = [];
+		for(daNote in unspawnNotes) {
+			if(daNote != null && daNote.isSustainNote && daNote.noteData == lane && belongsToSustainChain(daNote, headNote)) {
+				unspawnedToRemove.push(daNote);
+			}
+		}
+
+		for(note in unspawnedToRemove) {
+			unspawnNotes.remove(note);
+			note.destroy();
+		}
+	}
+
+	/**
+	 * Finds the head note (non-sustain) of a sustain chain by walking up prevNote.
+	 */
+	private function findSustainHeadNote(sustainNote:Note):Note
+	{
+		if(sustainNote == null) {
+			return null;
+		}
+
+		var current:Note = sustainNote;
+		while(current != null) {
+			if(!current.isSustainNote) {
+				return current; // Found the head note
+			}
+
+			if(current.prevNote == null || current.prevNote == current) {
+				break;
+			}
+
+			current = current.prevNote;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Checks if a sustain note belongs to a chain with the given head note.
+	 */
+	private function belongsToSustainChain(sustainNote:Note, headNote:Note):Bool
+	{
+		if(sustainNote == null || headNote == null || !sustainNote.isSustainNote) {
+			return false;
+		}
+
+		var foundHead:Note = findSustainHeadNote(sustainNote);
+		return foundHead == headNote;
+	}
+
 	private function applyPlayerMissFeedback(direction:Int, ?noteTag:String, playSound:Bool = true, playAnim:Bool = true, holdDrop:Bool = false, ghostMiss:Bool = false):Void
 	{
 		setPlayerVocalsVolume(0, noteTag);
@@ -2180,6 +2398,7 @@ class PlayState extends MusicBeatState
 					var sustainNote:Note = new Note(daStrumTime + (Conductor.instance.stepLengthMs * susNote) + Conductor.instance.stepLengthMs, daNoteData, oldNote, true, daNoteAbstract);
 					sustainNote.scrollFactor.set();
 					sustainNote.tag = oldNote.tag;
+					sustainNote.sustainLength = Math.max(0, swagNote.sustainLength - (Conductor.instance.stepLengthMs * susNote));
 
 					sustainNote.playAnyAnimation = oldNote.playAnyAnimation;
 
@@ -3029,9 +3248,21 @@ class PlayState extends MusicBeatState
 				var detector:Bool = !startingSong && Conductor.instance.trackedSongPosition > DefaultHandler.getNoteTime(daNote.strumTime) + 260;
 
 				if (detector) {
-					if (daNote.isSustainNote && daNote.wasGoodHit) {
+					if (daNote.isSustainNote && (daNote.wasGoodHit || daNote.sustainChainMissed)) {
 						removeNote(daNote);
-						}else if(daNote.mustPress && !modifierCheckList('bot mode')) {
+						return;
+					}else if(daNote.isSustainNote) {
+						if(daNote.mustPress && !modifierCheckList('bot mode') && !CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
+							if(daNote.prevNote != null && daNote.prevNote.wasGoodHit) {
+								handlePlayerSustainDrop(daNote);
+							}else {
+								markRemainingSustainChainMissed(daNote);
+							}
+						}
+
+						removeNote(daNote);
+						return;
+					}else if(daNote.mustPress && !modifierCheckList('bot mode')) {
 							if(!CustomNoteHandler.dontHitNotes.contains(daNote.noteAbstract)) {
 
 								if((daNote.tooLate || !daNote.wasGoodHit) && daNote.noteAbstract == "side note") {
@@ -3091,7 +3322,11 @@ class PlayState extends MusicBeatState
 		}
 
 		if(note.playAnyAnimation && !currentOpponent.specialAnim && !currentOpponent.customAnimation) {
-			currentOpponent.onNoteHit(Std.int(Math.abs(note.noteData)), altAnim);
+			if(note.isSustainNote) {
+				keepCharacterSingingForSustain(currentOpponent, note, altAnim);
+			}else {
+				currentOpponent.onNoteHit(Std.int(Math.abs(note.noteData)), altAnim);
+			}
 		}
 
 		events.whenNoteIsPressed(note, this);
@@ -3140,7 +3375,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function shouldBotplayHitPlayerNote(note:Note):Bool {
-		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead || note.ignore) {
+		if(note == null || !note.mustPress || note.wasGoodHit || note.shouldBeDead || note.ignore || note.sustainChainMissed) {
 			return false;
 		}
 
@@ -3284,7 +3519,16 @@ class PlayState extends MusicBeatState
 				combo += 1;
 			}
 
-			setHealth(health + note.giveHealth());
+			if(note.isSustainNote) {
+				var sustainSegmentSec:Float = getSustainSegmentDurationSec(note);
+
+				if(!modifierCheckList('bot mode')) {
+					setHealth(health + (Constants.HEALTH_HOLD_BONUS_PER_SECOND * sustainSegmentSec));
+					songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * sustainSegmentSec);
+				}
+			}else {
+				setHealth(health + note.giveHealth());
+			}
 
 			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
@@ -3297,7 +3541,11 @@ class PlayState extends MusicBeatState
 				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					currentPlayer.onNoteHit(Std.int(Math.abs(note.noteData)), playerAltAnim + currentPlayer.hasBePlayer);
+					if(note.isSustainNote) {
+						keepCharacterSingingForSustain(currentPlayer, note, playerAltAnim + currentPlayer.hasBePlayer);
+					}else {
+						currentPlayer.onNoteHit(Std.int(Math.abs(note.noteData)), playerAltAnim + currentPlayer.hasBePlayer);
+					}
 				}
 			}
 
@@ -3358,7 +3606,9 @@ class PlayState extends MusicBeatState
 					setPlayerVocalsVolume(1, note.tag);
 				}
 
-				hits++;
+				if(!note.isSustainNote) {
+					hits++;
+				}
 			}
 
 			updateLuaVars();

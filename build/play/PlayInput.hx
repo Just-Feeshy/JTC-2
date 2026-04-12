@@ -402,6 +402,7 @@ class PlayInput
 	{
 		playState.notes.forEachAlive(function(daNote:Note) {
 			if (daNote.mustPress && daNote.isSustainNote && !daNote.wasGoodHit
+				&& !daNote.sustainChainMissed
 				&& daNote.noteData >= 0
 				&& daNote.noteData < controlHoldArray.length
 				&& controlHoldArray[daNote.noteData] && !playState.disableInputs
@@ -447,6 +448,9 @@ class PlayInput
 		spr.holdTimer = 0;
 		spr.playAnim('static');
 		playState.endHoldCoverForLane(lane, true);
+
+		// Funkin-style: immediately handle sustain drop when key is released
+		playState.onSustainKeyReleased(lane);
 	}
 
 	function findTapNote(lane:Int, hitSongTime:Float):Note
