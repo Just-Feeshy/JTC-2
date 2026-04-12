@@ -87,6 +87,7 @@ class OptionsMenuState extends MusicBeatState {
 	private var changeBlur:Bool = false;
 
 	private var catalog:String;
+    private var hasBaseGameOptionsToSync:Bool = false;
 
 	public function new(?catalog:String = "none") {
 		this.catalog = catalog;
@@ -127,6 +128,7 @@ class OptionsMenuState extends MusicBeatState {
 		persistentUpdate = persistentDraw = true;
 
 		var configuredBackgroundBlur:Float = Paths.modJSON.main_menu.background_blur != null ? Paths.modJSON.main_menu.background_blur : 0;
+        hasBaseGameOptionsToSync = SaveData.hasBaseGameOptionsToImport();
 
 		switch(this.catalog) {
 			case "game": {
@@ -384,6 +386,44 @@ class OptionsMenuState extends MusicBeatState {
 
 								if(pressed)
 									isChangingOption = false;
+							}),
+							new Options(0, 110 + extra, "Skip Cutscenes", SaveType.SKIP_CUTSCENES, function(option:Options, pressed:Bool) {
+								option.ID = 11 + Math.ceil(extra * 0.1);
+
+								if(pressed)
+									FlxG.save.data.skipCutscenes = !FlxG.save.data.skipCutscenes;
+
+								option.description = "Skip dialogue and pre-song video cutscenes.";
+
+								if(!SaveData.getData(SaveType.SKIP_CUTSCENES)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
+
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 120 + extra, "Bot Mode", SaveType.BOT_MODE_MOD, function(option:Options, pressed:Bool) {
+								option.ID = 12 + Math.ceil(extra * 0.1);
+
+								if(pressed)
+									FlxG.save.data.botMode = !FlxG.save.data.botMode;
+
+								option.description = "Auto-play player notes, like Funkin's botplay.";
+
+								if(!SaveData.getData(SaveType.BOT_MODE_MOD)) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("modifier");
+								}
+
+								if(pressed)
+									isChangingOption = false;
 							})
 						]
 					}
@@ -429,6 +469,79 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Change the gamme value for the game/app.";
 								setting(option, Std.string(FlxG.save.data.gamma), option.ID);
 							}),
+						]
+					}
+				];
+			}case "save": {
+				optionList = [
+					{
+						catagory: this.catalog,
+						options: [
+							new Options(0, 0, "Sync Base FNF Options", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 0;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									FlxG.switchState(new BaseGameOptionsSyncState("save"));
+
+								option.description = hasBaseGameOptionsToSync
+									? "Import compatible options from the base Friday Night Funkin save."
+									: "No compatible base Friday Night Funkin save data is available right now.";
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 10, "Ask To Sync On Startup", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 1;
+
+								if(pressed)
+									SaveData.setBaseGameSyncPromptEnabled(!SaveData.isBaseGameSyncPromptEnabled());
+
+								option.description = "Toggle whether to show the base Friday Night Funkin sync prompt after loading.";
+
+								if(!SaveData.isBaseGameSyncPromptEnabled()) {
+									setting(option, "Off", option.ID);
+									option.optionIcon.animation.play("off");
+								}else {
+									setting(option, "On", option.ID);
+									option.optionIcon.animation.play("on");
+								}
+
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 20, "Reset Sync Prompt", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 2;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									SaveData.resetBaseGameSyncPromptState();
+
+								option.description = "Forget the current sync choice so the startup prompt can appear again.";
+								setting(option, "", option.ID);
+
+								if(pressed)
+									isChangingOption = false;
+							}),
+							new Options(0, 30, "Erase Save Data", SaveType.CACHE_ASSETS, function(option:Options, pressed:Bool) {
+								option.ID = 3;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed) {
+									option.optionSubState = FlxDestroyUtil.destroy(option.optionSubState);
+									option.optionSubState = OptionsSubState.newSubState(SaveType.ERASE_DATA);
+									option.optionSubState.cameras = [camSubState];
+
+									openSubStateCustom(option.optionSubState);
+								}
+
+								option.description = "Erase this project's save data.";
+								setting(option, "", option.ID);
+							})
 						]
 					}
 				];
@@ -553,46 +666,8 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									isChangingOption = false;
 							}),
-							new Options(0, ((imNotSure + 6) * 10), "Skip Cutscenes", SaveType.SKIP_CUTSCENES, function(option:Options, pressed:Bool) {
+							new GhostTapping(0, ((imNotSure + 6) * 10), "Play As Opponent", SaveType.PLAY_AS_OPPONENT, function(option:Options, pressed:Bool) {
 								option.ID = imNotSure + 6;
-
-								if(pressed)
-									FlxG.save.data.skipCutscenes = !FlxG.save.data.skipCutscenes;
-
-								option.description = "Skip dialogue and pre-song video cutscenes.";
-
-								if(!SaveData.getData(SaveType.SKIP_CUTSCENES)) {
-									setting(option, "Off", option.ID);
-									option.optionIcon.animation.play("off");
-								}else {
-									setting(option, "On", option.ID);
-									option.optionIcon.animation.play("on");
-								}
-
-								if(pressed)
-									isChangingOption = false;
-							}),
-							new Options(0, ((imNotSure + 7) * 10), "Bot Mode", SaveType.BOT_MODE_MOD, function(option:Options, pressed:Bool) {
-								option.ID = imNotSure + 7;
-
-								if(pressed)
-									FlxG.save.data.botMode = !FlxG.save.data.botMode;
-
-								option.description = "Auto-play player notes, like Funkin's botplay.";
-
-								if(!SaveData.getData(SaveType.BOT_MODE_MOD)) {
-									setting(option, "Off", option.ID);
-									option.optionIcon.animation.play("off");
-								}else {
-									setting(option, "On", option.ID);
-									option.optionIcon.animation.play("modifier");
-								}
-
-								if(pressed)
-									isChangingOption = false;
-							}),
-							new GhostTapping(0, ((imNotSure + 8) * 10), "Play As Opponent", SaveType.PLAY_AS_OPPONENT, function(option:Options, pressed:Bool) {
-								option.ID = imNotSure + 8;
 
 								if(pressed)
 									FlxG.save.data.playAsOpponent = !FlxG.save.data.playAsOpponent;
@@ -700,8 +775,20 @@ class OptionsMenuState extends MusicBeatState {
 
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 30, "Erase Save Data", SaveType.CACHE_ASSETS, function(option:Options, pressed:Bool) {
+							new Options(0, 30, "Save Data And Sync", SaveType.NONE, function(option:Options, pressed:Bool) {
 								option.ID = 3;
+
+								if(option.optionIcon.animation.curAnim.name != "section")
+									option.optionIcon.animation.play("section");
+
+								if(pressed)
+									FlxG.switchState(new OptionsMenuState("save"));
+
+								option.description = "Open save management and base Friday Night Funkin sync options.";
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 40, "Erase Save Data", SaveType.CACHE_ASSETS, function(option:Options, pressed:Bool) {
+								option.ID = 4;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -717,8 +804,8 @@ class OptionsMenuState extends MusicBeatState {
 								setting(option, "", option.ID);
 							})
 							#if ((debug || USING_MOD_DEBUG) && sys),
-							new Options(0, 40, "Dev Tools Stuff", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 4;
+							new Options(0, 50, "Dev Tools Stuff", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 5;
 
 								if(option.optionIcon.animation.curAnim.name != "section")
 									option.optionIcon.animation.play("section");
@@ -851,7 +938,7 @@ class OptionsMenuState extends MusicBeatState {
 		allTweens = new Array<FlxTween>();
 
 		if(this.catalog != "none") {
-			bar = new FlxSprite().makeGraphic(Std.int(FlxG.width * 1.25), 45, FlxColor.BLACK);
+			bar = new FlxSprite().makeGraphic(Std.int(FlxG.width * 1.25), 78, FlxColor.BLACK);
 			bar.y = FlxG.height + bar.height + 10;
 			bar.screenCenter(X);
 			bar.scrollFactor.set();
@@ -861,18 +948,20 @@ class OptionsMenuState extends MusicBeatState {
 			trace(optionList[0].options[0]);
 
 			var description:String = "Description - " + optionList[0].options[0].description;
-			displayDescription = new FlxText(0, bar.y, description.toUpperCase(), 32);
-			displayDescription.setFormat(Paths.font("OpenSans-Bold.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			displayDescription = new FlxText(20, bar.y, FlxG.width - 40, description.toUpperCase(), 24);
+			displayDescription.setFormat(Paths.font("OpenSans-Bold.ttf"), 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			displayDescription.antialiasing = SaveData.getData(SaveType.GRAPHICS);
-			displayDescription.x = -displayDescription.width - 5;
 			displayDescription.borderSize = 2;
+			displayDescription.wordWrap = true;
+			displayDescription.x = -FlxG.width;
 			add(displayDescription);
 
 			bar.cameras = [camNoBlur];
 			displayDescription.cameras = [camNoBlur];
+			updateDescriptionText(optionList[0].options[0].description);
 
-			FlxTween.tween(bar, {y: 576}, 0.5, {ease: FlxEase.quadOut});
-			FlxTween.tween(displayDescription, {x: 5}, 0.5, {ease: FlxEase.quadOut});
+			FlxTween.tween(bar, {y: 542}, 0.5, {ease: FlxEase.quadOut});
+			FlxTween.tween(displayDescription, {x: 20}, 0.5, {ease: FlxEase.quadOut});
 		}
 
 		curOptionSection.cameras = [camNoBlur];
@@ -908,6 +997,15 @@ class OptionsMenuState extends MusicBeatState {
 			HelperStates.getLua(Type.getClass(this)).call("whenOptionPressed", [name]);
 		}
 		#end
+	}
+
+	function updateDescriptionText(text:String):Void {
+		if(displayDescription == null || bar == null) {
+			return;
+		}
+
+		displayDescription.text = "Description - " + text.toUpperCase();
+		displayDescription.y = bar.y + ((bar.height - displayDescription.height) * 0.5);
 	}
 
 	function setControls(option:Options, id:Int):Void {
@@ -964,8 +1062,7 @@ class OptionsMenuState extends MusicBeatState {
 			item.alpha = 0.6;
 
 			if (item.targetY == 0 || item.optionTitle) {
-				if(displayDescription != null)
-					displayDescription.text = "Description - " + item.description.toUpperCase();
+				updateDescriptionText(item.description);
 
 				item.alpha = 1;
 			}
@@ -1041,8 +1138,8 @@ class OptionsMenuState extends MusicBeatState {
 		var accepted = controls.ACCEPT;
 		var escaped = controls.BACK;
 
-		if(displayDescription != null)
-			displayDescription.y = bar.y;
+		if(displayDescription != null && bar != null)
+			displayDescription.y = bar.y + ((bar.height - displayDescription.height) * 0.5);
 
 		if((upP || FlxG.mouse.wheel > 0.1) && !isChangingOption)
 			changeSelection(-1);

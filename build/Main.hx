@@ -75,7 +75,7 @@ class Main extends Sprite
 
 		feeshmora = new FlxGame(gameWidth, gameHeight, initialState, #if (flixel < "5.0.0") zoom, #end framerate, framerate, skipSplash, startFullscreen);
 
-		FlxG.save.bind('funkin', 'ninjamuffin99');
+		SaveData.bindProjectSave();
 
 		addChild(feeshmora);
 	}

@@ -1,6 +1,6 @@
 package play;
 
-#if windows
+#if desktop
 import Discord.DiscordClient;
 #end
 import Conductor;
@@ -456,14 +456,8 @@ class PlayAudio
 
 		playState.songLength = FlxG.sound.music.length;
 
-		#if windows
-		DiscordClient.changePresence(
-			playState.detailsText,
-			PlayState.SONG.song + " (" + playState.storyDifficultyText + ")\n Acc: " + playState.accTotal + "%",
-			playState.iconRPC,
-			true,
-			playState.songLength
-		);
+		#if desktop
+		playState.updateDiscordPresence();
 		#end
 	}
 

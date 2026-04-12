@@ -1,5 +1,6 @@
 package;
 
+import Controls.KeyboardScheme;
 import flixel.FlxG;
 import flixel.util.FlxSave;
 import flixel.util.FlxDestroyUtil;
@@ -50,6 +51,13 @@ enum SaveType {
 }
 
 class SaveData {
+    public static inline var PROJECT_SAVE_NAME:String = "jtc-2";
+    public static inline var PROJECT_SAVE_COMPANY:String = "ninjamuffin99";
+    public static inline var MODERN_BASE_GAME_SAVE_NAME:String = "Funkin1";
+    public static inline var MODERN_BASE_GAME_SAVE_COMPANY:String = "FunkinCrew";
+    public static inline var BASE_GAME_SAVE_NAME:String = "funkin";
+    public static inline var BASE_GAME_SAVE_COMPANY:String = "ninjamuffin99";
+
     @:allow(Preloader)
     @:allow(OptionsMenuState)
     static private var globalFPS:FPS;
@@ -61,6 +69,113 @@ class SaveData {
     /**
     * POSSIBLITIY: Make a `saveServer()` method.
     */
+
+    inline static public function bindProjectSave():Void {
+        FlxG.save.bind(PROJECT_SAVE_NAME, PROJECT_SAVE_COMPANY);
+    }
+
+    static public function shouldShowBaseGameSyncPrompt():Bool {
+        if(FlxG.save == null || FlxG.save.data == null) {
+            return false;
+        }
+
+        if(FlxG.save.data.baseGameSyncPromptEnabled == null) {
+            FlxG.save.data.baseGameSyncPromptEnabled = true;
+        }
+
+        if(FlxG.save.data.baseGameSyncPromptEnabled != true) {
+            return false;
+        }
+
+        if(FlxG.save.data.baseGameSyncPromptSeen == true) {
+            return false;
+        }
+
+        return hasBaseGameOptionsToImport();
+    }
+
+    static public function isBaseGameSyncPromptEnabled():Bool {
+        if(FlxG.save == null || FlxG.save.data == null) {
+            return true;
+        }
+
+        if(FlxG.save.data.baseGameSyncPromptEnabled == null) {
+            FlxG.save.data.baseGameSyncPromptEnabled = true;
+        }
+
+        return FlxG.save.data.baseGameSyncPromptEnabled;
+    }
+
+    static public function setBaseGameSyncPromptEnabled(enabled:Bool):Void {
+        if(FlxG.save == null || FlxG.save.data == null) {
+            return;
+        }
+
+        FlxG.save.data.baseGameSyncPromptEnabled = enabled;
+
+        if(enabled) {
+            FlxG.save.data.baseGameSyncPromptSeen = false;
+        }
+
+        FlxG.save.flush();
+    }
+
+    static public function resetBaseGameSyncPromptState():Void {
+        if(FlxG.save == null || FlxG.save.data == null) {
+            return;
+        }
+
+        FlxG.save.data.baseGameSyncPromptSeen = false;
+        FlxG.save.data.baseGameSyncImported = false;
+        FlxG.save.flush();
+    }
+
+    static public function markBaseGameSyncPromptSeen(imported:Bool = false):Void {
+        if(FlxG.save == null || FlxG.save.data == null) {
+            return;
+        }
+
+        FlxG.save.data.baseGameSyncPromptSeen = true;
+
+        if(imported) {
+            FlxG.save.data.baseGameSyncImported = true;
+        }
+
+        FlxG.save.flush();
+    }
+
+    static public function hasBaseGameOptionsToImport():Bool {
+        return readAnyBaseGameOptionValues().keys().hasNext();
+    }
+
+    static public function importBaseGameOptions():Bool {
+        var importedAnything:Bool = false;
+        var syncData = readAnyBaseGameOptionValues();
+
+        for(field in syncData.keys()) {
+            Reflect.setField(FlxG.save.data, field, syncData.get(field));
+            importedAnything = true;
+        }
+
+        if(!importedAnything) {
+            markBaseGameSyncPromptSeen(false);
+            return false;
+        }
+
+        FlxG.save.data.baseGameSyncPromptSeen = true;
+        FlxG.save.data.baseGameSyncImported = true;
+
+        saveClient();
+        applyImportedControls();
+
+        FlxG.sound.volume = FlxG.save.data.volume;
+        Main.trueFramerate = FlxG.save.data.lowFps;
+        Main.framerate = Main.trueFramerate;
+        Register.updateFramerate(Main.trueFramerate * getData(SaveType.FPS_MULTIPLIER));
+        FlxG.save.flush();
+
+        return true;
+    }
 
     inline static public function saveClient() {
         FlxG.save.data.helpme = getData(SaveType.DOWNSCROLL);
@@ -413,6 +528,478 @@ class SaveData {
 				return FlxG.save.data.gpuCache;
             default:
                 return null;
+        }
+    }
+
+    static function readAnyBaseGameOptionValues():Map<String, Dynamic> {
+        var modernData = readBoundSaveOptionValues(MODERN_BASE_GAME_SAVE_NAME, MODERN_BASE_GAME_SAVE_COMPANY, true);
+        if(modernData.keys().hasNext()) {
+            return modernData;
+        }
+
+        return readBoundSaveOptionValues(BASE_GAME_SAVE_NAME, BASE_GAME_SAVE_COMPANY, false);
+    }
+
+    static function readBoundSaveOptionValues(saveName:String, saveCompany:String, isModernFunkin:Bool):Map<String, Dynamic> {
+        var baseSave = new FlxSave();
+        var importedData:Map<String, Dynamic> = new Map<String, Dynamic>();
+
+        try {
+            if(baseSave.bind(saveName, saveCompany) && baseSave.data != null) {
+                importedData = extractBaseGameOptionValues(baseSave.data, isModernFunkin);
+            }
+        } catch(e) {
+            importedData = new Map<String, Dynamic>();
+        }
+
+        FlxDestroyUtil.destroy(baseSave);
+        return importedData;
+    }
+
+    static function extractBaseGameOptionValues(baseData:Dynamic, isModernFunkin:Bool = false):Map<String, Dynamic> {
+        var importedData:Map<String, Dynamic> = new Map<String, Dynamic>();
+        var optionData:Dynamic = isModernFunkin && Reflect.hasField(baseData, "options") ? Reflect.field(baseData, "options") : baseData;
+
+        inline function copyField(targetField:String, value:Dynamic):Void {
+            if(value != null) {
+                importedData.set(targetField, value);
+            }
+        }
+
+        copyField("helpme", findImportedValue(optionData, ["downscroll", "downScroll", "helpme"], normalizeBool));
+        copyField("noteOffset", resolveImportedNoteOffset(optionData, isModernFunkin));
+        copyField("lowFps", findImportedValue(optionData, ["framerate", "lowFps", "fpsCap", "fps"], normalizeFramerate));
+        copyField("skipCutscenes", findImportedValue(optionData, ["skipCutscenes"], normalizeBool));
+
+        if(isModernFunkin) {
+            var debugDisplay:Dynamic = findImportedValue(optionData, ["debugDisplay"]);
+            if(debugDisplay != null) {
+                var debugDisplayValue:String = Std.string(debugDisplay).toLowerCase();
+                copyField("showFPS", debugDisplayValue != "off");
+                copyField("showMEM", debugDisplayValue == "memory" || debugDisplayValue == "all");
+            }
+
+            importModernControlData(baseData, importedData);
+        } else {
+            copyField("ghostTapping", findImportedValue(optionData, ["ghostTapping", "ghostTap", "ghost"], normalizeBool));
+            copyField("showFPS", findImportedValue(optionData, ["showFPS", "fpsCounter"], normalizeBool));
+            copyField("showMEM", findImportedValue(optionData, ["showMEM", "memCounter", "memoryCounter"], normalizeBool));
+            copyField("showEffect", findImportedValue(optionData, ["showEffect", "noteSplashes", "notesplashes"], normalizeBool));
+            copyField("showstuff", findImportedValue(optionData, ["showstuff", "accuracyDisplay"], normalizeBool));
+            copyField("botMode", findImportedValue(optionData, ["botMode", "botplay", "botPlay", "cpuControlled"], normalizeBool));
+            copyField("missVolume", findImportedValue(optionData, ["missVolume"], normalizeVolume));
+            copyField("dfjk", findImportedValue(optionData, ["dfjk"], normalizePresetBinds));
+            copyField("customKeys", findImportedValue(optionData, ["customKeys"]));
+            copyField("customUIKeys", findImportedValue(optionData, ["customUIKeys"]));
+            copyField("gamepadBinds", findImportedValue(optionData, ["gamepadBinds"]));
+            copyField("menuBinds", findImportedValue(optionData, ["menuBinds"]));
+        }
+
+        copyField("volume", findImportedValue(baseData, ["volume", "masterVolume"], normalizeVolume));
+
+        var antialiasingValue:Dynamic = findImportedValue(optionData, ["showAntialiasing", "antialiasing"], normalizeBool);
+        if(antialiasingValue == null) {
+            antialiasingValue = findImportedValue(optionData, ["lowQuality"], invertImportedBool);
+        }
+        copyField("showAntialiasing", antialiasingValue);
+
+        return importedData;
+    }
+
+    static function importModernControlData(baseData:Dynamic, importedData:Map<String, Dynamic>):Void {
+        if(baseData == null || !Reflect.hasField(baseData, "options")) {
+            return;
+        }
+
+        var optionsData:Dynamic = Reflect.field(baseData, "options");
+        if(optionsData == null || !Reflect.hasField(optionsData, "controls")) {
+            return;
+        }
+
+        var controlsData:Dynamic = Reflect.field(optionsData, "controls");
+        if(controlsData == null || !Reflect.hasField(controlsData, "p1")) {
+            return;
+        }
+
+        var playerOneControls:Dynamic = Reflect.field(controlsData, "p1");
+        if(playerOneControls == null) {
+            return;
+        }
+
+        var keyboardData:Dynamic = Reflect.hasField(playerOneControls, "keyboard") ? Reflect.field(playerOneControls, "keyboard") : null;
+        if(keyboardData != null) {
+            importModernKeyboardControls(keyboardData, importedData);
+        }
+
+        var gamepadData:Dynamic = Reflect.hasField(playerOneControls, "gamepad") ? Reflect.field(playerOneControls, "gamepad") : null;
+        if(gamepadData != null) {
+            importModernGamepadControls(gamepadData, importedData);
+        }
+    }
+
+    static function importModernKeyboardControls(keyboardData:Dynamic, importedData:Map<String, Dynamic>):Void {
+        var laneKeys = [
+            normalizeImportedKeyArray(Reflect.field(keyboardData, "NOTE_LEFT")),
+            normalizeImportedKeyArray(Reflect.field(keyboardData, "NOTE_DOWN")),
+            normalizeImportedKeyArray(Reflect.field(keyboardData, "NOTE_UP")),
+            normalizeImportedKeyArray(Reflect.field(keyboardData, "NOTE_RIGHT"))
+        ];
+
+        if(allImportedBindingsPresent(laneKeys)) {
+            var matchedPreset:Null<Int> = detectImportedPresetKeybind(laneKeys);
+
+            if(matchedPreset != null) {
+                importedData.set("dfjk", matchedPreset);
+            } else {
+                var importedCustomKeys:Array<Array<FlxKey>> = cast getData(SaveType.CUSTOM_KEYBINDS);
+                importedCustomKeys = cloneKeyMatrix(importedCustomKeys);
+                for(i in 0...4) {
+                    importedCustomKeys[i] = laneKeys[i].copy();
+                }
+                importedData.set("customKeys", importedCustomKeys);
+                importedData.set("dfjk", 3);
+            }
+        }
+
+        var uiLeft = normalizeImportedKeyArray(Reflect.field(keyboardData, "UI_LEFT"));
+        var uiDown = normalizeImportedKeyArray(Reflect.field(keyboardData, "UI_DOWN"));
+        var uiUp = normalizeImportedKeyArray(Reflect.field(keyboardData, "UI_UP"));
+        var uiRight = normalizeImportedKeyArray(Reflect.field(keyboardData, "UI_RIGHT"));
+        var acceptKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "ACCEPT"));
+        var backKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "BACK"));
+        var pauseKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "PAUSE"));
+        var volumeUpKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "VOLUME_UP"));
+        var volumeDownKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "VOLUME_DOWN"));
+
+        var importedCustomUIKeys:Array<Array<FlxKey>> = cast getData(SaveType.CUSTOM_UI_KEYBINDS);
+        importedCustomUIKeys = cloneKeyMatrix(importedCustomUIKeys);
+
+        if(uiLeft != null) importedCustomUIKeys[0] = uiLeft.copy();
+        if(uiDown != null) importedCustomUIKeys[1] = uiDown.copy();
+        if(uiUp != null) importedCustomUIKeys[2] = uiUp.copy();
+        if(uiRight != null) importedCustomUIKeys[3] = uiRight.copy();
+
+        if(acceptKeys != null) {
+            var selectedAcceptKeys = pickPreferredKeys(acceptKeys, [FlxKey.SPACE, FlxKey.ENTER], 2);
+            importedCustomUIKeys[4] = [selectedAcceptKeys[0]];
+            if(selectedAcceptKeys.length > 1) {
+                importedCustomUIKeys[5] = [selectedAcceptKeys[1]];
+            }
+        }
+
+        if(backKeys != null) {
+            var selectedBackKeys = pickPreferredKeys(backKeys, [FlxKey.BACKSPACE, FlxKey.ESCAPE], 2);
+            importedCustomUIKeys[6] = [selectedBackKeys[0]];
+            if(selectedBackKeys.length > 1) {
+                importedCustomUIKeys[7] = [selectedBackKeys[1]];
+            } else if(pauseKeys != null && pauseKeys.length > 0) {
+                importedCustomUIKeys[7] = [pauseKeys[0]];
+            }
+        }
+
+        importedData.set("customUIKeys", importedCustomUIKeys);
+
+        var importedMenuBinds:Array<String> = cast getData(SaveType.CUSTOM_MENU_BINDS);
+        importedMenuBinds = importedMenuBinds.copy();
+
+        if(volumeUpKeys != null && volumeUpKeys.length > 0) {
+            importedMenuBinds[0] = keyToMenuBind(volumeUpKeys[0]);
+        }
+
+        if(volumeDownKeys != null && volumeDownKeys.length > 0) {
+            importedMenuBinds[1] = keyToMenuBind(volumeDownKeys[0]);
+        }
+
+        importedData.set("menuBinds", importedMenuBinds);
+    }
+
+    static function importModernGamepadControls(gamepadData:Dynamic, importedData:Map<String, Dynamic>):Void {
+        var left = normalizeImportedButton(Reflect.field(gamepadData, "NOTE_LEFT"));
+        var down = normalizeImportedButton(Reflect.field(gamepadData, "NOTE_DOWN"));
+        var up = normalizeImportedButton(Reflect.field(gamepadData, "NOTE_UP"));
+        var right = normalizeImportedButton(Reflect.field(gamepadData, "NOTE_RIGHT"));
+
+        if(left == null || down == null || up == null || right == null) {
+            return;
+        }
+
+        var importedGamepadBinds:Array<Int> = cast getData(SaveType.CUSTOM_GAMEPAD_BINDS);
+        importedGamepadBinds = importedGamepadBinds.copy();
+        importedGamepadBinds[0] = left;
+        importedGamepadBinds[1] = down;
+        importedGamepadBinds[2] = up;
+        importedGamepadBinds[3] = right;
+        importedData.set("gamepadBinds", importedGamepadBinds);
+    }
+
+    static function resolveImportedNoteOffset(optionData:Dynamic, isModernFunkin:Bool):Dynamic {
+        if(optionData == null) {
+            return null;
+        }
+
+        if(isModernFunkin) {
+            var globalOffset = findImportedValue(optionData, ["globalOffset"], normalizeInt);
+            var audioVisualOffset = findImportedValue(optionData, ["audioVisualOffset"], normalizeInt);
+
+            if(globalOffset != null || audioVisualOffset != null) {
+                return (globalOffset != null ? globalOffset : 0) + (audioVisualOffset != null ? audioVisualOffset : 0);
+            }
+        }
+
+        return findImportedValue(optionData, ["noteOffset", "offset", "inputOffset", "globalOffset", "audioVisualOffset"], normalizeInt);
+    }
+
+    static function findImportedValue(data:Dynamic, fieldNames:Array<String>, ?transform:Dynamic->Dynamic):Dynamic {
+        if(data == null) {
+            return null;
+        }
+
+        for(fieldName in fieldNames) {
+            if(!Reflect.hasField(data, fieldName)) {
+                continue;
+            }
+
+            var value:Dynamic = Reflect.field(data, fieldName);
+
+            if(value == null) {
+                continue;
+            }
+
+            return transform != null ? transform(value) : value;
+        }
+
+        return null;
+    }
+
+    static inline function invertImportedBool(value:Dynamic):Dynamic {
+        return !normalizeBool(value);
+    }
+
+    static function normalizeBool(value:Dynamic):Bool {
+        if(value == null) {
+            return false;
+        }
+
+        var stringValue:String = Std.string(value).trim().toLowerCase();
+        var parsedNumber:Float = Std.parseFloat(stringValue);
+
+        if(!Math.isNaN(parsedNumber)) {
+            return parsedNumber != 0;
+        }
+
+        return stringValue == "true" || stringValue == "yes" || stringValue == "on";
+    }
+
+    static function normalizeInt(value:Dynamic):Int {
+        if(value == null) {
+            return 0;
+        }
+
+        var parsedNumber:Float = Std.parseFloat(Std.string(value).trim());
+        return Math.isNaN(parsedNumber) ? 0 : Std.int(parsedNumber);
+    }
+
+    static function normalizeFramerate(value:Dynamic):Int {
+        var fps:Int = normalizeInt(value);
+
+        if(fps <= 0) {
+            return 60;
+        }
+
+        return Std.int(Math.max(30, Math.min(240, fps)));
+    }
+
+    static function normalizePresetBinds(value:Dynamic):Int {
+        var preset:Int = normalizeInt(value);
+        return Std.int(Math.max(0, Math.min(3, preset)));
+    }
+
+    static function normalizeVolume(value:Dynamic):Float {
+        if(value == null) {
+            return 1;
+        }
+
+        var volume:Float = Std.parseFloat(Std.string(value).trim());
+
+        if(Math.isNaN(volume)) {
+            return 1;
+        }
+
+        if(volume > 1) {
+            volume /= 100;
+        }
+
+        return Math.max(0, Math.min(1, volume));
+    }
+
+    static function normalizeImportedKeyArray(value:Dynamic):Null<Array<FlxKey>> {
+        if(value == null || !Std.isOfType(value, Array)) {
+            return null;
+        }
+
+        var result:Array<FlxKey> = [];
+        for(entry in cast(value, Array<Dynamic>)) {
+            var keyCode:Int = normalizeInt(entry);
+            if(keyCode == FlxKey.NONE) {
+                continue;
+            }
+
+            var importedKey:FlxKey = cast keyCode;
+            if(!result.contains(importedKey)) {
+                result.push(importedKey);
+            }
+        }
+
+        return result.length > 0 ? result : null;
+    }
+
+    static function normalizeImportedButton(value:Dynamic):Null<Int> {
+        if(value == null || !Std.isOfType(value, Array)) {
+            return null;
+        }
+
+        for(entry in cast(value, Array<Dynamic>)) {
+            var button:Int = normalizeInt(entry);
+            if(button >= 0) {
+                return button;
+            }
+        }
+
+        return null;
+    }
+
+    static function detectImportedPresetKeybind(laneKeys:Array<Array<FlxKey>>):Null<Int> {
+        var presetLayouts:Array<Array<Array<FlxKey>>> = [
+            [
+                [FlxKey.A, FlxKey.LEFT],
+                [FlxKey.S, FlxKey.DOWN],
+                [FlxKey.W, FlxKey.UP],
+                [FlxKey.D, FlxKey.RIGHT]
+            ],
+            [
+                [FlxKey.D, FlxKey.LEFT],
+                [FlxKey.F, FlxKey.DOWN],
+                [FlxKey.J, FlxKey.UP],
+                [FlxKey.K, FlxKey.RIGHT]
+            ],
+            [
+                [FlxKey.Z, FlxKey.LEFT],
+                [FlxKey.X, FlxKey.DOWN],
+                [FlxKey.ONE, FlxKey.NUMPADONE, FlxKey.UP],
+                [FlxKey.TWO, FlxKey.NUMPADTWO, FlxKey.RIGHT]
+            ]
+        ];
+
+        for(presetIndex in 0...presetLayouts.length) {
+            var matchesPreset = true;
+            for(i in 0...presetLayouts[presetIndex].length) {
+                if(!sameKeyList(presetLayouts[presetIndex][i], laneKeys[i])) {
+                    matchesPreset = false;
+                    break;
+                }
+            }
+
+            if(matchesPreset) {
+                return presetIndex;
+            }
+        }
+
+        return null;
+    }
+
+    static function sameKeyList(expected:Array<FlxKey>, actual:Array<FlxKey>):Bool {
+        if(expected == null || actual == null) {
+            return false;
+        }
+
+        var normalizedExpected:Array<FlxKey> = [];
+        var normalizedActual:Array<FlxKey> = [];
+
+        for(key in expected) {
+            if(!normalizedExpected.contains(key)) {
+                normalizedExpected.push(key);
+            }
+        }
+
+        for(key in actual) {
+            if(!normalizedActual.contains(key)) {
+                normalizedActual.push(key);
+            }
+        }
+
+        if(normalizedExpected.length != normalizedActual.length) {
+            return false;
+        }
+
+        for(key in normalizedExpected) {
+            if(!normalizedActual.contains(key)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static function cloneKeyMatrix(source:Array<Array<FlxKey>>):Array<Array<FlxKey>> {
+        var result:Array<Array<FlxKey>> = [];
+        for(keys in source) {
+            result.push(keys != null ? keys.copy() : []);
+        }
+        return result;
+    }
+
+    static function allImportedBindingsPresent(bindings:Array<Null<Array<FlxKey>>>):Bool {
+        for(binding in bindings) {
+            if(binding == null || binding.length == 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static function keyToMenuBind(key:FlxKey):String {
+        return Std.string(key).toUpperCase();
+    }
+
+    static function pickPreferredKeys(source:Array<FlxKey>, preferred:Array<FlxKey>, limit:Int):Array<FlxKey> {
+        var result:Array<FlxKey> = [];
+
+        for(key in preferred) {
+            if(source.contains(key) && !result.contains(key)) {
+                result.push(key);
+            }
+        }
+
+        for(key in source) {
+            if(!result.contains(key)) {
+                result.push(key);
+            }
+        }
+
+        if(result.length > limit) {
+            result.resize(limit);
+        }
+
+        return result;
+    }
+
+    static function applyImportedControls():Void {
+        if(PlayerSettings.player1 == null) {
+            return;
+        }
+
+        switch(getData(SaveType.PRESET_KEYBINDS)) {
+            case 0:
+                PlayerSettings.player1.controls.setKeyboardScheme(KeyboardScheme.Duo(true), true);
+            case 1:
+                PlayerSettings.player1.controls.setKeyboardScheme(KeyboardScheme.Solo, true);
+            case 2:
+                PlayerSettings.player1.controls.setKeyboardScheme(KeyboardScheme.Duo(false), true);
+            case 3:
+                PlayerSettings.player1.controls.setKeyboardScheme(KeyboardScheme.Custom, true);
+            default:
+                PlayerSettings.player1.controls.setKeyboardScheme(KeyboardScheme.Duo(true), true);
         }
     }
 

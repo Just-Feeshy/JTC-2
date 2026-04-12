@@ -29,7 +29,7 @@ import sys.FileSystem;
 import sys.io.File;
 #end
 
-#if windows
+#if desktop
 import Discord.DiscordClient;
 #end
 
@@ -100,7 +100,12 @@ class Preloader extends HelperStates {
             try {
                 Register.setup();
                 Register.compile();
-                FlxG.switchState(cast Type.createInstance(_initialState, []));
+
+                var nextState:FlxState = SaveData.shouldShowBaseGameSyncPrompt()
+                    ? cast new BaseGameOptionsSyncState()
+                    : cast Type.createInstance(_initialState, []);
+
+                FlxG.switchState(nextState);
             } catch(e) {
                 trace("Preloader: callback failed -> " + Std.string(e));
                 throw e;
@@ -179,7 +184,7 @@ class Preloader extends HelperStates {
 
         FlxG.sound.music.stop();
 
-        #if windows
+        #if desktop
         DiscordClient.shutdown();
         #end
 

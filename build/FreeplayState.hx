@@ -1,6 +1,6 @@
 package;
 
-#if windows
+#if desktop
 import Discord.DiscordClient;
 #end
 
@@ -80,9 +80,9 @@ class FreeplayState extends MusicBeatState
 
 	override function create()
 	{
-		#if windows
+		#if desktop
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.setPresence({state: "In the Menus", details: null});
 		#end
 
 		var isDebug:Bool = false;

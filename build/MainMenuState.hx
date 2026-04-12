@@ -1,6 +1,6 @@
 package;
 
-#if windows
+#if desktop
 import Discord.DiscordClient;
 #end
 
@@ -148,9 +148,9 @@ class MainMenuState extends MusicBeatState
 		Main.trueFramerate = FlxG.save.data.lowFps;
         Register.updateFramerate(Main.trueFramerate * SaveData.getData(SaveType.FPS_MULTIPLIER));
 
-		#if windows
+		#if desktop
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.setPresence({state: "In the Menus", details: null});
 		#end
 
         #if !(USING_LUA && cpp)

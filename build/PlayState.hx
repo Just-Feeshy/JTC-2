@@ -1,6 +1,6 @@
 package;
 
-#if false
+#if desktop
 import Discord.DiscordClient;
 #end
 import Section.SwagSection;
@@ -438,6 +438,39 @@ class PlayState extends MusicBeatState
 
 		return shouldSkip;
 	}
+
+	#if desktop
+	public function buildDiscordRPCState():String
+	{
+		var songName:String = SONG != null && SONG.song != null ? SONG.song : "???";
+		var difficultyName:String = storyDifficultyText != null && storyDifficultyText.trim() != "" ? storyDifficultyText : "???";
+		return songName + " [" + difficultyName + "]";
+	}
+
+	public function buildDiscordRPCDetails(?prefix:String):String
+	{
+		var baseDetails:String = detailsText;
+
+		if(baseDetails == null || baseDetails.trim() == "") {
+			baseDetails = isStoryMode ? "Story Mode: Week " + storyWeek : "Freeplay";
+		}
+
+		if(prefix != null && prefix.trim() != "") {
+			return prefix + " - " + baseDetails;
+		}
+
+		return baseDetails;
+	}
+
+	public function updateDiscordPresence(?detailsPrefix:String):Void
+	{
+		DiscordClient.setPresence({
+			state: buildDiscordRPCState(),
+			details: buildDiscordRPCDetails(detailsPrefix),
+			smallImageKey: iconRPC
+		});
+	}
+	#end
 
 	override public function create() {
 		instance = this;
@@ -2424,6 +2457,10 @@ class PlayState extends MusicBeatState
 			}
 
 			dispatchEvent(new PlayScriptEvent(PlayScriptEvent.RESUME));
+
+			#if desktop
+			updateDiscordPresence();
+			#end
 
 			#if false
 			if (startTimer != null && startTimer.finished)

@@ -1,6 +1,6 @@
 package;
 
-#if windows
+#if desktop
 import Discord.DiscordClient;
 #end
 
@@ -123,7 +123,7 @@ class CharacterCreatorState extends MusicBeatState {
             {name: "Export", label: 'Export'}
 		];
 
-        #if windows
+        #if desktop
 		DiscordClient.changePresence("Making Character", null);
 		#end
 

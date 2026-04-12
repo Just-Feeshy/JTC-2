@@ -1,6 +1,6 @@
 package play;
 
-#if windows
+#if desktop
 import Discord.DiscordClient;
 #end
 import CacheState;
@@ -58,12 +58,8 @@ class PlayFlow
 			playState.openSubState(new PauseSubState(screenPos.x, screenPos.y));
 		}
 
-		#if windows
-		DiscordClient.changePresence(
-			playState.detailsPausedText,
-			PlayState.SONG.song + " (" + playState.storyDifficultyText + ")\n Acc: " + playState.accTotal + "%",
-			playState.iconRPC
-		);
+		#if desktop
+		playState.updateDiscordPresence("Paused");
 		#end
 	}
 
@@ -88,12 +84,8 @@ class PlayFlow
 		playState.dispatchEvent(new PlayScriptEvent(PlayScriptEvent.GAME_OVER));
 		playState.openSubState(new GameOverSubstate());
 
-		#if windows
-		DiscordClient.changePresence(
-			"Game Over - " + playState.detailsText,
-			PlayState.SONG.song + " (" + playState.storyDifficultyText + ")",
-			playState.iconRPC
-		);
+		#if desktop
+		playState.updateDiscordPresence("Game Over");
 		#end
 	}
 
