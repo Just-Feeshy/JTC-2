@@ -668,7 +668,7 @@ class PlayState extends MusicBeatState
 					v.destroy();
 				}
 			}
-		}	
+		}
 
 		playerStrums = new FlxTypedSpriteGroup<Strum>();
 		opponentStrums = new FlxTypedSpriteGroup<Strum>();
@@ -2005,16 +2005,99 @@ class PlayState extends MusicBeatState
 		return getSustainSegmentDurationMs(note) / Constants.MS_PER_SEC;
 	}
 
-	private function keepCharacterSingingForSustain(character:Character, note:Note, ?suffix:String = ""):Void
+	private function isSustainChainStarted(note:Note):Bool
 	{
-		if(character == null || note == null || !note.playAnyAnimation) {
+		if(note == null || !note.isSustainNote) {
+			return false;
+		}
+
+		var current:Note = note.prevNote;
+
+		while(current != null) {
+			if(current.wasGoodHit || current.shouldBeDead) {
+				return true;
+			}
+
+			if(!current.isSustainNote || current.prevNote == null || current.prevNote == current) {
+				break;
+			}
+
+			current = current.prevNote;
+		}
+
+		return false;
+	}
+
+	private function laneHasActiveSustainChain(lane:Int, mustPress:Bool):Bool
+	{
+		inline function matches(note:Note):Bool {
+			return note != null
+				&& note.isSustainNote
+				&& note.noteData == lane
+				&& note.mustPress == mustPress
+				&& !note.sustainChainMissed
+				&& !note.shouldBeDead
+				&& isSustainChainStarted(note);
+		}
+
+		for(note in notes.members) {
+			if(matches(note)) {
+				return true;
+			}
+		}
+
+		for(note in unspawnNotes) {
+			if(matches(note)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public inline function hasActiveSustainChain(lane:Int, mustPress:Bool):Bool
+	{
+		return laneHasActiveSustainChain(lane, mustPress);
+	}
+
+	private function processActiveSustainStates(elapsed:Float, botMode:Bool):Void
+	{
+		if(startingSong) {
 			return;
 		}
 
-		if(character.isSinging()) {
-			character.holdTimer = 0;
-		}else {
-			character.onNoteHit(Std.int(Math.abs(note.noteData)), suffix);
+		for(lane in 0...getLaneCount()) {
+			var playerStrum:Strum = currentStrums.members[lane];
+			var opponentStrum:Strum = oppositeStrums.members[lane];
+			var playerChainActive:Bool = laneHasActiveSustainChain(lane, true);
+			var opponentChainActive:Bool = laneHasActiveSustainChain(lane, false);
+
+			if(playerChainActive && playerStrum != null && (botMode || playerStrum.sustainHeld)) {
+				if(!botMode) {
+					setHealth(health + (Constants.HEALTH_HOLD_BONUS_PER_SECOND * elapsed));
+					songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * elapsed);
+				}
+
+				if(botMode && currentPlayer != null && currentPlayer.isSinging()) {
+					currentPlayer.holdTimer = 0;
+				}
+			}
+
+			if(opponentChainActive) {
+				if(currentOpponent != null && currentOpponent.isSinging()) {
+					currentOpponent.holdTimer = 0;
+				}
+
+				if(opponentStrum != null) {
+					refreshHoldCoverForLane(lane, false);
+
+					if(opponentStrum.hasDedicatedConfirmHold()) {
+						playStrumConfirmHold(opponentStrum);
+					}else {
+						playStrumConfirm(opponentStrum);
+					}
+				}
+			}
 		}
 	}
 
@@ -2227,6 +2310,22 @@ class PlayState extends MusicBeatState
 				currentPlayer.onNoteMiss(direction);
 			}
 		}
+	}
+
+	public function hitPlayerSustainSegment(note:Note):Void
+	{
+		if(note == null || !note.isSustainNote || note.wasGoodHit || note.sustainChainMissed) {
+			return;
+		}
+
+		note.wasGoodHit = true;
+		note.shouldBeDead = true;
+
+		if(SONG.needsVoices && !currentPlayer.stunned) {
+			setPlayerVocalsVolume(1, note.tag);
+		}
+
+		refreshHoldCoverForLane(note.noteData, true);
 	}
 
 	private function startInstrumentTrack(?startTime:Null<Float>):Void {
@@ -3203,7 +3302,11 @@ class PlayState extends MusicBeatState
 				}
 
 				if(!startingSong && botMode && shouldBotplayHitPlayerNote(daNote)) {
-					goodNoteHit(daNote, daNote.getNoteTime());
+					if(daNote.isSustainNote) {
+						hitPlayerSustainSegment(daNote);
+					}else {
+						goodNoteHit(daNote, daNote.getNoteTime());
+					}
 				}
 
 				if(!daNote.exists || !daNote.alive) {
@@ -3321,6 +3424,8 @@ class PlayState extends MusicBeatState
 				}
 			});
 
+			processActiveSustainStates(elapsed, botMode);
+
 			if(playLua.hasScript()) {
 				updateLuaVars();
 			}
@@ -3328,6 +3433,11 @@ class PlayState extends MusicBeatState
 	}
 
 	function opponentNoteHit(note:Note):Void {
+		if(note.isSustainNote) {
+			note.shouldBeDead = true;
+			return;
+		}
+
 		if (SONG.song != 'Tutorial')
 			camZooming = true;
 
@@ -3340,11 +3450,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if(note.playAnyAnimation && !currentOpponent.specialAnim && !currentOpponent.customAnimation) {
-			if(note.isSustainNote) {
-				keepCharacterSingingForSustain(currentOpponent, note, altAnim);
-			}else {
-				currentOpponent.onNoteHit(Std.int(Math.abs(note.noteData)), altAnim);
-			}
+			currentOpponent.onNoteHit(Std.int(Math.abs(note.noteData)), altAnim);
 		}
 
 		events.whenNoteIsPressed(note, this);
@@ -3358,9 +3464,6 @@ class PlayState extends MusicBeatState
 		oppositeStrums.forEach(function(spr:Strum) {
 			if(Math.abs(note.noteData) == spr.ID) {
 				note.hit();
-				if(note.isSustainNote) {
-					refreshHoldCoverForLane(spr.ID, false);
-				}
 				playStrumConfirm(spr);
 			}
 		});
@@ -3372,11 +3475,7 @@ class PlayState extends MusicBeatState
 		updatePerSectionLuaVars();
 		playLua.call("opponentNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 
-		if(!note.isSustainNote) {
-			removeNote(note);
-		}else {
-			note.shouldBeDead = true;
-		}
+		removeNote(note);
 	}
 
 	public function playOpponentIdle():Void
@@ -3529,24 +3628,20 @@ class PlayState extends MusicBeatState
 
 	function goodNoteHit(note:Note, ?hitSongTime:Float):Void
 	{
+		if(note.isSustainNote) {
+			hitPlayerSustainSegment(note);
+			return;
+		}
+
 		if (!note.wasGoodHit)
 		{
-			if (!note.isSustainNote && !CustomNoteHandler.dontHitNotes.contains(note.noteAbstract))
+			if (!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract))
 			{
 				popUpScore(note.getNoteTime(), note.noteData, note.noteAbstract, hitSongTime, note.tag);
 				combo += 1;
 			}
 
-			if(note.isSustainNote) {
-				var sustainSegmentSec:Float = getSustainSegmentDurationSec(note);
-
-				if(!modifierCheckList('bot mode')) {
-					setHealth(health + (Constants.HEALTH_HOLD_BONUS_PER_SECOND * sustainSegmentSec));
-					songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * sustainSegmentSec);
-				}
-			}else {
-				setHealth(health + note.giveHealth());
-			}
+			setHealth(health + note.giveHealth());
 
 			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
@@ -3554,16 +3649,12 @@ class PlayState extends MusicBeatState
 			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
 				events.whenNoteIsPressed(note, this);
 				stage.whenNoteIsPressed(note);
-				cameraMovement(note.noteData, note.isSustainNote);
+				cameraMovement(note.noteData, false);
 
 				currentPlayer.customAnimation = false;
 
 				if(note.playAnyAnimation) {
-					if(note.isSustainNote) {
-						keepCharacterSingingForSustain(currentPlayer, note, playerAltAnim + currentPlayer.hasBePlayer);
-					}else {
-						currentPlayer.onNoteHit(Std.int(Math.abs(note.noteData)), playerAltAnim + currentPlayer.hasBePlayer);
-					}
+					currentPlayer.onNoteHit(Std.int(Math.abs(note.noteData)), playerAltAnim + currentPlayer.hasBePlayer);
 				}
 			}
 
@@ -3575,10 +3666,6 @@ class PlayState extends MusicBeatState
 				spr.ifCustom = "regular";
 
 			note.hit();
-
-			if(spr != null && spr.sustainHeld && note.isSustainNote) {
-				refreshHoldCoverForLane(note.noteData, true);
-			}
 
 			if(!isPixel) {
 				note.splash(grpSplash.members[spr.ID], spr, daRating);
@@ -3594,27 +3681,11 @@ class PlayState extends MusicBeatState
 
 					customNoteSprites.add(noteSprite);
 				}
-			    if(note.hasCustomAddon.whenNoteIsHit(spr)) {
-					if(note.isSustainNote && spr.sustainHeld) {
-						if(spr.hasDedicatedConfirmHold()) {
-							playStrumConfirmHold(spr);
-						}else {
-							playStrumConfirm(spr);
-						}
-					}else {
-						playStrumConfirm(spr);
-					}
-			    }
-			}else {
-				if(note.isSustainNote && spr.sustainHeld) {
-					if(spr.hasDedicatedConfirmHold()) {
-						playStrumConfirmHold(spr);
-					}else {
-						playStrumConfirm(spr);
-					}
-				}else {
+				if(note.hasCustomAddon.whenNoteIsHit(spr)) {
 					playStrumConfirm(spr);
 				}
+			}else {
+				playStrumConfirm(spr);
 			}
 
 			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
@@ -3624,20 +3695,13 @@ class PlayState extends MusicBeatState
 					setPlayerVocalsVolume(1, note.tag);
 				}
 
-				if(!note.isSustainNote) {
-					hits++;
-				}
+				hits++;
 			}
 
 			updateLuaVars();
 			updatePerSectionLuaVars();
-			playLua.call("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
-
-			if (!note.isSustainNote) {
-				removeNote(note);
-			}else {
-				note.shouldBeDead = true;
-			}
+			playLua.call("goodNoteHit", [note.caculatePos, note.strumTime, note.noteData, note.tag, note.noteAbstract, false]);
+			removeNote(note);
 		}
 	}
 

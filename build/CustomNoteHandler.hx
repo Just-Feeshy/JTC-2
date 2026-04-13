@@ -20,6 +20,15 @@ class CustomNoteHandler {
     @:allow(ChartingState.addNoteUI)
     private static var customNoteAddon:Map<String, Class<ICustomNote>> = new Map<String, Class<ICustomNote>>();
 
+    public static function getCustomNoteUnmuteVoiceAudio(noteType:String):Bool {
+        if(noteType == null || !customNoteAddon.exists(noteType)) {
+            return true;
+        }
+
+        var customNote:ICustomNote = cast Type.createInstance(customNoteAddon.get(noteType), []);
+        return customNote == null ? true : customNote.canUnmuteVoiceAudio();
+    }
+
     static public function spawn() {
 
         //custom static note data

@@ -154,6 +154,10 @@ class CheeseFifthNote extends CustomNoteTemplate {
         return fifthKeyOffsetX;
     }
 
+    override function canUnmuteVoiceAudio():Bool {
+        return false;
+    }
+
     override function whenIsFirstRendered(note:Note, totalNotesInSection:Int):Void {
         note.scale.set(note.scale.x * fifthKeySize, note.scale.y * fifthKeySize);
         note.updateHitbox();

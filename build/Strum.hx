@@ -97,11 +97,33 @@ class Strum extends feshixl.FeshSprite {
 		return false;
 	}
 
+	private function getPrefixVariants(prefix:Null<String>):Array<Null<String>> {
+		if(prefix == null) {
+			return [];
+		}
+
+		var variants:Array<Null<String>> = [prefix];
+		var trimmed:String = prefix.trim();
+
+		if(trimmed != prefix) {
+			variants.push(trimmed);
+		}
+
+		var leadingSpace:String = " " + trimmed;
+		if(!variants.contains(leadingSpace)) {
+			variants.push(leadingSpace);
+		}
+
+		return variants;
+	}
+
 	private function addAnimationWithFallback(name:String, prefixes:Array<Null<String>>, frameRate:Int = 24, loop:Bool = false):Null<String> {
 		for(prefix in prefixes) {
-			if(atlasHasPrefix(prefix)) {
-				animation.addByPrefix(name, prefix, frameRate, loop);
-				return prefix;
+			for(candidate in getPrefixVariants(prefix)) {
+				if(atlasHasPrefix(candidate)) {
+					animation.addByPrefix(name, candidate, frameRate, loop);
+					return candidate;
+				}
 			}
 		}
 

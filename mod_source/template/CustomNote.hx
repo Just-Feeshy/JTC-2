@@ -32,6 +32,7 @@ interface ICustomNote {
     function addToNoteSpeed():Float; //How much faster this note is compared to a regular note.
     function playerShouldntHit():Bool; //If player shouldn't hit this note.
     function noDefaultSplash():Bool; //If this note shouldn't play the default note splash.
+    function canUnmuteVoiceAudio():Bool; //If this note can allow scripted voice audio to unmute.
     function giveHealth(isSustain:Bool):Float; //How much health is given to the player when this note is hit.
     function missNoteDamage():Float; //How much damage is given to the player when this note is missed.
     function getWobblePower():Int; //How much wobble effect should this note have.
@@ -141,6 +142,10 @@ class CustomNoteTemplate implements ICustomNote {
 
     public function noDefaultSplash():Bool {
         return false;
+    }
+
+    public function canUnmuteVoiceAudio():Bool {
+        return true;
     }
 
     public function giveHealth(isSustain:Bool):Float {

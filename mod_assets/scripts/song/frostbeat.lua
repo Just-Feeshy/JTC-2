@@ -14,6 +14,8 @@ local staticShaderCleared = false
 local staticShaderSoundPlayed = false
 local baseHudZoom = 1
 local baseNoteZoom = 1
+local gamePulseOffset = 0
+local currentPhaseTwoGameZoom = 1.0
 
 local curAnimName = ""
 local holdTimer = 0
@@ -146,6 +148,7 @@ local phaseTwoFlyingCameraStartZoom = nil
 local phaseTwoFlyingCameraCompleted = false
 local jtcVocalsSwitchedToPlayer = false
 local jtcVocalsMutedForPunch = false
+local pendingVoiceUnmuteAllowed = true
 local punchCount = 0
 local punchIconNames = {}
 local INTENSITY_MULTIPLIER = 1.5
@@ -222,11 +225,24 @@ local function pulseCamera(stepValue)
         return
     end
 
-    local gameZoom = getCameraZoom("camGAME") or baseGameZoom
     local hudZoom = getCameraZoom("camHUD") or baseHudZoom
     local noteZoom = getCameraZoom("camNOTE") or baseNoteZoom
 
-    setCameraZoom("camGAME", gameZoom + (BASE_GAME_BUMP * intensity))
+    gamePulseOffset = gamePulseOffset + (BASE_GAME_BUMP * intensity)
+
+    if introClearTween ~= nil or not introClearDone or (phaseTwoFlyingCameraActive and not phaseTwoFlyingCameraCompleted) then
+        local scriptedBaseZoom = currentPhaseTwoGameZoom
+
+        if introClearTween ~= nil or not introClearDone then
+            scriptedBaseZoom = currentIntroZoom
+        end
+
+        setGameplayCameraZoom(scriptedBaseZoom + gamePulseOffset, true, true)
+    else
+        local gameZoom = getCameraZoom("camGAME") or baseGameZoom
+        setCameraZoom("camGAME", gameZoom + (BASE_GAME_BUMP * intensity))
+    end
+
     setCameraZoom("camHUD", hudZoom + (BASE_HUD_BUMP * intensity))
     setCameraZoom("camNOTE", noteZoom + (BASE_NOTE_BUMP * intensity))
 end
@@ -256,12 +272,29 @@ local function decayCameraZooms(elapsed)
     local dt = safeElapsed * 60
     local decay = math.pow(CAMERA_BOP_DECAY_RATE, dt)
 
-    local gameZoom = getCameraZoom("camGAME")
     local hudZoom = getCameraZoom("camHUD")
     local noteZoom = getCameraZoom("camNOTE")
 
-    if gameZoom ~= nil then
-        setCameraZoom("camGAME", baseGameZoom + ((gameZoom - baseGameZoom) * decay))
+    gamePulseOffset = gamePulseOffset * decay
+
+    if math.abs(gamePulseOffset) < 0.0001 then
+        gamePulseOffset = 0
+    end
+
+    if introClearTween ~= nil or not introClearDone or (phaseTwoFlyingCameraActive and not phaseTwoFlyingCameraCompleted) then
+        local scriptedBaseZoom = currentPhaseTwoGameZoom
+
+        if introClearTween ~= nil or not introClearDone then
+            scriptedBaseZoom = currentIntroZoom
+        end
+
+        setGameplayCameraZoom(scriptedBaseZoom + gamePulseOffset, true, true)
+    else
+        local gameZoom = getCameraZoom("camGAME")
+
+        if gameZoom ~= nil then
+            setCameraZoom("camGAME", baseGameZoom + ((gameZoom - baseGameZoom) * decay))
+        end
     end
 
     if hudZoom ~= nil then
@@ -593,6 +626,7 @@ local function enterPhaseTwo()
     setSpriteVisible("frostbiteCAR", false)
     removeSpriteFromState("frostbiteCAR")
     setGameplayCameraZoom(1.0, false, false)
+    baseGameZoom = 1.0
     daddyIsHere = true
     secondActive = true
 
@@ -663,6 +697,7 @@ local function triggerDeathNotePunch()
     if hasSongTrack ~= nil and hasSongTrack("jtcVocals") and setSongTrackBaseVolume ~= nil then
         setSongTrackBaseVolume("jtcVocals", 0)
         jtcVocalsMutedForPunch = true
+        pendingVoiceUnmuteAllowed = true
     end
 
     punchCount = punchCount + 1
@@ -672,6 +707,14 @@ local function triggerDeathNotePunch()
     if punchCount >= 3 then
         instaKillPlayer()
     end
+end
+
+local function noteAllowsPunchVoiceUnmute(noteAbstract)
+    if noteAllowsVoiceAudioUnmute ~= nil then
+        return noteAllowsVoiceAudioUnmute(noteAbstract)
+    end
+
+    return true
 end
 
 local function recoverPunchCharge()
@@ -827,9 +870,10 @@ local function updatePhaseTwoFlyingCamera()
         local focusX = lerp(phaseTwoFlyingCameraStartFocusX or centerFocusX, gfFocusX, eased)
         local focusY = lerp(phaseTwoFlyingCameraStartFocusY or centerFocusY, gfFocusY, eased)
         local zoom = lerp(phaseTwoFlyingCameraStartZoom or 1.0, phaseTwoFlyingCameraPeakZoom, eased)
+        currentPhaseTwoGameZoom = zoom
 
         setGameplayCameraFocus(focusX, focusY, true)
-        setGameplayCameraZoom(zoom, true, true)
+        setGameplayCameraZoom(zoom + gamePulseOffset, true, true)
         return
     end
 
@@ -838,12 +882,14 @@ local function updatePhaseTwoFlyingCamera()
     local focusX = lerp(gfFocusX, centerFocusX, eased)
     local focusY = lerp(gfFocusY, centerFocusY, eased)
     local zoom = lerp(phaseTwoFlyingCameraPeakZoom, 1.0, eased)
+    currentPhaseTwoGameZoom = zoom
 
     setGameplayCameraFocus(focusX, focusY, true)
-    setGameplayCameraZoom(zoom, true, true)
+    setGameplayCameraZoom(zoom + gamePulseOffset, true, true)
 
     if progress >= 1 then
         phaseTwoFlyingCameraCompleted = true
+        currentPhaseTwoGameZoom = 1.0
         setGameplayCameraFocus(centerFocusX, centerFocusY, true)
         setGameplayCameraFocusLerp(baseFunkroadCameraFocusLerp)
         clearGameplayCameraZoom(true)
@@ -1179,6 +1225,14 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
             return
     end
 
+    if jtcVocalsMutedForPunch then
+        pendingVoiceUnmuteAllowed = noteAllowsPunchVoiceUnmute(noteAbstract)
+
+        if not pendingVoiceUnmuteAllowed then
+            return
+        end
+    end
+
     if not secondActive or isSecondPunchLocked() then
             return
     end
@@ -1200,8 +1254,6 @@ function onUpdate(elapsed)
     if not startedCountdown then
         return
     end
-
-    updatePulseCamera()
 
     if curStepFloat ~= nil and curStepFloat >= 630 then
         enterPhaseTwo()
@@ -1264,12 +1316,13 @@ function onUpdate(elapsed)
     updateIntroClearTween(elapsed)
     updatePhaseTwoFlyingCamera()
     decayCameraZooms(elapsed)
+    updatePulseCamera()
 
     if startsWith(curAnimName, "sing") then
         holdTimer = holdTimer + elapsed
     end
 
-    if spriteExist("second") and jtcVocalsMutedForPunch and curAnimName == "punched" and sprAnimFinished("second") then
+    if spriteExist("second") and jtcVocalsMutedForPunch and pendingVoiceUnmuteAllowed and curAnimName == "punched" and sprAnimFinished("second") then
         if hasSongTrack ~= nil and hasSongTrack("jtcVocals") and setSongTrackBaseVolume ~= nil then
             setSongTrackBaseVolume("jtcVocals", 1)
         end
@@ -1332,6 +1385,8 @@ function setupPunchHealth(amount)
         local iconY = getMidpointY("healthBarBG") - 50
 
         createSprite("punchIcon" .. i)
+        loadGraphic("punchIcon" .. i, "daddy_fist")
+        loadGraphic("punchIcon" .. i, "daddy_fisted")
         loadGraphic("punchIcon" .. i, "daddy_fist")
         setSpriteToCamera("punchIcon" .. i, "camHUD")
         scaleSprite("punchIcon" .. i, 0.7, 0.7)

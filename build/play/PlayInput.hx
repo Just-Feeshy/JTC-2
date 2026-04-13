@@ -302,38 +302,17 @@ class PlayInput
 	{
 		var values:Array<Bool> = [];
 		var index:Int = 0;
-		var botMode:Bool = playState.modifierCheckList('bot mode');
-		var songTime:Float = botMode ? getBotplaySongTime() : getCurrentInputSongTime();
 
 		while(index < playState.getLaneCount()) {
 			values.push(false);
 			index++;
 		}
 
-		playState.notes.forEachAlive(function(daNote:Note) {
-			var lane:Int = daNote.noteData;
-			var chainActive:Bool = false;
-
-				if(daNote.mustPress
-					&& daNote.isSustainNote
-					&& lane >= 0
-					&& lane < values.length
-					&& controlHoldArray[lane]) {
-					if(daNote.wasGoodHit || daNote.shouldBeDead) {
-						chainActive = true;
-					}else if(botMode ? shouldBotHoldLane(daNote, songTime) : daNote.canHoldHit(songTime)) {
-						chainActive = true;
-					}else if(songTime < daNote.getNoteTime()
-						&& daNote.prevNote != null
-						&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)) {
-						chainActive = true;
-				}
+		for(lane in 0...values.length) {
+			if(controlHoldArray[lane]) {
+				values[lane] = playState.hasActiveSustainChain(lane, true);
 			}
-
-			if(chainActive) {
-				values[lane] = true;
-			}
-		});
+		}
 
 		return values;
 	}
@@ -358,17 +337,7 @@ class PlayInput
 
 				if(spr.animation.curAnim != null) {
 					if(spr.sustainHeld) {
-						if((spr.animation.curAnim.name == "static" || spr.animation.curAnim.name == "pressed")
-							&& !CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)
-							&& spr.hasDedicatedConfirmHold()) {
-							spr.playAnim("confirm-hold");
-						}else if(spr.animation.curAnim.name == "confirm"
-							&& spr.animation.curAnim.finished
-							&& spr.hasDedicatedConfirmHold()) {
-							if(spr.hasDedicatedConfirmHold()) {
-								spr.playAnim("confirm-hold");
-							}
-						}
+						playState.playStrumConfirmHold(spr);
 					}else {
 						if(spr.animation.curAnim.name == "static"
 							&& !CustomNoteHandler.noNoteAbstractStrum.contains(spr.ifCustom)) {
@@ -407,7 +376,7 @@ class PlayInput
 				&& daNote.noteData < controlHoldArray.length
 				&& controlHoldArray[daNote.noteData] && !playState.disableInputs
 				&& (daNote.canHoldHit(songTime) || shouldCatchHeldSustainNote(daNote, songTime))) {
-				playState.goodNoteHit(daNote, daNote.getNoteTime());
+				playState.hitPlayerSustainSegment(daNote);
 			}
 		});
 

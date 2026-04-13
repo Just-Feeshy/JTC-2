@@ -345,6 +345,10 @@ class PlayLua
 			return true;
 		});
 
+		playState.addCallback("noteAllowsVoiceAudioUnmute", function(noteType:String) {
+			return CustomNoteHandler.getCustomNoteUnmuteVoiceAudio(noteType);
+		});
+
 		playState.addCallback("instaKillPlayer", function() {
 			playState.gameOverScreen();
 		});
