@@ -376,6 +376,7 @@ class PlayInput
 				&& daNote.noteData < controlHoldArray.length
 				&& controlHoldArray[daNote.noteData] && !playState.disableInputs
 				&& (daNote.canHoldHit(songTime) || shouldCatchHeldSustainNote(daNote, songTime))) {
+					playState.singNotePlayer(daNote);
 					playState.hitPlayerSustainSegment(daNote);
 			}
 		});

@@ -966,7 +966,7 @@
 				"sectionBeats": 4,
 				"sectionNotes": [
 					[
-						70666.6666666667,
+						71000,
 						7,
 						0,
 						"cheese fifth",
@@ -5584,6 +5584,22 @@
 				"mustHitSection": true,
 				"changeBPM": false,
 				"bpm": 135
+			},
+			{
+				"sectionNotes": [],
+				"lengthInSteps": 16,
+				"altAnim": false,
+				"mustHitSection": true,
+				"changeBPM": false,
+				"bpm": 135
+			},
+			{
+				"lengthInSteps": 16,
+				"sectionNotes": [],
+				"altAnim": false,
+				"bpm": 135,
+				"changeBPM": false,
+				"mustHitSection": true
 			},
 			{
 				"sectionNotes": [],

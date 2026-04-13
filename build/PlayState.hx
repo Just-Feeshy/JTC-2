@@ -2078,14 +2078,22 @@ class PlayState extends MusicBeatState
 					songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * elapsed);
 				}
 
-				if(botMode && currentPlayer != null && currentPlayer.isSinging()) {
+				if(currentPlayer != null && currentPlayer.isSinging()) {
 					currentPlayer.holdTimer = 0;
 				}
+
+				refreshHoldCoverForLane(lane, true);
 			}
 
 			if(opponentChainActive) {
 				if(currentOpponent != null && currentOpponent.isSinging()) {
 					currentOpponent.holdTimer = 0;
+
+					if(currentOpponent.isAnimationFinished()
+						&& !currentOpponent.specialAnim
+						&& !currentOpponent.customAnimation) {
+						currentOpponent.onNoteHit(lane, getCurrentOpponentAnimSuffix());
+					}
 				}
 
 				if(opponentStrum != null) {
@@ -2099,6 +2107,17 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
+	}
+
+	private function getCurrentOpponentAnimSuffix():String
+	{
+		var altAnim:String = opponentAltAnim;
+
+		if(SONG.notes[Math.floor(curStep / 16)] != null && SONG.notes[Math.floor(curStep / 16)].altAnim) {
+			altAnim = '-alt';
+		}
+
+		return altAnim;
 	}
 
 	private function isSustainChainDescendantOf(candidate:Note, chainNote:Note):Bool
@@ -2321,11 +2340,24 @@ class PlayState extends MusicBeatState
 		note.wasGoodHit = true;
 		note.shouldBeDead = true;
 
-		if(SONG.needsVoices && !currentPlayer.stunned) {
+		if(SONG.needsVoices && !currentPlayer.stunned && canNoteUnmuteVoiceAudio(note)) {
 			setPlayerVocalsVolume(1, note.tag);
 		}
 
 		refreshHoldCoverForLane(note.noteData, true);
+	}
+
+	private inline function canNoteUnmuteVoiceAudio(note:Note):Bool
+	{
+		if(note == null) {
+			return true;
+		}
+
+		if(note.hasCustomAddon != null) {
+			return note.hasCustomAddon.canUnmuteVoiceAudio();
+		}
+
+		return CustomNoteHandler.getCustomNoteUnmuteVoiceAudio(note.noteAbstract);
 	}
 
 	private function startInstrumentTrack(?startTime:Null<Float>):Void {
@@ -3441,13 +3473,7 @@ class PlayState extends MusicBeatState
 		if (SONG.song != 'Tutorial')
 			camZooming = true;
 
-		var altAnim:String = opponentAltAnim;
-
-		if (SONG.notes[Math.floor(curStep / 16)] != null)
-		{
-			if (SONG.notes[Math.floor(curStep / 16)].altAnim)
-				altAnim = '-alt';
-		}
+		var altAnim:String = getCurrentOpponentAnimSuffix();
 
 		if(note.playAnyAnimation && !currentOpponent.specialAnim && !currentOpponent.customAnimation) {
 			currentOpponent.onNoteHit(Std.int(Math.abs(note.noteData)), altAnim);
@@ -3468,7 +3494,7 @@ class PlayState extends MusicBeatState
 			}
 		});
 
-		if (SONG.needsVoices)
+		if (SONG.needsVoices && canNoteUnmuteVoiceAudio(note))
 			setOpponentVocalsVolume(1, note.tag);
 
 		updateLuaVars();
@@ -3622,12 +3648,25 @@ class PlayState extends MusicBeatState
 	}
 	*/
 
-		function takeDamage(direction:Int, playAnim:Bool):Void {
-				applyPlayerMissFeedback(direction, null, true, playAnim, false, true);
-		}
+	function takeDamage(direction:Int, playAnim:Bool):Void {
+			applyPlayerMissFeedback(direction, null, true, playAnim, false, true);
+	}
 
-	function goodNoteHit(note:Note, ?hitSongTime:Float):Void
-	{
+	function singNotePlayer(note:Note):Void {
+		if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
+			events.whenNoteIsPressed(note, this);
+			stage.whenNoteIsPressed(note);
+			cameraMovement(note.noteData, false);
+
+			currentPlayer.customAnimation = false;
+
+			if(note.playAnyAnimation) {
+				currentPlayer.onNoteHit(Std.int(Math.abs(note.noteData)), playerAltAnim + currentPlayer.hasBePlayer);
+			}
+		}
+	}
+
+	function goodNoteHit(note:Note, ?hitSongTime:Float):Void {
 		if(note.isSustainNote) {
 			hitPlayerSustainSegment(note);
 			return;
@@ -3645,18 +3684,7 @@ class PlayState extends MusicBeatState
 
 			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
-
-			if(!CustomNoteHandler.dontHitNotes.contains(note.noteAbstract)) {
-				events.whenNoteIsPressed(note, this);
-				stage.whenNoteIsPressed(note);
-				cameraMovement(note.noteData, false);
-
-				currentPlayer.customAnimation = false;
-
-				if(note.playAnyAnimation) {
-					currentPlayer.onNoteHit(Std.int(Math.abs(note.noteData)), playerAltAnim + currentPlayer.hasBePlayer);
-				}
-			}
+			singNotePlayer(note);
 
 			var spr:Strum = currentStrums.members[note.noteData];
 
@@ -3691,7 +3719,7 @@ class PlayState extends MusicBeatState
 			if(!CustomNoteHandler.ouchyNotes.contains(note.noteAbstract)) {
 				note.wasGoodHit = true;
 
-				if(SONG.needsVoices && !currentPlayer.stunned) {
+				if(SONG.needsVoices && !currentPlayer.stunned && canNoteUnmuteVoiceAudio(note)) {
 					setPlayerVocalsVolume(1, note.tag);
 				}
 
