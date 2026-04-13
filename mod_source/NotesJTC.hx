@@ -129,6 +129,41 @@ class DeathNote extends CustomNoteTemplate {
     }
 }
 
+/**
+ * A cheese note for the fifth key that does nothing special.
+ * Uses the JTC_SPECIAL_NOTE_assets from the fifth folder.
+ */
+class CheeseFifthNote extends CustomNoteTemplate {
+	public static var fifthKeySize:Float = 1.0;
+	public static var fifthKeyOffsetX:Float = -18;
+
+    override function getCustomAssetPath():String {
+        return "fifth/JTC_SPECIAL_NOTE_assets";
+    }
+
+    override function useCustomPrefix(animation:FlxAnimationController):Bool {
+        animation.addByPrefix('diamondScroll', 'Cheese note');
+        animation.addByPrefix('purpleScroll', 'Cheese note');
+        animation.addByPrefix('blueScroll', 'Cheese note');
+        animation.addByPrefix('greenScroll', 'Cheese note');
+        animation.addByPrefix('redScroll', 'Cheese note');
+        return true;
+    }
+
+    override function getNoteOffsetX(isSustain:Bool):Float {
+        return fifthKeyOffsetX;
+    }
+
+    override function whenIsFirstRendered(note:Note, totalNotesInSection:Int):Void {
+        note.scale.set(note.scale.x * fifthKeySize, note.scale.y * fifthKeySize);
+        note.updateHitbox();
+    }
+
+    override function cantHaveHold():Bool {
+        return true; // No sustains for this note
+    }
+}
+
 class CheeseNote extends CustomNoteTemplate {
     private var sourceWasPlayerSide:Bool = false;
 

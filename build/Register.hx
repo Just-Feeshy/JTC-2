@@ -34,8 +34,16 @@ import sys.io.File;
 
 using StringTools;
 
+enum StrumKey {
+    LEFT;
+    DOWN;
+    UP;
+    RIGHT;
+    SPACE;
+}
+
 /**
-* Basically the FlxG for Feeshmora.
+* A more Fabric mod loader based approach
 */
 class Register {
     private static var regJSON(get, never):String;
@@ -59,6 +67,8 @@ class Register {
     @:allow(PlayState) private static var stage:Class<StageBuilder> = DefaultStage;
 	@:allow(Strum) @:allow(PlayState) private static var strumFiles:Array<String> = [];
     @:allow(Main) private static var initialState:Class<HelperStates> = TitleState;
+
+    @:allow(Strum) private static var strumKeySizes:Map<StrumKey, Float> = new Map<StrumKey, Float>();
 
     @:allow(Preloader)
     private inline static function setup() {
@@ -133,8 +143,24 @@ class Register {
         return null;
     }
 
-	public inline static function addStrumFiles(name:String):Void {
+	public inline static function addStrumFiles(name:String, ?strumSize:Float = 1.0, ?key:StrumKey = SPACE):Void {
 		strumFiles.push(name);
+
+		if(strumSize > 0) {
+			strumKeySizes.set(key, strumSize);
+		}
+	}
+
+	public inline static function setStrumKeySize(key:StrumKey, size:Float):Void {
+		if(size > 0) {
+			strumKeySizes.set(key, size);
+		}else {
+			strumKeySizes.remove(key);
+		}
+	}
+
+	public inline static function getStrumKeySize(key:StrumKey):Float {
+		return strumKeySizes.exists(key) ? strumKeySizes.get(key) : 1.0;
 	}
 
     public inline static function setStageForMod(stage:Class<StageBuilder>):Void {

@@ -13,7 +13,7 @@ class Mod {
         Register.setStageForMod(CheesyStage); // Remove unwanted data from the game.
 
 		// Add custom fifth key
-		Register.addStrumFiles("notes/fifth/Fifth key.xml");
+		Register.addStrumFiles("notes/fifth/Fifth key.xml", CheeseFifthNote.fifthKeySize, SPACE);
 
 		// Add the lua files to the game
         Register.attachLuaToState(OptionsMenuState, Paths.lua("modSettings"));
@@ -30,5 +30,6 @@ class Mod {
         Register.implementCustomNote("cool", CoolNote);
         Register.implementCustomNote("cheese", CheeseNote);
         Register.implementCustomNote("death", DeathNote);
+        Register.implementCustomNote("cheese fifth", CheeseFifthNote);
     }
 }

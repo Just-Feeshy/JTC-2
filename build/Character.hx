@@ -23,7 +23,7 @@ using StringTools;
 
 class Character extends feshixl.FeshSprite {
 	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 1.0;
-	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT", "SPACE"];
+	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT"];
 	private var finalizedX:Float;
 	private var finalizedY:Float;
 
@@ -619,8 +619,29 @@ class Character extends feshixl.FeshSprite {
 		return currentAnimation.startsWith("sing") && !currentAnimation.endsWith(Constants.ANIMATION_END_SUFFIX);
 	}
 
+	private function getSingDirectionIndex(direction:Int):Int {
+		var lane:Int = Std.int(Math.abs(direction));
+
+		if(PlayState.SONG != null && PlayState.SONG.fifthKey) {
+			return switch(lane) {
+				case 0: 0;
+				case 1: 1;
+				case 3: 2;
+				case 4: 3;
+				default: -1;
+			}
+		}
+
+		return lane >= 0 && lane < singDirections.length ? lane : -1;
+	}
+
 	function buildSingAnimationName(direction:Int, miss:Bool = false, ?suffix:String = ""):String {
-		return 'sing${singDirections[Std.int(Math.abs(direction))]}${miss ? "miss" : ""}$suffix';
+		var singDirectionIndex:Int = getSingDirectionIndex(direction);
+		if(singDirectionIndex < 0) {
+			return "";
+		}
+
+		return 'sing${singDirections[singDirectionIndex]}${miss ? "miss" : ""}$suffix';
 	}
 
 	function isControlledByPlayer():Bool {
@@ -639,10 +660,17 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	public function playSingAnimation(direction:Int, miss:Bool = false, ?suffix:String = ""):Void {
-		playAnim(buildSingAnimationName(direction, miss, suffix), true);
+		var animName:String = buildSingAnimationName(direction, miss, suffix);
+		if(animName != "") {
+			playAnim(animName, true);
+		}
 	}
 
 	public function playMissAnimation(direction:Int, ?suffix:String = ""):Void {
+		if(getSingDirectionIndex(direction) < 0) {
+			return;
+		}
+
 		var candidates:Array<String> = [
 			buildSingAnimationName(direction, true, suffix),
 			buildSingAnimationName(direction, true),
@@ -661,6 +689,10 @@ class Character extends feshixl.FeshSprite {
 
 	public function onNoteHit(direction:Int, ?suffix:String = ""):Void {
 		applyQueuedAnimationSetSwitchOnNoteHit();
+		if(getSingDirectionIndex(direction) < 0) {
+			return;
+		}
+
 		playSingAnimation(direction, false, suffix);
 		holdTimer = 0;
 	}

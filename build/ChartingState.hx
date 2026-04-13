@@ -851,7 +851,11 @@ class ChartingState extends MusicBeatState
 		check_fifth.checked = _song.fifthKey;
 		check_fifth.callback = function()
 		{
-			_song.fifthKey = check_fifth.checked;
+			if (check_fifth.checked)
+				adjustChartNotesToFiveKey();
+			else
+				_song.fifthKey = false;
+
 			refreshChartLaneLayout();
 			updateGrid();
 		};
@@ -918,7 +922,7 @@ class ChartingState extends MusicBeatState
 			refreshChartLaneLayout();
 			updateGrid();
 		});
-		adjustNotes5kButton.label.size = 8;
+		adjustNotes5kButton.label.size = 7;
 		refreshChartLaneLayout();
 
 		var loadAutosaveBtn:FlxButton = new FlxButton(reloadSongJson.x, reloadSongJson.y + 30, 'load autosave', loadAutosave);
@@ -1527,9 +1531,41 @@ class ChartingState extends MusicBeatState
 
 	function adjustChartNotesToFiveKey():Void
 	{
-		if (_song.fifthKey)
+		if (_song.fifthKey && chartAlreadyUsesExpandedFiveKeyData())
+		{
+			_song.fifthKey = true;
 			return;
+		}
 
+		for (section in _song.notes)
+		{
+			if (section == null || section.sectionNotes == null)
+				continue;
+
+				for (note in section.sectionNotes)
+				{
+					if (note == null || note.length < 2 || note[1] == null)
+						continue;
+
+					var noteData:Int = Std.int(note[1]);
+					if (noteData < 0 || noteData >= 8)
+						continue;
+
+					var side:Int = noteData >= 4 ? 1 : 0;
+					var lane:Int = noteData % 4;
+
+					if (lane >= 2)
+					lane += 1;
+
+				note[1] = lane + (side * 5);
+			}
+		}
+
+		_song.fifthKey = true;
+	}
+
+	function chartAlreadyUsesExpandedFiveKeyData():Bool
+	{
 		for (section in _song.notes)
 		{
 			if (section == null || section.sectionNotes == null)
@@ -1540,18 +1576,12 @@ class ChartingState extends MusicBeatState
 				if (note == null || note.length < 2 || note[1] == null)
 					continue;
 
-				var noteData:Int = Std.int(note[1]);
-				var side:Int = noteData >= 4 ? 1 : 0;
-				var lane:Int = noteData % 4;
-
-				if (lane >= 2)
-					lane += 1;
-
-				note[1] = lane + (side * 5);
+				if (Std.int(note[1]) >= 8)
+					return true;
 			}
 		}
 
-		_song.fifthKey = true;
+		return false;
 	}
 
 	function generateUI():Void
@@ -2093,12 +2123,12 @@ class ChartingState extends MusicBeatState
 			curSection = 0;
 		}
 
-		setVocalsTime(FlxG.sound.music.time);
+			setVocalsTime(FlxG.sound.music.time);
 
-		updateCurStep();
+			updateCurStep();
 
-		updateGrid();
-		updateSectionUI();
+			updateGrid();
+			updateSectionUI();
 	}
 
 	function changeSection(sec:Int = 0, ?updateMusic:Bool = true):Void
@@ -2130,10 +2160,10 @@ class ChartingState extends MusicBeatState
 						daNum++;
 				}*/
 
-				FlxG.sound.music.time = sectionStartTime(curSection);
-				setVocalsTime(FlxG.sound.music.time);
-				updateCurStep();
-			}
+					FlxG.sound.music.time = sectionStartTime(curSection);
+					setVocalsTime(FlxG.sound.music.time);
+					updateCurStep();
+				}
 
 			updateGrid();
 			updateSectionUI();

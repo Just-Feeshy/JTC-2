@@ -234,18 +234,13 @@ class Note extends feshixl.FeshMinSprite {
 					updateHitbox();
 					antialiasing = false;
 				}else {
-					if(noteType == "planet notes")
-						frames = Paths.getNoteAtlas('$noteType/planet_notes');
+					var customPath:String = (hasCustomAddon != null) ? hasCustomAddon.getCustomAssetPath() : "";
+					if(customPath != null && customPath.length > 0)
+						frames = Paths.getNoteAtlas(customPath);
 					else
 						frames = Paths.getNoteAtlas('$noteType/NOTE_assets');
 
-					if(noteType == "planet notes") {
-						animation.addByPrefix('greenScroll', 'planet up');
-						animation.addByPrefix('redScroll', 'planet left');
-						animation.addByPrefix('blueScroll', 'planet down');
-						animation.addByPrefix('purpleScroll', 'planet right');
-						animation.addByPrefix('diamondScroll', 'planet down');
-					}else if(hasCustomAddon != null) {
+					if(hasCustomAddon != null) {
 						if(!hasCustomAddon.useCustomPrefix(animation))
 							setupPrefixes();
 					}else {
@@ -853,7 +848,7 @@ class Note extends feshixl.FeshMinSprite {
 			modifiedSymbol.visible = Value;
 		}
 
-		if(Main.feeshmoraModifiers && DefaultHandler.modifiers.blindEffect.enabled) {
+		if(Main.feeshmoraModifiers && DefaultHandler.modifiers != null && DefaultHandler.modifiers.blindEffect.enabled) {
 			return visible = false;
 		}
 

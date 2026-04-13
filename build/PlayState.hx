@@ -841,7 +841,7 @@ class PlayState extends MusicBeatState
 
 	function setupKeyStuff():Void {
 		if(SONG.fifthKey) {
-			singAnims = ["singLEFT", "singDOWN", "singUP", "singUP", "singRIGHT"];
+			singAnims = ["singLEFT", "singDOWN", "", "singUP", "singRIGHT"];
 		}else {
 			singAnims = ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
 		}
@@ -2450,6 +2450,23 @@ class PlayState extends MusicBeatState
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
 	}
 
+	inline function getLaneXOffset(lane:Int, keys:Int):Float {
+		var position:Float = Note.swagWidth * lane;
+
+		if(keys == 5) {
+			var middleLane:Int = Std.int((keys - 1) * 0.5);
+			var middleGapOffset:Float = 20;
+
+			if(lane < middleLane) {
+				position -= middleGapOffset;
+			}else if(lane > middleLane) {
+				position += middleGapOffset;
+			}
+		}
+
+		return position;
+	}
+
 	private function generateStaticArrows(player:Int):Void
 	{
 		var keys:Int = 4;
@@ -2486,27 +2503,27 @@ class PlayState extends MusicBeatState
 						switch (Math.abs(i))
 						{
 							case 0:
-								babyArrow.x += Note.swagWidth * 0;
+								babyArrow.x += getLaneXOffset(0, keys);
 								babyArrow.animation.add('static', [0]);
 								babyArrow.animation.add('pressed', [4, 8], 12, false);
 								babyArrow.animation.add('confirm', [12, 16], 24, false);
 							case 1:
-								babyArrow.x += Note.swagWidth * 1;
+								babyArrow.x += getLaneXOffset(1, keys);
 								babyArrow.animation.add('static', [1]);
 								babyArrow.animation.add('pressed', [5, 9], 12, false);
 								babyArrow.animation.add('confirm', [13, 17], 24, false);
 							case 2:
-								babyArrow.x += Note.swagWidth * 2;
+								babyArrow.x += getLaneXOffset(2, keys);
 								babyArrow.animation.add('static', [20]);
 								babyArrow.animation.add('pressed', [21, 22], 12, false);
 								babyArrow.animation.add('confirm', [24, 23], 24, false);
 							case 3:
-								babyArrow.x += Note.swagWidth * 3;
+								babyArrow.x += getLaneXOffset(3, keys);
 								babyArrow.animation.add('static', [2]);
 								babyArrow.animation.add('pressed', [6, 10], 12, false);
 								babyArrow.animation.add('confirm', [14, 18], 12, false);
 							case 4:
-								babyArrow.x += Note.swagWidth * 4;
+								babyArrow.x += getLaneXOffset(4, keys);
 								babyArrow.animation.add('static', [3]);
 								babyArrow.animation.add('pressed', [7, 11], 12, false);
 								babyArrow.animation.add('confirm', [15, 19], 24, false);
@@ -2516,7 +2533,7 @@ class PlayState extends MusicBeatState
 
 						babyArrow.antialiasing = true;
 						babyArrow.setGraphicSize(Std.int(babyArrow.width * 0.7));
-						babyArrow.x += Note.swagWidth * i;
+						babyArrow.x += getLaneXOffset(i, keys);
 						babyArrow.setupAnimations();
 				}
 			}else {
@@ -2590,6 +2607,7 @@ class PlayState extends MusicBeatState
 			babyArrow.playAnim('static');
 			babyArrow.x += 50;
 			babyArrow.x += ((FlxG.width / 2) * player);
+
 			storeDefaultStrumState(player, i, babyArrow, !isStoryMode ? babyArrow.y + 10 : babyArrow.y, 1);
 
 			strumLineNotes.add(babyArrow);

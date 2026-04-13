@@ -108,6 +108,33 @@ class Strum extends feshixl.FeshSprite {
 		return null;
 	}
 
+	private function getDirectionKey():Null<Register.StrumKey> {
+		return switch(direction) {
+			case "left": Register.StrumKey.LEFT;
+			case "down": Register.StrumKey.DOWN;
+			case "up": Register.StrumKey.UP;
+			case "right": Register.StrumKey.RIGHT;
+			case "space": Register.StrumKey.SPACE;
+			default: null;
+		}
+	}
+
+	private function applyRegisteredKeySize():Void {
+		var key:Null<Register.StrumKey> = getDirectionKey();
+
+		if(key == null) {
+			return;
+		}
+
+		var keySize:Float = Register.getStrumKeySize(key);
+		if(keySize == 1.0) {
+			return;
+		}
+
+		scale.set(scale.x * keySize, scale.y * keySize);
+		updateHitbox();
+	}
+
 	public function hasAnimation(animName:String):Bool {
 		return animation != null && animation.getByName(animName) != null;
 	}
@@ -151,6 +178,7 @@ class Strum extends feshixl.FeshSprite {
 			|| confirmHoldPrefix == legacyConfirmZero
 			|| confirmHoldPrefix == legacyConfirm;
 
+		applyRegisteredKeySize();
 		updateHitbox();
 	}
 

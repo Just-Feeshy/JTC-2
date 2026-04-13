@@ -35,6 +35,7 @@ interface ICustomNote {
     function giveHealth(isSustain:Bool):Float; //How much health is given to the player when this note is hit.
     function missNoteDamage():Float; //How much damage is given to the player when this note is missed.
     function getWobblePower():Int; //How much wobble effect should this note have.
+    function getCustomAssetPath():String; //Custom asset path for this note. Return empty string to use default.
 }
 
 class CustomNoteTemplate implements ICustomNote {
@@ -152,5 +153,9 @@ class CustomNoteTemplate implements ICustomNote {
 
     public function getWobblePower():UInt {
         return 0;
+    }
+
+    public function getCustomAssetPath():String {
+        return "";
     }
 }

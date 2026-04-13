@@ -191,14 +191,97 @@ class Paths
 			return "";
 
 		if (OpenFlAssets.exists(path, TEXT))
-			return OpenFlAssets.getText(path);
+		{
+			var embeddedBytes:ByteArray = OpenFlAssets.getBytes(path);
+			var embeddedText:String = decodeTextBytes(embeddedBytes != null ? Bytes.ofData(embeddedBytes) : null);
+
+			if (embeddedText != "")
+				return embeddedText;
+
+			return sanitizeTextContent(OpenFlAssets.getText(path));
+		}
 
 		#if sys
 		if (FileSystem.exists(path))
-			return File.getContent(path);
+		{
+			var bytes:Bytes = File.getBytes(path);
+			var decoded:String = decodeTextBytes(bytes);
+			return decoded != "" ? decoded : sanitizeTextContent(bytes != null ? bytes.toString() : "");
+		}
 		#end
 
 		return "";
+	}
+
+	static function decodeTextBytes(bytes:Bytes):String
+	{
+		if (bytes == null || bytes.length == 0)
+			return "";
+
+		if (bytes.length >= 2)
+		{
+			var first:Int = bytes.get(0);
+			var second:Int = bytes.get(1);
+
+			if ((first == 0xFF && second == 0xFE) || (first == 0xFE && second == 0xFF))
+				return sanitizeTextContent(decodeUtf16Text(bytes));
+		}
+
+		return "";
+	}
+
+	static function decodeUtf16Text(bytes:Bytes):String
+	{
+		if (bytes == null || bytes.length == 0)
+			return "";
+
+		var littleEndian:Bool = true;
+		var start:Int = 0;
+
+		if (bytes.length >= 2)
+		{
+			var first:Int = bytes.get(0);
+			var second:Int = bytes.get(1);
+
+			if (first == 0xFF && second == 0xFE)
+			{
+				littleEndian = true;
+				start = 2;
+			}
+			else if (first == 0xFE && second == 0xFF)
+			{
+				littleEndian = false;
+				start = 2;
+			}
+		}
+
+		var buffer = new StringBuf();
+		var index:Int = start;
+
+		while (index + 1 < bytes.length)
+		{
+			var codeUnit:Int = littleEndian
+				? bytes.get(index) | (bytes.get(index + 1) << 8)
+				: (bytes.get(index) << 8) | bytes.get(index + 1);
+
+			if (codeUnit != 0 && codeUnit != 0xFEFF)
+				buffer.addChar(codeUnit);
+
+			index += 2;
+		}
+
+		return buffer.toString();
+	}
+
+	static function sanitizeTextContent(text:String):String
+	{
+		if (text == null || text == "")
+			return "";
+
+		if (text.charCodeAt(0) == 0xFEFF)
+			text = text.substr(1);
+
+		return text.replace("\x00", "");
 	}
 
 	static public function loadBitmap(path:String, useCache:Bool = true):BitmapData
