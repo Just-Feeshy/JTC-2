@@ -13,8 +13,12 @@
 
         "events": [
             {
-                "name": "",
-                "description": ""
+                "name": "RimShadowEvent",
+                "description": "Value 1 - Optional display name. Value 2 - JSON payload with target, enabled, hexcolor, angle, distance, threshold, brightness, hue, contrast, saturation. You can also use it through the regular v-slice event wrapper."
+            },
+            {
+                "name": "ColorAdjustEvent",
+                "description": "Value 1 - Optional display name. Value 2 - JSON payload with target, enabled, brightness, hue, contrast, saturation. You can also use it through the regular v-slice event wrapper."
             }
         ],
 

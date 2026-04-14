@@ -270,6 +270,7 @@ class ChartingState extends MusicBeatState
 		bg.scrollFactor.set();
 		bg.screenCenter();
 		add(bg);
+		attachSprite("chartEditorBackground", bg);
 
 		bpmTxt = new FlxText(1000, 50, 0, "", 14);
 		refreshChartLaneLayout();
@@ -381,6 +382,7 @@ class ChartingState extends MusicBeatState
 		refreshChartLaneLayout();
 
 		super.create();
+		loadEditorStagePreview();
 
 		addSongUI();
 		addSectionUI();
@@ -398,6 +400,17 @@ class ChartingState extends MusicBeatState
 		add(curRenderedNotes);
 
 		updateHeads();
+	}
+
+	function loadEditorStagePreview():Void {
+		var songName:String = _song != null && _song.song != null ? _song.song.toLowerCase() : "";
+		var songDirectory:String = songName.length > 0 ? CoolUtil.readableSongDirectory(songName) : "";
+		var stageName:String = _song != null && _song.stage != null ? _song.stage.toLowerCase() : "";
+
+		setLua("chartSongName", songName);
+		setLua("chartSongDirectory", songDirectory);
+		setLua("chartStageName", stageName);
+		callLua("loadEditorStage", []);
 	}
 
 	function setStage() {

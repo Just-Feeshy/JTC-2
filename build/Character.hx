@@ -354,6 +354,10 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	override function update(elapsed:Float) {
+		if(Std.isOfType(shader, RimShadowShader)) {
+			cast(shader, RimShadowShader).updateFrameInfo(frame);
+		}
+
 		repairInvalidAnimationState();
 
 		var currentAnimation:String = getAnimName();

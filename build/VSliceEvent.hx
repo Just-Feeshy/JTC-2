@@ -27,7 +27,16 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
         }
 
         switch(eventName.toLowerCase().trim()) {
-            case WRAPPER_EVENT | WRAPPER_COMPONENT | "focuscamera" | "zoomcamera" | "setcamerabop" | "playanimation":
+            case WRAPPER_EVENT
+                | WRAPPER_COMPONENT
+                | "focuscamera"
+                | "zoomcamera"
+                | "setcamerabop"
+                | "playanimation"
+                | "rimshadowevent"
+                | "rimshadow"
+                | "coloradjustevent"
+                | "coloradjust":
                 return true;
         }
 
@@ -50,6 +59,10 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
                 handleSetCameraBop(resolved.payload, playState);
             case "playanimation":
                 handlePlayAnimation(resolved.payload, playState);
+            case "rimshadowevent" | "rimshadow":
+                handleRimShadowEvent(resolved.payload, playState);
+            case "coloradjustevent" | "coloradjust":
+                handleColorAdjustEvent(resolved.payload, playState);
         }
     }
 
@@ -227,6 +240,51 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
         }
     }
 
+    private function handleRimShadowEvent(payload:Dynamic, playState:PlayState):Void {
+        var character:Character = resolveShaderTarget(readString(payload, "target", "boyfriend"), playState);
+
+        if(character == null) {
+            return;
+        }
+
+        if(!readBool(payload, "enabled", true)) {
+            character.shader = null;
+            return;
+        }
+
+        var shader = new RimShadowShader();
+        shader.color = parseHexColor(readString(payload, "hexcolor", "D46B00"), 0xFFD46B00);
+        shader.angle = readFloat(payload, "angle", 125);
+        shader.distance = readFloat(payload, "distance", 12);
+        shader.threshold = readFloat(payload, "threshold", 0.15);
+        shader.brightness = readFloat(payload, "brightness", -35);
+        shader.hue = readFloat(payload, "hue", -15);
+        shader.contrast = readFloat(payload, "contrast", 10);
+        shader.saturation = readFloat(payload, "saturation", -20);
+        shader.updateFrameInfo(character.frame);
+        character.shader = shader;
+    }
+
+    private function handleColorAdjustEvent(payload:Dynamic, playState:PlayState):Void {
+        var character:Character = resolveShaderTarget(readString(payload, "target", "boyfriend"), playState);
+
+        if(character == null) {
+            return;
+        }
+
+        if(!readBool(payload, "enabled", true)) {
+            character.shader = null;
+            return;
+        }
+
+        var shader = new AdjustColorShader();
+        shader.brightness = readFloat(payload, "brightness", 0);
+        shader.hue = readFloat(payload, "hue", 0);
+        shader.contrast = readFloat(payload, "contrast", 0);
+        shader.saturation = readFloat(payload, "saturation", 0);
+        character.shader = shader;
+    }
+
     private function resolveEvent(eventName:String, eventValue:String, eventValue2:String):ResolvedVSliceEvent {
         var normalizedName:String = eventName != null ? eventName.toLowerCase().trim() : "";
         var directKind:String = resolveDirectKind(normalizedName);
@@ -316,6 +374,28 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
                     target: secondaryText,
                     force: false
                 };
+            case "rimshadowevent" | "rimshadow":
+                return {
+                    target: "boyfriend",
+                    enabled: true,
+                    hexcolor: "D46B00",
+                    angle: 125,
+                    distance: 12,
+                    threshold: 0.15,
+                    brightness: -35,
+                    hue: -15,
+                    contrast: 10,
+                    saturation: -20
+                };
+            case "coloradjustevent" | "coloradjust":
+                return {
+                    target: "boyfriend",
+                    enabled: true,
+                    brightness: 0,
+                    hue: 0,
+                    contrast: 0,
+                    saturation: 0
+                };
         }
 
         return {};
@@ -331,6 +411,10 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
                 return "SetCameraBop";
             case "playanimation":
                 return "PlayAnimation";
+            case "rimshadowevent" | "rimshadow":
+                return "RimShadowEvent";
+            case "coloradjustevent" | "coloradjust":
+                return "ColorAdjustEvent";
         }
 
         return null;
@@ -364,6 +448,21 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
         }
 
         return null;
+    }
+
+    private function resolveShaderTarget(value:String, playState:PlayState):Character {
+        if(playState == null) {
+            return null;
+        }
+
+        switch(value != null ? value.toLowerCase().trim() : "") {
+            case "dad" | "opponent":
+                return playState.dad;
+            case "girlfriend" | "gf":
+                return playState.gf;
+            default:
+                return playState.boyfriend;
+        }
     }
 
     private function parseFocusTarget(value:String):Int {
@@ -404,6 +503,29 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
         } catch(e:Dynamic) {
             return null;
         }
+    }
+
+    private function parseHexColor(value:String, fallback:Int):Int {
+        if(value == null) {
+            return fallback;
+        }
+
+        var trimmed:String = value.trim();
+
+        if(trimmed.startsWith("#")) {
+            trimmed = trimmed.substr(1);
+        }
+
+        if(trimmed.length == 6) {
+            trimmed = "FF" + trimmed;
+        }
+
+        if(trimmed.length != 8) {
+            return fallback;
+        }
+
+        var parsed:Null<Int> = Std.parseInt("0x" + trimmed);
+        return parsed == null ? fallback : parsed;
     }
 
     private function isPayloadObject(value:Dynamic):Bool {

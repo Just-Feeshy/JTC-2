@@ -22,6 +22,7 @@ class Mod {
         Register.attachLuaToState(FreeplayState, Paths.lua("jtc_freeplay"));
         Register.attachLuaToState(TitleState, Paths.lua("titleCard"));
         Register.attachLuaToState(PauseSubState, Paths.lua("jtc_pause"));
+        Register.attachLuaToState(ChartingState, Paths.lua("chartingStageLoader"));
 
 		// Add the custom notes to the game
         Register.implementDialogueToSong("funk-off", DialogueBoxJTC);
