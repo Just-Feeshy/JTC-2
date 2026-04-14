@@ -121,22 +121,21 @@
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib repository=".haxelib" />
-	<lime version="8.2.3" />
-	<haxelib name="openfl" />
+	<lime version="8.3.1" />
+	<haxelib name="openfl" version="9.4.2" />
 
-	<haxelib name="flixel" />
+	<haxelib name="flixel" version="6.1.1" />
 	<haxedev set='webgl' />
 
 	<!--In case you want to use the addons package-->
-	<haxelib name="flixel-addons" />
+	<haxelib name="flixel-addons" version="4.0.0" />
 	<haxelib name="hscript" />
 
 	<!-- Custom Libraries -->
 	<haxelib name="json2object" version="3.11.0" />
 
 	<!--In case you want to use the ui package-->
-	<haxedef name="flixel_ui" value="2.6.2" />
-	<haxelib name="flixel-ui" version="2.5.0" />
+	<haxelib name="flixel-ui" version="2.6.2" />
 	<haxelib name="faxe" if='switch'/>
 	<haxelib name="hxdiscord_rpc" if="desktop" />
 

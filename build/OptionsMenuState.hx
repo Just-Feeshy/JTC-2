@@ -117,7 +117,7 @@ class OptionsMenuState extends MusicBeatState {
 
 		camNoBlur.zoom = 0.9;
 
-        FlxCamera.defaultCameras = [camBackground];
+        FlixelCompat.setDefaultCameras([camBackground]);
 
 		curOptionSection = new FlxTypedSpriteGroup<Options>();
 
@@ -940,12 +940,12 @@ class OptionsMenuState extends MusicBeatState {
         if(configuredBackgroundBlur > 0) {
             backgroundFilters.unshift(new BlurFilter(configuredBackgroundBlur, configuredBackgroundBlur, BitmapFilterQuality.LOW));
         }
-        camBackground.setFilters(backgroundFilters);
+        FlixelCompat.setCameraFilters(camBackground, backgroundFilters);
 
 		add(curOptionSection);
 
 		blurEffect = new GuassianBlur(0);
-		camNoBlur.setFilters([new ShaderFilter(blurEffect)]);
+		FlixelCompat.setCameraFilters(camNoBlur, [new ShaderFilter(blurEffect)]);
 
 		allTweens = new Array<FlxTween>();
 

@@ -98,7 +98,7 @@ class MainMenuState extends MusicBeatState
 			filters.unshift(new BlurFilter(blurSize, blurSize, BitmapFilterQuality.LOW));
 		}
 
-		camX.setFilters(filters);
+		FlixelCompat.setCameraFilters(camX, filters);
 	}
 
 	function applyMenuZoom():Void {
@@ -136,10 +136,10 @@ class MainMenuState extends MusicBeatState
 		blurSize = Paths.modJSON.main_menu.background_blur != null ? Paths.modJSON.main_menu.background_blur : 0;
 		zoomSineWave = Paths.modJSON.main_menu.zoom_sine_wave != null ? Paths.modJSON.main_menu.zoom_sine_wave : true;
 
-		FlxCamera.defaultCameras = [camMenu];
+		FlixelCompat.setDefaultCameras([camMenu]);
 		applyBackgroundFilters();
 		applyMenuZoom();
-		camNoBump.setFilters([new ShaderFilter(new StupidVibeShader(saturationMenu))]);
+		FlixelCompat.setCameraFilters(camNoBump, [new ShaderFilter(new StupidVibeShader(saturationMenu))]);
 
 		PlayState.hasWarning = true;
 
@@ -263,7 +263,7 @@ class MainMenuState extends MusicBeatState
 			addCallback("setMenuSaturation", function(saturation:Float) {
 				this.saturationMenu = saturation;
 
-				camNoBump.setFilters([new ShaderFilter(new StupidVibeShader(saturationMenu))]);
+				FlixelCompat.setCameraFilters(camNoBump, [new ShaderFilter(new StupidVibeShader(saturationMenu))]);
 			});
 
 			addCallback("setMenuZoomSineWave", function(enabled:Bool) {
@@ -446,9 +446,9 @@ class MainMenuState extends MusicBeatState
 			spr.animation.play('idle');
 			
 			if(spr.ID == curSelected) {
-				camFollow.y = spr.getGraphicMidpoint().y - spr.height / 4;
+				camFollow.y = spr.getGraphicMidpoint().y;
 				// Keep the menu camera locked to the resting menu layout while the chain group slides in and out.
-				camFollow.x = spr.getGraphicMidpoint().x - spr.width / 4 - displayChain.x;
+				camFollow.x = spr.getGraphicMidpoint().x - displayChain.x;
 			}
 	
 			spr.updateHitbox();

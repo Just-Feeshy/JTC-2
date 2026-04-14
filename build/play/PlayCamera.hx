@@ -1,5 +1,6 @@
 package play;
 
+import FlixelCompat;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.math.FlxMath;
@@ -43,7 +44,7 @@ class PlayCamera extends FlxCamera
     {
         baseFilters = [];
         trashFilters = [];
-        super.setFilters([]);
+        rebuildFilters();
     }
 
     public function collectBaseFilters():Array<BitmapFilter>
@@ -53,11 +54,10 @@ class PlayCamera extends FlxCamera
 
     public function collectFilters():Array<BitmapFilter>
     {
-        @:privateAccess
-        return _filters != null ? _filters.concat([]) : [];
+        return filters != null ? filters.concat([]) : [];
     }
 
-    override public function setFilters(filters:Array<BitmapFilter>):Void
+    public function setFilters(filters:Array<BitmapFilter>):Void
     {
         baseFilters = filters != null ? filters.concat([]) : [];
         rebuildFilters();
@@ -77,7 +77,7 @@ class PlayCamera extends FlxCamera
             filters = filters.concat(trashFilters);
         }
 
-        super.setFilters(filters);
+        FlixelCompat.setCameraFilters(this, filters);
     }
 
     private function set_engineX(value:Float):Float
@@ -148,10 +148,9 @@ class PlayCamera extends FlxCamera
 
     public function invalidateFilters():Void
     {
-        @:privateAccess
-        var filters:Array<BitmapFilter> = _filters != null ? _filters : [];
+        var activeFilters:Array<BitmapFilter> = filters != null ? filters : [];
 
-        for (filter in filters)
+        for (filter in activeFilters)
         {
             if (filter != null && Std.isOfType(filter, ShaderFilter))
             {

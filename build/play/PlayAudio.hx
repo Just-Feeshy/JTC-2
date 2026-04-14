@@ -8,7 +8,7 @@ import Paths;
 import PlayState;
 import SaveData.SaveType;
 import flixel.FlxG;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 
 using StringTools;
 
@@ -103,11 +103,7 @@ class PlayAudio
 		if (sound == null)
 			return;
 
-		#if lime
-		@:privateAccess
-		if (sound._channel != null && sound._channel.__audioSource != null)
-			sound._channel.__audioSource.pitch = rate;
-		#end
+		sound.pitch = rate;
 	}
 
 	public function songTrackMatchesTag(track:SongTrackInfo, noteTag:String):Bool

@@ -234,6 +234,7 @@ class FeshSprite extends FeshMinSprite {
 				_matrix.rotateWithTrig(_cosAngle, _sinAngle);
 		}
 
+		getScreenPosition(_point, camera).subtract(offset);
 		_point.add(origin.x, origin.y);
 		_matrix.translate(_point.x, _point.y);
 

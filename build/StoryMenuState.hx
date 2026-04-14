@@ -19,6 +19,7 @@ import flixel.util.FlxColor;
 import flixel.effects.FlxFlicker;
 import lime.net.curl.CURLCode;
 import feshixl.math.FeshMath;
+import flixel.util.FlxAxes;
 
 using StringTools;
 
@@ -56,7 +57,7 @@ class StoryMenuState extends MusicBeatState
 		menuBG = new MenuBackground(0, 56);
 		add(menuBG);
 
-		extraStuff = new FlxBackdrop(Paths.image('check'), 0.2, 0.2, true, true);
+		extraStuff = new FlxBackdrop(Paths.image('check'), FlxAxes.XY, 0.2, 0.2);
 		extraStuff.alpha = 0.1;
 		add(extraStuff);
 

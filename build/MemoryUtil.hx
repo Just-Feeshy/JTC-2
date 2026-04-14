@@ -55,7 +55,7 @@ class MemoryUtil
 
 	public static function getGCMemory():Float
 	{
-		return openfl.system.System.totalMemoryNumber;
+		return openfl.system.System.totalMemory;
 	}
 
 	public static function collect(major:Bool = false):Void

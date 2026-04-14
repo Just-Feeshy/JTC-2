@@ -83,7 +83,7 @@ class ShaderEventEditorState extends MusicBeatState
 
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.add(camHUD);
-		FlxCamera.defaultCameras = [camHUD];
+		FlixelCompat.setDefaultCameras([camHUD]);
 
 		loadCharacterList();
 		setupPreviewScene();

@@ -7,7 +7,7 @@ import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxColor;
 import flixel.text.FlxText;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 import flixel.util.FlxTimer;
 import flixel.FlxCamera;
 import flixel.FlxState;

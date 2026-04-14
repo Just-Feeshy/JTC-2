@@ -315,16 +315,13 @@ class HelperStates extends FlxState {
 		return scriptsInStates.exists(Type.getClassName(state));
 	}
 
-	override function switchTo(state:FlxState):Bool {
-		if(transitionSkip) {
-			return true;
+	override function startOutro(onOutroComplete:()->Void):Void {
+		if(transitionSkip || transOutFinished) {
+			onOutroComplete();
+			return;
 		}
 
-		if(!transOutFinished) {
-			transitionOut(state);
-		}
-
-		return transOutFinished;
+		transitionOut(onOutroComplete);
 	}
 
 	/**
@@ -361,12 +358,15 @@ class HelperStates extends FlxState {
 	}
 
 	@:noCompletion
-	public function transitionOut(state:FlxState):Void {
+	public function transitionOut(?onOutroComplete:()->Void):Void {
 		if(transOutType != null && transOutType != "none") {
 			var _transition = createTransition(transOutType, OUT);
 
 			if(_transition == null) {
 				transOutFinished = true;
+				if(onOutroComplete != null) {
+					onOutroComplete();
+				}
 				return;
 			}
 
@@ -374,17 +374,21 @@ class HelperStates extends FlxState {
 				finishedTransition();
 
 				#if (USING_LUA && cpp)
-				_transition.finishCallback = function() {
-					callLua("finishedTransitionOut", []);
-				}
+				callLua("finishedTransitionOut", []);
 				#end
 
-				FlxG.switchState(state);
+				if(onOutroComplete != null) {
+					onOutroComplete();
+				}
 			};
 
 			openSubState(_transition);
 		}else {
 			transOutFinished = true;
+
+			if(onOutroComplete != null) {
+				onOutroComplete();
+			}
 		}
 	}
 }

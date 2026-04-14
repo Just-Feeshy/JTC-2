@@ -383,8 +383,8 @@ class DialogueCreatorState extends MusicBeatState {
         var centerXButton:FlxUIButton = new FlxUIButton(attachAssets.x + attachAssets.width + 5, attachAssets.y, "Reset Sprite's X Position", function() {
             switch(dialogueSpriteSelector.selectedLabel) {
                 case "speech bubble": {speechBubble.screenCenter(X); _info.info[dialogueScene].speechBubble.x = speechBubble.x;}
-                case "right portrait": {rightPortrait.x = rightPortrait.getScreenCenter(X) + 300; _info.info[dialogueScene].rightPortrait.x = rightPortrait.x;}
-                case "left portrait": {leftPortrait.x = leftPortrait.getScreenCenter(X) - 300; _info.info[dialogueScene].leftPortrait.x = leftPortrait.x;}
+                case "right portrait": {rightPortrait.x = FlixelCompat.getScreenCenter(rightPortrait, X) + 300; _info.info[dialogueScene].rightPortrait.x = rightPortrait.x;}
+                case "left portrait": {leftPortrait.x = FlixelCompat.getScreenCenter(leftPortrait, X) - 300; _info.info[dialogueScene].leftPortrait.x = leftPortrait.x;}
                 default: return;
             }
 

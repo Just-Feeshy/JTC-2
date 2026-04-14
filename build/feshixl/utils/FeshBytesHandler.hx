@@ -1,6 +1,6 @@
 package feshixl.utils;
 
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 import openfl.events.Event;
 import openfl.media.Sound;
 import openfl.utils.ByteArray;

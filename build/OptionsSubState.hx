@@ -99,7 +99,7 @@ class CustomKeys extends OptionsSubState {
 		howManyKey.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		howManyKey.borderSize = 2;
 		howManyKey.screenCenter(X);
-		howManyKey.y = howManyKey.getScreenCenter(Y) + (keys.height * 1.5);
+		howManyKey.y = FlixelCompat.getScreenCenter(howManyKey, Y) + (keys.height * 1.5);
 		add(howManyKey);
 	}
 
@@ -231,7 +231,7 @@ class CustomUIKeys extends OptionsSubState {
 		howManyKey.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		howManyKey.borderSize = 2;
 		howManyKey.screenCenter(X);
-		howManyKey.y = howManyKey.getScreenCenter(Y) + (keys.height * 1.5);
+		howManyKey.y = FlixelCompat.getScreenCenter(howManyKey, Y) + (keys.height * 1.5);
 		add(howManyKey);
 	}
 
@@ -357,7 +357,7 @@ class EraseSave extends OptionsSubState {
 		yourSure.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		yourSure.borderSize = 2;
 		yourSure.screenCenter(X);
-		yourSure.y = yourSure.getScreenCenter(Y) + (choices.height * 1.5);
+		yourSure.y = FlixelCompat.getScreenCenter(yourSure, Y) + (choices.height * 1.5);
 		add(yourSure);
 	}
 
@@ -429,14 +429,15 @@ class GammaMenu extends OptionsSubState {
 		tutorial.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		tutorial.borderSize = 2;
 		tutorial.screenCenter(X);
-		tutorial.y = tutorial.getScreenCenter(Y) + (tutorial.height * 2);
+		tutorial.y = FlixelCompat.getScreenCenter(tutorial, Y) + (tutorial.height * 2);
 		add(tutorial);
 	}
 
 	function getShaders():BuiltInShaders {
-		@:privateAccess
-		for(i in 0...FlxG.game._filters.length) {
-			var shaderFilter:ShaderFilter = cast(FlxG.game._filters[i], ShaderFilter);
+		var gameFilters:Array<Dynamic> = FlixelCompat.getGameFilters();
+
+		for(i in 0...gameFilters.length) {
+			var shaderFilter:ShaderFilter = cast(gameFilters[i], ShaderFilter);
 			var shaders:BuiltInShaders = cast (shaderFilter.shader, BuiltInShaders);
 
 			if(shaders.shader == ShaderType.GAMMA) {
@@ -906,7 +907,7 @@ class MissVolumeMenu extends OptionsSubState {
 		tutorial.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		tutorial.borderSize = 2;
 		tutorial.screenCenter(X);
-		tutorial.y = tutorial.getScreenCenter(Y) + (tutorial.height * 2);
+		tutorial.y = FlixelCompat.getScreenCenter(tutorial, Y) + (tutorial.height * 2);
 		add(tutorial);
 	}
 

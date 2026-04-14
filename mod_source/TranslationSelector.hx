@@ -29,7 +29,7 @@ class TranslationSelector extends OptionsSubState {
 		languageOptions.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		languageOptions.borderSize = 2;
 		languageOptions.screenCenter(X);
-		languageOptions.y = languageOptions.getScreenCenter(Y) + (choices.height * 1.5);
+		languageOptions.y = FlixelCompat.getScreenCenter(languageOptions, Y) + (choices.height * 1.5);
 		add(languageOptions);
 	}
 

@@ -75,7 +75,7 @@ class SpriteSheetCreator extends MusicBeatState {
         FlxG.cameras.add(camGAME);
         FlxG.cameras.add(camHUD);
 
-        FlxCamera.defaultCameras = [camGAME];
+        FlixelCompat.setDefaultCameras([camGAME]);
 
         var tabs = [
             {name: "Spritesheet", label: "Spritesheet"}

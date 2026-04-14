@@ -37,7 +37,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -189,7 +189,7 @@ class PlayState extends MusicBeatState
 	public var eventInfo(default, null):Array<EventInfo>;
 
 	public var eventCounter:Int = 0;
-	public var prevEventStep:Int = 0;
+	public var prevEventStep:Int = -1;
 	private static inline var SONG_TRACK_SIDE_PLAYER:String = "player";
 	private static inline var SONG_TRACK_SIDE_OPPONENT:String = "opponent";
 	private static inline var SONG_TRACK_SIDE_EXTRA:String = "extra";
@@ -503,7 +503,7 @@ class PlayState extends MusicBeatState
 		FlxG.cameras.add(camNOTE.camNoteSustain);
 		FlxG.cameras.add(camHUD);
 
-		FlxCamera.defaultCameras = [camGame];
+		FlixelCompat.setDefaultCameras([camGame]);
 
 		persistentUpdate = true;
 		persistentDraw = true;
@@ -1667,7 +1667,7 @@ class PlayState extends MusicBeatState
 		songTime = 0;
 		curSection = 0;
 		eventCounter = 0;
-		prevEventStep = 0;
+		prevEventStep = -1;
 		eventStorage = [];
 		hits = 0;
 		misses = 0;
@@ -4587,7 +4587,11 @@ class PlayState extends MusicBeatState
 
 	@:access(flixel.FlxGame)
 	function clearCache():Void {
-		if(!((cast FlxG.game._requestedState is PlayState) || (cast FlxG.game._requestedState is CacheState))) {
+		@:privateAccess
+		var requestedState:Dynamic = FlxG.game._nextState;
+		var preserveCache:Bool = Std.isOfType(requestedState, PlayState) || Std.isOfType(requestedState, CacheState);
+
+		if(!preserveCache) {
 		    #if debug
 		    trace("Clearing Cache");
 		    #end
@@ -4639,13 +4643,13 @@ class PlayState extends MusicBeatState
 				});
 			}
 
-				stateCamNOTE.setFilters([]);
+				stateCamNOTE.eraseFilters();
 				stateCamNOTE.clearRenderState();
 				stateCamNOTE.visible = false;
 				FlxG.cameras.remove(stateCamNOTE, false);
 
 				if(stateCamNoteSustain != null) {
-					stateCamNoteSustain.setFilters([]);
+					stateCamNoteSustain.eraseFilters();
 					stateCamNoteSustain.clearRenderState();
 					stateCamNoteSustain.visible = false;
 					FlxG.cameras.remove(stateCamNoteSustain, false);
@@ -4656,7 +4660,7 @@ class PlayState extends MusicBeatState
 			}
 
 			if(stateCamHUD != null) {
-				stateCamHUD.setFilters([]);
+				stateCamHUD.eraseFilters();
 				stateCamHUD.clearRenderState();
 				stateCamHUD.visible = false;
 				FlxG.cameras.remove(stateCamHUD, false);
@@ -4737,7 +4741,7 @@ class PlayState extends MusicBeatState
 		if(Std.isOfType(camera, PlayCamera)) {
 			(cast camera:PlayCamera).eraseFilters();
 		} else {
-			camera.setFilters([]);
+			FlixelCompat.clearCameraFilters(camera);
 		}
 
 		if(camera.flashSprite != null) {

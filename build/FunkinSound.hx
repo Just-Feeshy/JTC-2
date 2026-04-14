@@ -1,7 +1,7 @@
 package;
 
 import flixel.FlxG;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 import openfl.media.Sound;
 
 class FunkinSound extends FlxSound

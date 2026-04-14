@@ -7,7 +7,7 @@ import flixel.FlxG;
 import flixel.util.FlxSignal;
 import flixel.math.FlxMath;
 import haxe.Timer;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 
 typedef BPMChangeEvent =
 {

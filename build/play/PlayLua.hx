@@ -1,5 +1,6 @@
 package play;
 
+import FlixelCompat;
 import Section.SwagSection;
 import CoolUtil;
 import HealthIcon;
@@ -313,8 +314,7 @@ class PlayLua
 		});
 
 		playState.addCallback("callEvent", function(skill:String, value:String, value2:String) {
-			playState.events.whenTriggered(skill, value, value2, playState);
-			playState.event_Extra(skill, value, value2);
+			playState.playEvents.dispatchEvent(skill, value, value2);
 		});
 
 		playState.addCallback("addSongTrack", function(tag:String, fileName:String, side:String = "extra", volume:Float = 1,
@@ -1231,8 +1231,8 @@ class PlayLua
 					return 0.0;
 
 				switch((axis == null ? "" : axis).toLowerCase()) {
-					case "x": return strumOBJ.getScreenCenter(X);
-					case "y": return strumOBJ.getScreenCenter(Y);
+					case "x": return FlixelCompat.getScreenCenter(strumOBJ, X);
+					case "y": return FlixelCompat.getScreenCenter(strumOBJ, Y);
 				}
 
 			return 0.0;

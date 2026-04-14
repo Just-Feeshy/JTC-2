@@ -2,7 +2,7 @@ package;
 
 import openfl.utils.ByteArray;
 import feshixl.utils.FeshBytesHandler;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 
 #if cpp
 import cpp.UInt8;

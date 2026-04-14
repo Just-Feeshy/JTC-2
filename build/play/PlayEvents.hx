@@ -74,14 +74,18 @@ class PlayEvents
 		var skill:String = Reflect.field(playState.eventInfo[0], "modSkill");
 
 		playState.eventInfo.shift();
+		dispatchEvent(skill, value, value2);
+	}
 
+	public function dispatchEvent(skill:String, value:String, value2:String, storeActiveEvent:Bool = true):Void
+	{
 		if(skill == null) {
 			skill = "";
 		}
 
 		skill = skill.toLowerCase().trim();
 
-		if(!playState.eventStorage.contains(skill))
+		if(storeActiveEvent && !playState.eventStorage.contains(skill))
 			playState.eventStorage.push(skill);
 
 		var useRawValues:Bool = VSliceEvent.usesRawValues(skill);

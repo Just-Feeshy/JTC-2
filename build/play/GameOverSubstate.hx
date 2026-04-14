@@ -1,5 +1,6 @@
 package play;
 
+import FlixelCompat;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -474,7 +475,7 @@ class GameOverSubstate extends MusicBeatSubstate
           RetroCameraFade.fadeToBlack(FlxG.camera, 10, 2);
           new FlxTimer().start(2, _ ->
           {
-            FlxG.camera.setFilters([]);
+            FlixelCompat.clearCameraFilters(FlxG.camera);
             resetPlaying(true);
           });
         }

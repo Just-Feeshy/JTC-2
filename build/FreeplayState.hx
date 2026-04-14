@@ -121,13 +121,13 @@ class FreeplayState extends MusicBeatState
 
 		backgroundBlur = Paths.modJSON.main_menu.background_blur != null ? Paths.modJSON.main_menu.background_blur : 0;
 
-		FlxCamera.defaultCameras = [camFreeplay];
+		FlixelCompat.setDefaultCameras([camFreeplay]);
 
 		var backgroundFilters:Array<BitmapFilter> = [new ShaderFilter(new StupidVibeShader(1.5))];
 		if(backgroundBlur > 0) {
 			backgroundFilters.unshift(new BlurFilter(backgroundBlur, backgroundBlur, BitmapFilterQuality.LOW));
 		}
-		camBackground.setFilters(backgroundFilters);
+		FlixelCompat.setCameraFilters(camBackground, backgroundFilters);
 
 		// LOAD MUSIC
 

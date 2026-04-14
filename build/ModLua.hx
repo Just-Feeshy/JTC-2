@@ -18,7 +18,7 @@ import flixel.math.FlxRect;
 import flixel.graphics.FlxGraphic;
 import flixel.text.FlxText;
 import flixel.text.FlxText.FlxTextBorderStyle;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 import flixel.graphics.frames.FlxFramesCollection;
 import feshixl.shaders.FeshShader;
 import openfl.display.BitmapData;
@@ -338,7 +338,13 @@ class ModLua {
 
         set('crochet', Conductor.instance.beatLengthMs);
         set('stepCrochet', Conductor.instance.stepLengthMs);
-		set('crochetPitch', 0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end);
+		var crochetPitch:Float = 0.0011;
+		#if FLX_PITCH
+		if(FlxG.sound != null && FlxG.sound.music != null && FlxG.sound.music.pitch != 0) {
+			crochetPitch /= FlxG.sound.music.pitch;
+		}
+		#end
+		set('crochetPitch', crochetPitch);
 
         set('getCwd', Sys.getCwd());
 
@@ -777,9 +783,9 @@ class ModLua {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
-                switch(axis.toLowerCase()) {
-                    case "x": return spr.getScreenCenter(X);
-                    case "y": return spr.getScreenCenter(Y);
+                switch((axis == null ? "" : axis).toLowerCase()) {
+                    case "x": return FlixelCompat.getScreenCenter(spr, X);
+                    case "y": return FlixelCompat.getScreenCenter(spr, Y);
                 }
             }
 
@@ -987,7 +993,7 @@ class ModLua {
                 return 0;
             }
 
-            return spr.animation.frames;
+            return spr.animation.numFrames;
         });
 
         addProtectedLuaCallback("sprAnimFinished", function(name:String) {
@@ -2253,8 +2259,7 @@ class ModLua {
             return filters != null ? (cast filters:Array<BitmapFilter>).concat([]) : [];
         }
 
-        @:privateAccess
-        return camera._filters != null ? camera._filters.concat([]) : [];
+        return FlixelCompat.getCameraFilters(camera);
     }
 
     function getActiveCameraFilters(camera:FlxCamera):Array<BitmapFilter> {
@@ -2523,7 +2528,7 @@ class ModLua {
             filters.unshift(new BlurFilter(blurX, blurY, cast blurQualityValue));
         }
 
-        cam.setFilters(filters);
+        FlixelCompat.setCameraFilters(cam, filters);
         return true;
     }
 
@@ -2576,7 +2581,7 @@ class ModLua {
             var shaderFilter:ShaderFilter = new ShaderFilter(cast shader);
             filters.push(shaderFilter);
 
-            cam.setFilters(filters);
+            FlixelCompat.setCameraFilters(cam, filters);
             luaCameraShaderFilters.set(cameraName, shaderFilter);
             luaShaders.set(cameraName, shader);
             return true;
@@ -2626,7 +2631,7 @@ class ModLua {
             return false;
         }
 
-        cam.setFilters(strippedFilters);
+        FlixelCompat.setCameraFilters(cam, strippedFilters);
         luaCameraShaderFilters.remove(cameraName);
         luaShaders.remove(cameraName);
         return true;
@@ -2642,7 +2647,7 @@ class ModLua {
         if(Std.isOfType(cam, PlayCamera)) {
             (cast cam:PlayCamera).eraseFilters();
         } else {
-            cam.setFilters([]);
+            FlixelCompat.clearCameraFilters(cam);
         }
 
         if(cam.flashSprite != null) {

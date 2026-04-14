@@ -19,7 +19,6 @@ import flixel.util.FlxGradient;
 import flixel.ui.FlxBar;
 import flixel.addons.ui.FlxUI;
 import flixel.addons.ui.FlxUITabMenu;
-import flixel.system.debug.interaction.tools.Pointer.GraphicCursorCross;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.ui.FlxUIText;
 import flixel.addons.ui.FlxUINumericStepper;
@@ -35,6 +34,7 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
+import flixel.system.debug.Icon;
 import feshixl.ui.FeshFramesHelper;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
@@ -108,7 +108,7 @@ class CharacterCreatorState extends MusicBeatState {
         FlxG.cameras.add(camGame);
         FlxG.cameras.add(camHUD);
 
-        FlxCamera.defaultCameras = [camHUD];
+        FlixelCompat.setDefaultCameras([camHUD]);
 
         mapEditor = [
             "character" => [[0,0,0,0,0,0,0,0]],
@@ -210,7 +210,7 @@ class CharacterCreatorState extends MusicBeatState {
         add(characterStorage);
 
         character = new CreatorCharacter(440, 100, "bf", true);
-        character.updateFinalized(character.getScreenCenter(X), 100);
+        character.updateFinalized(FlixelCompat.getScreenCenter(character, X), 100);
         characterStorage.add(character);
 		trace("Creating character");
 
@@ -257,7 +257,7 @@ class CharacterCreatorState extends MusicBeatState {
         cacheIconAnimation(iconP1, true);
         cacheIconAnimation(iconP2, false); //I'm lazy
 
-        var camCursorGraphic:FlxGraphic = FlxGraphic.fromClass(GraphicCursorCross);
+        var camCursorGraphic:FlxGraphic = FlxGraphic.fromBitmapData(Icon.cross);
         camCursor = new FlxSprite().loadGraphic(camCursorGraphic);
         camCursor.setGraphicSize(40, 40);
         camCursor.updateHitbox();
@@ -965,7 +965,7 @@ class CharacterCreatorState extends MusicBeatState {
 
             updateStuff();
 
-            character.updateFinalized(character.getScreenCenter(X), character.y);
+            character.updateFinalized(FlixelCompat.getScreenCenter(character, X), character.y);
             character.refresh(character.curCharacter, camPos);
             camFollow.setPosition(camPos.x, camPos.y);
             character.isPlayer = true;

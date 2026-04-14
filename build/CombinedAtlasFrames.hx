@@ -32,7 +32,7 @@ class CombinedAtlasFrames extends FlxFramesCollection
 			}
 
 			graphic.destroyOnNoUse = false;
-			graphic.useCount++;
+			graphic.incrementUseCount();
 			usedGraphics.push(graphic);
 		}
 	}
@@ -65,7 +65,7 @@ class CombinedAtlasFrames extends FlxFramesCollection
 			var graphic:FlxGraphic = usedGraphics.pop();
 
 			if(graphic != null) {
-				graphic.useCount--;
+				graphic.decrementUseCount();
 			}
 		}
 
