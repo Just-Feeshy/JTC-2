@@ -318,11 +318,14 @@ class PlayState extends MusicBeatState
 	public var bumpPerBeat:Int = 4;
 	public var bumpForce:Float = 1;
 	public var bumpOffset:Int = 0;
+	public var bumpPerStep:Int = 0;
+	public var bumpStepOffset:Int = 0;
 
 	private static inline var CAMERA_BUMP_GAME_ZOOM:Float = 0.02;
 	private static inline var CAMERA_BUMP_HUD_ZOOM:Float = 0.04;
 	private static inline var ICON_BUMP_SIZE:Int = 45;
 	private static inline var ICON_BUMP_LERP:Float = 0.08;
+	private static inline var CAMERA_BOP_DECAY:Float = 0.95;
 
 	private var strumLine:FlxSprite;
 	public var camFollow:FlxObject;
@@ -343,6 +346,8 @@ class PlayState extends MusicBeatState
 	public var avoidHealthIssues:Bool = false;
 
 	private var camZooming:Bool = false;
+	private var cameraBopGameOffset:Float = 0;
+	private var cameraBopHudOffset:Float = 0;
 	private var curSong:String = "";
 	private var readableSong:String = "";
 	private var combo:Int = 0;
@@ -1687,6 +1692,10 @@ class PlayState extends MusicBeatState
 		bumpPerBeat = 4;
 		bumpForce = 1;
 		bumpOffset = 0;
+		bumpPerStep = 0;
+		bumpStepOffset = 0;
+		cameraBopGameOffset = 0;
+		cameraBopHudOffset = 0;
 		singDrainValue = 1;
 		fadeInValue = 400;
 		cameraMovementInsensity = 1;
@@ -3208,14 +3217,17 @@ class PlayState extends MusicBeatState
 			camFollow.setPosition(followX, followY);
 		}
 
-		if (camZooming)
+		if (camZooming || Math.abs(cameraBopGameOffset) > 0.0001 || Math.abs(cameraBopHudOffset) > 0.0001)
 		{
-			FlxG.camera.zoom = FlxMath.lerp(defaultCamZoom, FlxG.camera.zoom, 0.95);
-			camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, 0.95);
-			camNOTE.zoom = FlxMath.lerp(1, camNOTE.zoom, 0.95);
-		}
+			cameraBopGameOffset = FlxMath.lerp(0, cameraBopGameOffset, CAMERA_BOP_DECAY);
+			cameraBopHudOffset = FlxMath.lerp(0, cameraBopHudOffset, CAMERA_BOP_DECAY);
 
-		if(vSliceDirectZoomEnabled) {
+			FlxG.camera.zoom = getGameplayCameraZoomBase() + cameraBopGameOffset;
+			camHUD.zoom = 1 + cameraBopHudOffset;
+			camNOTE.zoom = 1 + cameraBopHudOffset;
+		}
+		else if(vSliceDirectZoomEnabled)
+		{
 			FlxG.camera.zoom = vSliceDirectZoomValue;
 		}
 
@@ -4479,6 +4491,32 @@ class PlayState extends MusicBeatState
 		return wobbleModPower;
 	}
 
+	inline function getGameplayCameraZoomBase():Float {
+		return vSliceDirectZoomEnabled ? vSliceDirectZoomValue : defaultCamZoom;
+	}
+
+	inline function canTriggerCameraBop():Bool {
+		return !paused && !inCutscene && !talking;
+	}
+
+	public function triggerCameraBop(?intensity:Float = 1):Void {
+		if(!canTriggerCameraBop()) {
+			return;
+		}
+
+		var finalIntensity:Float = Math.max(0, bumpForce * intensity);
+		var zoomCap:Float = Math.max(1.35, getGameplayCameraZoomBase() * 1.35);
+
+		if(FlxG.camera.zoom < zoomCap) {
+			cameraBopGameOffset = Math.max(cameraBopGameOffset, CAMERA_BUMP_GAME_ZOOM * finalIntensity);
+			cameraBopHudOffset = Math.max(cameraBopHudOffset, CAMERA_BUMP_HUD_ZOOM * finalIntensity);
+		}
+
+		if(playLua.hasScript()) {
+			updatePerSectionLuaVars();
+		}
+	}
+
 	override function stepHit()
 	{
 		super.stepHit();
@@ -4494,6 +4532,10 @@ class PlayState extends MusicBeatState
 			if(FlxFlicker.isFlickering(CustomNoteHandler.yourNoteData["side note"])) {
 				FlxG.sound.play(Paths.sound('Warning'), 0.25);
 			}
+		}
+
+		if(bumpPerStep > 0 && curStep >= bumpStepOffset && (curStep - bumpStepOffset) % bumpPerStep == 0) {
+			triggerCameraBop();
 		}
 
 		stage.stepHit();
@@ -4562,16 +4604,8 @@ class PlayState extends MusicBeatState
 		// FlxG.log.add('change bpm' + SONG.notes[Std.int(curStep / 16)].changeBPM);
 		wiggleShit.update(Conductor.instance.beatLengthMs);
 
-		if(bumpPerBeat > 0 && curBeat >= bumpOffset && (curBeat - bumpOffset) % bumpPerBeat == 0) {
-			if (camZooming && FlxG.camera.zoom < 1.35) {
-				FlxG.camera.zoom += CAMERA_BUMP_GAME_ZOOM * bumpForce;
-				camHUD.zoom += CAMERA_BUMP_HUD_ZOOM * bumpForce;
-				camNOTE.zoom += CAMERA_BUMP_HUD_ZOOM * bumpForce;
-			}
-
-			if(playLua.hasScript()) {
-				updatePerSectionLuaVars();
-			}
+		if(bumpPerStep <= 0 && bumpPerBeat > 0 && curBeat >= bumpOffset && (curBeat - bumpOffset) % bumpPerBeat == 0) {
+			triggerCameraBop();
 		}
 
 		if(!hudIconsStatic) {

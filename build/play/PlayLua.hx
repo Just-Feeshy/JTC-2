@@ -308,6 +308,10 @@ class PlayLua
 			playState.clearScriptedCameraZoom(snap);
 		});
 
+		playState.addCallback("triggerGameplayCameraBop", function(intensity:Float = 1) {
+			playState.triggerCameraBop(intensity);
+		});
+
 		playState.addCallback("focusGameplayCameraOnSprite", function(name:String, zoom:Float = 1, anchorX:Float = 0.5, anchorY:Float = 0.5,
 			offsetX:Float = 0, offsetY:Float = 0, direct:Bool = true, snap:Bool = true) {
 			return playState.focusGameplayCameraOnSprite(name, zoom, anchorX, anchorY, offsetX, offsetY, direct, snap);

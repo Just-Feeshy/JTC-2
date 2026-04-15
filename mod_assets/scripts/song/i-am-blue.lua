@@ -1,8 +1,5 @@
 local frost_modchart = {}
 local pulseStepIntensity = {}
-local baseGameZoom = 1
-local baseHudZoom = 1
-local baseNoteZoom = 1
 local strumWavePulse = 0
 local strumWaveTime = 0
 local strumWaveSeed = 0
@@ -14,9 +11,6 @@ local strumWaveLaneCentersB = {0, 0, 0, 0}
 local bounceStoppedAtOutro = false
 
 local INTENSITY_MULTIPLIER = 1.5
-local BASE_GAME_BUMP = 0.015
-local BASE_HUD_BUMP = 0.03
-local BASE_NOTE_BUMP = 0.03
 local STRUM_WAVE_SHADER = "i_am_blue_strum_wave"
 local STRUM_WAVE_CAMERA = "camNoteSustain"
 local STRUM_WAVE_SIZE = 160 * 0.7
@@ -27,7 +21,6 @@ local STRUM_WAVE_LENGTH_MAX = STRUM_WAVE_SIZE * 3.0
 local STRUM_WAVE_DECAY_RATE = 4.2
 local STRUM_WAVE_MAX_PULSE = 36
 local STRUM_WAVE_KICK = 18
-local CAMERA_BOP_DECAY_RATE = 0.95
 
 local function addPulseStep(stepValue, intensity)
     pulseStepIntensity[stepValue] = intensity
@@ -138,50 +131,19 @@ local function pulseCamera(stepValue)
         return
     end
 
-    local gameZoom = getCameraZoom("camGAME") or baseGameZoom
-    local hudZoom = getCameraZoom("camHUD") or baseHudZoom
-    local noteZoom = getCameraZoom("camNOTE") or baseNoteZoom
-
-    setCameraZoom("camGAME", gameZoom + (BASE_GAME_BUMP * intensity))
-    setCameraZoom("camHUD", hudZoom + (BASE_HUD_BUMP * intensity))
-    setCameraZoom("camNOTE", noteZoom + (BASE_NOTE_BUMP * intensity))
+    if triggerGameplayCameraBop ~= nil then
+        triggerGameplayCameraBop(intensity)
+    end
 
     strumWavePulse = math.min(strumWavePulse + (STRUM_WAVE_KICK * intensity), STRUM_WAVE_MAX_PULSE)
     strumWaveTime = 0
     strumWaveSeed = strumWaveSeed + 1
 end
 
-local function decayCameraZooms(elapsed)
-    local safeElapsed = math.max(elapsed or 0, 0)
-    local dt = safeElapsed * 60
-    local decay = math.pow(CAMERA_BOP_DECAY_RATE, dt)
-
-    local gameZoom = getCameraZoom("camGAME")
-    local hudZoom = getCameraZoom("camHUD")
-    local noteZoom = getCameraZoom("camNOTE")
-
-    if gameZoom ~= nil then
-        setCameraZoom("camGAME", baseGameZoom + ((gameZoom - baseGameZoom) * decay))
-    end
-
-    if hudZoom ~= nil then
-        setCameraZoom("camHUD", baseHudZoom + ((hudZoom - baseHudZoom) * decay))
-    end
-
-    if noteZoom ~= nil then
-        setCameraZoom("camNOTE", baseNoteZoom + ((noteZoom - baseNoteZoom) * decay))
-    end
-end
-
 function onCreate()
     frost_modchart = {}
 
-    baseGameZoom = getCameraZoom("camGAME")
-    baseHudZoom  = getCameraZoom("camHUD")
-    baseNoteZoom = getCameraZoom("camNOTE")
-
     buildPulseSteps()
-    callEvent("setCameraBop", "0", "0")
 
 	frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
 	if frost_modchart.initStrumsAndNotes ~= nil then
@@ -213,8 +175,7 @@ function onUpdate(elapsed)
 		bounceStoppedAtOutro = true
 	end
 
-    ensureStrumWaveShader()
-    decayCameraZooms(safeElapsed)
+	ensureStrumWaveShader()
 
     if strumWaveShaderActive then
         updateStrumWaveShader()

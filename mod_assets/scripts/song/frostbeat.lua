@@ -153,10 +153,6 @@ local pendingVoiceUnmuteAllowed = true
 local punchCount = 0
 local punchIconNames = {}
 local INTENSITY_MULTIPLIER = 1.5
-local BASE_GAME_BUMP = 0.015
-local BASE_HUD_BUMP = 0.03
-local BASE_NOTE_BUMP = 0.03
-local CAMERA_BOP_DECAY_RATE = 0.95
 local phaseTwoFlyingCameraStartStep = 906
 local phaseTwoFlyingCameraPeakStep = 1136
 local phaseTwoFlyingCameraEndStep = 1028
@@ -226,23 +222,9 @@ local function pulseCamera(stepValue)
         return
     end
 
-    local gameZoom = getCameraZoom("camGAME")
-    local hudZoom = getCameraZoom("camHUD") or baseHudZoom
-    local noteZoom = getCameraZoom("camNOTE") or baseNoteZoom
-
-    if gameZoom == nil then
-        if introClearTween ~= nil or not introClearDone then
-            gameZoom = currentIntroZoom
-        elseif phaseTwoFlyingCameraActive and not phaseTwoFlyingCameraCompleted then
-            gameZoom = currentPhaseTwoGameZoom
-        else
-            gameZoom = baseGameZoom
-        end
+    if triggerGameplayCameraBop ~= nil then
+        triggerGameplayCameraBop(intensity)
     end
-
-    setCameraZoom("camGAME", gameZoom + (BASE_GAME_BUMP * intensity))
-    setCameraZoom("camHUD", hudZoom + (BASE_HUD_BUMP * intensity))
-    setCameraZoom("camNOTE", noteZoom + (BASE_NOTE_BUMP * intensity))
 end
 
 local function updatePulseCamera()
@@ -263,35 +245,6 @@ local function updatePulseCamera()
     end
 
     lastPulseStep = currentPulseStep
-end
-
-local function decayCameraZooms(elapsed)
-    local safeElapsed = math.max(elapsed or 0, 0)
-    local dt = safeElapsed * 60
-    local decay = math.pow(CAMERA_BOP_DECAY_RATE, dt)
-
-    local gameZoom = getCameraZoom("camGAME")
-    local hudZoom = getCameraZoom("camHUD")
-    local noteZoom = getCameraZoom("camNOTE")
-    local targetGameZoom = baseGameZoom
-
-    if introClearTween ~= nil or not introClearDone then
-        targetGameZoom = currentIntroZoom
-    elseif phaseTwoFlyingCameraActive and not phaseTwoFlyingCameraCompleted then
-        targetGameZoom = currentPhaseTwoGameZoom
-    end
-
-    if gameZoom ~= nil then
-        setCameraZoom("camGAME", targetGameZoom + ((gameZoom - targetGameZoom) * decay))
-    end
-
-    if hudZoom ~= nil then
-        setCameraZoom("camHUD", baseHudZoom + ((hudZoom - baseHudZoom) * decay))
-    end
-
-    if noteZoom ~= nil then
-        setCameraZoom("camNOTE", baseNoteZoom + ((noteZoom - baseNoteZoom) * decay))
-    end
 end
 
 local function shaderTransitionUpdate()
@@ -543,7 +496,6 @@ local function init()
     end
 	createJumpscare()
     buildPulseSteps()
-    callEvent("setCameraBop", "0", "0")
     jtc_camera.reset()
 end
 
@@ -1308,7 +1260,6 @@ function onUpdate(elapsed)
     jtc_camera.onUpdate(elapsed)
     updateIntroClearTween(elapsed)
     updatePhaseTwoFlyingCamera()
-    decayCameraZooms(elapsed)
     updatePulseCamera()
 
     if startsWith(curAnimName, "sing") then

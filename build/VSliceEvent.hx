@@ -202,6 +202,10 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
         playState.bumpForce = readFloat(payload, "intensity", 1);
         playState.bumpPerBeat = Std.int(Math.max(0, readInt(payload, "rate", 4)));
         playState.bumpOffset = readInt(payload, "offset", 0);
+        playState.bumpPerStep = Std.int(Math.max(0, readInt(payload, "stepRate",
+            readInt(payload, "rateSteps", 0))));
+        playState.bumpStepOffset = readInt(payload, "stepOffset",
+            readInt(payload, "offsetSteps", 0));
     }
 
     private function handlePlayAnimation(payload:Dynamic, playState:PlayState):Void {
