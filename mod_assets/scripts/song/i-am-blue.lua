@@ -21,6 +21,15 @@ local STRUM_WAVE_LENGTH_MAX = STRUM_WAVE_SIZE * 3.0
 local STRUM_WAVE_DECAY_RATE = 4.2
 local STRUM_WAVE_MAX_PULSE = 36
 local STRUM_WAVE_KICK = 18
+local FOCUS_HOLD_ZOOM = 0.92
+local FOCUS_SWITCH_ZOOM_OUT = 0.67
+local FOCUS_SWITCH_OUT_DURATION_STEPS = 2
+local FOCUS_SWITCH_IN_DURATION_STEPS = 4
+local FOCUS_SWITCH_DELAY = 0.045
+local FOCUS_FOLLOW_LERP = 0.28
+
+local pendingFocusZoomTimer = -1
+local pendingFocusZoomTarget = FOCUS_HOLD_ZOOM
 
 local function addPulseStep(stepValue, intensity)
     pulseStepIntensity[stepValue] = intensity
@@ -144,6 +153,9 @@ function onCreate()
     frost_modchart = {}
 
     buildPulseSteps()
+    if setGameplayCameraFocusLerp ~= nil then
+        setGameplayCameraFocusLerp(FOCUS_FOLLOW_LERP)
+    end
 
 	frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
 	if frost_modchart.initStrumsAndNotes ~= nil then
@@ -156,6 +168,16 @@ end
 
 function onUpdate(elapsed)
     local safeElapsed = elapsed or 0
+
+    if pendingFocusZoomTimer >= 0 then
+        pendingFocusZoomTimer = pendingFocusZoomTimer - safeElapsed
+
+        if pendingFocusZoomTimer <= 0 then
+            pendingFocusZoomTimer = -1
+            callEvent("v-slice event", "ZoomCamera",
+                "{\"zoom\":" .. tostring(pendingFocusZoomTarget) .. ",\"duration\":" .. tostring(FOCUS_SWITCH_IN_DURATION_STEPS) .. ",\"mode\":\"direct\",\"ease\":\"quadout\"}")
+        end
+    end
 
     if strumWavePulse > 0 then
         strumWaveTime = strumWaveTime + safeElapsed
@@ -194,6 +216,22 @@ function onResume()
 end
 
 function onPause()
+end
+
+function whenEventTriggered(skill, value, value2)
+    local normalizedSkill = string.lower(tostring(skill or ""))
+    local normalizedValue = string.lower(tostring(value or ""))
+
+    if normalizedSkill == "v-slice event" and normalizedValue == "focuscamera" then
+        if setGameplayCameraFocusLerp ~= nil then
+            setGameplayCameraFocusLerp(FOCUS_FOLLOW_LERP)
+        end
+
+        callEvent("v-slice event", "ZoomCamera",
+            "{\"zoom\":" .. tostring(FOCUS_SWITCH_ZOOM_OUT) .. ",\"duration\":" .. tostring(FOCUS_SWITCH_OUT_DURATION_STEPS) .. ",\"mode\":\"direct\",\"ease\":\"quadout\"}")
+        pendingFocusZoomTimer = FOCUS_SWITCH_DELAY
+        pendingFocusZoomTarget = FOCUS_HOLD_ZOOM
+    end
 end
 
 function onDestroy()

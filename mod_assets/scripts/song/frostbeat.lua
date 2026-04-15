@@ -638,9 +638,6 @@ local function triggerDeathNotePunch()
         if hasSongTrack ~= nil and hasSongTrack("jtcVocals") then
             setSongTrackBaseVolume("jtcVocals", 0)
         end
-        if hasSongTrack ~= nil and hasSongTrack("gfVocals") then
-            setSongTrackBaseVolume("gfVocals", 0)
-        end
         jtcVocalsMutedForPunch = true
         pendingVoiceUnmuteAllowed = true
     end
@@ -1270,9 +1267,6 @@ function onUpdate(elapsed)
         if setSongTrackBaseVolume ~= nil then
             if hasSongTrack ~= nil and hasSongTrack("jtcVocals") then
                 setSongTrackBaseVolume("jtcVocals", 1)
-            end
-            if hasSongTrack ~= nil and hasSongTrack("gfVocals") then
-                setSongTrackBaseVolume("gfVocals", 1)
             end
         end
         jtcVocalsMutedForPunch = false
