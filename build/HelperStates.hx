@@ -245,6 +245,16 @@ class HelperStates extends FlxState {
 		if(isOfType(this, PlayState)) {
 			var playState:PlayState = cast this;
 			playState.updateLuaVars();
+
+			#if (USING_LUA && cpp)
+			// Call onUpdate on the song-specific script (playLua)
+			var songLua:ModLua = playState.getModLua();
+			if(songLua != null) {
+				songLua.set("curElapsed", elapsed);
+				songLua.set("curTicks", FlxG.game.ticks);
+				songLua.call("onUpdate", [elapsed]);
+			}
+			#end
 		}
 
 		{

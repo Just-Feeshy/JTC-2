@@ -8,26 +8,25 @@ import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
-import flixel.addons.ui.FlxUI;
-import flixel.addons.ui.FlxUIButton;
-import flixel.addons.ui.FlxUICheckBox;
-import flixel.addons.ui.FlxUIDropDownMenu;
-import flixel.addons.ui.FlxUIInputText;
-import flixel.addons.ui.FlxUINumericStepper;
-import flixel.addons.ui.FlxUITabMenu;
 import flixel.math.FlxMath;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
 import haxe.Json;
+import haxe.ui.backend.flixel.UIState;
+import haxe.ui.components.Button;
+import haxe.ui.components.CheckBox;
+import haxe.ui.components.DropDown;
+import haxe.ui.components.Label;
+import haxe.ui.components.NumberStepper;
+import haxe.ui.components.TextArea;
+import haxe.ui.components.TextField;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.net.FileReference;
-import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFLAssets;
 
 using StringTools;
 
-class ShaderEventEditorState extends MusicBeatState
+@:build(haxe.ui.ComponentBuilder.build("assets/preload/data/shader-event-editor.xml"))
+class ShaderEventEditorState extends UIState
 {
 	private static inline var MODE_RIM:String = "Rim Shadow Event";
 	private static inline var MODE_COLOR:String = "Color Adjust Event";
@@ -35,7 +34,6 @@ class ShaderEventEditorState extends MusicBeatState
 	private var camHUD:FlxCamera;
 	private var camGame:FlxCamera;
 	private var camFollow:FlxObject;
-	private var uiTabs:FlxUITabMenu;
 	private var previewCharacter:Character;
 	private var fileRef:FileReference;
 
@@ -43,36 +41,45 @@ class ShaderEventEditorState extends MusicBeatState
 	private var currentPreviewCharacter:String = "bf";
 	private var exportTarget:String = "boyfriend";
 	private var previewMode:String = MODE_RIM;
-	private var lastControlSignature:String = "";
 
-	private var previewCharacterDropDown:FlxUIDropDownMenu;
-	private var targetDropDown:FlxUIDropDownMenu;
-	private var previewModeDropDown:FlxUIDropDownMenu;
-	private var animationDropDown:FlxUIDropDownMenu;
-	private var applyPreviewCheck:FlxUICheckBox;
+	var instructionsLabel:Label;
+	var statusLabel:Label;
+	var eventNameLabel:Label;
+	var payloadTextArea:TextArea;
+	var componentTextArea:TextArea;
+	var handlerTextArea:TextArea;
 
-	private var rimEnabledCheck:FlxUICheckBox;
-	private var rimHexInput:FlxUIInputText;
-	private var rimAngleStepper:FlxUINumericStepper;
-	private var rimDistanceStepper:FlxUINumericStepper;
-	private var rimThresholdStepper:FlxUINumericStepper;
-	private var rimBrightnessStepper:FlxUINumericStepper;
-	private var rimHueStepper:FlxUINumericStepper;
-	private var rimContrastStepper:FlxUINumericStepper;
-	private var rimSaturationStepper:FlxUINumericStepper;
+	var previewCharacterDropDown:DropDown;
+	var targetDropDown:DropDown;
+	var previewModeDropDown:DropDown;
+	var animationDropDown:DropDown;
+	var applyPreviewCheck:CheckBox;
 
-	private var colorEnabledCheck:FlxUICheckBox;
-	private var colorBrightnessStepper:FlxUINumericStepper;
-	private var colorHueStepper:FlxUINumericStepper;
-	private var colorContrastStepper:FlxUINumericStepper;
-	private var colorSaturationStepper:FlxUINumericStepper;
+	var rimEnabledCheck:CheckBox;
+	var rimHexInput:TextField;
+	var rimAngleStepper:NumberStepper;
+	var rimDistanceStepper:NumberStepper;
+	var rimThresholdStepper:NumberStepper;
+	var rimBrightnessStepper:NumberStepper;
+	var rimHueStepper:NumberStepper;
+	var rimContrastStepper:NumberStepper;
+	var rimSaturationStepper:NumberStepper;
 
-	private var instructionsText:FlxText;
-	private var statusText:FlxText;
-	private var exportInfoText:FlxText;
-	private var exportValueOneText:FlxText;
-	private var exportValueTwoText:FlxText;
-	private var exportComponentText:FlxText;
+	var colorEnabledCheck:CheckBox;
+	var colorBrightnessStepper:NumberStepper;
+	var colorHueStepper:NumberStepper;
+	var colorContrastStepper:NumberStepper;
+	var colorSaturationStepper:NumberStepper;
+
+	var idleButton:Button;
+	var leftButton:Button;
+	var downButton:Button;
+	var upButton:Button;
+	var rightButton:Button;
+	var danceButton:Button;
+	var clearShaderButton:Button;
+	var savePayloadButton:Button;
+	var saveComponentButton:Button;
 
 	override function create():Void
 	{
@@ -87,15 +94,18 @@ class ShaderEventEditorState extends MusicBeatState
 
 		loadCharacterList();
 		setupPreviewScene();
-		createUi();
+
+		super.create();
+
+		this.root.cameras = [camHUD];
+
+		setupUiState();
 		reloadPreviewCharacter(currentPreviewCharacter);
 		refreshPreviewAndExport();
 
 		#if desktop
 		DiscordClient.changePresence("Shader Event Editor", null);
 		#end
-
-		super.create();
 	}
 
 	private function loadCharacterList():Void
@@ -103,9 +113,7 @@ class ShaderEventEditorState extends MusicBeatState
 		var rawList:Array<String> = OpenFLAssets.list(TEXT);
 
 		for(path in rawList) {
-			if(path == null) {
-				continue;
-			}
+			if(path == null) continue;
 
 			if(path.startsWith("mod_assets/characters/")
 				|| path.startsWith("assets/characters/")
@@ -128,11 +136,7 @@ class ShaderEventEditorState extends MusicBeatState
 			availableCharacters = ["bf"];
 		}
 
-		if(availableCharacters.contains("bf")) {
-			currentPreviewCharacter = "bf";
-		} else {
-			currentPreviewCharacter = availableCharacters[0];
-		}
+		currentPreviewCharacter = availableCharacters.contains("bf") ? "bf" : availableCharacters[0];
 	}
 
 	private function setupPreviewScene():Void
@@ -164,220 +168,134 @@ class ShaderEventEditorState extends MusicBeatState
 
 		camGame.zoom = 0.9;
 		camGame.follow(camFollow, LOCKON, 0.04);
-
-		instructionsText = new FlxText(8, 16, 0, "ESC - Back | Mouse Wheel/Q/E - Zoom");
-		instructionsText.cameras = [camHUD];
-		add(instructionsText);
-
-		statusText = new FlxText(8, 42, Std.int(FlxG.width * 0.48), "");
-		statusText.cameras = [camHUD];
-		add(statusText);
 	}
 
-	private function createUi():Void
+	private function setupUiState():Void
 	{
-		var tabs = [
-			{name: "Preview", label: "Preview"},
-			{name: "Rim", label: "Rim Shadow"},
-			{name: "Color", label: "Color Adjust"},
-			{name: "Export", label: "Export"}
-		];
+		instructionsLabel.text = "ESC - Back | Mouse Wheel/Q/E - Zoom";
 
-		uiTabs = new FlxUITabMenu(null, tabs, true);
-		uiTabs.resize(430, 470);
-		uiTabs.x = Std.int(FlxG.width - uiTabs.width - 40);
-		uiTabs.screenCenter(Y);
-		uiTabs.scrollFactor.set();
-		uiTabs.cameras = [camHUD];
-		add(uiTabs);
+		populateDropDown(previewCharacterDropDown, availableCharacters);
+		selectDropDownItem(previewCharacterDropDown, currentPreviewCharacter);
 
-		createPreviewTab();
-		createRimTab();
-		createColorTab();
-		createExportTab();
-	}
+		populateDropDown(targetDropDown, ["boyfriend", "dad", "girlfriend"]);
+		selectDropDownItem(targetDropDown, exportTarget);
 
-	private function createPreviewTab():Void
-	{
-		var tab = new FlxUI(null, uiTabs);
-		tab.name = "Preview";
+		populateDropDown(previewModeDropDown, [MODE_RIM, MODE_COLOR]);
+		selectDropDownItem(previewModeDropDown, previewMode);
 
-		tab.add(new FlxText(10, 10, 0, "Preview Character"));
-		previewCharacterDropDown = new FlxUIDropDownMenu(10, 28, FlxUIDropDownMenu.makeStrIdLabelArray(availableCharacters, true), function(index:String) {
-			var selectedIndex:Null<Int> = Std.parseInt(index);
+		populateDropDown(animationDropDown, ["idle"]);
+		selectDropDownItem(animationDropDown, "idle");
 
-			if(selectedIndex != null && selectedIndex >= 0 && selectedIndex < availableCharacters.length) {
-				currentPreviewCharacter = availableCharacters[selectedIndex];
-				reloadPreviewCharacter(currentPreviewCharacter);
-				refreshPreviewAndExport();
-			}
-		});
-		previewCharacterDropDown.selectedLabel = currentPreviewCharacter;
-		tab.add(previewCharacterDropDown);
-
-		tab.add(new FlxText(10, 70, 0, "Runtime Target"));
-		targetDropDown = new FlxUIDropDownMenu(10, 88, FlxUIDropDownMenu.makeStrIdLabelArray(["boyfriend", "dad", "girlfriend"], true), function(index:String) {
-			var labels = ["boyfriend", "dad", "girlfriend"];
-			var selectedIndex:Null<Int> = Std.parseInt(index);
-
-			if(selectedIndex != null && selectedIndex >= 0 && selectedIndex < labels.length) {
-				exportTarget = labels[selectedIndex];
-				refreshPreviewAndExport();
-			}
-		});
-		targetDropDown.selectedLabel = exportTarget;
-		tab.add(targetDropDown);
-
-		tab.add(new FlxText(10, 130, 0, "Preview Mode"));
-		previewModeDropDown = new FlxUIDropDownMenu(10, 148, FlxUIDropDownMenu.makeStrIdLabelArray([MODE_RIM, MODE_COLOR], true), function(index:String) {
-			var labels = [MODE_RIM, MODE_COLOR];
-			var selectedIndex:Null<Int> = Std.parseInt(index);
-
-			if(selectedIndex != null && selectedIndex >= 0 && selectedIndex < labels.length) {
-				previewMode = labels[selectedIndex];
-				refreshPreviewAndExport();
-			}
-		});
-		previewModeDropDown.selectedLabel = previewMode;
-		tab.add(previewModeDropDown);
-
-		applyPreviewCheck = new FlxUICheckBox(10, 188, null, null, "Apply Preview Shader", 120);
-		applyPreviewCheck.checked = true;
-		applyPreviewCheck.callback = function() {
+		previewCharacterDropDown.onChange = function(_) {
+			currentPreviewCharacter = getDropDownValue(previewCharacterDropDown, currentPreviewCharacter);
+			reloadPreviewCharacter(currentPreviewCharacter);
 			refreshPreviewAndExport();
 		};
-		tab.add(applyPreviewCheck);
 
-		tab.add(new FlxText(10, 224, 0, "Animation"));
-		animationDropDown = new FlxUIDropDownMenu(10, 242, FlxUIDropDownMenu.makeStrIdLabelArray(["idle"], true), function(index:String) {
-			var selectedIndex:Null<Int> = Std.parseInt(index);
-			var names = getPreviewAnimationNames();
+		targetDropDown.onChange = function(_) {
+			exportTarget = getDropDownValue(targetDropDown, exportTarget);
+			refreshPreviewAndExport();
+		};
 
-			if(selectedIndex != null && selectedIndex >= 0 && selectedIndex < names.length) {
-				playPreviewAnimation(names[selectedIndex]);
-			}
-		});
-		tab.add(animationDropDown);
+		previewModeDropDown.onChange = function(_) {
+			previewMode = getDropDownValue(previewModeDropDown, previewMode);
+			refreshPreviewAndExport();
+		};
 
-		var idleButton = new FlxUIButton(10, 292, "Idle", function() {
-			playPreviewAnimation("idle");
-		});
-		var leftButton = new FlxUIButton(90, 292, "Left", function() {
-			playPreviewAnimation("singLEFT");
-		});
-		var downButton = new FlxUIButton(170, 292, "Down", function() {
-			playPreviewAnimation("singDOWN");
-		});
-		var upButton = new FlxUIButton(250, 292, "Up", function() {
-			playPreviewAnimation("singUP");
-		});
-		var rightButton = new FlxUIButton(330, 292, "Right", function() {
-			playPreviewAnimation("singRIGHT");
-		});
-		var danceButton = new FlxUIButton(10, 332, "Dance", function() {
+		animationDropDown.onChange = function(_) {
+			playPreviewAnimation(getDropDownValue(animationDropDown, "idle"));
+			refreshPreviewAndExport();
+		};
+
+		registerRefreshHandlers();
+
+		idleButton.onClick = function(_) playPreviewAnimation("idle");
+		leftButton.onClick = function(_) playPreviewAnimation("singLEFT");
+		downButton.onClick = function(_) playPreviewAnimation("singDOWN");
+		upButton.onClick = function(_) playPreviewAnimation("singUP");
+		rightButton.onClick = function(_) playPreviewAnimation("singRIGHT");
+
+		danceButton.onClick = function(_) {
 			if(previewCharacter != null) {
 				previewCharacter.dance(true);
+				refreshPreviewAndExport();
 			}
-		});
-		var clearButton = new FlxUIButton(90, 332, "Clear Shader", function() {
+		};
+
+		clearShaderButton.onClick = function(_) {
 			if(previewCharacter != null) {
 				previewCharacter.shader = null;
 			}
-		});
-
-		tab.add(idleButton);
-		tab.add(leftButton);
-		tab.add(downButton);
-		tab.add(upButton);
-		tab.add(rightButton);
-		tab.add(danceButton);
-		tab.add(clearButton);
-
-		uiTabs.addGroup(tab);
-	}
-
-	private function createRimTab():Void
-	{
-		var tab = new FlxUI(null, uiTabs);
-		tab.name = "Rim";
-
-		rimEnabledCheck = new FlxUICheckBox(10, 10, null, null, "Enabled", 80);
-		rimEnabledCheck.checked = true;
-		rimEnabledCheck.callback = function() {
-			refreshPreviewAndExport();
 		};
-		tab.add(rimEnabledCheck);
 
-		tab.add(new FlxText(10, 42, 0, "Hex Color"));
-		rimHexInput = new FlxUIInputText(10, 60, 140, "D46B00", 8);
-		tab.add(rimHexInput);
-
-		rimAngleStepper = addStepper(tab, "Angle", 10, 104, 1, 125, 0, 360);
-		rimDistanceStepper = addStepper(tab, "Distance", 10, 144, 0.5, 12, 0, 64, 1);
-		rimThresholdStepper = addStepper(tab, "Threshold", 10, 184, 0.01, 0.15, 0, 1, 2);
-		rimBrightnessStepper = addStepper(tab, "Brightness", 10, 224, 1, -35, -100, 100);
-		rimHueStepper = addStepper(tab, "Hue", 10, 264, 1, -15, -100, 100);
-		rimContrastStepper = addStepper(tab, "Contrast", 10, 304, 1, 10, -100, 100);
-		rimSaturationStepper = addStepper(tab, "Saturation", 10, 344, 1, -20, -100, 100);
-
-		uiTabs.addGroup(tab);
-	}
-
-	private function createColorTab():Void
-	{
-		var tab = new FlxUI(null, uiTabs);
-		tab.name = "Color";
-
-		colorEnabledCheck = new FlxUICheckBox(10, 10, null, null, "Enabled", 80);
-		colorEnabledCheck.checked = true;
-		colorEnabledCheck.callback = function() {
-			refreshPreviewAndExport();
-		};
-		tab.add(colorEnabledCheck);
-
-		colorBrightnessStepper = addStepper(tab, "Brightness", 10, 54, 1, 0, -100, 100);
-		colorHueStepper = addStepper(tab, "Hue", 10, 94, 1, 0, -100, 100);
-		colorContrastStepper = addStepper(tab, "Contrast", 10, 134, 1, 0, -100, 100);
-		colorSaturationStepper = addStepper(tab, "Saturation", 10, 174, 1, 0, -100, 100);
-
-		uiTabs.addGroup(tab);
-	}
-
-	private function createExportTab():Void
-	{
-		var tab = new FlxUI(null, uiTabs);
-		tab.name = "Export";
-
-		exportInfoText = new FlxText(10, 10, uiTabs.width - 30, "Use these with the chart editor's `v-slice event` entry.");
-		exportValueOneText = new FlxText(10, 50, uiTabs.width - 30, "");
-		exportValueTwoText = new FlxText(10, 130, uiTabs.width - 30, "");
-		exportComponentText = new FlxText(10, 250, uiTabs.width - 30, "");
-
-		tab.add(exportInfoText);
-		tab.add(exportValueOneText);
-		tab.add(exportValueTwoText);
-		tab.add(exportComponentText);
-
-		var savePayloadButton = new FlxUIButton(10, 400, "Save Payload JSON", function() {
+		savePayloadButton.onClick = function(_) {
 			saveExport(buildSelectedPayloadJson(), buildSelectedPayloadFileName());
-		});
-		var saveComponentButton = new FlxUIButton(150, 400, "Save Component JSON", function() {
+		};
+
+		saveComponentButton.onClick = function(_) {
 			saveExport(buildSelectedComponentJson(), buildSelectedComponentFileName());
-		});
-
-		tab.add(savePayloadButton);
-		tab.add(saveComponentButton);
-
-		uiTabs.addGroup(tab);
+		};
 	}
 
-	private function addStepper(tab:FlxUI, label:String, x:Float, y:Float, step:Float, value:Float, min:Float, max:Float, decimals:Int = 0):FlxUINumericStepper
+	private function registerRefreshHandlers():Void
 	{
-		tab.add(new FlxText(x, y, 0, label));
+		applyPreviewCheck.onChange = function(_) refreshPreviewAndExport();
+		rimEnabledCheck.onChange = function(_) refreshPreviewAndExport();
+		rimHexInput.onChange = function(_) refreshPreviewAndExport();
+		rimAngleStepper.onChange = function(_) refreshPreviewAndExport();
+		rimDistanceStepper.onChange = function(_) refreshPreviewAndExport();
+		rimThresholdStepper.onChange = function(_) refreshPreviewAndExport();
+		rimBrightnessStepper.onChange = function(_) refreshPreviewAndExport();
+		rimHueStepper.onChange = function(_) refreshPreviewAndExport();
+		rimContrastStepper.onChange = function(_) refreshPreviewAndExport();
+		rimSaturationStepper.onChange = function(_) refreshPreviewAndExport();
+		colorEnabledCheck.onChange = function(_) refreshPreviewAndExport();
+		colorBrightnessStepper.onChange = function(_) refreshPreviewAndExport();
+		colorHueStepper.onChange = function(_) refreshPreviewAndExport();
+		colorContrastStepper.onChange = function(_) refreshPreviewAndExport();
+		colorSaturationStepper.onChange = function(_) refreshPreviewAndExport();
+	}
 
-		var stepper = new FlxUINumericStepper(x + 110, y - 2, step, value, min, max, decimals);
-		tab.add(stepper);
-		return stepper;
+	private function populateDropDown(dropDown:DropDown, items:Array<String>):Void
+	{
+		dropDown.dataSource.clear();
+
+		for(item in items) {
+			dropDown.dataSource.add({id: item, text: item});
+		}
+	}
+
+	private function selectDropDownItem(dropDown:DropDown, value:String):Void
+	{
+		for(index in 0...dropDown.dataSource.size) {
+			var item:Dynamic = dropDown.dataSource.get(index);
+			var itemId:Dynamic = item != null ? Reflect.field(item, "id") : null;
+			var itemText:Dynamic = item != null ? Reflect.field(item, "text") : null;
+
+			if(Std.string(itemId) == value || Std.string(itemText) == value) {
+				dropDown.selectedIndex = index;
+				return;
+			}
+		}
+
+		if(dropDown.dataSource.size > 0) {
+			dropDown.selectedIndex = 0;
+		}
+	}
+
+	private function getDropDownValue(dropDown:DropDown, fallback:String):String
+	{
+		var selected:Dynamic = dropDown.selectedItem;
+
+		if(selected != null) {
+			var idValue:Dynamic = Reflect.field(selected, "id");
+			if(idValue != null && Std.string(idValue) != "") return Std.string(idValue);
+
+			var textValue:Dynamic = Reflect.field(selected, "text");
+			if(textValue != null && Std.string(textValue) != "") return Std.string(textValue);
+		}
+
+		return fallback;
 	}
 
 	private function reloadPreviewCharacter(characterName:String):Void
@@ -402,16 +320,9 @@ class ShaderEventEditorState extends MusicBeatState
 
 	private function rebuildAnimationDropDown():Void
 	{
-		if(animationDropDown == null) {
-			return;
-		}
-
 		var animationNames = getPreviewAnimationNames();
-		animationDropDown.setData(FlxUIDropDownMenu.makeStrIdLabelArray(animationNames, true));
-
-		if(animationNames.length > 0) {
-			animationDropDown.selectedLabel = animationNames[0];
-		}
+		populateDropDown(animationDropDown, animationNames);
+		selectDropDownItem(animationDropDown, animationNames[0]);
 	}
 
 	private function getPreviewAnimationNames():Array<String>
@@ -449,30 +360,30 @@ class ShaderEventEditorState extends MusicBeatState
 			return;
 		}
 
-		if(!applyPreviewCheck.checked) {
+		if(!applyPreviewCheck.selected) {
 			previewCharacter.shader = null;
 		} else if(previewMode == MODE_COLOR) {
-			if(colorEnabledCheck.checked) {
+			if(colorEnabledCheck.selected) {
 				var colorShader = new AdjustColorShader();
-				colorShader.brightness = colorBrightnessStepper.value;
-				colorShader.hue = colorHueStepper.value;
-				colorShader.contrast = colorContrastStepper.value;
-				colorShader.saturation = colorSaturationStepper.value;
+				colorShader.brightness = colorBrightnessStepper.pos;
+				colorShader.hue = colorHueStepper.pos;
+				colorShader.contrast = colorContrastStepper.pos;
+				colorShader.saturation = colorSaturationStepper.pos;
 				previewCharacter.shader = colorShader;
 			} else {
 				previewCharacter.shader = null;
 			}
 		} else {
-			if(rimEnabledCheck.checked) {
+			if(rimEnabledCheck.selected) {
 				var rimShader = new RimShadowShader();
 				rimShader.color = parseHexColor(rimHexInput.text, 0xFFD46B00);
-				rimShader.angle = rimAngleStepper.value;
-				rimShader.distance = rimDistanceStepper.value;
-				rimShader.threshold = rimThresholdStepper.value;
-				rimShader.brightness = rimBrightnessStepper.value;
-				rimShader.hue = rimHueStepper.value;
-				rimShader.contrast = rimContrastStepper.value;
-				rimShader.saturation = rimSaturationStepper.value;
+				rimShader.angle = rimAngleStepper.pos;
+				rimShader.distance = rimDistanceStepper.pos;
+				rimShader.threshold = rimThresholdStepper.pos;
+				rimShader.brightness = rimBrightnessStepper.pos;
+				rimShader.hue = rimHueStepper.pos;
+				rimShader.contrast = rimContrastStepper.pos;
+				rimShader.saturation = rimSaturationStepper.pos;
 				rimShader.updateFrameInfo(previewCharacter.frame);
 				previewCharacter.shader = rimShader;
 			} else {
@@ -480,27 +391,22 @@ class ShaderEventEditorState extends MusicBeatState
 			}
 		}
 
-		statusText.text = 'Preview: ' + previewMode
-			+ '\nCharacter: ' + currentPreviewCharacter
-			+ '\nTarget: ' + exportTarget;
-
+		statusLabel.text = 'Preview: $previewMode\nCharacter: $currentPreviewCharacter\nTarget: $exportTarget';
 		refreshExportText();
 	}
 
 	private function refreshExportText():Void
 	{
-		var kind = getSelectedEventKind();
-		var payloadJson = buildSelectedPayloadJson();
-		var componentJson = buildSelectedComponentJson();
-
-		exportValueOneText.text = 'Chart Event: v-slice event\nValue 1: ' + kind;
-		exportValueTwoText.text = 'Value 2:\n' + payloadJson;
-		exportComponentText.text = 'Single-field component JSON:\n' + componentJson;
+		var kind:String = getSelectedEventKind();
+		eventNameLabel.text = 'Chart Event: v-slice event\nValue 1: $kind';
+		payloadTextArea.text = buildSelectedPayloadJson();
+		componentTextArea.text = buildSelectedComponentJson();
+		handlerTextArea.text = extractRuntimeHandlerSnippet(kind);
 	}
 
 	private function buildSelectedPayloadJson():String
 	{
-		return Json.stringify(previewMode == MODE_COLOR ? buildColorPayload() : buildRimPayload());
+		return Json.stringify(previewMode == MODE_COLOR ? buildColorPayload() : buildRimPayload(), null, "  ");
 	}
 
 	private function buildSelectedComponentJson():String
@@ -508,7 +414,7 @@ class ShaderEventEditorState extends MusicBeatState
 		return Json.stringify({
 			e: getSelectedEventKind(),
 			v: previewMode == MODE_COLOR ? buildColorPayload() : buildRimPayload()
-		});
+		}, null, "  ");
 	}
 
 	private function getSelectedEventKind():String
@@ -520,15 +426,15 @@ class ShaderEventEditorState extends MusicBeatState
 	{
 		return {
 			target: exportTarget,
-			enabled: rimEnabledCheck.checked,
+			enabled: rimEnabledCheck.selected,
 			hexcolor: normalizeHexColor(rimHexInput.text, "D46B00"),
-			angle: rimAngleStepper.value,
-			distance: rimDistanceStepper.value,
-			threshold: rimThresholdStepper.value,
-			brightness: rimBrightnessStepper.value,
-			hue: rimHueStepper.value,
-			contrast: rimContrastStepper.value,
-			saturation: rimSaturationStepper.value
+			angle: rimAngleStepper.pos,
+			distance: rimDistanceStepper.pos,
+			threshold: rimThresholdStepper.pos,
+			brightness: rimBrightnessStepper.pos,
+			hue: rimHueStepper.pos,
+			contrast: rimContrastStepper.pos,
+			saturation: rimSaturationStepper.pos
 		};
 	}
 
@@ -536,11 +442,11 @@ class ShaderEventEditorState extends MusicBeatState
 	{
 		return {
 			target: exportTarget,
-			enabled: colorEnabledCheck.checked,
-			brightness: colorBrightnessStepper.value,
-			hue: colorHueStepper.value,
-			contrast: colorContrastStepper.value,
-			saturation: colorSaturationStepper.value
+			enabled: colorEnabledCheck.selected,
+			brightness: colorBrightnessStepper.pos,
+			hue: colorHueStepper.pos,
+			contrast: colorContrastStepper.pos,
+			saturation: colorSaturationStepper.pos
 		};
 	}
 
@@ -564,21 +470,19 @@ class ShaderEventEditorState extends MusicBeatState
 
 	private function onSaveComplete(event:Event):Void
 	{
-		statusText.text += "\nSaved export file.";
+		statusLabel.text += "\nSaved export file.";
 		cleanupFileRef(cast(event.target, FileReference));
 	}
 
 	private function onSaveError(event:IOErrorEvent):Void
 	{
-		statusText.text += "\nFailed to save export file.";
+		statusLabel.text += "\nFailed to save export file.";
 		cleanupFileRef(cast(event.target, FileReference));
 	}
 
 	private function cleanupFileRef(target:FileReference):Void
 	{
-		if(target == null) {
-			return;
-		}
+		if(target == null) return;
 
 		target.removeEventListener(Event.COMPLETE, onSaveComplete);
 		target.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
@@ -592,13 +496,8 @@ class ShaderEventEditorState extends MusicBeatState
 	{
 		var cleaned:String = value != null ? value.trim().toUpperCase() : fallback;
 
-		if(cleaned.startsWith("#")) {
-			cleaned = cleaned.substr(1);
-		}
-
-		if(cleaned.length == 8) {
-			cleaned = cleaned.substr(2);
-		}
+		if(cleaned.startsWith("#")) cleaned = cleaned.substr(1);
+		if(cleaned.length == 8) cleaned = cleaned.substr(2);
 
 		return cleaned.length == 6 ? cleaned : fallback;
 	}
@@ -607,50 +506,40 @@ class ShaderEventEditorState extends MusicBeatState
 	{
 		var cleaned:String = value != null ? value.trim() : "";
 
-		if(cleaned.startsWith("#")) {
-			cleaned = cleaned.substr(1);
-		}
-
-		if(cleaned.length == 6) {
-			cleaned = "FF" + cleaned;
-		}
-
-		if(cleaned.length != 8) {
-			return fallback;
-		}
+		if(cleaned.startsWith("#")) cleaned = cleaned.substr(1);
+		if(cleaned.length == 6) cleaned = "FF" + cleaned;
+		if(cleaned.length != 8) return fallback;
 
 		var parsed:Null<Int> = Std.parseInt("0x" + cleaned);
 		return parsed == null ? fallback : parsed;
 	}
 
-	private function buildControlSignature():String
+	private function extractRuntimeHandlerSnippet(eventKind:String):String
 	{
-		return [
-			currentPreviewCharacter,
-			exportTarget,
-			previewMode,
-			previewCharacter != null && previewCharacter.animation.curAnim != null ? previewCharacter.animation.curAnim.name : "",
-			applyPreviewCheck != null ? Std.string(applyPreviewCheck.checked) : "",
-			rimEnabledCheck != null ? Std.string(rimEnabledCheck.checked) : "",
-			rimHexInput != null ? rimHexInput.text : "",
-			rimAngleStepper != null ? Std.string(rimAngleStepper.value) : "",
-			rimDistanceStepper != null ? Std.string(rimDistanceStepper.value) : "",
-			rimThresholdStepper != null ? Std.string(rimThresholdStepper.value) : "",
-			rimBrightnessStepper != null ? Std.string(rimBrightnessStepper.value) : "",
-			rimHueStepper != null ? Std.string(rimHueStepper.value) : "",
-			rimContrastStepper != null ? Std.string(rimContrastStepper.value) : "",
-			rimSaturationStepper != null ? Std.string(rimSaturationStepper.value) : "",
-			colorEnabledCheck != null ? Std.string(colorEnabledCheck.checked) : "",
-			colorBrightnessStepper != null ? Std.string(colorBrightnessStepper.value) : "",
-			colorHueStepper != null ? Std.string(colorHueStepper.value) : "",
-			colorContrastStepper != null ? Std.string(colorContrastStepper.value) : "",
-			colorSaturationStepper != null ? Std.string(colorSaturationStepper.value) : ""
-		].join("|");
+		var methodName:String = switch(eventKind) {
+			case "ColorAdjustEvent": "handleColorAdjustEvent";
+			default: "handleRimShadowEvent";
+		};
+
+		var sourceText:String = Paths.readText("build/VSliceEvent.hx");
+		if(sourceText == null || sourceText.trim() == "") return "";
+
+		var signature:String = "private function " + methodName;
+		var startIndex:Int = sourceText.indexOf(signature);
+		if(startIndex == -1) return "";
+
+		var searchIndex:Int = startIndex + signature.length;
+		var nextIndex:Int = sourceText.indexOf("\n    private function ", searchIndex);
+
+		if(nextIndex == -1) nextIndex = sourceText.indexOf("\n    private static function ", searchIndex);
+		if(nextIndex == -1) nextIndex = sourceText.length;
+
+		return sourceText.substr(startIndex, nextIndex - startIndex).trim();
 	}
 
 	override function update(elapsed:Float):Void
 	{
-		if(controls.BACK) {
+		if(FlxG.keys.justPressed.ESCAPE) {
 			FlxG.switchState(new OptionsMenuState());
 			return;
 		}
@@ -667,11 +556,8 @@ class ShaderEventEditorState extends MusicBeatState
 			camGame.zoom = FlxMath.bound(camGame.zoom - (elapsed * 0.75), 0.2, 3.0);
 		}
 
-		var signature = buildControlSignature();
-
-		if(signature != lastControlSignature) {
-			lastControlSignature = signature;
-			refreshPreviewAndExport();
+		if(previewCharacter != null && Std.isOfType(previewCharacter.shader, RimShadowShader)) {
+			cast(previewCharacter.shader, RimShadowShader).updateFrameInfo(previewCharacter.frame);
 		}
 
 		super.update(elapsed);

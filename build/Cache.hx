@@ -126,6 +126,9 @@ class Cache
 	 */
 	public static function cacheTexture(key:String):Void
 	{
+		if (key == null || key == "")
+			return;
+
 		if (currentCachedTextures.exists(key))
 			return;
 
@@ -140,6 +143,13 @@ class Cache
 		}
 
 		var graphic:FlxGraphic = FlxGraphic.fromAssetKey(key, false, null, true);
+		if (graphic == null)
+		{
+			var bitmap = Paths.loadBitmap(key, true);
+			if (bitmap != null)
+				graphic = FlxGraphic.fromBitmapData(bitmap, false, key);
+		}
+
 		if (graphic == null)
 		{
 			FlxG.log.warn('Failed to cache graphic: $key');
@@ -158,10 +168,20 @@ class Cache
 	 */
 	static function permanentCacheTexture(key:String):Void
 	{
+		if (key == null || key == "")
+			return;
+
 		if (permanentCachedTextures.exists(key))
 			return;
 
 		var graphic:FlxGraphic = FlxGraphic.fromAssetKey(key, false, null, true);
+		if (graphic == null)
+		{
+			var bitmap = Paths.loadBitmap(key, true);
+			if (bitmap != null)
+				graphic = FlxGraphic.fromBitmapData(bitmap, false, key);
+		}
+
 		if (graphic == null)
 		{
 			FlxG.log.warn('Failed to cache graphic: $key');
@@ -312,6 +332,9 @@ class Cache
 	 */
 	public static function cacheSound(key:String):Void
 	{
+		if (key == null || key == "")
+			return;
+
 		if (currentCachedSounds.exists(key))
 			return;
 
@@ -325,14 +348,37 @@ class Cache
 			return;
 		}
 
-		if (!OpenFlAssets.exists(key, AssetType.SOUND) && !OpenFlAssets.exists(key, AssetType.MUSIC))
-			return;
+		var sound:Sound = null;
+		if (OpenFlAssets.exists(key, AssetType.SOUND) || OpenFlAssets.exists(key, AssetType.MUSIC))
+		{
+			sound = OpenFlAssets.getSound(key, true);
+		}
+		#if sys
+		else if (sys.FileSystem.exists(key))
+		{
+			sound = Sound.fromFile(key);
+		}
+		#end
 
-		var sound:Sound = OpenFlAssets.getSound(key, true);
 		if (sound == null)
 			return;
 
 		currentCachedSounds.set(key, sound);
+	}
+
+	public static function getCachedSound(path:String):Sound
+	{
+		if (path == null || path == "")
+			return null;
+
+		if (permanentCachedSounds.exists(path))
+			return permanentCachedSounds.get(path);
+		if (currentCachedSounds.exists(path))
+			return currentCachedSounds.get(path);
+		if (previousCachedSounds.exists(path))
+			return previousCachedSounds.get(path);
+
+		return null;
 	}
 
 	/**

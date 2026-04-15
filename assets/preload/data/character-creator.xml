@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vbox width="100%" height="100%" style="padding: 16px;">
+    <hbox width="100%" height="100%">
+        <vbox width="100%" height="100%" style="padding-right: 16px;">
+            <label id="instructionsLabel" width="100%" text="Character Creator" />
+            <spacer height="8" />
+            <label id="statusLabel" width="100%" text="" />
+            <spacer height="100%" />
+        </vbox>
+        <vbox width="540" height="100%">
+            <tabview width="100%" height="100%">
+                <vbox text="Display" width="100%" height="100%">
+                    <scrollview width="100%" height="100%" contentWidth="100%">
+                        <vbox width="100%" style="padding: 10px; spacing: 8px;">
+                            <label width="100%" text="Character Assets" />
+                            <hbox width="100%">
+                                <label width="32%" text="XML File" verticalAlign="center" />
+                                <textfield id="fileNameInput" width="43%" />
+                                <button id="updateFileButton" width="25%" text="Update" />
+                            </hbox>
+                            <label id="fileValidationLabel" width="100%" text="" />
+                            <hbox width="100%">
+                                <label width="32%" text="Icon PNG" verticalAlign="center" />
+                                <textfield id="iconFileNameInput" width="43%" />
+                                <button id="updateIconFileButton" width="25%" text="Update" />
+                            </hbox>
+                            <label id="iconValidationLabel" width="100%" text="" />
+
+                            <spacer height="6" />
+                            <label width="100%" text="Character Selection" />
+                            <hbox width="100%">
+                                <label width="32%" text="Current Character" verticalAlign="center" />
+                                <dropdown id="characterSelectorDropDown" width="68%" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="New Character" verticalAlign="center" />
+                                <textfield id="characterNameInput" width="38%" />
+                                <button id="createCharacterButton" width="30%" text="Create" />
+                            </hbox>
+                            <hbox width="100%" style="spacing: 6px;">
+                                <button id="centerCameraButton" width="50%" text="Center Camera" />
+                                <button id="flipSpriteButton" width="50%" text="Flip Sprite" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Position" />
+                            <hbox width="100%">
+                                <label width="32%" text="X" verticalAlign="center" />
+                                <number-stepper id="xInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Y" verticalAlign="center" />
+                                <number-stepper id="yInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Cam X" verticalAlign="center" />
+                                <number-stepper id="xCamInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Cam Y" verticalAlign="center" />
+                                <number-stepper id="yCamInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Icon Frames" />
+                            <hbox width="100%">
+                                <label width="32%" text="Normal" verticalAlign="center" />
+                                <number-stepper id="normalIconStepper" width="68%" step="1" min="0" max="100" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Dead" verticalAlign="center" />
+                                <number-stepper id="deadIconStepper" width="68%" step="1" min="0" max="100" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Happy" verticalAlign="center" />
+                                <number-stepper id="happyIconStepper" width="68%" step="1" min="0" max="100" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Health" verticalAlign="center" />
+                                <number-stepper id="plrHealthStepper" width="68%" step="10" min="10" max="100" pos="50" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Color Transform Multipliers" />
+                            <hbox width="100%">
+                                <label width="32%" text="Red Mult" verticalAlign="center" />
+                                <number-stepper id="redMultiStepper" width="68%" step="0.1" min="0" max="255" precision="1" pos="1" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Green Mult" verticalAlign="center" />
+                                <number-stepper id="greenMultiStepper" width="68%" step="0.1" min="0" max="255" precision="1" pos="1" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Blue Mult" verticalAlign="center" />
+                                <number-stepper id="blueMultiStepper" width="68%" step="0.1" min="0" max="255" precision="1" pos="1" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Alpha Mult" verticalAlign="center" />
+                                <number-stepper id="alphaMultiStepper" width="68%" step="0.1" min="0" max="255" precision="1" pos="1" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Color Transform Offsets" />
+                            <hbox width="100%">
+                                <label width="32%" text="Red Offset" verticalAlign="center" />
+                                <number-stepper id="redOffsetStepper" width="68%" step="1" min="0" max="255" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Green Offset" verticalAlign="center" />
+                                <number-stepper id="greenOffsetStepper" width="68%" step="1" min="0" max="255" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Blue Offset" verticalAlign="center" />
+                                <number-stepper id="blueOffsetStepper" width="68%" step="1" min="0" max="255" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Alpha Offset" verticalAlign="center" />
+                                <number-stepper id="alphaOffsetStepper" width="68%" step="1" min="0" max="255" pos="0" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Health Bar Color" />
+                            <hbox width="100%">
+                                <label width="32%" text="Red" verticalAlign="center" />
+                                <number-stepper id="redColorStepper" width="68%" step="1" min="0" max="255" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Green" verticalAlign="center" />
+                                <number-stepper id="greenColorStepper" width="68%" step="1" min="0" max="255" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Blue" verticalAlign="center" />
+                                <number-stepper id="blueColorStepper" width="68%" step="1" min="0" max="255" pos="0" />
+                            </hbox>
+                        </vbox>
+                    </scrollview>
+                </vbox>
+
+                <vbox text="Animations" width="100%" height="100%">
+                    <scrollview width="100%" height="100%" contentWidth="100%">
+                        <vbox width="100%" style="padding: 10px; spacing: 8px;">
+                            <label width="100%" text="Animation Selection" />
+                            <hbox width="100%">
+                                <label width="32%" text="Animation" verticalAlign="center" />
+                                <dropdown id="animationDropDown" width="68%" />
+                            </hbox>
+                            <hbox width="100%" style="spacing: 6px;">
+                                <button id="refreshAnimationButton" width="33%" text="Refresh" />
+                                <button id="playAnimButton" width="33%" text="Play" />
+                                <button id="stopAnimButton" width="34%" text="Stop" />
+                            </hbox>
+                            <hbox width="100%" style="spacing: 6px;">
+                                <button id="deleteAnimButton" width="50%" text="Delete" />
+                                <button id="createShadowButton" width="50%" text="Create Shadow" />
+                            </hbox>
+                            <checkbox id="lockAnimCheck" text="Lock Animation" selected="false" />
+
+                            <spacer height="6" />
+                            <label width="100%" text="New Animation" />
+                            <hbox width="100%">
+                                <label width="32%" text="Anim Name" verticalAlign="center" />
+                                <textfield id="newAnimNameInput" width="38%" />
+                                <button id="newAnimButton" width="30%" text="Create" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Animation Config" />
+                            <hbox width="100%">
+                                <label width="32%" text="Prefix" verticalAlign="center" />
+                                <textfield id="prefixInput" width="68%" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Framerate" verticalAlign="center" />
+                                <number-stepper id="framerateChange" width="68%" step="1" min="-600" max="600" pos="24" />
+                            </hbox>
+                            <checkbox id="loopAnim" text="Looped" selected="false" />
+                            <checkbox id="checkPlayable" text="Is Flipped" selected="false" />
+                            <checkbox id="canBePixel" text="Is Pixel" selected="false" />
+                            <hbox width="100%">
+                                <label width="32%" text="Offset X" verticalAlign="center" />
+                                <number-stepper id="offsetXInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Offset Y" verticalAlign="center" />
+                                <number-stepper id="offsetYInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Clipping Adjustment" />
+                            <hbox width="100%">
+                                <label width="32%" text="Clip X" verticalAlign="center" />
+                                <number-stepper id="clippingXInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Clip Y" verticalAlign="center" />
+                                <number-stepper id="clippingYInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Clip Width" verticalAlign="center" />
+                                <number-stepper id="clippingWidthInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Clip Height" verticalAlign="center" />
+                                <number-stepper id="clippingHeightInput" width="68%" step="1" min="-999" max="999" pos="0" />
+                            </hbox>
+                            <button id="applyClippingButton" width="100%" text="Apply Clipping Offsets" />
+                        </vbox>
+                    </scrollview>
+                </vbox>
+
+                <vbox text="Export" width="100%" height="100%">
+                    <vbox width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+                        <label width="100%" text="Export the current character data." />
+                        <button id="saveCharacterButton" width="100%" text="Save Character JSON" />
+                        <button id="saveColorsButton" width="100%" text="Save Color Map JSON" />
+                    </vbox>
+                </vbox>
+            </tabview>
+        </vbox>
+    </hbox>
+</vbox>

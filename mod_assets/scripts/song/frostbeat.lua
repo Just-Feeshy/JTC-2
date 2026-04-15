@@ -50,6 +50,7 @@ local secondWarmAnimations = {
     "singUP miss",
     "punched"
 }
+
 local dadCarWarmAnimations = {
     "idle",
     "singDOWN",
@@ -58,6 +59,7 @@ local dadCarWarmAnimations = {
     "singUP",
     "punch"
 }
+
 local deathVariantStep = 630
 local deathVariantCurrent = ""
 local phaseTwoDadDeltaX = -120

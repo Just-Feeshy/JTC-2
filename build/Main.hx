@@ -3,6 +3,7 @@ package;
 import flixel.FlxState;
 import flixel.FlxG;
 import flixel.FlxGame;
+import haxe.ui.Toolkit;
 import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Sprite;
@@ -57,6 +58,8 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
+		initHaxeUI();
+
 		var stageWidth:Int = Lib.current.stage.stageWidth;
 		var stageHeight:Int = Lib.current.stage.stageHeight;
 
@@ -78,5 +81,14 @@ class Main extends Sprite
 		SaveData.bindProjectSave();
 
 		addChild(feeshmora);
+	}
+
+	private function initHaxeUI():Void
+	{
+		Toolkit.init();
+		Toolkit.theme = "dark";
+		Toolkit.autoScale = false;
+		haxe.ui.focus.FocusManager.instance.autoFocus = false;
+		haxe.ui.tooltips.ToolTipManager.defaultDelay = 200;
 	}
 }

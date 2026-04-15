@@ -694,7 +694,9 @@ class PlayState extends MusicBeatState
 
 		precacheList.set("iconGrid", 'images');
 		
-		updateCache();
+		if(!CacheState.consumePlayStatePreloadFlag()) {
+			updateCache();
+		}
 		generateSong(SONG.song);
 
 		camFollow = new FlxObject(0, 0, 1, 1);
@@ -3724,6 +3726,12 @@ class PlayState extends MusicBeatState
 				}
 
 				hits++;
+
+				// Initialize previousHeldInputSongTime when head note is hit
+				// so sustain catch-up can work from the first frame
+				if(previousHeldInputSongTime == null) {
+					previousHeldInputSongTime = hitSongTime != null ? hitSongTime : note.getNoteTime();
+				}
 			}
 
 			updateLuaVars();

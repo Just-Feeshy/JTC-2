@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vbox width="100%" height="100%" style="padding: 16px;">
+	<hbox width="100%" height="100%">
+		<vbox width="100%" height="100%" style="padding-right: 16px;">
+			<label id="instructionsLabel" width="100%" text="ESC - Back | Mouse Wheel/Q/E - Zoom" />
+			<spacer height="8" />
+			<label id="statusLabel" width="100%" text="" />
+			<spacer height="100%" />
+		</vbox>
+		<vbox width="460" height="100%">
+			<tabview width="100%" height="100%">
+				<vbox text="Preview" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<hbox width="100%">
+						<label width="42%" text="Preview Character" verticalAlign="center" />
+						<dropdown id="previewCharacterDropDown" width="58%" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Runtime Target" verticalAlign="center" />
+						<dropdown id="targetDropDown" width="58%" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Preview Mode" verticalAlign="center" />
+						<dropdown id="previewModeDropDown" width="58%" />
+					</hbox>
+					<checkbox id="applyPreviewCheck" text="Apply Preview Shader" selected="true" />
+					<hbox width="100%">
+						<label width="42%" text="Animation" verticalAlign="center" />
+						<dropdown id="animationDropDown" width="58%" />
+					</hbox>
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="idleButton" width="20%" text="Idle" />
+						<button id="leftButton" width="20%" text="Left" />
+						<button id="downButton" width="20%" text="Down" />
+						<button id="upButton" width="20%" text="Up" />
+						<button id="rightButton" width="20%" text="Right" />
+					</hbox>
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="danceButton" width="50%" text="Dance" />
+						<button id="clearShaderButton" width="50%" text="Clear Shader" />
+					</hbox>
+				</vbox>
+				<vbox text="Rim Shadow" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<checkbox id="rimEnabledCheck" text="Enabled" selected="true" />
+					<hbox width="100%">
+						<label width="42%" text="Hex Color" verticalAlign="center" />
+						<textfield id="rimHexInput" width="58%" text="D46B00" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Angle" verticalAlign="center" />
+						<number-stepper id="rimAngleStepper" width="58%" step="1" min="0" max="360" pos="125" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Distance" verticalAlign="center" />
+						<number-stepper id="rimDistanceStepper" width="58%" step="0.5" min="0" max="64" precision="1" pos="12" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Threshold" verticalAlign="center" />
+						<number-stepper id="rimThresholdStepper" width="58%" step="0.01" min="0" max="1" precision="2" pos="0.15" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Brightness" verticalAlign="center" />
+						<number-stepper id="rimBrightnessStepper" width="58%" step="1" min="-100" max="100" pos="-35" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Hue" verticalAlign="center" />
+						<number-stepper id="rimHueStepper" width="58%" step="1" min="-100" max="100" pos="-15" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Contrast" verticalAlign="center" />
+						<number-stepper id="rimContrastStepper" width="58%" step="1" min="-100" max="100" pos="10" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Saturation" verticalAlign="center" />
+						<number-stepper id="rimSaturationStepper" width="58%" step="1" min="-100" max="100" pos="-20" />
+					</hbox>
+				</vbox>
+				<vbox text="Color Adjust" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<checkbox id="colorEnabledCheck" text="Enabled" selected="true" />
+					<hbox width="100%">
+						<label width="42%" text="Brightness" verticalAlign="center" />
+						<number-stepper id="colorBrightnessStepper" width="58%" step="1" min="-100" max="100" pos="0" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Hue" verticalAlign="center" />
+						<number-stepper id="colorHueStepper" width="58%" step="1" min="-100" max="100" pos="0" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Contrast" verticalAlign="center" />
+						<number-stepper id="colorContrastStepper" width="58%" step="1" min="-100" max="100" pos="0" />
+					</hbox>
+					<hbox width="100%">
+						<label width="42%" text="Saturation" verticalAlign="center" />
+						<number-stepper id="colorSaturationStepper" width="58%" step="1" min="-100" max="100" pos="0" />
+					</hbox>
+				</vbox>
+				<vbox text="Export" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<label width="100%" text="Use these values with the chart editor's v-slice event entry." />
+					<label id="eventNameLabel" width="100%" text="" />
+					<label width="100%" text="Value 2 Payload JSON" />
+					<textarea id="payloadTextArea" width="100%" height="108" />
+					<label width="100%" text="Single-field Component JSON" />
+					<textarea id="componentTextArea" width="100%" height="108" />
+					<label width="100%" text="Runtime Handler Snippet from VSliceEvent.hx" />
+					<textarea id="handlerTextArea" width="100%" height="156" />
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="savePayloadButton" width="50%" text="Save Payload JSON" />
+						<button id="saveComponentButton" width="50%" text="Save Component JSON" />
+					</hbox>
+				</vbox>
+			</tabview>
+		</vbox>
+	</hbox>
+</vbox>

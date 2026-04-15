@@ -305,6 +305,10 @@ class Paths
 		if (path == null || path == "")
 			return null;
 
+		var cachedSound:Sound = Cache.getCachedSound(path);
+		if (cachedSound != null)
+			return cachedSound;
+
 		if (OpenFlAssets.exists(path, SOUND) || OpenFlAssets.exists(path, MUSIC))
 			return OpenFlAssets.getSound(path, true);
 
@@ -823,7 +827,7 @@ class Paths
 		}
 	}
 
-	static function getSongSoundPath(song:String, soundFile:String):String
+	public static function getSongSoundPath(song:String, soundFile:String):String
 	{
 		var relativePath = 'songs/${song.toLowerCase()}/$soundFile.$SOUND_EXT';
 		var builtInAssetId = 'songs:assets/$relativePath';

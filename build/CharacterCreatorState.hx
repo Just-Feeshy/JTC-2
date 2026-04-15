@@ -4,52 +4,35 @@ package;
 import Discord.DiscordClient;
 #end
 
-import Song.SwagSong;
-import Controls.Control;
-
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.FlxObject;
 import flixel.FlxCamera;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxAxes;
-import flixel.input.gamepad.FlxGamepad;
+import flixel.FlxG;
+import flixel.FlxObject;
+import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
-import flixel.util.FlxGradient;
-import flixel.ui.FlxBar;
-import flixel.addons.ui.FlxUI;
-import flixel.addons.ui.FlxUITabMenu;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.addons.ui.FlxUIText;
-import flixel.addons.ui.FlxUINumericStepper;
-import flixel.addons.ui.FlxUICheckBox;
-import flixel.addons.ui.FlxUIDropDownMenu;
-import flixel.addons.ui.FlxUIButton;
-import flixel.addons.ui.FlxUIInputText;
-import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxMath;
-import flixel.tweens.FlxEase;
-import flixel.util.FlxTimer;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
-import flixel.math.FlxRect;
 import flixel.system.debug.Icon;
-import feshixl.ui.FeshFramesHelper;
-import openfl.events.Event;
-import openfl.events.KeyboardEvent;
-import openfl.events.IOErrorEvent;
-import openfl.net.FileFilter;
-import openfl.net.FileReference;
-import openfl.utils.ByteArray;
-import openfl.utils.Assets as OpenFLAssets;
-import openfl.utils.AssetType;
+import flixel.ui.FlxBar;
+import flixel.util.FlxAxes;
+import flixel.util.FlxColor;
+import flixel.util.FlxDestroyUtil;
 import haxe.Json;
-
-import Character;
-import ModInitialize;
-import Alphabet;
-import Options;
+import haxe.ui.backend.flixel.UIState;
+import haxe.ui.components.Button;
+import haxe.ui.components.CheckBox;
+import haxe.ui.components.DropDown;
+import haxe.ui.components.Label;
+import haxe.ui.components.NumberStepper;
+import haxe.ui.components.TextField;
+import haxe.ui.core.Screen;
+import haxe.ui.focus.FocusManager;
+import openfl.events.Event;
+import openfl.events.IOErrorEvent;
+import openfl.net.FileReference;
+import openfl.utils.AssetType;
+import openfl.utils.Assets as OpenFLAssets;
+import ModInitialize.ConfigCharacters;
 
 #if json2object
 import json2object.JsonParser;
@@ -64,166 +47,236 @@ enum FileType {
 
 typedef PreloadJSON = Map<String, Array<Array<Float>>>;
 
-class CharacterCreatorState extends MusicBeatState {
-    private var isIn:Bool = true;
-    private var UI_thingy:FlxUITabMenu;
-    private var startTimer:FlxTimer;
-    private var keyPress:Bool;
+@:build(haxe.ui.ComponentBuilder.build("assets/preload/data/character-creator.xml"))
+class CharacterCreatorState extends UIState {
+    private static inline var DEFAULT_HEALTH_COLOR:Int = 0xFFFF0000;
+
     private var shadowEntity:CreatorCharacter;
     private var character:CreatorCharacter;
     private var characterStorage:FlxTypedGroup<CreatorCharacter>;
     private var characterAutosave:Map<String, ConfigCharacters>;
     private var mapEditor:Map<String, Dynamic>;
-    private var characterJSONs:Array<String> = new Array<String>();
+    private var characterJSONs:Array<String> = [];
+    #if json2object
     private var parser = new JsonParser<PreloadJSON>();
+    #end
     private var healthBar:FlxBar;
-    private var instrucTxt:FlxText;
     private var iconP1:HealthIcon;
     private var iconP2:HealthIcon;
     private var camCursor:FlxSprite;
     private var health:Float = 1;
+    private var colorSway:Float = 0;
+    private var camHUD:FlxCamera;
+    private var camGame:FlxCamera;
+    private var camFollow:FlxObject;
+    private var camPos:FlxPoint;
+    private var currentCharacterName:String = "bf";
+    private var playCustomAnim:Bool = false;
+    private var syncingUi:Bool = false;
+    private var fileRef:FileReference;
 
     private final chooseSkin:Int = 0;
 
-    private var colorSway:Float = 0;
+    var instructionsLabel:Label;
+    var statusLabel:Label;
 
-    private var _character:ConfigCharacters;
+    var fileNameInput:TextField;
+    var fileValidationLabel:Label;
+    var updateFileButton:Button;
+    var iconFileNameInput:TextField;
+    var iconValidationLabel:Label;
+    var updateIconFileButton:Button;
 
-    private var camHUD:FlxCamera;
-    private var camGame:FlxCamera;
+    var characterSelectorDropDown:DropDown;
+    var characterNameInput:TextField;
+    var centerCameraButton:Button;
+    var createCharacterButton:Button;
+    var flipSpriteButton:Button;
 
-    private var camFollow:FlxObject;
-    private var camPos:FlxPoint;
+    var xInput:NumberStepper;
+    var yInput:NumberStepper;
+    var xCamInput:NumberStepper;
+    var yCamInput:NumberStepper;
+    var normalIconStepper:NumberStepper;
+    var deadIconStepper:NumberStepper;
+    var happyIconStepper:NumberStepper;
+    var plrHealthStepper:NumberStepper;
 
-    private var changeCharacter:Bool;
+    var redMultiStepper:NumberStepper;
+    var greenMultiStepper:NumberStepper;
+    var blueMultiStepper:NumberStepper;
+    var alphaMultiStepper:NumberStepper;
+    var redOffsetStepper:NumberStepper;
+    var greenOffsetStepper:NumberStepper;
+    var blueOffsetStepper:NumberStepper;
+    var alphaOffsetStepper:NumberStepper;
+    var redColorStepper:NumberStepper;
+    var greenColorStepper:NumberStepper;
+    var blueColorStepper:NumberStepper;
 
-    private var _file:FileReference;
+    var animationDropDown:DropDown;
+    var refreshAnimationButton:Button;
+    var playAnimButton:Button;
+    var stopAnimButton:Button;
+    var deleteAnimButton:Button;
+    var newAnimNameInput:TextField;
+    var newAnimButton:Button;
+    var createShadowButton:Button;
+    var lockAnimCheck:CheckBox;
 
-    override function create() {
-        camHUD = new FlxCamera();
+    var prefixInput:TextField;
+    var framerateChange:NumberStepper;
+    var loopAnim:CheckBox;
+    var offsetXInput:NumberStepper;
+    var offsetYInput:NumberStepper;
+    var clippingXInput:NumberStepper;
+    var clippingYInput:NumberStepper;
+    var clippingWidthInput:NumberStepper;
+    var clippingHeightInput:NumberStepper;
+    var applyClippingButton:Button;
+    var checkPlayable:CheckBox;
+    var canBePixel:CheckBox;
+
+    var saveCharacterButton:Button;
+    var saveColorsButton:Button;
+
+    var allowInput(get, never):Bool;
+
+    function get_allowInput():Bool {
+        return FocusManager.instance.focus == null;
+    }
+
+    override function create():Void {
         camGame = new FlxCamera();
-        camHUD.bgColor.alpha = 0;
+        camHUD = new FlxCamera();
         camGame.bgColor.alpha = 0;
+        camHUD.bgColor.alpha = 0;
 
-        FlxG.cameras.add(camGame);
-        FlxG.cameras.add(camHUD);
-
+        FlxG.cameras.reset(camGame);
+        FlxG.cameras.add(camHUD, false);
+        FlxG.cameras.setDefaultDrawTarget(camGame, true);
         FlixelCompat.setDefaultCameras([camHUD]);
 
         mapEditor = [
-            "character" => [[0,0,0,0,0,0,0,0]],
-            "health" => 0
+            "character" => [[1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]],
+            "health" => DEFAULT_HEALTH_COLOR
         ];
+        characterAutosave = [];
 
-        characterAutosave = new Map<String, ConfigCharacters>();
-
-        var tabs = [
-			{name: "Display", label: 'Display'},
-            {name: "E Animations", label: 'Animations'},
-            {name: "Export", label: 'Export'}
-		];
-
-        #if desktop
-		DiscordClient.changePresence("Making Character", null);
-		#end
-
+        loadSkinColorData();
+        loadCharacterConfigs();
         createDisplay();
 
-        UI_thingy = new FlxUITabMenu(null, tabs, true);
-
-		UI_thingy.resize(400, 400);
-		UI_thingy.x = Std.int(FlxG.width / 1.5);
-        UI_thingy.screenCenter(Y);
-        UI_thingy.y -= Std.int(UI_thingy.height / 4);
-        UI_thingy.scrollFactor.set();
-
-        UI_thingy.cameras = [camHUD];
-
-		add(UI_thingy);
-
-        if(Paths.readText(Paths.mora("skins", "json")).length > 48) {
-            mapEditor = cast parser.fromJson(Paths.readText(Paths.mora("skins", "json")), "skins.json");
-		}
-
-		var characterList:Array<String> = [];
-
-		{
-				var characterListRaw:Array<String> = OpenFLAssets.list(TEXT);
-
-				for(character in characterListRaw) {
-					if(character == null) {
-						continue;
-					}
-
-					if(character.startsWith("mod_assets/characters/")
-				    || character.startsWith("assets/characters/")
-				    || character.startsWith("funkin_assets/preload/data/characters/")) {
-						character = character.split("/").pop();
-						characterList.push(character);
-					}
-				}
-		}
-
-        for(i in 0...characterList.length) {
-            characterJSONs.push(characterList[i].split(".")[0]);
-            characterAutosave.set(characterList[i].split(".")[0],
-            Character.loadInfo("characters/"+characterList[i].split(".")[0]));
-            DefaultHandler.setupUpdateInfo(characterAutosave.get(characterList[i].split(".")[0]));
-        }
-
-        addDisplayUI();
-        addAnimationsUI();
-        addExportUI();
-
-        instrucTxt = new FlxText(8, 16, FlxG.width,
-            "Mouse Wheel | Q/E - Camera Zoom\n" +
-            "Keybinds - Sing Direction\n" +
-            "ESCAPE - To Exit",
-        16);
-
-        instrucTxt.cameras = [camHUD];
-
-        add(instrucTxt);
         super.create();
+
+        root.scrollFactor.set();
+        root.cameras = [camHUD];
+        root.width = FlxG.width;
+        root.height = FlxG.height;
+        Screen.instance.addComponent(root);
+
+        setupUiState();
+        reloadCharacter(currentCharacterName);
+
+        #if desktop
+        DiscordClient.changePresence("Making Character", null);
+        #end
     }
 
-    function createDisplay() {
-		var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));
-		bg.antialiasing = true;
-	    bg.active = false;
-		add(bg);
+    private function loadSkinColorData():Void {
+        var rawSkins:String = Paths.readText(Paths.mora("skins", "json"));
+        if(rawSkins == null || rawSkins.length <= 48) {
+            return;
+        }
 
-		var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(Paths.image('stagefront'));
-		stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
-		stageFront.updateHitbox();
-		stageFront.antialiasing = true;
-		stageFront.active = false;
-		add(stageFront);
+        #if json2object
+        var parsed:PreloadJSON = cast parser.fromJson(rawSkins, "skins.json");
+        if(parsed != null && parsed.exists("character") && parsed.get("character") != null && parsed.get("character").length > 0) {
+            mapEditor.set("character", parsed.get("character"));
+        }
+        if(parsed != null && parsed.exists("health") && parsed.get("health") != null) {
+            mapEditor.set("health", parsed.get("health"));
+        }
+        #end
+    }
 
-		var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image('stagecurtains'));
-		stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
-		stageCurtains.updateHitbox();
-		stageCurtains.antialiasing = true;
-		stageCurtains.active = false;
+    private function loadCharacterConfigs():Void {
+        var characterListRaw:Array<String> = OpenFLAssets.list(TEXT);
+
+        for(characterPath in characterListRaw) {
+            if(characterPath == null) {
+                continue;
+            }
+
+            if(characterPath.startsWith("mod_assets/characters/")
+                || characterPath.startsWith("assets/characters/")
+                || characterPath.startsWith("funkin_assets/preload/data/characters/")) {
+                var fileName:String = characterPath.split("/").pop();
+                if(fileName == null || !fileName.endsWith(".json")) {
+                    continue;
+                }
+
+                var characterName:String = fileName.substr(0, fileName.length - 5);
+                if(characterJSONs.contains(characterName)) {
+                    continue;
+                }
+
+                var info:ConfigCharacters = Character.loadInfo("characters/" + characterName);
+                normalizeCharacterInfo(info);
+                characterAutosave.set(characterName, info);
+                characterJSONs.push(characterName);
+            }
+        }
+
+        if(characterJSONs.length <= 0) {
+            var fallbackConfig:ConfigCharacters = buildDefaultCharacterConfig();
+            normalizeCharacterInfo(fallbackConfig);
+            characterAutosave.set("bf", fallbackConfig);
+            characterJSONs.push("bf");
+        }
+
+        currentCharacterName = characterJSONs.contains("bf") ? "bf" : characterJSONs[0];
+    }
+
+    private function createDisplay():Void {
+        var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image("stageback"));
+        bg.antialiasing = true;
+        bg.active = false;
+        bg.cameras = [camGame];
+        add(bg);
+
+        var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(Paths.image("stagefront"));
+        stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
+        stageFront.updateHitbox();
+        stageFront.antialiasing = true;
+        stageFront.active = false;
+        stageFront.cameras = [camGame];
+        add(stageFront);
+
+        var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image("stagecurtains"));
+        stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
+        stageCurtains.updateHitbox();
+        stageCurtains.antialiasing = true;
+        stageCurtains.active = false;
+        stageCurtains.cameras = [camGame];
+        add(stageCurtains);
 
         characterStorage = new FlxTypedGroup<CreatorCharacter>();
         add(characterStorage);
 
-        character = new CreatorCharacter(440, 100, "bf", true);
+        character = new CreatorCharacter(440, 100, currentCharacterName, true);
         character.updateFinalized(FlixelCompat.getScreenCenter(character, X), 100);
+        character.cameras = [camGame];
         characterStorage.add(character);
-		trace("Creating character");
 
-		add(stageCurtains);
         camGame.zoom = 0.9;
-
         camPos = new FlxPoint(character.getGraphicMidpoint().x, character.getGraphicMidpoint().y);
         camFollow = new FlxObject(0, 0, 1, 1);
 
         character.refresh(character.curCharacter, camPos);
-
-        if(character.flipX)
+        if(character.flipX) {
             character.flipX = false;
+        }
 
         camFollow.setPosition(camPos.x, camPos.y);
         add(camFollow);
@@ -231,1247 +284,923 @@ class CharacterCreatorState extends MusicBeatState {
         camGame.follow(camFollow, LOCKON, 0.04);
         camGame.focusOn(camFollow.getPosition());
 
-        var healthBarBG:FlxSprite = new FlxSprite(0, FlxG.height * 0.9).loadGraphic(Paths.image('healthBar'));
+        var healthBarBG:FlxSprite = new FlxSprite(0, FlxG.height * 0.9).loadGraphic(Paths.image("healthBar"));
         healthBarBG.screenCenter(X);
         healthBarBG.scrollFactor.set();
+        healthBarBG.cameras = [camHUD];
         add(healthBarBG);
 
-        healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
-			'health', 0, 2);
+        healthBar = new FlxBar(
+            healthBarBG.x + 4,
+            healthBarBG.y + 4,
+            RIGHT_TO_LEFT,
+            Std.int(healthBarBG.width - 8),
+            Std.int(healthBarBG.height - 8),
+            this,
+            "health",
+            0,
+            2
+        );
         healthBar.percent = 50;
         healthBar.scrollFactor.set();
+        healthBar.cameras = [camHUD];
         add(healthBar);
 
         iconP1 = new HealthIcon("bf", true);
         iconP1.y = healthBar.y - (iconP1.height * 0.5);
         iconP1.setGraphicSize(Std.int(FlxMath.lerp(150, iconP1.width, 0.50)));
         iconP1.updateHitbox();
-		add(iconP1);
+        iconP1.cameras = [camHUD];
+        add(iconP1);
 
         iconP2 = new HealthIcon("dad", false);
         iconP2.y = healthBar.y - (iconP2.height * 0.5);
         iconP2.setGraphicSize(Std.int(FlxMath.lerp(150, iconP1.width, 0.50)));
         iconP2.updateHitbox();
-		add(iconP2);
+        iconP2.cameras = [camHUD];
+        add(iconP2);
 
         cacheIconAnimation(iconP1, true);
-        cacheIconAnimation(iconP2, false); //I'm lazy
+        cacheIconAnimation(iconP2, false);
 
         var camCursorGraphic:FlxGraphic = FlxGraphic.fromBitmapData(Icon.cross);
         camCursor = new FlxSprite().loadGraphic(camCursorGraphic);
         camCursor.setGraphicSize(40, 40);
         camCursor.updateHitbox();
         camCursor.color = FlxColor.WHITE;
+        camCursor.cameras = [camGame];
         add(camCursor);
 
         updateCursorPos();
-
-        iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - 26);
-		iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - 26);
-
-        bg.cameras = [camGame];
-        stageFront.cameras = [camGame];
-        stageCurtains.cameras = [camGame];
-        character.cameras = [camGame];
-        camCursor.cameras = [camGame];
-
-        healthBarBG.cameras = [camHUD];
-        healthBar.cameras = [camHUD];
-        iconP1.cameras = [camHUD];
-        iconP2.cameras = [camHUD];
+        updateHealthIconPositions();
     }
 
-    var tab_group_display:FlxUI;
+    private function setupUiState():Void {
+        instructionsLabel.text = "Mouse Wheel | Q/E - Camera Zoom\nArrow Keybinds - Sing Direction\nESCAPE - To Exit";
+        statusLabel.text = "";
 
-    var redMulti:FlxUINumericStepper;
-    var greenMulti:FlxUINumericStepper;
-    var blueMulti:FlxUINumericStepper;
-    var alphaMulti:FlxUINumericStepper;
+        populateDropDown(characterSelectorDropDown, characterJSONs);
 
-    var redOffset:FlxUINumericStepper;
-    var greenOffset:FlxUINumericStepper;
-    var blueOffset:FlxUINumericStepper;
-    var alphaOffset:FlxUINumericStepper;
+        bindDisplayHandlers();
+        bindAnimationHandlers();
+        bindExportHandlers();
+    }
 
-    var redColor:FlxUINumericStepper;
-    var blueColor:FlxUINumericStepper;
-    var greenColor:FlxUINumericStepper;
+    private function bindDisplayHandlers():Void {
+        fileNameInput.onChange = function(_) updateFileValidation();
+        iconFileNameInput.onChange = function(_) updateIconValidation();
 
-    var plrHealth:FlxUINumericStepper;
+        updateFileButton.onClick = function(_) {
+            currentConfig().file = fileNameInput.text.trim();
+            reloadCharacter(currentCharacterName);
+        };
 
-    var xInput:FlxUINumericStepper;
-    var yInput:FlxUINumericStepper;
-    var xCamInput:FlxUINumericStepper;
-    var yCamInput:FlxUINumericStepper;
+        updateIconFileButton.onClick = function(_) {
+            currentConfig().iconFile = iconFileNameInput.text.trim();
+            ensureIconSlots(currentConfig());
+            currentConfig().icon[0] = 0;
+            currentConfig().icon[1] = 0;
+            currentConfig().icon[2] = 0;
+            reloadCharacter(currentCharacterName);
+        };
 
-    var normalIxon:FlxUINumericStepper;
-    var dedIxon:FlxUINumericStepper;
-    var hapeyIxon:FlxUINumericStepper;
-
-    var characterSelector:FlxUIDropDownMenu;
-
-    var fileName:FinderUIInputText;
-    var iconFileName:FinderUIInputText;
-
-    function addDisplayUI():Void {
-        var tab_group_display = new FlxUI(null, UI_thingy);
-		tab_group_display.name = 'Display';
-
-        fileName = new FinderUIInputText(10, 50, 80, "", 8);
-
-		trace(character.curCharacter);
-        fileName.text = characterAutosave.get(character.curCharacter).file;
-
-        fileName.textUpdateCallback = function(text:String) {
-            if(Paths.assetExists(Paths.getPreloadPath("images/" + text), IMAGE)) {
-                return true;
+        characterSelectorDropDown.onChange = function(_) {
+            if(syncingUi) {
+                return;
             }
 
-            return false;
-        }
+            currentCharacterName = getDropDownValue(characterSelectorDropDown, currentCharacterName);
+            reloadCharacter(currentCharacterName);
+        };
 
-        var updateFileButton:FlxUIButton = new FlxUIButton(10, 50 + fileName.height + 5, "Update\nCharacter", function() {
-            characterAutosave.get(character.curCharacter).file = fileName.text;
-            changeCharacter = true;
-        });
-        updateFileButton.resize(updateFileButton.width, updateFileButton.height * 1.5);
-
-        iconFileName = new FinderUIInputText(10, updateFileButton.y + updateFileButton.height + 40, 80, "", 8);
-        iconFileName.text = characterAutosave.get(character.curCharacter).iconFile;
-
-        iconFileName.textUpdateCallback = function(text:String) {
-            if(Paths.image(text) != null) {
-                return true;
-            }
-
-            return false;
-        }
-
-        var updateIconFileButton:FlxUIButton = new FlxUIButton(10, 50 + iconFileName.height + 5, "Update Icon", function() {
-            characterAutosave.get(character.curCharacter).iconFile = iconFileName.text;
-
-            if(normalIxon != null) {
-                normalIxon.value = 0;
-            }
-
-            if(dedIxon != null) {
-                dedIxon.value = 0;
-            }
-
-            if(hapeyIxon != null) {
-                hapeyIxon.value = 0;
-            }
-
-            changeCharacter = true;
-        });
-
-        var fileText:FlxText = new FlxText(fileName.width + 15, 50, 0, "XML File");
-        var iconFileText:FlxText = new FlxText(fileName.width + 15, iconFileName.y, 0, "PNG File");
-
-        var iconTextColor:FlxText = new FlxUIText(10, updateFileButton.y + updateFileButton.height + 20, 0, "Icon Stuff");
-
-        var bfTextColor:FlxText = new FlxUIText(10, 30, 0, "Character Stuff");
-        redMulti = new FlxUINumericStepper(10, 60, 0.1, 1, 0, 255, 1);
-        greenMulti = new FlxUINumericStepper(10, 80, 0.1, 1, 0, 255, 1);
-        blueMulti = new FlxUINumericStepper(10, 100, 0.1, 1, 0, 255, 1);
-        alphaMulti = new FlxUINumericStepper(10, 120, 0.1, 1, 0, 255, 1);
-        redOffset = new FlxUINumericStepper(10, 150, 1, 0, 0, 255, 0);
-        greenOffset = new FlxUINumericStepper(10, 170, 1, 0, 0, 255, 0);
-        blueOffset = new FlxUINumericStepper(10, 190, 1, 0, 0, 255, 0);
-        alphaOffset = new FlxUINumericStepper(10, 150, 1, 0, 0, 255, 0);
-
-        redColor = new FlxUINumericStepper(210, 60, 1, 0, 0, 255, 0);
-        blueColor = new FlxUINumericStepper(210, 75, 1, 0, 0, 255, 0);
-        greenColor = new FlxUINumericStepper(210, 90, 1, 0, 0, 255, 0);
-
-        plrHealth = new FlxUINumericStepper(210, 50, 10, 50, 10, 100, 0);
-        plrHealth.value = health * 50;
-        plrHealth.name = "health";
-
-        characterSelector = new FlxUIDropDownMenu(210, 225, FlxUIDropDownMenu.makeStrIdLabelArray(characterJSONs, true), function(choose:String) {
-            changeCharacter = true;
-        });
-        characterSelector.selectedLabel = character.curCharacter;
-
-        var centerCamButton:FlxUIButton = new FlxUIButton(characterSelector.x - 90, characterSelector.y, "Center Camera", function() {
+        centerCameraButton.onClick = function(_) {
             camPos.set(character.getGraphicMidpoint().x, character.getGraphicMidpoint().y);
             camFollow.setPosition(camPos.x, camPos.y);
-        });
+        };
 
-        var characterName:FlxUIInputText = new FlxUIInputText(10, characterSelector.y, 80, "", 8);
+        createCharacterButton.onClick = function(_) createNewCharacter();
+        flipSpriteButton.onClick = function(_) if(character != null) character.flipX = !character.flipX;
 
-        var createCharacterButton:FlxUIButton = new FlxUIButton(10, characterSelector.y + 20, "New Character", function() {
-            if(!characterJSONs.contains(characterName.text) && characterName.text.length > 0) {
-                changeCharacter = true;
+        xInput.onChange = function(_) updateCharacterPosition("x", xInput);
+        yInput.onChange = function(_) updateCharacterPosition("y", yInput);
+        xCamInput.onChange = function(_) updateCharacterPosition("camPosX", xCamInput);
+        yCamInput.onChange = function(_) updateCharacterPosition("camPosY", yCamInput);
 
-                characterJSONs.push(characterName.text);
-                characterSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(characterJSONs, true));
+        normalIconStepper.onChange = function(_) updateCharacterIconSlot(0, normalIconStepper);
+        deadIconStepper.onChange = function(_) updateCharacterIconSlot(1, deadIconStepper);
+        happyIconStepper.onChange = function(_) updateCharacterIconSlot(2, happyIconStepper);
 
-                if(characterAutosave.get(characterName.text) == null) {
-                    characterAutosave.set(characterName.text, {
-                        file: "",
-                        animations: [],
-                        position: [
-                            "x" => 0,
-                            "y" => 0,
-                            "camPosX" => 0,
-                            "camPosY" => 0
-                        ],
-                        icon: [10, 11],
-                        playAnim: "",
-                        isPlayer: false,
-                        pixel: false,
+        plrHealthStepper.onChange = function(_) health = plrHealthStepper.pos / 50;
 
-                        iconFile: "iconGrid",
-				        clippingAdjustment: []
-                    });
-                }
+        redMultiStepper.onChange = function(_) onColorTransformChanged();
+        greenMultiStepper.onChange = function(_) onColorTransformChanged();
+        blueMultiStepper.onChange = function(_) onColorTransformChanged();
+        alphaMultiStepper.onChange = function(_) onColorTransformChanged();
+        redOffsetStepper.onChange = function(_) onColorTransformChanged();
+        greenOffsetStepper.onChange = function(_) onColorTransformChanged();
+        blueOffsetStepper.onChange = function(_) onColorTransformChanged();
+        alphaOffsetStepper.onChange = function(_) onColorTransformChanged();
 
-                characterSelector.selectedLabel = characterName.text;
-                getEvent("click_button", this, Std.string(characterJSONs.indexOf(characterName.text)));
-                characterName.text = "";
-            }
-        });
-
-        var flipSpriteButton:FlxUIButton = new FlxUIButton(centerCamButton.x, createCharacterButton.y, "Flip Sprite", function() {
-            if(character != null) {
-                character.flipX = !character.flipX;
-            }
-        });
-
-        var characterSelectorText:FlxText = new FlxText(characterSelector.x, characterSelector.y - 15, 0, 'Character Selector:');
-        var characterNameText:FlxText = new FlxText(characterName.x - 2, characterName.y - 15, 0, 'Character Name:');
-
-        xInput = new FlxUINumericStepper(10, 280, 1, 0, -999, 999, 0);
-        xInput.value = characterAutosave.get(character.curCharacter).position.get('x');
-        xInput.name = 'x_pos';
-
-        yInput = new FlxUINumericStepper(10, 295, 1, 0, -999, 999, 0);
-        yInput.value = characterAutosave.get(character.curCharacter).position.get('y');
-        yInput.name = 'y_pos';
-
-        xCamInput = new FlxUINumericStepper(10, 310, 1, 0, -999, 999, 0);
-        xCamInput.value = characterAutosave.get(character.curCharacter).position.get('camPosX');
-        xCamInput.name = 'x_cam_pos';
-
-        yCamInput = new FlxUINumericStepper(10, 325, 1, 0, -999, 999, 0);
-        yCamInput.value = characterAutosave.get(character.curCharacter).position.get('camPosY');
-        yCamInput.name = 'y_cam_pos';
-
-        normalIxon = new FlxUINumericStepper(characterSelector.x - 90, 280, 1, 0, 0, 100, 0);
-        normalIxon.value = characterAutosave.get(character.curCharacter).icon[0];
-        normalIxon.name = "normal_icon";
-
-        dedIxon = new FlxUINumericStepper(characterSelector.x - 90, 295, 1, 0, 0, 100, 0);
-        dedIxon.value = characterAutosave.get(character.curCharacter).icon[1];
-        dedIxon.name = "ded_icon";
-
-        hapeyIxon = new FlxUINumericStepper(characterSelector.x - 90, 310, 1, 0, 0, 100, 0);
-        hapeyIxon.value = characterAutosave.get(character.curCharacter).icon[2];
-        hapeyIxon.name = "hapey_icon";
-
-        var xInputTxt:FlxText = new FlxText(xInput.x + 65, xInput.y, "X");
-        var yInputTxt:FlxText = new FlxText(yInput.x + 65, yInput.y, "Y");
-        var xCamInputTxt:FlxText = new FlxText(xCamInput.x + 65, xCamInput.y, "Cam X");
-        var yCamInputTxt:FlxText = new FlxText(yCamInput.x + 65, yCamInput.y, "Cam Y");
-
-        var normalIxonTxt:FlxText = new FlxText(normalIxon.x + 65, normalIxon.y, "Normal Icon");
-        var dedIxonTxt:FlxText = new FlxText(dedIxon.x + 65, dedIxon.y, "Dead Icon");
-        var hapeyIxonTxt:FlxText = new FlxText(hapeyIxon.x + 65, hapeyIxon.y, "Hapey Icon");
-
-        mapEditor.set("health", CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
-
-        setColorOptions(mapEditor.get("health"));
-
-        healthBar.percent = 50;
-
-        var hpTextChange:FlxText = new FlxUIText(208, 30, 0, "Health Bar Settings");
-
-        redMulti.name = "redMulti";
-        greenMulti.name = "greenMulti";
-        blueMulti.name = "blueMulti";
-        alphaMulti.name = "alphaMulti";
-        redOffset.name = "redOffset";
-        greenOffset.name = "greenOffset";
-        blueOffset.name = "blueOffset";
-        alphaOffset.name = "alphaOffset";
-        redColor.name = "redColor";
-        blueColor.name = "blueColor";
-        greenColor.name = "greenColor";
-
-        tab_group_display.add(bfTextColor);
-        tab_group_display.add(centerCamButton);
-        tab_group_display.add(characterName);
-        tab_group_display.add(createCharacterButton);
-        tab_group_display.add(flipSpriteButton);
-        tab_group_display.add(characterSelectorText);
-        tab_group_display.add(characterNameText);
-        tab_group_display.add(hpTextChange);
-        tab_group_display.add(plrHealth);
-
-        tab_group_display.add(xInput);
-        tab_group_display.add(xInputTxt);
-        tab_group_display.add(yInput);
-        tab_group_display.add(yInputTxt);
-        tab_group_display.add(xCamInput);
-        tab_group_display.add(xCamInputTxt);
-        tab_group_display.add(yCamInput);
-        tab_group_display.add(yCamInputTxt);
-        tab_group_display.add(normalIxon);
-        tab_group_display.add(normalIxonTxt);
-        tab_group_display.add(dedIxon);
-        tab_group_display.add(dedIxonTxt);
-        tab_group_display.add(hapeyIxon);
-        tab_group_display.add(hapeyIxonTxt);
-        tab_group_display.add(characterSelector);
-        tab_group_display.add(fileName);
-        tab_group_display.add(fileText);
-        tab_group_display.add(iconFileName);
-        tab_group_display.add(iconFileText);
-        tab_group_display.add(iconTextColor);
-        tab_group_display.add(updateFileButton);
-
-        UI_thingy.addGroup(tab_group_display);
+        redColorStepper.onChange = function(_) onHealthColorChanged();
+        greenColorStepper.onChange = function(_) onHealthColorChanged();
+        blueColorStepper.onChange = function(_) onHealthColorChanged();
     }
 
-    var animationDrop:FlxUIDropDownMenu;
-    var lockAnimCheck:FlxUICheckBox;
-    var prefixInput:FlxUIInputText;
-    var framerateChange:FlxUINumericStepper;
-    var loopAnim:FlxUICheckBox;
+    private function bindAnimationHandlers():Void {
+        animationDropDown.onChange = function(_) {
+            if(syncingUi) {
+                return;
+            }
 
-    var offsetXInput:FlxUINumericStepper;
-    var offsetYInput:FlxUINumericStepper;
+            refreshAnimationFields();
+            previewSelectedAnimation(true);
+        };
 
-    var clippingXInput:FlxUINumericStepper;
-    var clippingYInput:FlxUINumericStepper;
-    var clippingWidthInput:FlxUINumericStepper;
-    var clippingHeightInput:FlxUINumericStepper;
+        refreshAnimationButton.onClick = function(_) {
+            commitSelectedAnimationFields();
+            reloadCharacter(currentCharacterName);
+        };
 
-    var checkPlayable:FlxUICheckBox;
-    var canBePixel:FlxUICheckBox;
+        playAnimButton.onClick = function(_) {
+            playCustomAnim = true;
+            previewSelectedAnimation(true);
+        };
 
-    var playCustomAnim:Bool = false;
+        stopAnimButton.onClick = function(_) playCustomAnim = false;
+        deleteAnimButton.onClick = function(_) deleteSelectedAnimation();
+        newAnimButton.onClick = function(_) createNewAnimation();
+        createShadowButton.onClick = function(_) createShadowCharacter();
 
-    function syncSelectedAnimationOffsetFromInputs():Void {
-        var animName = animationDrop != null ? animationDrop.selectedLabel : null;
-        if(animName == null || animName.length == 0 || !character.animations.contains(animName)) {
+        prefixInput.onChange = function(_) commitSelectedAnimationFields();
+        framerateChange.onChange = function(_) commitSelectedAnimationFields();
+        loopAnim.onChange = function(_) commitSelectedAnimationFields();
+        offsetXInput.onChange = function(_) syncSelectedAnimationOffsetFromInputs();
+        offsetYInput.onChange = function(_) syncSelectedAnimationOffsetFromInputs();
+
+        applyClippingButton.onClick = function(_) applyClippingOffsets();
+
+        checkPlayable.onChange = function(_) currentConfig().isPlayer = checkPlayable.selected;
+        canBePixel.onChange = function(_) currentConfig().pixel = canBePixel.selected;
+    }
+
+    private function bindExportHandlers():Void {
+        saveCharacterButton.onClick = function(_) saveFile(CHARACTER);
+        saveColorsButton.onClick = function(_) saveFile(COLOR_MAPPING);
+    }
+
+    private function createNewCharacter():Void {
+        var characterName:String = characterNameInput.text.trim();
+        if(characterName.length <= 0 || characterJSONs.contains(characterName)) {
             return;
         }
 
-        var animData = character._info.animations.get(animName);
+        var info:ConfigCharacters = buildDefaultCharacterConfig();
+        normalizeCharacterInfo(info);
+        characterAutosave.set(characterName, info);
+        characterJSONs.push(characterName);
+
+        populateDropDown(characterSelectorDropDown, characterJSONs);
+        selectDropDownItem(characterSelectorDropDown, characterName);
+        characterNameInput.text = "";
+
+        currentCharacterName = characterName;
+        reloadCharacter(characterName);
+    }
+
+    private function createNewAnimation():Void {
+        var animName:String = newAnimNameInput.text.trim();
+        if(animName.length <= 0 || currentConfig().animations.exists(animName)) {
+            return;
+        }
+
+        currentConfig().animations.set(animName, {
+            name: animName,
+            prefix: prefixInput.text.trim(),
+            framerate: Std.int(framerateChange.pos),
+            looped: loopAnim.selected,
+            offset: [Std.int(offsetXInput.pos), Std.int(offsetYInput.pos)]
+        });
+
+        reloadCharacter(currentCharacterName);
+        selectDropDownItem(animationDropDown, animName);
+        refreshAnimationFields(animName);
+    }
+
+    private function deleteSelectedAnimation():Void {
+        var animName:Null<String> = safeSelectedAnimation();
+        if(animName == null) {
+            return;
+        }
+
+        currentConfig().animations.remove(animName);
+        if(character.animations != null) {
+            character.animations.remove(animName);
+        }
+
+        reloadCharacter(currentCharacterName);
+    }
+
+    private function createShadowCharacter():Void {
+        clearShadowCharacter();
+
+        shadowEntity = new CreatorCharacter(character.x, character.y, character.curCharacter, true, character._info);
+        shadowEntity.flipX = character.flipX;
+        shadowEntity.isPlayer = true;
+        shadowEntity.alpha = 0.5;
+        shadowEntity.cameras = [camGame];
+        characterStorage.add(shadowEntity);
+
+        if(character.animation.curAnim != null) {
+            shadowEntity.playAnim(character.animation.curAnim.name);
+            shadowEntity.animation.stop();
+            if(shadowEntity.animation.curAnim != null) {
+                shadowEntity.animation.curAnim.curFrame = shadowEntity.animation.curAnim.numFrames;
+            }
+        }
+    }
+
+    private function clearShadowCharacter():Void {
+        if(shadowEntity == null) {
+            return;
+        }
+
+        characterStorage.remove(shadowEntity, true);
+        shadowEntity.destroy();
+        shadowEntity = null;
+    }
+
+    private function updateCharacterPosition(field:String, stepper:NumberStepper):Void {
+        if(syncingUi || character == null) {
+            return;
+        }
+
+        currentConfig().position.set(field, Std.int(stepper.pos));
+        character.refresh(character.curCharacter, camPos);
+        if(field == "camPosX" || field == "camPosY") {
+            camFollow.setPosition(camPos.x, camPos.y);
+        }
+    }
+
+    private function updateCharacterIconSlot(index:Int, stepper:NumberStepper):Void {
+        if(syncingUi) {
+            return;
+        }
+
+        ensureIconSlots(currentConfig());
+        currentConfig().icon[index] = Std.int(stepper.pos);
+        updateIconPreview();
+    }
+
+    private function onColorTransformChanged():Void {
+        if(syncingUi) {
+            return;
+        }
+
+        var values:Array<Dynamic> = getColorTransformValues();
+        values[0] = redMultiStepper.pos;
+        values[1] = greenMultiStepper.pos;
+        values[2] = blueMultiStepper.pos;
+        values[3] = alphaMultiStepper.pos;
+        values[4] = redOffsetStepper.pos;
+        values[5] = greenOffsetStepper.pos;
+        values[6] = blueOffsetStepper.pos;
+        values[7] = alphaOffsetStepper.pos;
+
+        applyCharacterColorTransforms();
+    }
+
+    private function onHealthColorChanged():Void {
+        if(syncingUi) {
+            return;
+        }
+
+        var color:Int = FlxColor.fromRGB(
+            Std.int(redColorStepper.pos),
+            Std.int(greenColorStepper.pos),
+            Std.int(blueColorStepper.pos)
+        );
+        setColorOptions(color);
+    }
+
+    private function commitSelectedAnimationFields():Void {
+        if(syncingUi) {
+            return;
+        }
+
+        var animName:Null<String> = safeSelectedAnimation();
+        if(animName == null) {
+            return;
+        }
+
+        var animData = currentConfig().animations.get(animName);
+        if(animData == null) {
+            return;
+        }
+
+        var previousPrefix:String = animData.prefix;
+        var nextPrefix:String = prefixInput.text.trim();
+        animData.prefix = nextPrefix;
+        animData.framerate = Std.int(framerateChange.pos);
+        animData.looped = loopAnim.selected;
+        animData.offset[0] = Std.int(offsetXInput.pos);
+        animData.offset[1] = Std.int(offsetYInput.pos);
+
+        if(previousPrefix != nextPrefix
+            && previousPrefix != null
+            && previousPrefix != ""
+            && currentConfig().clippingAdjustment.exists(previousPrefix)
+            && !currentConfig().clippingAdjustment.exists(nextPrefix)) {
+            currentConfig().clippingAdjustment.set(nextPrefix, currentConfig().clippingAdjustment.get(previousPrefix));
+            currentConfig().clippingAdjustment.remove(previousPrefix);
+        }
+    }
+
+    private function syncSelectedAnimationOffsetFromInputs():Void {
+        if(syncingUi || character == null) {
+            return;
+        }
+
+        var animName:Null<String> = safeSelectedAnimation();
+        if(animName == null) {
+            return;
+        }
+
+        var animData = currentConfig().animations.get(animName);
         if(animData == null || !character.animOffsets.exists(animName)) {
             return;
         }
 
-        var nextOffsetX:Int = Std.int(offsetXInput.value);
-        var nextOffsetY:Int = Std.int(offsetYInput.value);
-        var offsetChanged:Bool = false;
+        var nextOffsetX:Int = Std.int(offsetXInput.pos);
+        var nextOffsetY:Int = Std.int(offsetYInput.pos);
+        var changed:Bool = false;
 
         if(animData.offset[0] != nextOffsetX) {
             animData.offset[0] = nextOffsetX;
             character.animOffsets[animName][0] = nextOffsetX;
             character.changeOffsets(animName, nextOffsetX, X);
-            offsetChanged = true;
+            changed = true;
         }
 
         if(animData.offset[1] != nextOffsetY) {
             animData.offset[1] = nextOffsetY;
             character.animOffsets[animName][1] = nextOffsetY;
             character.changeOffsets(animName, nextOffsetY, Y);
-            offsetChanged = true;
+            changed = true;
         }
 
-        if(offsetChanged) {
-            characterAutosave.set(character.curCharacter, character._info);
+        if(changed) {
             previewSelectedAnimation(false);
         }
     }
 
-    function previewSelectedAnimation(forcePlay:Bool = false):Void {
-        var animName = animationDrop != null ? animationDrop.selectedLabel : null;
-        if(animName == null || animName.length == 0 || !character.animations.contains(animName)) {
+    private function applyClippingOffsets():Void {
+        var animName:Null<String> = safeSelectedAnimation();
+        if(animName == null) {
+            return;
+        }
+
+        var animData = currentConfig().animations.get(animName);
+        if(animData == null) {
+            return;
+        }
+
+        var clippingKey:String = animData.prefix != null && animData.prefix != "" ? animData.prefix : animName;
+        var values:Array<Int> = [
+            Std.int(clippingXInput.pos),
+            Std.int(clippingYInput.pos),
+            Std.int(clippingWidthInput.pos),
+            Std.int(clippingHeightInput.pos)
+        ];
+
+        if(values[0] == 0 && values[1] == 0 && values[2] == 0 && values[3] == 0) {
+            currentConfig().clippingAdjustment.remove(clippingKey);
+        } else {
+            currentConfig().clippingAdjustment.set(clippingKey, values);
+        }
+
+        reloadCharacter(currentCharacterName);
+        selectDropDownItem(animationDropDown, animName);
+        refreshAnimationFields(animName);
+    }
+
+    private function reloadCharacter(characterName:String):Void {
+        currentCharacterName = characterName;
+        normalizeCharacterInfo(currentConfig());
+        clearShadowCharacter();
+
+        if(character != null) {
+            characterStorage.remove(character, true);
+            character.destroy();
+            character = null;
+        }
+
+        character = new CreatorCharacter(440, 100, characterName, true, currentConfig());
+        character.flipX = false;
+        character.updateFinalized(FlixelCompat.getScreenCenter(character, X), character.y);
+        character.refresh(character.curCharacter, camPos);
+        character.isPlayer = true;
+        character.cameras = [camGame];
+        characterStorage.add(character);
+
+        camFollow.setPosition(camPos.x, camPos.y);
+        camGame.focusOn(camFollow.getPosition());
+
+        iconP1.loadNewIcons(currentConfig().iconFile);
+        updateIconPreview();
+        applyCharacterColorTransforms();
+
+        mapEditor.set("health", CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
+        setColorOptions(mapEditor.get("health"));
+        refreshColorTransformFields();
+        refreshDisplayFields();
+        rebuildAnimationDropDown(character.animation.curAnim != null ? character.animation.curAnim.name : null);
+        refreshAnimationFields();
+    }
+
+    private function refreshDisplayFields():Void {
+        syncingUi = true;
+
+        selectDropDownItem(characterSelectorDropDown, currentCharacterName);
+        fileNameInput.text = currentConfig().file;
+        iconFileNameInput.text = currentConfig().iconFile;
+
+        xInput.pos = currentConfig().position.get("x");
+        yInput.pos = currentConfig().position.get("y");
+        xCamInput.pos = currentConfig().position.get("camPosX");
+        yCamInput.pos = currentConfig().position.get("camPosY");
+
+        ensureIconSlots(currentConfig());
+        normalIconStepper.pos = currentConfig().icon[0];
+        deadIconStepper.pos = currentConfig().icon[1];
+        happyIconStepper.pos = currentConfig().icon[2];
+        checkPlayable.selected = currentConfig().isPlayer;
+        canBePixel.selected = currentConfig().pixel;
+
+        syncingUi = false;
+
+        updateFileValidation();
+        updateIconValidation();
+    }
+
+    private function refreshAnimationFields(?preferredAnimation:String):Void {
+        var selectedAnimation:String = preferredAnimation != null ? preferredAnimation : getDropDownValue(animationDropDown, "");
+        var animData = selectedAnimation != "" ? currentConfig().animations.get(selectedAnimation) : null;
+
+        syncingUi = true;
+
+        if(selectedAnimation != "") {
+            selectDropDownItem(animationDropDown, selectedAnimation);
+        }
+
+        if(animData != null) {
+            prefixInput.text = animData.prefix;
+            framerateChange.pos = animData.framerate;
+            loopAnim.selected = animData.looped;
+            offsetXInput.pos = animData.offset[0];
+            offsetYInput.pos = animData.offset[1];
+
+            var clippingKey:String = animData.prefix != null && animData.prefix != "" ? animData.prefix : selectedAnimation;
+            var clipping:Array<Int> = currentConfig().clippingAdjustment.get(clippingKey);
+            clippingXInput.pos = clipping != null ? clipping[0] : 0;
+            clippingYInput.pos = clipping != null ? clipping[1] : 0;
+            clippingWidthInput.pos = clipping != null ? clipping[2] : 0;
+            clippingHeightInput.pos = clipping != null ? clipping[3] : 0;
+        } else {
+            prefixInput.text = "";
+            framerateChange.pos = 24;
+            loopAnim.selected = false;
+            offsetXInput.pos = 0;
+            offsetYInput.pos = 0;
+            clippingXInput.pos = 0;
+            clippingYInput.pos = 0;
+            clippingWidthInput.pos = 0;
+            clippingHeightInput.pos = 0;
+        }
+
+        syncingUi = false;
+    }
+
+    private function rebuildAnimationDropDown(?preferredAnimation:String):Void {
+        var animations:Array<String> = character != null && character.animations != null ? character.animations.copy() : [];
+        if(animations.length <= 0) {
+            animations = [""];
+        }
+
+        populateDropDown(animationDropDown, animations);
+
+        var targetAnimation:String = preferredAnimation;
+        if(targetAnimation == null || targetAnimation == "") {
+            targetAnimation = character != null && character.animation.curAnim != null ? character.animation.curAnim.name : animations[0];
+        }
+
+        selectDropDownItem(animationDropDown, targetAnimation);
+    }
+
+    private function previewSelectedAnimation(forcePlay:Bool = false):Void {
+        if(character == null) {
+            return;
+        }
+
+        var animName:Null<String> = safeSelectedAnimation();
+        if(animName == null) {
             return;
         }
 
         if(forcePlay || character.animation.curAnim == null || character.animation.curAnim.name != animName) {
             character.playAnim(animName, true);
-        }else if(character.animOffsets.exists(animName)) {
+        } else if(character.animOffsets.exists(animName)) {
             character.offset.set(character.animOffsets[animName][0], character.animOffsets[animName][1]);
         }
     }
 
-    function addAnimationsUI():Void {
-        var tab_group_animations = new FlxUI(null, UI_thingy);
-        tab_group_animations.name = 'E Animations';
+    private function updateIconPreview():Void {
+        ensureIconSlots(currentConfig());
+        iconP1.createAnim(currentCharacterName, [
+            currentConfig().icon[0],
+            currentConfig().icon[1],
+            currentConfig().icon[2]
+        ], true);
 
-        var changeButton:FlxUIButton = new FlxUIButton(40, 40, "Refresh", function() {
-            changeCharacter = true;
-
-            if(character._info.animations.get(animationDrop.selectedLabel) != null) {
-                character._info.animations.get(animationDrop.selectedLabel).prefix = prefixInput.text;
-                character._info.animations.get(animationDrop.selectedLabel).framerate = Std.int(framerateChange.value);
-                character._info.animations.get(animationDrop.selectedLabel).looped = loopAnim.checked;
-                character._info.animations.get(animationDrop.selectedLabel).offset[0] = Std.int(offsetXInput.value);
-                character._info.animations.get(animationDrop.selectedLabel).offset[1] = Std.int(offsetYInput.value);
-            }
-
-            character._info.isPlayer = checkPlayable.checked;
-            character._info.pixel = canBePixel.checked;
-
-            characterAutosave.set(character.curCharacter, character._info);
-            getEvent("click_button", this, Std.string(characterJSONs.indexOf(characterSelector.selectedLabel)));
-        });
-
-        animationDrop = new FlxUIDropDownMenu(240, 20, FlxUIDropDownMenu.makeStrIdLabelArray(character.animations, true), function(choose:String) {
-            updateStuff();
-            previewSelectedAnimation(true);
-        });
-
-        if(character.animations.length > 0) {
-            animationDrop.selectedLabel = character.animation.curAnim.name;
+        if(iconP1.iconCharacters.contains(currentCharacterName)) {
+            iconP1.animation.play(currentCharacterName);
+        } else {
+            iconP1.animation.play("face");
         }
-        
-        var animationDropTxt:FlxText = new FlxText(240, animationDrop.y - 15, "Custom Animation:");
-
-        var playAnimButton:FlxUIButton = new FlxUIButton(40, 70, "Play Animation", function() {
-            playCustomAnim = true;
-            previewSelectedAnimation(true);
-        });
-
-        var stopAnimButton:FlxUIButton = new FlxUIButton(40, playAnimButton.y + 20, "Stop Animation", function() {
-            playCustomAnim = false;
-        });
-
-        var deleteAnimButton:FlxUIButton = new FlxUIButton(40, stopAnimButton.y + 25, "Delete Animation", function() {
-            if(character.animations.length > 0) {
-                changeCharacter = true;
-
-                characterAutosave.get(character.curCharacter).animations.remove(animationDrop.selectedLabel);
-                character.animations.remove(animationDrop.selectedLabel);
-
-                animationDrop.selectedLabel = character.animations[character.animations.length - 1];
-            }
-
-			if(character.animations.length > 0) {
-                prefixInput.text = character._info.animations.get(character.animations[character.animations.length - 1]).prefix;
-                framerateChange.value = character._info.animations.get(character.animations[character.animations.length - 1]).framerate;
-                loopAnim.checked = character._info.animations.get(character.animations[character.animations.length - 1]).looped;
-                offsetXInput.value = character._info.animations.get(character.animations[character.animations.length - 1]).offset[0];
-                offsetYInput.value = character._info.animations.get(character.animations[character.animations.length - 1]).offset[1];
-
-                getEvent("click_button", this, Std.string(characterJSONs.indexOf(character.curCharacter)));
-			}
-        });
-
-        deleteAnimButton.color = 0xFFFF4444;
-        deleteAnimButton.label.color = FlxColor.WHITE;
-        deleteAnimButton.resize(deleteAnimButton.width, deleteAnimButton.height * 1.5);
-
-        var animNameInput:FlxUIInputText = new FlxUIInputText(140, 20, 80, "", 8);
-        var animNameTxt:FlxText = new FlxText(animNameInput.x, animNameInput.y - 15, "Anim Name:");
-
-        var newAnimButton:FlxUIButton = new FlxUIButton(140, 40, "Create New", function() {
-            if(!character.animations.contains(animNameInput.text)) {
-                changeCharacter = true;
-
-                characterAutosave.get(character.curCharacter).animations.set(animNameInput.text, {
-                    name: "",
-                    prefix: prefixInput.text.trim(),
-                    framerate: Std.int(framerateChange.value),
-                    looped: loopAnim.checked,
-                    offset: [Std.int(offsetXInput.value), Std.int(offsetYInput.value)]
-                });
-
-                getEvent("click_button", this, Std.string(characterJSONs.indexOf(character.curCharacter)));
-                animationDrop.selectedLabel = animNameInput.text;
-
-                prefixInput.text = character._info.animations.get(animNameInput.text).prefix;
-                framerateChange.value = character._info.animations.get(animNameInput.text).framerate;
-                loopAnim.checked = character._info.animations.get(animNameInput.text).looped;
-                offsetXInput.value = character._info.animations.get(animNameInput.text).offset[0];
-                offsetYInput.value = character._info.animations.get(animNameInput.text).offset[1];
-            }
-        });
-
-        var shadowMan:FlxUIButton = new FlxUIButton(140, newAnimButton.y + 30, "Create Shadow", function() {
-            changeCharacter = true;
-
-            if(shadowEntity != null) {
-                characterStorage.remove(shadowEntity, true);
-                shadowEntity.destroy();
-                shadowEntity = null;
-            }
-
-            shadowEntity = new CreatorCharacter(character.x, character.y, character.curCharacter, true, character._info);
-            shadowEntity.flipX = character.flipX;
-            shadowEntity.isPlayer = true;
-            shadowEntity.alpha = 0.5;
-            characterStorage.add(shadowEntity);
-
-			shadowEntity.playAnim(character.animation.curAnim.name);
-            shadowEntity.animation.stop();
-            shadowEntity.animation.curAnim.curFrame = shadowEntity.animation.curAnim.numFrames;
-
-            shadowEntity.cameras = [camGame];
-
-            getEvent("click_button", this, Std.string(characterJSONs.indexOf(character.curCharacter)));
-        });
-
-        lockAnimCheck = new FlxUICheckBox(40, shadowMan.y + 80, null, null, "Lock Animation", 80);
-
-        var animationSettings:FlxText = new FlxUIText(10, 180, 0, "Animation Config", 11);
-
-        prefixInput = new FlxUIInputText(10, 210, 80, character._info.animations.get(animationDrop.selectedLabel).prefix, 8);
-        var prefixInputTxt:FlxText = new FlxText(95, prefixInput.y, "prefix");
-
-        framerateChange = new FlxUINumericStepper(10, 230, 1, 0, -600, 600, 0);
-        framerateChange.value = character._info.animations.get(animationDrop.selectedLabel).framerate;
-        framerateChange.name = "framerate";
-
-        var framerateChangeTxt:FlxText = new FlxText(70, framerateChange.y, "framerate");
-
-        loopAnim = new FlxUICheckBox(10, 250, null, null, "Looped", 50);
-
-        offsetXInput = new FlxUINumericStepper(10, 280, 1, 0, -999, 999, 0);
-        offsetXInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[0];
-        offsetXInput.name = "x_offset";
-
-        var offsetXInputTxt:FlxText = new FlxText(70, offsetXInput.y, "Offset X");
-
-        offsetYInput = new FlxUINumericStepper(10, 295, 1, 0, -999, 999, 0);
-        offsetYInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[1];
-        offsetYInput.name = "y_offset";        
-
-        var offsetYInputTxt:FlxText = new FlxText(70, offsetYInput.y, "Offset Y");
-
-        clippingXInput = new FlxUINumericStepper(prefixInputTxt.x + prefixInputTxt.width + 5, prefixInputTxt.y, 1, 0, -999, 999, 0);
-        clippingXInput.name = "x_clipping";
-
-        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
-            clippingXInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[0];
-        }else {
-            clippingXInput.value = 0;
-        }
-
-        var clippingXInputTxt:FlxText = new FlxText(clippingXInput.x + clippingXInput.width + 5, clippingXInput.y, "Clipping Offset X");
-
-        clippingYInput = new FlxUINumericStepper(clippingXInput.x, clippingXInput.y + clippingXInput.height, 1, 0, -999, 999, 0);
-        clippingYInput.name = "y_clipping";
-
-        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
-            clippingYInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[1];
-        }else {
-            clippingYInput.value = 0;
-        }
-
-        var clippingYInputTxt:FlxText = new FlxText(clippingYInput.x + clippingYInput.width + 5, clippingYInput.y, "Clipping Offset Y");
-
-        clippingWidthInput = new FlxUINumericStepper(clippingXInput.x, clippingYInput.y + clippingYInput.height, 1, 0, -999, 999, 0);
-        clippingWidthInput.name = "width_clipping";
-
-        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
-            clippingWidthInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[2];
-        }else {
-            clippingWidthInput.value = 0;
-        }
-
-        var clippingWidthInputTxt:FlxText = new FlxText(clippingWidthInput.x + clippingWidthInput.width + 5, clippingWidthInput.y, "Clipping Offset Width");
-
-        clippingHeightInput = new FlxUINumericStepper(clippingWidthInput.x, clippingWidthInput.y + clippingWidthInput.height, 1, 0, -999, 999, 0);
-        clippingHeightInput.name = "height_clipping";
-
-        var clippingHeightInputTxt:FlxText = new FlxText(clippingHeightInput.x + clippingHeightInput.width + 5, clippingHeightInput.y, "Clipping Offset Height");
-
-        if(character._info.clippingAdjustment.exists(animationDrop.selectedLabel)) {
-            clippingHeightInput.value = character._info.clippingAdjustment.get(animationDrop.selectedLabel)[3];
-        }else {
-            clippingHeightInput.value = 0;
-        }
-
-        var applyClippingButton:FlxUIButton = new FlxUIButton(clippingYInput.x, offsetXInput.y, "Apply Clipping\nOffsets", function() {
-            changeCharacter = true;
-
-            if(clippingXInput.value == 0 && clippingYInput.value == 0 && clippingWidthInput.value == 0 && clippingHeightInput.value == 0) {
-                character._info.clippingAdjustment.remove(character._info.animations.get(animationDrop.selectedLabel).prefix);
-            }else {
-                character._info.clippingAdjustment.set(character._info.animations.get(animationDrop.selectedLabel).prefix, 
-                    [Std.int(clippingXInput.value), Std.int(clippingYInput.value), Std.int(clippingWidthInput.value), Std.int(clippingHeightInput.value)]
-                );
-            }
-
-            getEvent("click_button", this, Std.string(characterJSONs.indexOf(character.curCharacter)));
-        });
-        applyClippingButton.resize(applyClippingButton.x * 0.75, clippingYInput.height * 2);
-        applyClippingButton.label.color = FlxColor.WHITE;
-        applyClippingButton.color = FlxColor.LIME;
-
-        checkPlayable = new FlxUICheckBox(140, shadowMan.y + 50, null, null, "Is Flipped");
-        checkPlayable.checked = characterAutosave.get(character.curCharacter).isPlayer;
-
-        canBePixel = new FlxUICheckBox(140, shadowMan.y + 80, null, null, "Is Pixel");
-        canBePixel.checked = characterAutosave.get(character.curCharacter).pixel;
-
-        tab_group_animations.add(changeButton);
-        tab_group_animations.add(animationDropTxt);
-        tab_group_animations.add(playAnimButton);
-        tab_group_animations.add(stopAnimButton);
-        tab_group_animations.add(lockAnimCheck);
-        tab_group_animations.add(animationSettings);
-        tab_group_animations.add(prefixInput);
-        tab_group_animations.add(prefixInputTxt);
-        tab_group_animations.add(animNameInput);
-        tab_group_animations.add(newAnimButton);
-        tab_group_animations.add(animNameTxt);
-        tab_group_animations.add(framerateChange);
-        tab_group_animations.add(framerateChangeTxt);
-        tab_group_animations.add(loopAnim);
-        tab_group_animations.add(offsetXInput);
-        tab_group_animations.add(offsetXInputTxt);
-        tab_group_animations.add(offsetYInput);
-        tab_group_animations.add(offsetYInputTxt);
-        tab_group_animations.add(clippingXInput);
-        tab_group_animations.add(clippingXInputTxt);
-        tab_group_animations.add(clippingYInput);
-        tab_group_animations.add(clippingYInputTxt);
-        tab_group_animations.add(clippingWidthInput);
-        tab_group_animations.add(clippingWidthInputTxt);
-        tab_group_animations.add(clippingHeightInput);
-        tab_group_animations.add(clippingHeightInputTxt);
-        tab_group_animations.add(applyClippingButton);
-        tab_group_animations.add(checkPlayable);
-        tab_group_animations.add(canBePixel);
-        tab_group_animations.add(shadowMan);
-        tab_group_animations.add(animationDrop);
-        tab_group_animations.add(deleteAnimButton);
-
-        UI_thingy.addGroup(tab_group_animations);
     }
 
-    function addExportUI():Void {
-        var tab_group_export = new FlxUI(null, UI_thingy);
-		tab_group_export.name = 'Export';
-
-        var bfTextColor:FlxText = new FlxUIText(10, 30, 0, "Export", 11);
-
-        var saveCharacter:FlxUIButton = new FlxUIButton(10, 60, "Character", function() {
-            saveFile(CHARACTER);
-        });
-
-        var saveColors:FlxUIButton = new FlxUIButton(10, 80, "Color Map", function() {
-            saveFile(COLOR_MAPPING);
-        });
-
-        tab_group_export.add(bfTextColor);
-        tab_group_export.add(saveCharacter);
-        //tab_group_export.add(saveColors);
-
-        UI_thingy.addGroup(tab_group_export);
-    }
-
-    function updateStuff():Void {
-        if(character._info.animations.get(animationDrop.selectedLabel) != null) {
-            prefixInput.text = character._info.animations.get(animationDrop.selectedLabel).prefix;
-            framerateChange.value = character._info.animations.get(animationDrop.selectedLabel).framerate;
-            loopAnim.checked = character._info.animations.get(animationDrop.selectedLabel).looped;
-            offsetXInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[0];
-            offsetYInput.value = character._info.animations.get(animationDrop.selectedLabel).offset[1];
-        }else {
-            prefixInput.text = "";
-            framerateChange.value = 24;
-            loopAnim.checked = false;
-            offsetXInput.value = 0;
-            offsetYInput.value = 0;
-        }
-
-        xInput.value = characterAutosave.get(character.curCharacter).position.get('x');
-        yInput.value = characterAutosave.get(character.curCharacter).position.get('y');
-        xCamInput.value = characterAutosave.get(character.curCharacter).position.get('camPosX');
-        yCamInput.value = characterAutosave.get(character.curCharacter).position.get('camPosY');
-
-        checkPlayable.checked = characterAutosave.get(character.curCharacter).isPlayer;
-    }
-
-    function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
-        trace("ID: " + id);
-        trace("Sender: " + sender);
-        if((id == FlxUIDropDownMenu.CLICK_EVENT || id == "click_button") && changeCharacter) {
-            changeCharacter = false;
-
-            trace(characterJSONs[Std.parseInt(data)]);
-
-            characterStorage.remove(character, true);
-            character.destroy();
-            character = null;
-            character = new CreatorCharacter(440, 100, characterJSONs[Std.parseInt(data)], true, characterAutosave.get(characterJSONs[Std.parseInt(data)]));
-
-            character.flipX = false;
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
+    private function applyCharacterColorTransforms():Void {
+        var values:Array<Dynamic> = getColorTransformValues();
+        if(iconP1 != null) {
             iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
+                values[0],
+                values[1],
+                values[2],
+                values[3],
+                Std.int(values[4]),
+                Std.int(values[5]),
+                Std.int(values[6]),
+                Std.int(values[7])
             );
-
-            iconP1.loadNewIcons(characterAutosave.get(character.curCharacter).iconFile);
-
-            if(iconP1.iconCharacters.contains(characterJSONs[Std.parseInt(data)])) {
-                iconP1.animation.play(characterJSONs[Std.parseInt(data)]);
-            }else {
-                iconP1.animation.play('face');
-            }
-
-            normalIxon.value = characterAutosave.get(character.curCharacter).icon[0];
-
-            if(characterAutosave.get(character.curCharacter).icon.length > 1) {
-                dedIxon.value = characterAutosave.get(character.curCharacter).icon[1];
-            }else {
-                dedIxon.value = characterAutosave.get(character.curCharacter).icon[0];
-            }
-
-            if(characterAutosave.get(character.curCharacter).icon.length > 2) {
-                hapeyIxon.value = characterAutosave.get(character.curCharacter).icon[2];
-            }else {
-                hapeyIxon.value = characterAutosave.get(character.curCharacter).icon[0];
-            }
-
-            if(character.animations.length > 0) {
-                animationDrop.setData(FlxUIDropDownMenu.makeStrIdLabelArray(character.animations, true));
-            }else {
-                animationDrop.setData(FlxUIDropDownMenu.makeStrIdLabelArray([""], true));
-            }
-
-            if(character.animations.length > 0) {
-                animationDrop.selectedLabel = character.animation.curAnim.name;
-            }
-
-            fileName.text = characterAutosave.get(character.curCharacter).file;
-
-            updateStuff();
-
-            character.updateFinalized(FlixelCompat.getScreenCenter(character, X), character.y);
-            character.refresh(character.curCharacter, camPos);
-            camFollow.setPosition(camPos.x, camPos.y);
-            character.isPlayer = true;
-            character.cameras = [camGame];
-            characterStorage.add(character);
-
-            mapEditor.set("health", CoolUtil.calculateAverageColor(iconP1.updateFramePixels()));
-            setColorOptions(mapEditor.get("health"));
         }
 
-        if(id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper)) {
-            var nums:FlxUINumericStepper = cast sender;
-			var wname = nums.name;
+        if(character != null) {
+            character.setColorTransform(
+                values[0],
+                values[1],
+                values[2],
+                values[3],
+                Std.int(values[4]),
+                Std.int(values[5]),
+                Std.int(values[6]),
+                Std.int(values[7])
+            );
+        }
+    }
 
-            trace("Update Position");
+    private function refreshColorTransformFields():Void {
+        var values:Array<Dynamic> = getColorTransformValues();
 
-            if(wname == 'x_pos') {
-                character._info.position.set('x', Std.int(nums.value));
-                characterAutosave.set(character.curCharacter, character._info);
-                character.refresh(character.curCharacter, camPos);
-            }else if(wname == 'y_pos') {
-                character._info.position.set('y', Std.int(nums.value));
-                characterAutosave.set(character.curCharacter, character._info);
-                character.refresh(character.curCharacter, camPos);
-            }else if(wname == 'x_cam_pos') {
-                character._info.position.set('camPosX', Std.int(nums.value));
-                characterAutosave.set(character.curCharacter, character._info);
-                character.refresh(character.curCharacter, camPos);
-                camFollow.setPosition(camPos.x, camPos.y);
-            }else if(wname == 'y_cam_pos') {
-                character._info.position.set('camPosY', Std.int(nums.value));
-                characterAutosave.set(character.curCharacter, character._info);
-                character.refresh(character.curCharacter, camPos);
-                camFollow.setPosition(camPos.x, camPos.y);
-            }else if(wname == 'x_offset') {
-                character._info.animations.get(animationDrop.selectedLabel).offset[0] = Std.int(nums.value);
-                characterAutosave.set(character.curCharacter, character._info);
-                character.animOffsets[animationDrop.selectedLabel][0] = Std.int(nums.value);
-                character.changeOffsets(animationDrop.selectedLabel, Std.int(nums.value), X);
-                previewSelectedAnimation(false);
-            }else if(wname == 'y_offset') {
-                character._info.animations.get(animationDrop.selectedLabel).offset[1] = Std.int(nums.value);
-                characterAutosave.set(character.curCharacter, character._info);
-                character.animOffsets[animationDrop.selectedLabel][1] = Std.int(nums.value);
-                character.changeOffsets(animationDrop.selectedLabel, Std.int(nums.value), Y);
-                previewSelectedAnimation(false);
-            }else if(wname == 'framerate') {
-                character._info.animations.get(animationDrop.selectedLabel).framerate = Std.int(nums.value);
-                characterAutosave.set(character.curCharacter, character._info);
-            }else if(wname == 'normal_icon') {
-                character._info.icon[0] = Std.int(nums.value);
-                characterAutosave.set(character.curCharacter, character._info);
-            }else if(wname == 'ded_icon'){
-                character._info.icon[1] = Std.int(nums.value);
-                characterAutosave.set(character.curCharacter, character._info);
-            }else if(wname == 'hapey_icon') {
-                character._info.icon[2] = Std.int(nums.value);
-                characterAutosave.set(character.curCharacter, character._info);
-            }else if(wname == 'health') {
-                health = plrHealth.value / 50;
-            }
+        syncingUi = true;
+        redMultiStepper.pos = values[0];
+        greenMultiStepper.pos = values[1];
+        blueMultiStepper.pos = values[2];
+        alphaMultiStepper.pos = values[3];
+        redOffsetStepper.pos = values[4];
+        greenOffsetStepper.pos = values[5];
+        blueOffsetStepper.pos = values[6];
+        alphaOffsetStepper.pos = values[7];
+        syncingUi = false;
+    }
 
-            if(wname == 'redColor' || wname == 'blueColor' || wname == 'greenColor') {
-                var color:Int = FlxColor.fromRGB(
-                    Std.int(redColor.value),
-                    Std.int(greenColor.value),
-                    Std.int(blueColor.value)
-                );
+    private function getColorTransformValues():Array<Dynamic> {
+        var characterValues:Dynamic = mapEditor.get("character");
+        if(characterValues == null || characterValues[chooseSkin] == null) {
+            mapEditor.set("character", [[1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]]);
+            characterValues = mapEditor.get("character");
+        }
 
-                setColorOptions(color);
-            }
+        return characterValues[chooseSkin];
+    }
 
-            if(wname.endsWith('icon')) {
-                iconP1.createAnim(character.curCharacter, [character._info.icon[0], character._info.icon[1], character._info.icon[2]], true);
+    private function currentConfig():ConfigCharacters {
+        return characterAutosave.get(currentCharacterName);
+    }
+
+    private function safeSelectedAnimation():Null<String> {
+        var animName:String = getDropDownValue(animationDropDown, "");
+        if(animName == "" || character == null || !character.animations.contains(animName)) {
+            return null;
+        }
+
+        return animName;
+    }
+
+    private function normalizeCharacterInfo(info:ConfigCharacters):Void {
+        if(info.animations == null) {
+            info.animations = [];
+        }
+        if(info.position == null) {
+            info.position = [
+                "x" => 0,
+                "y" => 0,
+                "camPosX" => 0,
+                "camPosY" => 0
+            ];
+        }
+        if(info.icon == null) {
+            info.icon = [0, 0, 0];
+        }
+        ensureIconSlots(info);
+        if(info.file == null) {
+            info.file = "";
+        }
+        if(info.playAnim == null) {
+            info.playAnim = "";
+        }
+        if(info.iconFile == null || info.iconFile == "") {
+            info.iconFile = "iconGrid";
+        }
+        if(info.clippingAdjustment == null) {
+            info.clippingAdjustment = [];
+        }
+
+        DefaultHandler.setupUpdateInfo(info);
+    }
+
+    private function ensureIconSlots(info:ConfigCharacters):Void {
+        while(info.icon.length < 3) {
+            var fallback:Int = info.icon.length > 0 ? info.icon[info.icon.length - 1] : 0;
+            info.icon.push(fallback);
+        }
+    }
+
+    private function buildDefaultCharacterConfig():ConfigCharacters {
+        return {
+            file: "",
+            animations: [],
+            position: [
+                "x" => 0,
+                "y" => 0,
+                "camPosX" => 0,
+                "camPosY" => 0
+            ],
+            icon: [10, 11, 10],
+            playAnim: "",
+            isPlayer: false,
+            pixel: false,
+            iconFile: "iconGrid",
+            clippingAdjustment: []
+        };
+    }
+
+    private function populateDropDown(dropDown:DropDown, items:Array<String>):Void {
+        dropDown.dataSource.clear();
+
+        for(item in items) {
+            dropDown.dataSource.add({id: item, text: item});
+        }
+    }
+
+    private function selectDropDownItem(dropDown:DropDown, value:String):Void {
+        for(index in 0...dropDown.dataSource.size) {
+            var item:Dynamic = dropDown.dataSource.get(index);
+            var itemId:Dynamic = item != null ? Reflect.field(item, "id") : null;
+            var itemText:Dynamic = item != null ? Reflect.field(item, "text") : null;
+
+            if(Std.string(itemId) == value || Std.string(itemText) == value) {
+                dropDown.selectedIndex = index;
+                return;
             }
         }
+
+        if(dropDown.dataSource.size > 0) {
+            dropDown.selectedIndex = 0;
+        }
+    }
+
+    private function getDropDownValue(dropDown:DropDown, fallback:String):String {
+        var selected:Dynamic = dropDown.selectedItem;
+
+        if(selected != null) {
+            var idValue:Dynamic = Reflect.field(selected, "id");
+            if(idValue != null && Std.string(idValue) != "") {
+                return Std.string(idValue);
+            }
+
+            var textValue:Dynamic = Reflect.field(selected, "text");
+            if(textValue != null && Std.string(textValue) != "") {
+                return Std.string(textValue);
+            }
+        }
+
+        return fallback;
+    }
+
+    private function updateFileValidation():Void {
+        var value:String = fileNameInput.text.trim();
+        var exists:Bool = value.length > 0 && Paths.assetExists(Paths.getPreloadPath("images/" + value), IMAGE);
+        fileValidationLabel.text = exists ? "Asset found" : "Asset missing";
+    }
+
+    private function updateIconValidation():Void {
+        var value:String = iconFileNameInput.text.trim();
+        var exists:Bool = value.length > 0 && Paths.image(value) != null;
+        iconValidationLabel.text = exists ? "Icon sheet found" : "Icon sheet missing";
     }
 
     function cacheIconAnimation(icon:HealthIcon, player:Bool = false):Void {
         var characterList:Array<String> = DefaultHandler.getcharacterJSON();
 
-        for(character in characterList) {
-            icon.createAnim(character, icon.getIconJSON(character), player);
+        for(characterName in characterList) {
+            icon.createAnim(characterName, icon.getIconJSON(characterName), player);
         }
     }
 
-    override function update(elapsed:Float) {
-		super.update(elapsed);
+    private function updateCursorPos():Void {
+        var x:Float = camFollow.x - camCursor.width / 2;
+        var y:Float = camFollow.y - camCursor.height / 2;
+        camCursor.setPosition(x, y);
+    }
+
+    private function updateHealthIconPositions():Void {
+        iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - 26);
+        iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - 26);
+    }
+
+    override function update(elapsed:Float):Void {
+        super.update(elapsed);
 
         updateCursorPos();
 
-        if(camGame.zoom <= 2 && camGame.zoom >= 0.1)
-            camGame.zoom += FlxG.mouse.wheel * elapsed * 1.2;
-        if(FlxG.keys.pressed.Q && camGame.zoom <= 2)
-            camGame.zoom += elapsed;
-        if(FlxG.keys.pressed.E && camGame.zoom >= 0.1)
-            camGame.zoom -= elapsed;
+        if(allowInput) {
+            if(camGame.zoom <= 2 && camGame.zoom >= 0.1) {
+                camGame.zoom += FlxG.mouse.wheel * elapsed * 1.2;
+            }
+            if(FlxG.keys.pressed.Q && camGame.zoom <= 2) {
+                camGame.zoom += elapsed;
+            }
+            if(FlxG.keys.pressed.E && camGame.zoom >= 0.1) {
+                camGame.zoom -= elapsed;
+            }
+        }
 
-        if(camGame.zoom > 2)
+        if(camGame.zoom > 2) {
             camGame.zoom = 2;
-        if(camGame.zoom < 0.1)
+        }
+        if(camGame.zoom < 0.1) {
             camGame.zoom = 0.1;
+        }
 
-		iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - 26);
-        iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - 26);
+        updateHealthIconPositions();
 
-        if (healthBar.percent >= 80)
-			iconP1.animation.curAnim.curFrame = 2;
-		else if(healthBar.percent <= 20)
+        if(healthBar.percent >= 80) {
+            iconP1.animation.curAnim.curFrame = 2;
+        } else if(healthBar.percent <= 20) {
             iconP1.animation.curAnim.curFrame = 1;
-        else
-			iconP1.animation.curAnim.curFrame = 0;
+        } else {
+            iconP1.animation.curAnim.curFrame = 0;
+        }
 
-        if (FlxG.keys.justPressed.ESCAPE && isIn) {
-			#if !mobile
-			FlxG.mouse.visible = false;
-			#end
+        if(FlxG.keys.justPressed.ESCAPE) {
+            #if !mobile
+            FlxG.mouse.visible = false;
+            #end
 
             characterAutosave.clear();
-
-            _character = null;
-
-            characterAutosave = null;
-            characterJSONs = null;
-
             FlxG.switchState(new OptionsMenuState("editors"));
-		}
+        }
 
         var controlArray:Array<Bool> = [
-			controls.LEFT_P,
-			controls.DOWN_P,
-			controls.UP_P,
-			controls.RIGHT_P
-		];
+            FlxG.keys.justPressed.LEFT,
+            FlxG.keys.justPressed.DOWN,
+            FlxG.keys.justPressed.UP,
+            FlxG.keys.justPressed.RIGHT
+        ];
 
         var controlHoldArray:Array<Bool> = [
-			controls.LEFT,
-			controls.DOWN,
-			controls.UP,
-			controls.RIGHT
-		];
+            FlxG.keys.pressed.LEFT,
+            FlxG.keys.pressed.DOWN,
+            FlxG.keys.pressed.UP,
+            FlxG.keys.pressed.RIGHT
+        ];
 
-        syncSelectedAnimationOffsetFromInputs();
-
-        var lockSelectedAnimation:Bool = lockAnimCheck != null
-            && lockAnimCheck.checked
-            && animationDrop != null
-            && character.animations.contains(animationDrop.selectedLabel);
+        var selectedAnimation:Null<String> = safeSelectedAnimation();
+        var lockSelectedAnimation:Bool = allowInput
+            && lockAnimCheck.selected
+            && selectedAnimation != null;
 
         if(lockSelectedAnimation) {
             if(character.animation.curAnim == null
-            || character.animation.curAnim.name != animationDrop.selectedLabel
-            || character.animation.finished) {
+                || character.animation.curAnim.name != selectedAnimation
+                || character.animation.finished) {
                 previewSelectedAnimation(true);
-            }else {
+            } else {
                 previewSelectedAnimation(false);
             }
-        }else {
+        } else if(allowInput) {
             if(playCustomAnim && character.animation.finished) {
                 playCustomAnim = false;
             }
 
             if(!playCustomAnim && character.animation.curAnim != null) {
-                if (controlArray[0] && character.animations.contains('singLEFT'))
-                    character.playAnim('singLEFT');
-                if (controlArray[1] && character.animations.contains('singDOWN'))
-                    character.playAnim('singDOWN');
-                if (controlArray[2] && character.animations.contains('singUP'))
-                    character.playAnim('singUP');
-                if (controlArray[3] && character.animations.contains('singRIGHT'))
-                    character.playAnim('singRIGHT');
+                if(controlArray[0] && character.animations.contains("singLEFT")) character.playAnim("singLEFT");
+                if(controlArray[1] && character.animations.contains("singDOWN")) character.playAnim("singDOWN");
+                if(controlArray[2] && character.animations.contains("singUP")) character.playAnim("singUP");
+                if(controlArray[3] && character.animations.contains("singRIGHT")) character.playAnim("singRIGHT");
 
-                if(character.animations.contains('idle')
-                || character.animations.contains('danceRight')
-                || character.animations.contains('danceLeft')) {
+                if(character.animations.contains("idle")
+                    || character.animations.contains("danceRight")
+                    || character.animations.contains("danceLeft")) {
                     if((!controlHoldArray.contains(true) && character.animation.curAnim.name.startsWith("sing"))
-                    || (!character.animation.curAnim.name.startsWith("sing") && character.animation.finished))
+                        || (!character.animation.curAnim.name.startsWith("sing") && character.animation.finished)) {
                         character.dance();
+                    }
                 }
             }
         }
 
         if(shadowEntity != null) {
             colorSway += elapsed;
-            shadowEntity.color = FlxColor.fromRGBFloat(0.6 + Math.sin(colorSway * Math.PI) * 0.4,
-            0.6 + Math.sin(colorSway * Math.PI) * 0.4, 0.6 + Math.sin(colorSway * Math.PI) * 0.4);
-        }else if(colorSway > 0) {
+            shadowEntity.color = FlxColor.fromRGBFloat(
+                0.6 + Math.sin(colorSway * Math.PI) * 0.4,
+                0.6 + Math.sin(colorSway * Math.PI) * 0.4,
+                0.6 + Math.sin(colorSway * Math.PI) * 0.4
+            );
+        } else if(colorSway > 0) {
             colorSway = 0;
-        }
-
-        if(mapEditor.get("character")[chooseSkin][0] != redMulti.value) {
-            mapEditor.get("character")[chooseSkin][0] = redMulti.value;
-            
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-        }
-        if(mapEditor.get("character")[chooseSkin][1] != greenMulti.value) {
-            mapEditor.get("character")[chooseSkin][1] = greenMulti.value;
-            
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-        }
-        if(mapEditor.get("character")[chooseSkin][2] != blueMulti.value) {
-            mapEditor.get("character")[chooseSkin][2] = blueMulti.value;
-            
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-        }
-        if(mapEditor.get("character")[chooseSkin][3] != alphaMulti.value) {
-            mapEditor.get("character")[chooseSkin][3] = alphaMulti.value;
-            
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-        }
-
-        if(mapEditor.get("character")[chooseSkin][4] != redOffset.value) {
-            mapEditor.get("character")[chooseSkin][4] = redOffset.value;
-            
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-        }
-        if(mapEditor.get("character")[chooseSkin][5] != greenOffset.value) {
-            mapEditor.get("character")[chooseSkin][5] = greenOffset.value;
-
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-        }
-        if(mapEditor.get("character")[chooseSkin][6] != blueOffset.value) {
-            mapEditor.get("character")[chooseSkin][6] = blueOffset.value;
-
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-        }
-        if(mapEditor.get("character")[chooseSkin][7] != alphaOffset.value) {
-            mapEditor.get("character")[chooseSkin][7] = alphaOffset.value;
-            
-            iconP1.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
-
-            character.setColorTransform(
-                mapEditor.get("character")[chooseSkin][0],
-                mapEditor.get("character")[chooseSkin][1],
-                mapEditor.get("character")[chooseSkin][2],
-                mapEditor.get("character")[chooseSkin][3],
-                Std.int(mapEditor.get("character")[chooseSkin][4]),
-                Std.int(mapEditor.get("character")[chooseSkin][5]),
-                Std.int(mapEditor.get("character")[chooseSkin][6]),
-                Std.int(mapEditor.get("character")[chooseSkin][7])
-            );
         }
     }
 
     override function destroy():Void {
-        super.destroy();
-
+        clearShadowCharacter();
         iconP1 = FlxDestroyUtil.destroy(iconP1);
         iconP2 = FlxDestroyUtil.destroy(iconP2);
+        super.destroy();
     }
 
-    function setColorOptions(getColor:Int) {
+    function setColorOptions(getColor:Int):Void {
         var color:FlxColor = new FlxColor(getColor);
-
         mapEditor.set("health", getColor);
 
         healthBar.createFilledBar(FlxColor.RED, color);
-        healthBar.percent = plrHealth.value;
+        healthBar.percent = plrHealthStepper != null ? plrHealthStepper.pos : 50;
 
-        redColor.value = color.red;
-        greenColor.value = color.green;
-        blueColor.value = color.blue;
-    }
-
-    function updateCursorPos():Void {
-        var x:Float = camFollow.x;
-        var y:Float = camFollow.y;
-
-        x -= camCursor.width / 2;
-		y -= camCursor.height / 2;
-		camCursor.setPosition(x, y);
+        syncingUi = true;
+        redColorStepper.pos = color.red;
+        greenColorStepper.pos = color.green;
+        blueColorStepper.pos = color.blue;
+        syncingUi = false;
     }
 
     function saveFile(fileType:FileType):Void {
-        var data:String;
+        var data:String = null;
+        var name:String = null;
 
         switch(fileType) {
             case CHARACTER:
-                data = Json.stringify(characterAutosave.get(character.curCharacter), "\t");
-
-                if (data != null && data.length > 0) {
-                    _file = new FileReference();
-                    _file.addEventListener(Event.COMPLETE, onSaveComplete);
-                    _file.addEventListener(Event.CANCEL, onCancel);
-                    _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-                    _file.save(data.trim(), character.curCharacter + ".json");
-                }
+                data = Json.stringify(currentConfig(), "\t");
+                name = currentCharacterName + ".json";
             case COLOR_MAPPING:
-                data = Json.stringify(mapEditor);
-
-                if (data != null && data.length > 0) {
-                    _file = new FileReference();
-                    _file.addEventListener(Event.COMPLETE, onSaveComplete);
-                    _file.addEventListener(Event.CANCEL, onCancel);
-                    _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-                    _file.save(data.trim(),  "colors.json");
-                }
+                data = Json.stringify(mapEditor, "\t");
+                name = "colors.json";
         }
-    }
 
-    function onSelect(event:Event):Void {
-        _file = cast(event.target, FileReference);
-        _file.addEventListener(Event.COMPLETE, onComplete);
-        _file.load();
-    }
-
-    function onComplete(event:Event):Void {
-        _file = cast(event.target, FileReference);
-        _file.removeEventListener(Event.COMPLETE, onComplete);
-
-        try {
-            changeCharacter = true;
-
-            getEvent("click_button", null, Std.string(characterJSONs.indexOf(character.curCharacter)));
-
-            trace(_file.name);
-        }catch(e:haxe.Exception) {
-            clearEvent();
-            throw e;
+        if(data == null || data.length <= 0) {
+            return;
         }
+
+        fileRef = new FileReference();
+        fileRef.addEventListener(Event.COMPLETE, onSaveComplete);
+        fileRef.addEventListener(Event.CANCEL, onCancel);
+        fileRef.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        fileRef.save(data.trim(), name);
     }
 
-    function clearEvent():Void {
-        _file.removeEventListener(Event.COMPLETE, onSaveComplete);
-        _file.removeEventListener(Event.CANCEL, onCancel);
-        _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-        _file.removeEventListener(Event.SELECT, onSelect);
-        _file = null;
+    function clearSaveEvents():Void {
+        if(fileRef == null) {
+            return;
+        }
+
+        fileRef.removeEventListener(Event.COMPLETE, onSaveComplete);
+        fileRef.removeEventListener(Event.CANCEL, onCancel);
+        fileRef.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+        fileRef = null;
     }
 
     function onSaveComplete(_):Void {
-        clearEvent();
-        FlxG.log.notice("Successfully saved CHARACTER DATA.");
+        clearSaveEvents();
+        statusLabel.text = "Saved successfully.";
+        FlxG.log.notice("Successfully saved character data.");
     }
 
     function onCancel(_):Void {
-        clearEvent();
+        clearSaveEvents();
+        statusLabel.text = "Save cancelled.";
     }
 
     function onSaveError(_):Void {
-        clearEvent();
-        FlxG.log.error("Problem saving Character data");
-    }
-}
-
-private class FinderUIInputText extends FlxUIInputText {
-    public var textUpdateCallback:(text:String)->Bool;
-
-    override function onKeyDown(e:KeyboardEvent):Void {
-        super.onKeyDown(e);
-
-        if(textUpdateCallback != null) {
-            if(textUpdateCallback(text)) {
-                color = FlxColor.BLACK;
-            }else {
-                color = FlxColor.RED;
-            }
-        }
+        clearSaveEvents();
+        statusLabel.text = "Problem saving character data.";
+        FlxG.log.error("Problem saving character data");
     }
 }
