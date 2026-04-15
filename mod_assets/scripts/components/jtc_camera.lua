@@ -10,6 +10,15 @@ local defaultStrumRevealDuration = 0.35
 local defaultStrumRevealDelay = 0.02
 local strumCount = 8
 local strumLaneCount = 4
+local focusSwitchDefaults = {
+    enabled = false,
+    holdZoom = 1,
+    switchZoomOut = 1,
+    switchOutDurationSteps = 0,
+    switchInDurationSteps = 0,
+    switchDelay = 0,
+    followLerp = nil
+}
 
 local defaultHiddenSprites = {
     "healthBarBG",
@@ -26,6 +35,17 @@ jtc_camera.hiddenSprites = {}
 jtc_camera.showNoteCamerasOnReveal = true
 jtc_camera.strumDefaults = {}
 jtc_camera.strumReveal = nil
+jtc_camera.focusSwitch = {
+    enabled = focusSwitchDefaults.enabled,
+    holdZoom = focusSwitchDefaults.holdZoom,
+    switchZoomOut = focusSwitchDefaults.switchZoomOut,
+    switchOutDurationSteps = focusSwitchDefaults.switchOutDurationSteps,
+    switchInDurationSteps = focusSwitchDefaults.switchInDurationSteps,
+    switchDelay = focusSwitchDefaults.switchDelay,
+    followLerp = focusSwitchDefaults.followLerp,
+    pendingZoomTimer = -1,
+    pendingZoomTarget = focusSwitchDefaults.holdZoom
+}
 
 local function setGameplayVisibility(gameVisible, noteVisible)
     setCameraVisible("camGame", gameVisible)
@@ -36,6 +56,35 @@ end
 local function setNoteCameraVisibility(visible)
     setCameraVisible("camNOTE", visible)
     setCameraVisible("camNoteSustain", visible)
+end
+
+local function resetFocusSwitch()
+    jtc_camera.focusSwitch = {
+        enabled = focusSwitchDefaults.enabled,
+        holdZoom = focusSwitchDefaults.holdZoom,
+        switchZoomOut = focusSwitchDefaults.switchZoomOut,
+        switchOutDurationSteps = focusSwitchDefaults.switchOutDurationSteps,
+        switchInDurationSteps = focusSwitchDefaults.switchInDurationSteps,
+        switchDelay = focusSwitchDefaults.switchDelay,
+        followLerp = focusSwitchDefaults.followLerp,
+        pendingZoomTimer = -1,
+        pendingZoomTarget = focusSwitchDefaults.holdZoom
+    }
+end
+
+local function applyFocusFollowLerp()
+    if jtc_camera.focusSwitch.followLerp ~= nil and setGameplayCameraFocusLerp ~= nil then
+        setGameplayCameraFocusLerp(jtc_camera.focusSwitch.followLerp)
+    end
+end
+
+local function sendFocusZoomEvent(zoomValue, durationSteps)
+    if callEvent == nil then
+        return
+    end
+
+    callEvent("v-slice event", "ZoomCamera",
+        "{\"zoom\":" .. tostring(zoomValue) .. ",\"duration\":" .. tostring(durationSteps) .. ",\"mode\":\"direct\",\"ease\":\"quadout\"}")
 end
 
 local function getDefaultStrumAxis(side, axis, lane)
@@ -193,6 +242,48 @@ function jtc_camera.reset()
     jtc_camera.showNoteCamerasOnReveal = true
     jtc_camera.strumDefaults = {}
     jtc_camera.strumReveal = nil
+    resetFocusSwitch()
+end
+
+function jtc_camera.configureFocusSwitch(config)
+    resetFocusSwitch()
+
+    if type(config) ~= "table" then
+        return
+    end
+
+    jtc_camera.focusSwitch.enabled = config.enabled == true
+    jtc_camera.focusSwitch.holdZoom = config.holdZoom or jtc_camera.focusSwitch.holdZoom
+    jtc_camera.focusSwitch.switchZoomOut = config.switchZoomOut or jtc_camera.focusSwitch.switchZoomOut
+    jtc_camera.focusSwitch.switchOutDurationSteps =
+        config.switchOutDurationSteps or jtc_camera.focusSwitch.switchOutDurationSteps
+    jtc_camera.focusSwitch.switchInDurationSteps =
+        config.switchInDurationSteps or jtc_camera.focusSwitch.switchInDurationSteps
+    jtc_camera.focusSwitch.switchDelay = config.switchDelay or jtc_camera.focusSwitch.switchDelay
+    jtc_camera.focusSwitch.followLerp = config.followLerp
+    jtc_camera.focusSwitch.pendingZoomTarget = jtc_camera.focusSwitch.holdZoom
+
+    if jtc_camera.focusSwitch.enabled then
+        applyFocusFollowLerp()
+    end
+end
+
+function jtc_camera.whenEventTriggered(skill, value, value2)
+    local normalizedSkill = string.lower(tostring(skill or ""))
+    local normalizedValue = string.lower(tostring(value or ""))
+
+    if not jtc_camera.focusSwitch.enabled then
+        return
+    end
+
+    if normalizedSkill ~= "v-slice event" or normalizedValue ~= "focuscamera" then
+        return
+    end
+
+    applyFocusFollowLerp()
+    sendFocusZoomEvent(jtc_camera.focusSwitch.switchZoomOut, jtc_camera.focusSwitch.switchOutDurationSteps)
+    jtc_camera.focusSwitch.pendingZoomTimer = jtc_camera.focusSwitch.switchDelay
+    jtc_camera.focusSwitch.pendingZoomTarget = jtc_camera.focusSwitch.holdZoom
 end
 
 function jtc_camera.registerHiddenSprites(spriteNames)
@@ -253,6 +344,16 @@ end
 
 function jtc_camera.onUpdate(elapsed)
     local currentStep = curStep or -1
+    local safeElapsed = elapsed or 0
+
+    if jtc_camera.focusSwitch.pendingZoomTimer >= 0 then
+        jtc_camera.focusSwitch.pendingZoomTimer = jtc_camera.focusSwitch.pendingZoomTimer - safeElapsed
+
+        if jtc_camera.focusSwitch.pendingZoomTimer <= 0 then
+            jtc_camera.focusSwitch.pendingZoomTimer = -1
+            sendFocusZoomEvent(jtc_camera.focusSwitch.pendingZoomTarget, jtc_camera.focusSwitch.switchInDurationSteps)
+        end
+    end
 
     if jtc_camera.hidden and jtc_camera.revealStep ~= nil and currentStep >= jtc_camera.revealStep then
         jtc_camera.showGameplayCameras()
@@ -262,7 +363,7 @@ function jtc_camera.onUpdate(elapsed)
         return
     end
 
-    jtc_camera.strumReveal.elapsed = jtc_camera.strumReveal.elapsed + elapsed
+    jtc_camera.strumReveal.elapsed = jtc_camera.strumReveal.elapsed + safeElapsed
 
     while jtc_camera.strumReveal.nextLane < strumLaneCount and
         jtc_camera.strumReveal.elapsed >= (jtc_camera.strumReveal.nextLane * jtc_camera.strumReveal.delay) do

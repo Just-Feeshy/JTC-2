@@ -1,3 +1,4 @@
+local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
 local frost_modchart = {}
 local pulseStepIntensity = {}
 local strumWavePulse = 0
@@ -27,9 +28,6 @@ local FOCUS_SWITCH_OUT_DURATION_STEPS = 2
 local FOCUS_SWITCH_IN_DURATION_STEPS = 4
 local FOCUS_SWITCH_DELAY = 0.045
 local FOCUS_FOLLOW_LERP = 0.28
-
-local pendingFocusZoomTimer = -1
-local pendingFocusZoomTarget = FOCUS_HOLD_ZOOM
 
 local function addPulseStep(stepValue, intensity)
     pulseStepIntensity[stepValue] = intensity
@@ -153,9 +151,16 @@ function onCreate()
     frost_modchart = {}
 
     buildPulseSteps()
-    if setGameplayCameraFocusLerp ~= nil then
-        setGameplayCameraFocusLerp(FOCUS_FOLLOW_LERP)
-    end
+    jtc_camera.reset()
+    jtc_camera.configureFocusSwitch({
+        enabled = true,
+        holdZoom = FOCUS_HOLD_ZOOM,
+        switchZoomOut = FOCUS_SWITCH_ZOOM_OUT,
+        switchOutDurationSteps = FOCUS_SWITCH_OUT_DURATION_STEPS,
+        switchInDurationSteps = FOCUS_SWITCH_IN_DURATION_STEPS,
+        switchDelay = FOCUS_SWITCH_DELAY,
+        followLerp = FOCUS_FOLLOW_LERP
+    })
 
 	frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
 	if frost_modchart.initStrumsAndNotes ~= nil then
@@ -169,15 +174,7 @@ end
 function onUpdate(elapsed)
     local safeElapsed = elapsed or 0
 
-    if pendingFocusZoomTimer >= 0 then
-        pendingFocusZoomTimer = pendingFocusZoomTimer - safeElapsed
-
-        if pendingFocusZoomTimer <= 0 then
-            pendingFocusZoomTimer = -1
-            callEvent("v-slice event", "ZoomCamera",
-                "{\"zoom\":" .. tostring(pendingFocusZoomTarget) .. ",\"duration\":" .. tostring(FOCUS_SWITCH_IN_DURATION_STEPS) .. ",\"mode\":\"direct\",\"ease\":\"quadout\"}")
-        end
-    end
+    jtc_camera.onUpdate(safeElapsed)
 
     if strumWavePulse > 0 then
         strumWaveTime = strumWaveTime + safeElapsed
@@ -219,19 +216,7 @@ function onPause()
 end
 
 function whenEventTriggered(skill, value, value2)
-    local normalizedSkill = string.lower(tostring(skill or ""))
-    local normalizedValue = string.lower(tostring(value or ""))
-
-    if normalizedSkill == "v-slice event" and normalizedValue == "focuscamera" then
-        if setGameplayCameraFocusLerp ~= nil then
-            setGameplayCameraFocusLerp(FOCUS_FOLLOW_LERP)
-        end
-
-        callEvent("v-slice event", "ZoomCamera",
-            "{\"zoom\":" .. tostring(FOCUS_SWITCH_ZOOM_OUT) .. ",\"duration\":" .. tostring(FOCUS_SWITCH_OUT_DURATION_STEPS) .. ",\"mode\":\"direct\",\"ease\":\"quadout\"}")
-        pendingFocusZoomTimer = FOCUS_SWITCH_DELAY
-        pendingFocusZoomTarget = FOCUS_HOLD_ZOOM
-    end
+    jtc_camera.whenEventTriggered(skill, value, value2)
 end
 
 function onDestroy()
