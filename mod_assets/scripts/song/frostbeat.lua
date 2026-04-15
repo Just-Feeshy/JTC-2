@@ -266,6 +266,22 @@ local function lerp(a, b, t)
     return a + ((b - a) * t)
 end
 
+local function setFrostbeatGameplayZoom(zoom, direct, snap, suppressUntilStep)
+    if setGameplayCameraZoom ~= nil then
+        setGameplayCameraZoom(zoom, direct, snap)
+    end
+
+    frost_bump.setSuppressed(direct == true, suppressUntilStep)
+end
+
+local function clearFrostbeatGameplayZoom(snap)
+    if clearGameplayCameraZoom ~= nil then
+        clearGameplayCameraZoom(snap)
+    end
+
+    frost_bump.setSuppressed(false)
+end
+
 local function createJumpscare()
 	createSprite("jumpscare")
 	loadGraphic("jumpscare", "jumpscare")
@@ -419,6 +435,12 @@ local function init()
     end
 	createJumpscare()
 	frost_bump.reset()
+    if setSuppressGameplayCameraBop ~= nil then
+        setSuppressGameplayCameraBop(true)
+    end
+    if setSuppressGameplayCameraBopWhileZoom ~= nil then
+        setSuppressGameplayCameraBopWhileZoom(true)
+    end
     jtc_camera.reset()
 end
 
@@ -488,7 +510,7 @@ local function enterPhaseTwo()
     setSpriteY("dad", 90)
     setSpriteVisible("frostbiteCAR", false)
     removeSpriteFromState("frostbiteCAR")
-    setGameplayCameraZoom(1.0, false, false)
+    setFrostbeatGameplayZoom(1.0, false, false)
     baseGameZoom = 1.0
     daddyIsHere = true
     secondActive = true
@@ -658,7 +680,7 @@ local function applyIntroCameraState(focusX, focusY, zoom, carX, carY)
 
     setGameplayCameraFocus(focusX, focusY, true)
     setGameplayCameraFocusLerp(0)
-    setGameplayCameraZoom(zoom, true, true)
+    setFrostbeatGameplayZoom(zoom, true, true, 68)
     setSpritePosition("frostbiteCAR", carX, carY)
 end
 
@@ -738,7 +760,7 @@ local function updatePhaseTwoFlyingCamera()
         currentPhaseTwoGameZoom = zoom
 
         setGameplayCameraFocus(focusX, focusY, true)
-        setGameplayCameraZoom(zoom, true, true)
+        setFrostbeatGameplayZoom(zoom, true, true)
         return
     end
 
@@ -750,14 +772,14 @@ local function updatePhaseTwoFlyingCamera()
     currentPhaseTwoGameZoom = zoom
 
     setGameplayCameraFocus(focusX, focusY, true)
-    setGameplayCameraZoom(zoom, true, true)
+    setFrostbeatGameplayZoom(zoom, true, true)
 
     if progress >= 1 then
         phaseTwoFlyingCameraCompleted = true
         currentPhaseTwoGameZoom = 1.0
         setGameplayCameraFocus(centerFocusX, centerFocusY, true)
         setGameplayCameraFocusLerp(baseFunkroadCameraFocusLerp)
-        clearGameplayCameraZoom(true)
+        clearFrostbeatGameplayZoom(true)
     end
 end
 
@@ -849,13 +871,13 @@ local function updateIntroClearTween(elapsed)
     currentIntroCarY = carY
 
     setGameplayCameraFocus(focusX, focusY, true)
-    setGameplayCameraZoom(zoom, true, true)
+    setFrostbeatGameplayZoom(zoom, true, true, 68)
     setSpritePosition("frostbiteCAR", carX, carY)
 
     if t >= 1 then
         introClearTween = nil
         applyBaseFunkroadCameraFocus(true)
-        clearGameplayCameraZoom(true)
+        clearFrostbeatGameplayZoom(true)
         setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
         currentIntroFocusX = baseFunkroadCameraX
         currentIntroFocusY = baseFunkroadCameraY
@@ -1034,6 +1056,10 @@ end
 
 function onStepHit()
     jtc_camera.onStepHit(curStep)
+
+    if curStep >= 68 and setSuppressGameplayCameraBop ~= nil then
+        setSuppressGameplayCameraBop(false)
+    end
 
     if curStep == 606 then
         daddyTrans = true

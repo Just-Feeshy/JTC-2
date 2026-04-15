@@ -16,7 +16,7 @@
 			"framerate": 24,
 			"offset": [
 				4,
-				0
+				1
 			],
 			"looped": false
 		},
@@ -44,6 +44,7 @@
 	"file": "skating and flying DEATHDEMON.xml",
 	"icon": [
 		10,
+		11,
 		11
 	],
 	"iconFile": "iconGrid"

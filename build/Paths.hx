@@ -893,9 +893,19 @@ class Paths
 
 		var cachedImage:FlxGraphic = ifImageCached(cacheFile + key, library);
 		var descriptionPath = file('images/' + cacheFile + key + '.xml', library);
+		var atlasGraphic:FlxGraphic = cachedImage;
+
+		if (atlasGraphic != null && atlasGraphic.bitmap == null)
+		{
+			FlxG.bitmap.removeByKey(atlasGraphic.key);
+			atlasGraphic = null;
+		}
 
 		if(assetExists(descriptionPath, TEXT)) {
-			return FlxAtlasFrames.fromSparrow(cachedImage != null ? cachedImage : image(cacheFile + key, library), readText(descriptionPath));
+			if (atlasGraphic == null)
+				atlasGraphic = image(cacheFile + key, library);
+
+			return FlxAtlasFrames.fromSparrow(atlasGraphic, readText(descriptionPath));
 		}else {
 			trace("Error: could not locate asset - " + descriptionPath);
 			return null;

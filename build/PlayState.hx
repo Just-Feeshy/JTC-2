@@ -212,6 +212,8 @@ class PlayState extends MusicBeatState
 	public var vSliceCameraFocusLerp:Float = 0;
 	public var vSliceDirectZoomEnabled:Bool = false;
 	public var vSliceDirectZoomValue:Float = 1;
+	public var suppressCameraBop:Bool = false;
+	public var suppressCameraBopWhileDirectZoom:Bool = false;
 	private var restartScriptedCameraCaptured:Bool = false;
 	private var restartCameraFocusEnabled:Bool = false;
 	private var restartCameraFocusX:Float = 0;
@@ -2226,15 +2228,11 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		var currentSongTime:Float = Conductor.instance.trackedSongPosition;
 		var droppedNote:Note = null;
 
-		// Find the first active sustain segment on this lane that was being held
+		// Match Funkin more closely: release the earliest active segment on this lane,
+		// not just whichever note happens to be encountered first in the live list.
 		notes.forEachAlive(function(daNote:Note) {
-			if(droppedNote != null) {
-				return; // Already found one
-			}
-
 			if(daNote.mustPress
 				&& daNote.isSustainNote
 				&& daNote.noteData == lane
@@ -2242,7 +2240,9 @@ class PlayState extends MusicBeatState
 				&& !daNote.wasGoodHit
 				&& daNote.prevNote != null
 				&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)) {
-				droppedNote = daNote;
+				if(droppedNote == null || daNote.getNoteTime() < droppedNote.getNoteTime()) {
+					droppedNote = daNote;
+				}
 			}
 		});
 
@@ -3989,6 +3989,9 @@ class PlayState extends MusicBeatState
 		if(direct) {
 			vSliceDirectZoomEnabled = true;
 			vSliceDirectZoomValue = zoom;
+			if(suppressCameraBopWhileDirectZoom) {
+				clearCameraBop();
+			}
 		}else {
 			vSliceDirectZoomEnabled = false;
 			defaultCamZoom = zoom;
@@ -4004,6 +4007,35 @@ class PlayState extends MusicBeatState
 
 		if(snap) {
 			FlxG.camera.zoom = defaultCamZoom;
+		}
+	}
+
+	public function clearCameraBop():Void {
+		cameraBopGameOffset = 0;
+		cameraBopHudOffset = 0;
+		camHUD.zoom = 1;
+		camNOTE.zoom = 1;
+
+		if(vSliceDirectZoomEnabled) {
+			FlxG.camera.zoom = vSliceDirectZoomValue;
+		}else {
+			FlxG.camera.zoom = defaultCamZoom;
+		}
+	}
+
+	public function setSuppressCameraBopWhileDirectZoom(enabled:Bool):Void {
+		suppressCameraBopWhileDirectZoom = enabled;
+
+		if(enabled && vSliceDirectZoomEnabled) {
+			clearCameraBop();
+		}
+	}
+
+	public function setSuppressCameraBop(enabled:Bool):Void {
+		suppressCameraBop = enabled;
+
+		if(enabled) {
+			clearCameraBop();
 		}
 	}
 
@@ -4501,6 +4533,16 @@ class PlayState extends MusicBeatState
 
 	public function triggerCameraBop(?intensity:Float = 1):Void {
 		if(!canTriggerCameraBop()) {
+			return;
+		}
+
+		if(suppressCameraBop) {
+			clearCameraBop();
+			return;
+		}
+
+		if(suppressCameraBopWhileDirectZoom && vSliceDirectZoomEnabled) {
+			clearCameraBop();
 			return;
 		}
 

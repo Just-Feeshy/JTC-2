@@ -425,40 +425,27 @@ class PlayInput
 
 	function findTapNote(lane:Int, hitSongTime:Float):Note
 	{
-		var inputNotes = playState.notes.members.filter(function(note:Note):Bool {
-			return note != null
-				&& note.mustPress
-				&& note.noteData == lane
-				&& !note.wasGoodHit
-				&& !note.isSustainNote
-				&& note.canPlayerHit(hitSongTime);
-		});
+		var targetNote:Note = null;
+		var targetDiff:Float = Math.POSITIVE_INFINITY;
 
-		inputNotes.sort(function(a:Note, b:Note):Int {
-			var timeDiff = a.getNoteTime() - b.getNoteTime();
-
-			if(timeDiff < 0) return -1;
-			if(timeDiff > 0) return 1;
-
-			return 0;
-		});
-
-		if(inputNotes.length == 0) {
-			return null;
-		}
-
-		var targetNote = inputNotes[0];
-		var index:Int = 1;
-
-		while(index < inputNotes.length) {
-			var stackedNote = inputNotes[index];
-
-			if(!targetNote.getNoteHittable(stackedNote)) {
-				break;
+		for(note in playState.notes.members) {
+			if(note == null
+				|| !note.mustPress
+				|| note.noteData != lane
+				|| note.wasGoodHit
+				|| note.isSustainNote
+				|| !note.canPlayerHit(hitSongTime)) {
+				continue;
 			}
 
-			playState.removeNote(stackedNote);
-			index++;
+			var noteTime:Float = note.getNoteTime();
+			var noteDiff:Float = Math.abs(noteTime - hitSongTime);
+
+			if(targetNote == null || noteDiff < targetDiff
+				|| (noteDiff == targetDiff && noteTime < targetNote.getNoteTime())) {
+				targetNote = note;
+				targetDiff = noteDiff;
+			}
 		}
 
 		return targetNote;

@@ -308,6 +308,14 @@ class PlayLua
 			playState.clearScriptedCameraZoom(snap);
 		});
 
+		playState.addCallback("setSuppressGameplayCameraBopWhileZoom", function(enabled:Bool) {
+			playState.setSuppressCameraBopWhileDirectZoom(enabled);
+		});
+
+		playState.addCallback("setSuppressGameplayCameraBop", function(enabled:Bool) {
+			playState.setSuppressCameraBop(enabled);
+		});
+
 		playState.addCallback("triggerGameplayCameraBop", function(intensity:Float = 1) {
 			playState.triggerCameraBop(intensity);
 		});

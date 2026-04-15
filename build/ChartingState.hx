@@ -2116,6 +2116,7 @@ class ChartingState extends MusicBeatState
 	function recalculateSteps():Int
 	{
 		curStep = Math.floor(Conductor.instance.getTimeInSteps(FlxG.sound.music.time));
+		curBeat = Math.floor(curStep / 4);
 		updateBeat();
 
 		return curStep;
