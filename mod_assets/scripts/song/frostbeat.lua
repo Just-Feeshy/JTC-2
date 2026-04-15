@@ -406,14 +406,8 @@ local function resetShaderRuntimeState()
     staticShaderSoundPlayed = false
 end
 
-local function resetPulseRuntimeState()
-    pulseStepIntensity = {}
-    lastPulseStep = -1
-end
-
 local function init()
     frost_modchart = {}
-    resetPulseRuntimeState()
     baseFunkroadCameraFocusLerp = 0.09
     resetIntroRuntimeState()
     resetPhaseTwoRuntimeState()
