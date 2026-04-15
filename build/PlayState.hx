@@ -1357,6 +1357,7 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
+		strum.playAnim('static');
 		strum.scale.set(state.scaleX, state.scaleY);
 		strum.updateHitbox();
 		strum.x = state.x;
@@ -1372,7 +1373,6 @@ class PlayState extends MusicBeatState
 		strum.prevVisible = true;
 		strum.onlyVisible = true;
 		strum.color = FlxColor.WHITE;
-		strum.playAnim('static');
 	}
 
 	function resetStrumLayout():Void {
