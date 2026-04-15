@@ -49,7 +49,7 @@ local function getDefaultStrumAxis(side, axis, lane)
     local id = lane
 
     if side == "Player" then
-        id = lane + 4
+        id = lane + strumLaneCount
     end
 
     if axis == "X" then
@@ -59,14 +59,21 @@ local function getDefaultStrumAxis(side, axis, lane)
     return getNotePosY(id)
 end
 
+local function refreshStrumCounts()
+    strumLaneCount = fifthKey and 5 or 4
+    strumCount = strumLaneCount * 2
+end
+
 local function captureStrumDefaults()
+    refreshStrumCounts()
+
     for id = 0, strumCount - 1 do
         local side = "Opponent"
         local lane = id
 
-        if id >= 4 then
+        if id >= strumLaneCount then
             side = "Player"
-            lane = id - 4
+            lane = id - strumLaneCount
         end
 
         jtc_camera.strumDefaults[id + 1] = {
@@ -77,6 +84,8 @@ local function captureStrumDefaults()
 end
 
 local function restoreStrumDefaults()
+    refreshStrumCounts()
+
     if #jtc_camera.strumDefaults == 0 then
         captureStrumDefaults()
     end
@@ -92,6 +101,8 @@ local function restoreStrumDefaults()
 end
 
 local function moveStrumsOffscreenTop()
+    refreshStrumCounts()
+
     if #jtc_camera.strumDefaults == 0 then
         captureStrumDefaults()
     end
@@ -107,6 +118,8 @@ local function moveStrumsOffscreenTop()
 end
 
 local function moveStrumsOffscreenBottom()
+    refreshStrumCounts()
+
     if #jtc_camera.strumDefaults == 0 then
         captureStrumDefaults()
     end
@@ -122,6 +135,8 @@ local function moveStrumsOffscreenBottom()
 end
 
 local function startStrumReveal(duration, delay)
+    refreshStrumCounts()
+
     if downscroll then
         moveStrumsOffscreenBottom()
     else

@@ -107,6 +107,7 @@ typedef SongTrackInfo =
 typedef StrumResetState =
 {
 	var x:Float;
+	var centerX:Float;
 	var y:Float;
 	var alpha:Float;
 	var angle:Float;
@@ -1343,6 +1344,7 @@ class PlayState extends MusicBeatState
 		var targetState:Array<StrumResetState> = player == 1 ? defaultPlayerStrumState : defaultOpponentStrumState;
 		targetState[lane] = {
 			x: strum.x,
+			centerX: strum.x + (strum.width * 0.5),
 			y: finalY,
 			alpha: finalAlpha,
 			angle: strum.angle,
@@ -1360,7 +1362,7 @@ class PlayState extends MusicBeatState
 		strum.playAnim('static');
 		strum.scale.set(state.scaleX, state.scaleY);
 		strum.updateHitbox();
-		strum.x = state.x;
+		strum.x = state.centerX - (strum.width * 0.5);
 		strum.y = state.y;
 		strum.alpha = state.alpha;
 		strum.angle = state.angle;
