@@ -4,3 +4,6 @@
 [submodule "funkin_assets"]
 	path = funkin_assets
 	url = https://github.com/FunkinCrew/Funkin.assets/
+[submodule "vendor/fengari"]
+	path = vendor/fengari
+	url = https://github.com/fengari-lua/fengari-web.git
