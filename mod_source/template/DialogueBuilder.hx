@@ -96,6 +96,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         rightPortrait.antialiasing = SaveData.getData(SaveType.GRAPHICS);
         speechBubble.antialiasing = SaveData.getData(SaveType.GRAPHICS);
 
+        syncDialogueDanceBeat();
         refreshDisplay();
     }
 
@@ -325,6 +326,41 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         playSong = true;
     }
 
+    function syncDialogueDanceBeat():Void {
+        if(FlxG.sound.music == null || dialogueBeatLengthMs <= 0) {
+            lastDialogueBeat = -1;
+            return;
+        }
+
+        lastDialogueBeat = Math.floor(FlxG.sound.music.time / dialogueBeatLengthMs);
+    }
+
+    function updateDialogueGirlfriendDance():Void {
+        if(FlxG.sound.music == null || !playSong || dialogueBeatLengthMs <= 0) {
+            return;
+        }
+
+		dialogueSongPosition = FlxG.sound.music.time;
+        var dialogueBeat:Int = Math.floor(dialogueSongPosition / dialogueBeatLengthMs);
+
+        if(dialogueBeat == lastDialogueBeat) {
+            return;
+        }
+
+        lastDialogueBeat = dialogueBeat;
+
+        if(girlfriend == null || girlfriend.animation.curAnim == null) {
+            return;
+        }
+
+        if(dialogueBeat % girlfriend.danceBeatTimer == 0
+            && !girlfriend.isSinging()
+            && !girlfriend.stunned
+            && girlfriend.shouldPlayDance) {
+            girlfriend.dance();
+        }
+    }
+
     public function bindAssetsFromBytes():Void {
         if(_info.totalSprites == null) {
             return;
@@ -397,21 +433,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     override function update(elapsed:Float):Void {
-        if (FlxG.sound.music != null && playSong) {
-			dialogueSongPosition = FlxG.sound.music.time;
-
-            if(dialogueBeatLengthMs > 0) {
-                var dialogueBeat:Int = Math.floor(dialogueSongPosition / dialogueBeatLengthMs);
-
-                while(lastDialogueBeat < dialogueBeat) {
-                    lastDialogueBeat++;
-
-                    if(lastDialogueBeat >= 0 && girlfriend != null) {
-                        girlfriend.dance();
-                    }
-                }
-            }
-        }
+        updateDialogueGirlfriendDance();
 
         if(controls.ACCEPT && !changingScene && dialogueScene < _info.info.length) {
             changingScene = true;
