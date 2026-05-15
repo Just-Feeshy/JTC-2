@@ -2,9 +2,14 @@ package;
 
 #if (USING_LUA && cpp)
 import llua.Lua;
+import llua.Lua.Lua_helper;
 import llua.LuaL;
 import llua.State;
 import llua.Convert;
+#end
+
+#if (USING_LUA && web)
+import js.Browser;
 #end
 
 import flixel.FlxG;
@@ -92,10 +97,21 @@ typedef LuaPersistentRestartState = {
 
 class ModLua {
     private static var sharedVariables:Map<String, Dynamic> = new Map<String, Dynamic>();
+    #if (USING_LUA && web)
+    private static var pendingWebMusicMode:String = null;
+    private static var pendingWebMusicName:String = null;
+    private static var pendingWebMusicStartTime:Float = 0;
+    private static var pendingWebMusicVolume:Float = 1;
+    private static var pendingWebMusicLoop:Bool = false;
+    #end
     private var executed:Bool = false;
 
     #if (USING_LUA && cpp)
     private var lua:State = null;
+    #end
+
+    #if (USING_LUA && web)
+    private var webLua:FengariLuaBackend = null;
     #end
 
     public var luaScript(default, null):String;
@@ -293,6 +309,23 @@ class ModLua {
             return;
         }
 
+        if(luaScript == null || luaScript.trim() == "") {
+            trace("Skipping Lua script with empty path.");
+            return;
+        }
+
+        #if (USING_LUA && web)
+        webLua = new FengariLuaBackend();
+        var webError:String = webLua.loadScript(luaScript);
+
+        if(webError != null && webError.trim() != "") {
+            var webErrorMsg = "Lua Script Error in " + luaScript + ":\n\n" + webError;
+            reportWebLuaError(webErrorMsg);
+        }else {
+            trace("Successfully loaded script: " + this.luaScript);
+        }
+        #end
+
         #if (USING_LUA && cpp)
         lua = LuaL.newstate();
 		LuaL.openlibs(lua);
@@ -325,6 +358,8 @@ class ModLua {
             return;
         }
 
+        #end
+
         trace("Successfully loaded script: " + this.luaScript);
 
         set("glslVersion", GL.VERSION);
@@ -346,7 +381,11 @@ class ModLua {
 		#end
 		set('crochetPitch', crochetPitch);
 
+        #if sys
         set('getCwd', Sys.getCwd());
+        #else
+        set('getCwd', "");
+        #end
 
         #if debug
         set("inDebug", true);
@@ -354,17 +393,20 @@ class ModLua {
         set("inDebug", false);
         #end
 
-		Lua_helper.add_callback(lua, "getImageWidth", function(path:String) {
+
+		addProtectedLuaCallback("getImageWidth", function(path:String) {
 		    var image = Image.fromFile(Paths.getPath('images/$path.png', IMAGE, ""));
 			return image.width;
 		});
 
-		Lua_helper.add_callback(lua, "getImageHeight", function(path:String) {
+
+		addProtectedLuaCallback("getImageHeight", function(path:String) {
 		    var image = Image.fromFile(Paths.getPath('images/$path.png', IMAGE, ""));
 			return image.height;
 		});
 
-		Lua_helper.add_callback(lua, "finishGPUCommands", function() {
+
+		addProtectedLuaCallback("finishGPUCommands", function() {
 			try {
 				GL.finish();
 				return true;
@@ -373,7 +415,8 @@ class ModLua {
 			}
 		});
 
-		Lua_helper.add_callback(lua, "createBitmapData", function(name:String, width:Int, height:Int) {
+
+		addProtectedLuaCallback("createBitmapData", function(name:String, width:Int, height:Int) {
             var bitmaps = ensureLuaBitmapMap();
 
 		    if(bitmaps.exists(name)) {
@@ -384,7 +427,8 @@ class ModLua {
 		    bitmaps.set(name, bmp);
 		});
 
-		Lua_helper.add_callback(lua, "fillBitmapData", function(name:String, colorStr:String = "0x00000000") {
+
+		addProtectedLuaCallback("fillBitmapData", function(name:String, colorStr:String = "0x00000000") {
 		    var bmp:BitmapData = luaBitmaps.get(name);
 
 		    if(bmp == null) {
@@ -394,7 +438,8 @@ class ModLua {
 		    bmp.fillRect(bmp.rect, parseLuaColor(colorStr));
 		});
 
-		Lua_helper.add_callback(lua, "makeBitmapSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String, segments:Int = 48) {
+
+		addProtectedLuaCallback("makeBitmapSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String, segments:Int = 48) {
             var bitmaps = ensureLuaBitmapMap();
 
 		    if(radius <= 0) {
@@ -404,7 +449,8 @@ class ModLua {
 		    bitmaps.set(name, createSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), segments));
 		});
 
-		Lua_helper.add_callback(lua, "makeBitmapGradientSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colors:String, segments:Int = 48) {
+
+		addProtectedLuaCallback("makeBitmapGradientSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colors:String, segments:Int = 48) {
             var bitmaps = ensureLuaBitmapMap();
 
 		    if(radius <= 0) {
@@ -420,7 +466,8 @@ class ModLua {
 		    bitmaps.set(name, createSectorGradientBitmapData(radius, startAngle, endAngle, gradientColors, segments));
 		});
 
-		Lua_helper.add_callback(lua, "makeBitmapSoftSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String = "0xFFFFFFFF", edgePercent:Float = 0.35, steps:Int = 24, segments:Int = 48) {
+
+		addProtectedLuaCallback("makeBitmapSoftSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String = "0xFFFFFFFF", edgePercent:Float = 0.35, steps:Int = 24, segments:Int = 48) {
             var bitmaps = ensureLuaBitmapMap();
 
 		    if(radius <= 0) {
@@ -430,7 +477,7 @@ class ModLua {
 		    bitmaps.set(name, createSoftSectorBitmapData(radius, startAngle, endAngle, parseLuaColor(colorStr), edgePercent, steps, segments));
 		});
 
-		Lua_helper.add_callback(lua, "drawBitmapData", function(target:String, source:String, x:Float = 0, y:Float = 0) {
+		addProtectedLuaCallback("drawBitmapData", function(target:String, source:String, x:Float = 0, y:Float = 0) {
 		    var targetBitmap:BitmapData = luaBitmaps.get(target);
 		    var sourceBitmap:BitmapData = resolveShaderBitmap(source);
 
@@ -443,7 +490,7 @@ class ModLua {
 		    targetBitmap.draw(sourceBitmap, matrix, null, null, null, true);
 		});
 
-		Lua_helper.add_callback(lua, "stampBitmapMask", function(target:String, source:String, mask:String, x:Float = 0, y:Float = 0) {
+		addProtectedLuaCallback("stampBitmapMask", function(target:String, source:String, mask:String, x:Float = 0, y:Float = 0) {
 		    var targetBitmap:BitmapData = luaBitmaps.get(target);
 		    var sourceBitmap:BitmapData = resolveShaderBitmap(source);
 		    var maskBitmap:BitmapData = resolveShaderBitmap(mask);
@@ -469,7 +516,7 @@ class ModLua {
 		    targetBitmap.copyPixels(sourceBitmap, sourceRect, destPoint, maskBitmap, alphaPoint, true);
 		});
 
-		Lua_helper.add_callback(lua, "createCombinedFrames", function(name:String, first:String, second:String, type1:String, type2:String) {
+		addProtectedLuaCallback("createCombinedFrames", function(name:String, first:String, second:String, type1:String, type2:String) {
             var frameCollections = ensureLuaFrameCollectionMap();
 		    var firstFrames:FlxFramesCollection;
 			var secondFrames:FlxFramesCollection;
@@ -498,7 +545,8 @@ class ModLua {
 			releaseReplacedFrames(oldFrames, combinedFrames);
 		});
 
-		Lua_helper.add_callback(lua, "addFramesToSprite", function(name:String, frameName:String) {
+
+		addProtectedLuaCallback("addFramesToSprite", function(name:String, frameName:String) {
 		    var spr:FlxSprite = getSprite(name);
 			var frames:FlxFramesCollection = luaFrameCollections.get(frameName);
 
@@ -513,7 +561,7 @@ class ModLua {
 			releaseReplacedGraphic(oldGraphic, spr.graphic);
 		});
 
-		Lua_helper.add_callback(lua, "loadBitmapData", function(name:String, path:String, x:Int, y:Int) {
+		addProtectedLuaCallback("loadBitmapData", function(name:String, path:String, x:Int, y:Int) {
 		    var bmp:BitmapData = luaBitmaps.get(name);
 
 		    if(bmp == null) {
@@ -529,19 +577,19 @@ class ModLua {
 		});
 
 		// Pre-cache functions to avoid lag spikes during gameplay
-		Lua_helper.add_callback(lua, "precacheImage", function(path:String, ?library:String) {
+		addProtectedLuaCallback("precacheImage", function(path:String, ?library:String) {
 			if(path == null || path.trim() == "") return;
 			if(library == null) library = "shared";
 			Paths.image(path, library);
 		});
 
-		Lua_helper.add_callback(lua, "precacheSound", function(path:String, ?library:String) {
+		addProtectedLuaCallback("precacheSound", function(path:String, ?library:String) {
 			if(path == null || path.trim() == "") return;
 			if(library == null) library = "shared";
 			Paths.sound(path, library);
 		});
 
-		Lua_helper.add_callback(lua, "precacheAtlas", function(path:String, atlasType:String = "sparrow", ?library:String) {
+		addProtectedLuaCallback("precacheAtlas", function(path:String, atlasType:String = "sparrow", ?library:String) {
 			if(path == null || path.trim() == "") return;
 			if(library == null) library = "shared";
 
@@ -553,7 +601,7 @@ class ModLua {
 			}
 		});
 
-		Lua_helper.add_callback(lua, "precacheCharacter", function(characterName:String) {
+		addProtectedLuaCallback("precacheCharacter", function(characterName:String) {
 			if(characterName == null || characterName.trim() == "") return;
 
 			var charPath:String = 'characters/$characterName';
@@ -592,7 +640,8 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "createSprite", function(name:String) {
+
+        addProtectedLuaCallback("createSprite", function(name:String) {
             var sprites = getStateSpriteStore();
 
             if(sprites == null) {
@@ -614,7 +663,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "createText", function(name:String, x:Float = 0, y:Float = 0, width:Float = 0, text:String = "", size:Int = 16) {
+        addProtectedLuaCallback("createText", function(name:String, x:Float = 0, y:Float = 0, width:Float = 0, text:String = "", size:Int = 16) {
             var texts = getStateTextStore();
 
             if(texts == null) {
@@ -636,7 +685,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
+        addProtectedLuaCallback("createGradientSprite", function(name:String, width:Int, height:Int, colors:String) {
             var sprites = getStateSpriteStore();
 
             if(sprites == null) {
@@ -699,7 +748,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "loadGraphic", function(name:String, image:String, gridX:Int = 0, gridY:Int = 0) {
+        addProtectedLuaCallback("loadGraphic", function(name:String, image:String, gridX:Int = 0, gridY:Int = 0) {
 			var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -714,7 +763,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "loadSpriteBitmapData", function(name:String, bitmapName:String) {
+        addProtectedLuaCallback("loadSpriteBitmapData", function(name:String, bitmapName:String) {
 			var spr:FlxSprite = getSprite(name);
             var bmp:BitmapData = luaBitmaps.get(bitmapName);
 
@@ -727,7 +776,8 @@ class ModLua {
             spr.updateHitbox();
 		});
 
-        Lua_helper.add_callback(lua, "makeGraphic", function(name:String, width:Int, height:Int, colorStr:String) {
+
+        addProtectedLuaCallback("makeGraphic", function(name:String, width:Int, height:Int, colorStr:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -737,7 +787,7 @@ class ModLua {
             }
 		});
 
-        Lua_helper.add_callback(lua, "makeSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String, segments:Int = 48) {
+        addProtectedLuaCallback("makeSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colorStr:String, segments:Int = 48) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null || radius <= 0) {
@@ -748,7 +798,7 @@ class ModLua {
             spr.updateHitbox();
         });
 
-        Lua_helper.add_callback(lua, "makeGradientSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colors:String, segments:Int = 48) {
+        addProtectedLuaCallback("makeGradientSectorGraphic", function(name:String, radius:Float, startAngle:Float, endAngle:Float, colors:String, segments:Int = 48) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null || radius <= 0) {
@@ -765,7 +815,7 @@ class ModLua {
             spr.updateHitbox();
         });
 
-        Lua_helper.add_callback(lua, "screenCenter", function(name:String, ?axis:String) {
+        addProtectedLuaCallback("screenCenter", function(name:String, ?axis:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -779,7 +829,7 @@ class ModLua {
             }
 		});
 
-        Lua_helper.add_callback(lua, "getScreenCenter", function(name:String, ?axis:String) {
+        addProtectedLuaCallback("getScreenCenter", function(name:String, ?axis:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -792,14 +842,16 @@ class ModLua {
             return 0;
 		});
 
-        Lua_helper.add_callback(lua, "compileSpriteSheet", function(name:String, spritesheet:String, type:String) {
+        addProtectedLuaCallback("compileSpriteSheet", function(name:String, spritesheet:String, ?type:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
                 return;
             }
 
-            switch(type.toLowerCase().trim()) {
+            var atlasType = type == null ? "sparrow" : type.toLowerCase().trim();
+
+            switch(atlasType) {
                 case "packer" | "packeratlas" | "pac":
                     spr.frames = Paths.getPackerAtlas(spritesheet);
                 default:
@@ -807,7 +859,7 @@ class ModLua {
             }
         });
 
-		Lua_helper.add_callback(lua, "addAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
+		addProtectedLuaCallback("addAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
             /**
@@ -821,7 +873,7 @@ class ModLua {
             spr.animation.addByPrefix(animation, prefix, framerate, loop);
 		});
 
-		Lua_helper.add_callback(lua, "removeAnimationPrefix", function(name:String, animation:String) {
+		addProtectedLuaCallback("removeAnimationPrefix", function(name:String, animation:String) {
 				var spr:FlxSprite = getSprite(name);
 
 				if(spr == null) {
@@ -837,7 +889,7 @@ class ModLua {
 				}
 		});
 
-        Lua_helper.add_callback(lua, "playAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
+        addProtectedLuaCallback("playAnimationByPrefix", function(name:String, animation:String, prefix:String, framerate:Int = 24, loop:Bool = true) {
             var spr:FlxSprite = getSprite(name);
 
             /**
@@ -852,7 +904,7 @@ class ModLua {
             spr.animation.play(animation);
         });
 
-		Lua_helper.add_callback(lua, "addAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
+		addProtectedLuaCallback("addAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
             var spr:FlxSprite = getSprite(name);
 
             /**
@@ -885,7 +937,7 @@ class ModLua {
             spr.animation.addByIndices(animation, prefix, indices, "", framerate, false);
 		});
 
-        Lua_helper.add_callback(lua, "playAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
+        addProtectedLuaCallback("playAnimationByIndices", function(name:String, animation:String, prefix:String, indices:String, framerate:Int = 24) {
             var spr:FlxSprite = getSprite(name);
 
             /**
@@ -1087,6 +1139,7 @@ class ModLua {
             spr.angle = angle;
         });
 
+
         addProtectedLuaCallback("registerOrbitSprite", function(name:String, offsetX:Float, offsetY:Float, angularSpeed:Float, startAngle:Float = 0) {
             luaOrbitSprites.set(name, {
                 name: name,
@@ -1119,7 +1172,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "setSpriteColor", function(name:String, colorStr:String) {
+        addProtectedLuaCallback("setSpriteColor", function(name:String, colorStr:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1168,7 +1221,7 @@ class ModLua {
             spr.updateHitbox();
         });
 
-        Lua_helper.add_callback(lua, "getSpriteX", function(name:String) {
+        addProtectedLuaCallback("getSpriteX", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1178,7 +1231,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "getSpriteY", function(name:String) {
+        addProtectedLuaCallback("getSpriteY", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1188,7 +1241,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "getSpriteWidth", function(name:String) {
+        addProtectedLuaCallback("getSpriteWidth", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1198,7 +1251,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "getSpriteHeight", function(name:String) {
+        addProtectedLuaCallback("getSpriteHeight", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1208,7 +1261,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "getMidpointX", function(name:String) {
+        addProtectedLuaCallback("getMidpointX", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1218,7 +1271,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "getMidpointY", function(name:String) {
+        addProtectedLuaCallback("getMidpointY", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1228,7 +1281,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "getSpriteCenterPoint", function(name:String) {
+        addProtectedLuaCallback("getSpriteCenterPoint", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr != null) {
@@ -1245,7 +1298,7 @@ class ModLua {
             };
         });
 
-        Lua_helper.add_callback(lua, "setSpriteClipRect", function(name:String, x:Float = 0, y:Float = 0, ?width:Float, ?height:Float) {
+        addProtectedLuaCallback("setSpriteClipRect", function(name:String, x:Float = 0, y:Float = 0, ?width:Float, ?height:Float) {
             var spr:FlxSprite = getSprite(name);
 
             var sprWidth:Float = width == null ? spr.width : width;
@@ -1268,7 +1321,7 @@ class ModLua {
             return true;
         });
 
-        Lua_helper.add_callback(lua, "increaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
+        addProtectedLuaCallback("increaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -1279,7 +1332,7 @@ class ModLua {
             spr.updateHitbox();
         });
 
-        Lua_helper.add_callback(lua, "decreaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
+        addProtectedLuaCallback("decreaseSpriteSizeBy", function(name:String, width:Float, height:Float) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -1290,7 +1343,7 @@ class ModLua {
             spr.updateHitbox();
         });
 
-        Lua_helper.add_callback(lua, "setSpriteToCamera", function(name:String, camera:String) {
+        addProtectedLuaCallback("setSpriteToCamera", function(name:String, camera:String) {
             var cam:FlxCamera = getCamera(camera);
             var spr:FlxSprite = getSprite(name);
 
@@ -1305,7 +1358,7 @@ class ModLua {
             spr.cameras = [cam];
         });
 
-        Lua_helper.add_callback(lua, "setTextToCamera", function(name:String, camera:String) {
+        addProtectedLuaCallback("setTextToCamera", function(name:String, camera:String) {
             var cam:FlxCamera = getCamera(camera);
             var txt:FlxText = getText(name);
 
@@ -1316,7 +1369,7 @@ class ModLua {
             txt.cameras = [cam];
         });
 
-        Lua_helper.add_callback(lua, "getSpriteIndexFromState", function(name:String) {
+        addProtectedLuaCallback("getSpriteIndexFromState", function(name:String) {
 			var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -1326,7 +1379,7 @@ class ModLua {
 			return FlxG.state.members.indexOf(spr);
 		});
 
-        Lua_helper.add_callback(lua, "addSpriteToState", function(name:String) {
+        addProtectedLuaCallback("addSpriteToState", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -1338,7 +1391,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "addTextToState", function(name:String) {
+        addProtectedLuaCallback("addTextToState", function(name:String) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1350,7 +1403,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "insertSpriteToState", function(position:Int, name:String) {
+        addProtectedLuaCallback("insertSpriteToState", function(position:Int, name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -1362,7 +1415,8 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "insertTextToState", function(position:Int, name:String) {
+
+        addProtectedLuaCallback("insertTextToState", function(position:Int, name:String) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1374,7 +1428,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "destroySprite", function(name:String) {
+        addProtectedLuaCallback("destroySprite", function(name:String) {
             var spr:FlxSprite = getSprite(name);
             var curState = cast FlxG.state;
 
@@ -1402,7 +1456,7 @@ class ModLua {
             forgetStateOwnedText(name);
         });
 
-        Lua_helper.add_callback(lua, "setText", function(name:String, text:String) {
+        addProtectedLuaCallback("setText", function(name:String, text:String) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1412,7 +1466,7 @@ class ModLua {
             txt.text = text;
         });
 
-        Lua_helper.add_callback(lua, "setTextPosition", function(name:String, x:Float, y:Float) {
+        addProtectedLuaCallback("setTextPosition", function(name:String, x:Float, y:Float) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1422,7 +1476,7 @@ class ModLua {
             txt.setPosition(x, y);
         });
 
-        Lua_helper.add_callback(lua, "setTextVisible", function(name:String, visible:Bool) {
+        addProtectedLuaCallback("setTextVisible", function(name:String, visible:Bool) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1432,7 +1486,7 @@ class ModLua {
             txt.visible = visible;
         });
 
-        Lua_helper.add_callback(lua, "setTextFont", function(name:String, font:String) {
+        addProtectedLuaCallback("setTextFont", function(name:String, font:String) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1442,7 +1496,7 @@ class ModLua {
             txt.font = Paths.font(font);
         });
 
-        Lua_helper.add_callback(lua, "setTextSize", function(name:String, size:Int) {
+        addProtectedLuaCallback("setTextSize", function(name:String, size:Int) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1452,7 +1506,7 @@ class ModLua {
             txt.size = size;
         });
 
-        Lua_helper.add_callback(lua, "setTextColor", function(name:String, colorStr:String) {
+        addProtectedLuaCallback("setTextColor", function(name:String, colorStr:String) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1462,7 +1516,7 @@ class ModLua {
             txt.color = parseLuaColor(colorStr);
         });
 
-        Lua_helper.add_callback(lua, "setTextBorder", function(name:String, style:String = "NONE", size:Float = 1, colorStr:String = "0xFF000000") {
+        addProtectedLuaCallback("setTextBorder", function(name:String, style:String = "NONE", size:Float = 1, colorStr:String = "0xFF000000") {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1485,7 +1539,7 @@ class ModLua {
             txt.borderColor = parseLuaColor(colorStr);
         });
 
-        Lua_helper.add_callback(lua, "removeSpriteFromState", function(name:String) {
+        addProtectedLuaCallback("removeSpriteFromState", function(name:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -1495,7 +1549,7 @@ class ModLua {
             detachSpriteFromStateContainers(spr);
         });
 
-        Lua_helper.add_callback(lua, "removeTextFromState", function(name:String) {
+        addProtectedLuaCallback("removeTextFromState", function(name:String) {
             var txt:FlxText = getText(name);
 
             if(txt == null) {
@@ -1505,7 +1559,7 @@ class ModLua {
             FlxG.state.remove(txt, true);
         });
 
-        Lua_helper.add_callback(lua, "doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
@@ -1519,7 +1573,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "doTweenY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
@@ -1533,7 +1587,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "doTweenScaleX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenScaleX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
@@ -1548,7 +1602,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "doTweenScaleY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenScaleY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
@@ -1563,7 +1617,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "doTweenAngle", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenAngle", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
@@ -1577,7 +1631,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "doTweenAlpha", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenAlpha", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
@@ -1591,7 +1645,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "doTweenZoom", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenZoom", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
 			var obj:Dynamic = getObjectFromMap(vars);
 
 			if(obj != null) {
@@ -1605,7 +1659,7 @@ class ModLua {
 			}
 		});
 
-        Lua_helper.add_callback(lua, "doTweenColor", function(name:String, vars:String, colorStr:String, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenColor", function(name:String, vars:String, colorStr:String, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
 
             if(obj != null) {
@@ -1623,7 +1677,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "doTweenSpriteClipRectX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenSpriteClipRectX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
@@ -1638,7 +1692,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "doTweenSpriteClipRectY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenSpriteClipRectY", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
@@ -1653,7 +1707,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "doTweenSpriteClipRectWidth", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenSpriteClipRectWidth", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
@@ -1668,7 +1722,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "doTweenSpriteClipRectHeight", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
+        addProtectedLuaCallback("doTweenSpriteClipRectHeight", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {
             var obj:Dynamic = getObjectFromMap(vars);
             var frameHandler:LuaFrameCollection = new LuaFrameCollection(obj);
 
@@ -1683,18 +1737,25 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "cancelTween", function(name:String) {
+        addProtectedLuaCallback("cancelTween", function(name:String) {
 			cancelTween(name);
 		});
 
         /**
         * Sound WIP.
         */
-        Lua_helper.add_callback(lua, "playMusic", function(sound:String, volume:Float = 1, loop:Bool = false) {
+        addProtectedLuaCallback("playMusic", function(sound:String, volume:Float = 1, loop:Bool = false) {
+            #if (USING_LUA && web)
+            rememberPendingWebMusic("music", sound, 0, volume, loop);
+            #end
 			FlxG.sound.playMusic(Paths.music(sound), volume, loop);
 		});
 
-        Lua_helper.add_callback(lua, "playMusicAt", function(sound:String, startTime:Float = 0, volume:Float = 1, loop:Bool = true) {
+
+        addProtectedLuaCallback("playMusicAt", function(sound:String, startTime:Float = 0, volume:Float = 1, loop:Bool = true) {
+            #if (USING_LUA && web)
+            rememberPendingWebMusic("music", sound, startTime, volume, loop);
+            #end
 			FlxG.sound.playMusic(Paths.music(sound), volume, loop);
 
             if(FlxG.sound.music != null) {
@@ -1708,11 +1769,17 @@ class ModLua {
             }
 		});
 
-        Lua_helper.add_callback(lua, "playInst", function(song:String, volume:Float = 1, loop:Bool = false) {
+        addProtectedLuaCallback("playInst", function(song:String, volume:Float = 1, loop:Bool = false) {
+            #if (USING_LUA && web)
+            rememberPendingWebMusic("inst", song, 0, volume, loop);
+            #end
             FlxG.sound.playMusic(Paths.inst(song), volume, loop);
         });
 
-        Lua_helper.add_callback(lua, "playInstAt", function(song:String, startTime:Float = 0, volume:Float = 1, loop:Bool = true) {
+        addProtectedLuaCallback("playInstAt", function(song:String, startTime:Float = 0, volume:Float = 1, loop:Bool = true) {
+            #if (USING_LUA && web)
+            rememberPendingWebMusic("inst", song, startTime, volume, loop);
+            #end
             FlxG.sound.playMusic(Paths.inst(song), volume, loop);
 
             if(FlxG.sound.music != null) {
@@ -1726,7 +1793,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "getMusicTime", function() {
+        addProtectedLuaCallback("getMusicTime", function() {
             if(FlxG.sound.music != null) {
                 return FlxG.sound.music.time;
             }
@@ -1734,7 +1801,7 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "setMusicTime", function(time:Float) {
+        addProtectedLuaCallback("setMusicTime", function(time:Float) {
             if(FlxG.sound.music == null) {
                 return;
             }
@@ -1748,15 +1815,15 @@ class ModLua {
             FlxG.sound.music.time = targetTime;
         });
 
-        Lua_helper.add_callback(lua, "isMusicPlaying", function() {
+        addProtectedLuaCallback("isMusicPlaying", function() {
             return FlxG.sound.music != null && FlxG.sound.music.playing;
         });
 
-        Lua_helper.add_callback(lua, "setGlobalVar", function(name:String, value:Dynamic) {
+        addProtectedLuaCallback("setGlobalVar", function(name:String, value:Dynamic) {
             sharedVariables.set(name, value);
         });
 
-        Lua_helper.add_callback(lua, "getGlobalVar", function(name:String, ?defaultValue:Dynamic = null) {
+        addProtectedLuaCallback("getGlobalVar", function(name:String, ?defaultValue:Dynamic = null) {
             if(sharedVariables.exists(name)) {
                 return sharedVariables.get(name);
             }
@@ -1764,7 +1831,7 @@ class ModLua {
             return defaultValue;
         });
 
-        Lua_helper.add_callback(lua, "playSound", function(sound:String, volume:Float = 1, ?tag:String = "") {
+        addProtectedLuaCallback("playSound", function(sound:String, volume:Float = 1, ?tag:String = "") {
             if(tag != null && tag.trim() != "") {
                 tag = tag.replace('.', '');
                 cancelSound(tag);
@@ -1778,7 +1845,7 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "playSoundAt", function(sound:String, startTime:Float = 0, volume:Float = 1, ?tag:String = "") {
+        addProtectedLuaCallback("playSoundAt", function(sound:String, startTime:Float = 0, volume:Float = 1, ?tag:String = "") {
             var targetTime:Float = Math.max(0, startTime);
             var luaSound:FlxSound = null;
 
@@ -1804,7 +1871,26 @@ class ModLua {
             }
         });
 
-        Lua_helper.add_callback(lua, "setCountdownPresentation", function(showSprites:Bool = true, playSounds:Bool = true) {
+        addProtectedLuaCallback("setSoundVolume", function(tag:String, volume:Float = 1) {
+            if(tag == null || luaSounds == null) {
+                return false;
+            }
+
+            tag = tag.replace('.', '');
+            if(!luaSounds.exists(tag)) {
+                return false;
+            }
+
+            var luaSound:FlxSound = luaSounds.get(tag);
+            if(luaSound == null) {
+                return false;
+            }
+
+            luaSound.volume = Math.max(0, volume);
+            return true;
+        });
+
+        addProtectedLuaCallback("setCountdownPresentation", function(showSprites:Bool = true, playSounds:Bool = true) {
             var curState = cast FlxG.state;
 
             if(curState is PlayState) {
@@ -1824,7 +1910,7 @@ class ModLua {
 	            cam.zoom = zoom;
 	        });
 
-	        Lua_helper.add_callback(lua, "setCameraVisible", function(name:String, visible:Bool) {
+	        addProtectedLuaCallback("setCameraVisible", function(name:String, visible:Bool) {
 	            var cam:FlxCamera = getCamera(name);
 
 	            if(cam == null) {
@@ -1845,22 +1931,22 @@ class ModLua {
             return 0;
         });
 
-        Lua_helper.add_callback(lua, "setCameraBlur", function(name:String, blurX:Float = 0, ?blurY:Null<Float>, quality:Int = 1) {
+        addProtectedLuaCallback("setCameraBlur", function(name:String, blurX:Float = 0, ?blurY:Null<Float>, quality:Int = 1) {
             return setCameraBlurFilter(name, blurX, blurY, quality);
         });
 
-        Lua_helper.add_callback(lua, "clearCameraBlur", function(name:String) {
+        addProtectedLuaCallback("clearCameraBlur", function(name:String) {
             return setCameraBlurFilter(name, 0, 0, 1);
         });
 
-        Lua_helper.add_callback(lua, "switchState", function(state:String) {
+        addProtectedLuaCallback("switchState", function(state:String) {
             FlxG.switchState(Register.forNameClass(state, []));
         });
 
         /**
         * @param subState name of the substate class.
         */
-        Lua_helper.add_callback(lua, "openSubState", function(subState:String) {
+        addProtectedLuaCallback("openSubState", function(subState:String) {
             var state = cast FlxG.state;
 
             if(state is HelperStates)
@@ -1872,15 +1958,15 @@ class ModLua {
         /**
         * Psych-style runtime shaders for Lua.
         */
-        Lua_helper.add_callback(lua, "initLuaShader", function(name:String, path:String = "shaders") {
+        addProtectedLuaCallback("initLuaShader", function(name:String, path:String = "shaders") {
             return storeShaders(name, name, path);
         });
 
-        Lua_helper.add_callback(lua, "createShaderTemplate", function(name:String, shader:String, path:String = "shaders") {
+        addProtectedLuaCallback("createShaderTemplate", function(name:String, shader:String, path:String = "shaders") {
             return storeShaders(name, shader, path);
         });
 
-        Lua_helper.add_callback(lua, "initLuaShaderSource", function(name:String, fragmentSource:String, vertexSource:String = "") {
+        addProtectedLuaCallback("initLuaShaderSource", function(name:String, fragmentSource:String, vertexSource:String = "") {
             if(name == null || name.trim() == "" || fragmentSource == null || fragmentSource.trim() == "") {
                 return false;
             }
@@ -1896,7 +1982,7 @@ class ModLua {
             return true;
         });
 
-        Lua_helper.add_callback(lua, "createRuntimeShader", function(name:String, tag:String = null) {
+        addProtectedLuaCallback("createRuntimeShader", function(name:String, tag:String = null) {
             if(tag == null || tag.trim() == "") {
                 tag = name;
             }
@@ -1904,17 +1990,18 @@ class ModLua {
             return createShaderInstance(name, tag) != null ? tag : null;
         });
 
-        Lua_helper.add_callback(lua, "setSpriteShader", function(spriteName:String, shaderName:String) {
+        addProtectedLuaCallback("setSpriteShader", function(spriteName:String, shaderName:String) {
             return attachShaderToSprite(shaderName, spriteName);
         });
 
-        Lua_helper.add_callback(lua, "setObjectShader", function(spriteName:String, shaderName:String) {
+        addProtectedLuaCallback("setObjectShader", function(spriteName:String, shaderName:String) {
             return attachShaderToSprite(shaderName, spriteName);
         });
 
-        Lua_helper.add_callback(lua, "removeSpriteShader", function(spriteName:String) {
+        addProtectedLuaCallback("removeSpriteShader", function(spriteName:String) {
             return removeShaderFromSprite(spriteName);
         });
+
 
         addProtectedLuaCallback("setCameraShader", function(cameraName:String, shaderName:String) {
             return attachShaderToCamera(shaderName, cameraName);
@@ -1928,11 +2015,11 @@ class ModLua {
             return clearShadersFromCamera(cameraName);
         });
 
-        Lua_helper.add_callback(lua, "attachShaderToCamera", function(name:String, cameraName:String) {
+        addProtectedLuaCallback("attachShaderToCamera", function(name:String, cameraName:String) {
             return attachShaderToCamera(name, cameraName);
         });
 
-        Lua_helper.add_callback(lua, "attachShaderToObject", function(name:String, spriteName:String) {
+        addProtectedLuaCallback("attachShaderToObject", function(name:String, spriteName:String) {
             return attachShaderToSprite(name, spriteName);
         });
 
@@ -1965,7 +2052,7 @@ class ModLua {
             return setShaderIntValue(target, property, [value]);
         });
 
-        Lua_helper.add_callback(lua, "getShaderInt", function(target:String, property:String) {
+        addProtectedLuaCallback("getShaderInt", function(target:String, property:String) {
             var values:Array<Dynamic> = getShaderValue(target, property);
             return values.length > 0 ? Std.int(values[0]) : 0;
         });
@@ -1974,7 +2061,7 @@ class ModLua {
             return setShaderIntValue(target, property, normalizeIntArray(normalizeDynamicArray(values)));
         });
 
-        Lua_helper.add_callback(lua, "getShaderIntArray", function(target:String, property:String) {
+        addProtectedLuaCallback("getShaderIntArray", function(target:String, property:String) {
             return getShaderValue(target, property);
         });
 
@@ -1982,7 +2069,7 @@ class ModLua {
             return setShaderBoolValue(target, property, [value]);
         });
 
-        Lua_helper.add_callback(lua, "getShaderBool", function(target:String, property:String) {
+        addProtectedLuaCallback("getShaderBool", function(target:String, property:String) {
             var values:Array<Dynamic> = getShaderValue(target, property);
             return values.length > 0 ? values[0] == true : false;
         });
@@ -1991,18 +2078,18 @@ class ModLua {
             return setShaderBoolValue(target, property, normalizeBoolArray(normalizeDynamicArray(values)));
         });
 
-        Lua_helper.add_callback(lua, "getShaderBoolArray", function(target:String, property:String) {
+        addProtectedLuaCallback("getShaderBoolArray", function(target:String, property:String) {
             return getShaderValue(target, property);
         });
 
-        Lua_helper.add_callback(lua, "setShaderSampler2D", function(target:String, property:String, texture:String) {
+        addProtectedLuaCallback("setShaderSampler2D", function(target:String, property:String, texture:String) {
             return setShaderSampler(target, property, texture);
         });
 
         /*
         * User Inputs
         */
-        Lua_helper.add_callback(lua, "mouseClicked", function(button:String) {
+        addProtectedLuaCallback("mouseClicked", function(button:String) {
             var confirm:Bool = FlxG.mouse.justPressed;
 
             switch(button.toLowerCase()) {
@@ -2015,7 +2102,7 @@ class ModLua {
             return confirm;
         });
 
-        Lua_helper.add_callback(lua, "mousePressed", function(button:String) {
+        addProtectedLuaCallback("mousePressed", function(button:String) {
             var confirm:Bool = FlxG.mouse.pressed;
 
             switch(button.toLowerCase()) {
@@ -2028,7 +2115,7 @@ class ModLua {
             return confirm;
         });
 
-        Lua_helper.add_callback(lua, "mouseReleased", function(button:String) {
+        addProtectedLuaCallback("mouseReleased", function(button:String) {
             var confirm:Bool = FlxG.mouse.justReleased;
 
             switch(button.toLowerCase()) {
@@ -2041,7 +2128,7 @@ class ModLua {
             return confirm;
         });
 
-        Lua_helper.add_callback(lua, "mouseOverSprite", function(name:String, ?cameraName:String) {
+        addProtectedLuaCallback("mouseOverSprite", function(name:String, ?cameraName:String) {
             var spr:FlxSprite = getSprite(name);
 
             if(spr == null) {
@@ -2052,43 +2139,44 @@ class ModLua {
             return cam != null ? FlxG.mouse.overlaps(spr, cam) : FlxG.mouse.overlaps(spr);
         });
 
-        Lua_helper.add_callback(lua, "keyboardJustPressed", function(name:String) {
+
+        addProtectedLuaCallback("keyboardJustPressed", function(name:String) {
             return Reflect.getProperty(FlxG.keys.justPressed, name);
         });
 
-        Lua_helper.add_callback(lua, "keyboardPressed", function(name:String) {
+        addProtectedLuaCallback("keyboardPressed", function(name:String) {
             return Reflect.getProperty(FlxG.keys.pressed, name);
         });
 
-        Lua_helper.add_callback(lua, "keyboardReleased", function(name:String) {
+        addProtectedLuaCallback("keyboardReleased", function(name:String) {
             return Reflect.getProperty(FlxG.keys.justReleased, name);
         });
 
-        Lua_helper.add_callback(lua, "keyJustPressed", function(name:String) {
+        addProtectedLuaCallback("keyJustPressed", function(name:String) {
             return Reflect.getProperty(FlxG.keys.justPressed, name);
         });
 
-        Lua_helper.add_callback(lua, "keyPressed", function(name:String) {
+        addProtectedLuaCallback("keyPressed", function(name:String) {
             return Reflect.getProperty(FlxG.keys.pressed, name);
         });
 
-        Lua_helper.add_callback(lua, "keyReleased", function(name:String) {
+        addProtectedLuaCallback("keyReleased", function(name:String) {
             return Reflect.getProperty(FlxG.keys.justReleased, name);
         });
 
-        Lua_helper.add_callback(lua, "anyGamepadJustPressed", function(name:String) {
+        addProtectedLuaCallback("anyGamepadJustPressed", function(name:String) {
             return FlxG.gamepads.anyJustPressed(name);
         });
 
-        Lua_helper.add_callback(lua, "anyGamepadPressed", function(name:String) {
+        addProtectedLuaCallback("anyGamepadPressed", function(name:String) {
             return FlxG.gamepads.anyPressed(name);
         });
 
-        Lua_helper.add_callback(lua, "anyGamepadReleased", function(name:String) {
+        addProtectedLuaCallback("anyGamepadReleased", function(name:String) {
             return FlxG.gamepads.anyJustReleased(name);
         });
 
-        Lua_helper.add_callback(lua, "gamepadAnalogX", function(id:Int, ?leftStick:Bool = true) {
+        addProtectedLuaCallback("gamepadAnalogX", function(id:Int, ?leftStick:Bool = true) {
             var controller = FlxG.gamepads.getByID(id);
 
             if (controller == null) {
@@ -2098,7 +2186,7 @@ class ModLua {
             return controller.getXAxis(leftStick ? LEFT_ANALOG_STICK : RIGHT_ANALOG_STICK);
         });
 
-        Lua_helper.add_callback(lua, "gamepadAnalogY", function(id:Int, ?leftStick:Bool = true) {
+        addProtectedLuaCallback("gamepadAnalogY", function(id:Int, ?leftStick:Bool = true) {
             var controller = FlxG.gamepads.getByID(id);
 
             if (controller == null) {
@@ -2108,7 +2196,7 @@ class ModLua {
             return controller.getYAxis(leftStick ? LEFT_ANALOG_STICK : RIGHT_ANALOG_STICK);
         });
 
-        Lua_helper.add_callback(lua, "gamepadJustPressed", function(id:Int, name:String) {
+        addProtectedLuaCallback("gamepadJustPressed", function(id:Int, name:String) {
             var controller = FlxG.gamepads.getByID(id);
 
             if (controller == null) {
@@ -2118,7 +2206,7 @@ class ModLua {
             return Reflect.field(controller.justPressed, name) == true;
         });
 
-        Lua_helper.add_callback(lua, "gamepadPressed", function(id:Int, name:String) {
+        addProtectedLuaCallback("gamepadPressed", function(id:Int, name:String) {
             var controller = FlxG.gamepads.getByID(id);
 
             if (controller == null) {
@@ -2128,7 +2216,7 @@ class ModLua {
             return Reflect.field(controller.pressed, name) == true;
         });
 
-        Lua_helper.add_callback(lua, "gamepadReleased", function(id:Int, name:String) {
+        addProtectedLuaCallback("gamepadReleased", function(id:Int, name:String) {
             var controller = FlxG.gamepads.getByID(id);
 
             if (controller == null) {
@@ -2138,13 +2226,12 @@ class ModLua {
             return Reflect.field(controller.justReleased, name) == true;
         });
 
-        Lua_helper.add_callback(lua, "close", function() {
+        addProtectedLuaCallback("close", function() {
 			closed = true;
 			return closed;
 		});
 
         call("initialized", []);
-        #end
     }
 
     function storeShaders(name:String, shader:String, path:String = "shaders", ?glslVersion:Null<UInt>):Bool {
@@ -3001,7 +3088,7 @@ class ModLua {
     }
 
     public function addCallback(name:String, method:Dynamic):Void {
-        #if (USING_LUA && cpp)
+        #if USING_LUA
         addProtectedLuaCallback(name, method);
         #end
     }
@@ -3014,6 +3101,12 @@ class ModLua {
 
 		Convert.toLua(lua, data);
 		Lua.setglobal(lua, variable);
+		#elseif (USING_LUA && web)
+		if(webLua == null) {
+			return;
+		}
+
+		webLua.setGlobal(variable, data);
 		#end
 	}
 
@@ -3128,16 +3221,78 @@ class ModLua {
 			} catch(crashLogError:Dynamic) {
 				trace("CRITICAL: Failed to display crash log: " + Std.string(crashLogError));
 				trace("Stack: " + haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
-			}
+            }
             return LuaUtils.Function_Continue;
         }
+        #elseif (USING_LUA && web)
+        if(closed || webLua == null) {
+            return 0;
+        }
+
+        var webResult = webLua.callGlobal(event, args);
+        if(webResult.error != null && webResult.error.trim() != "") {
+            reportWebLuaError("Error (" + event + ") - " + webResult.error);
+            return LuaUtils.Function_Continue;
+        }
+
+        return webResult.value == null ? 0 : webResult.value;
         #end
 
         return 0;
     }
 
+    #if (USING_LUA && web)
+    static function rememberPendingWebMusic(mode:String, name:String, startTime:Float, volume:Float, loop:Bool):Void {
+        pendingWebMusicMode = mode;
+        pendingWebMusicName = name;
+        pendingWebMusicStartTime = startTime;
+        pendingWebMusicVolume = volume;
+        pendingWebMusicLoop = loop;
+    }
+
+    public static function retryPendingWebMusic():Void {
+        if(pendingWebMusicName == null || pendingWebMusicName.trim() == "") {
+            return;
+        }
+
+        if(FlxG.sound.music != null) {
+            FlxG.sound.music.resume();
+            if(FlxG.sound.music.playing) {
+                return;
+            }
+        }
+
+        switch(pendingWebMusicMode) {
+            case "inst":
+                FlxG.sound.playMusic(Paths.inst(pendingWebMusicName), pendingWebMusicVolume, pendingWebMusicLoop);
+            default:
+                FlxG.sound.playMusic(Paths.music(pendingWebMusicName), pendingWebMusicVolume, pendingWebMusicLoop);
+        }
+
+        if(FlxG.sound.music != null) {
+            var targetTime:Float = Math.max(0, pendingWebMusicStartTime);
+
+            if(FlxG.sound.music.length > 0) {
+                targetTime = Math.min(targetTime, Math.max(0, FlxG.sound.music.length - 1));
+            }
+
+            FlxG.sound.music.time = targetTime;
+            FlxG.sound.music.resume();
+        }
+    }
+
+    function reportWebLuaError(message:String):Void {
+        var formatted = "[ModLua] ERROR: " + message;
+        trace(formatted);
+
+        if(Browser.console != null) {
+            Browser.console.error(formatted);
+        }
+    }
+    #end
+
     function pushLuaTracebackHandler():Int {
-        #if USING_LUA
+        #if (USING_LUA && cpp)
         if(lua == null) {
             return 0;
         }
@@ -3164,7 +3319,7 @@ class ModLua {
     }
 
     function removeLuaTracebackHandler(tracebackIndex:Int):Void {
-        #if USING_LUA
+        #if (USING_LUA && cpp)
         if(lua == null || tracebackIndex <= 0) {
             return;
         }
@@ -3176,7 +3331,7 @@ class ModLua {
     }
 
     function buildUnhandledLuaErrorMessage(message:String):String {
-        #if USING_LUA
+        #if (USING_LUA && cpp)
         if(message == null || message.trim() == "") {
             message = "C++ exception";
         }
@@ -3610,6 +3765,11 @@ class ModLua {
 
         Lua.close(lua);
         lua = null;
+        #elseif (USING_LUA && web)
+        if(webLua != null) {
+            webLua.close();
+            webLua = null;
+        }
         #end
     }
 
@@ -3617,7 +3777,7 @@ class ModLua {
     * Most of it copied from psych engine
     * because I don't wanna make my own.
     */
-    #if (USING_LUA && cpp)
+    #if USING_LUA
     function updateOrbitSprite(name:String, elapsed:Float):Void {
         if(luaOrbitSprites == null || !luaOrbitSprites.exists(name)) {
             return;
@@ -3644,7 +3804,7 @@ class ModLua {
     }
 
     function addProtectedLuaCallback(name:String, method:Dynamic):Void {
-        Lua_helper.add_callback(lua, name, Reflect.makeVarArgs(function(args:Array<Dynamic>) {
+        var wrapped = Reflect.makeVarArgs(function(args:Array<Dynamic>) {
             activeLuaCallbackName = name;
             lastLuaCallbackError = null;
 
@@ -3659,16 +3819,28 @@ class ModLua {
                 pushLuaCallbackError(name, Std.string(e), haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
                 throw e;
             }
-        }));
+        });
+
+        #if (USING_LUA && cpp)
+        if(lua != null) {
+            Lua_helper.add_callback(lua, name, wrapped);
+        }
+        #elseif (USING_LUA && web)
+        if(webLua != null) {
+            webLua.registerCallback(name, wrapped);
+        }
+        #end
     }
 
     function pushLuaCallbackError(name:String, message:String, stackTrace:String):Void {
         lastLuaCallbackError = 'Lua callback "' + name + '" failed: ' + formatLuaCallbackError(message, stackTrace);
 
+        #if (USING_LUA && cpp)
         if(lua != null) {
             Lua.pushstring(lua, lastLuaCallbackError);
             Lua.error(lua);
         }
+        #end
     }
 
     function formatLuaCallbackError(message:String, stackTrace:String):String {
@@ -3688,7 +3860,7 @@ class ModLua {
     }
 
     function getErrorMessage(status:Int):String {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		var v:String = Lua.tostring(lua, -1);
 		Lua.pop(lua, 1);
 
@@ -3738,7 +3910,7 @@ class ModLua {
     }
 
     function typeToString(type:Int):String {
-		#if USING_LUA
+		#if (USING_LUA && cpp)
 		switch(type) {
 			case Lua.LUA_TBOOLEAN: return "boolean";
 			case Lua.LUA_TNUMBER: return "number";

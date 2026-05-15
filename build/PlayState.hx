@@ -66,6 +66,7 @@ import example_code.DefaultEvents;
 import example_code.DefaultStage;
 import play.PlayAudio;
 import play.PlayCamera;
+import play.CameraFocusPositioner;
 import play.Countdown;
 import play.DefaultHandler;
 import play.PlayEvents;
@@ -210,6 +211,9 @@ class PlayState extends MusicBeatState
 	public var vSliceCameraFocusX:Float = 0;
 	public var vSliceCameraFocusY:Float = 0;
 	public var vSliceCameraFocusLerp:Float = 0;
+	public var cameraFocusTransitionX:Float = 0;
+	public var cameraFocusTransitionY:Float = 0;
+	private var cameraFocusTransitionInitialized:Bool = false;
 	public var vSliceDirectZoomEnabled:Bool = false;
 	public var vSliceDirectZoomValue:Float = 1;
 	public var suppressCameraBop:Bool = false;
@@ -398,14 +402,12 @@ class PlayState extends MusicBeatState
 
 	var singAnims:Array<String> = [];
 
-	#if desktop
 	// Discord RPC variables
 	var storyDifficultyText:String = "";
 	var iconRPC:String = "";
 	var songLength:Float = 0;
 	var detailsText:String = "";
 	var detailsPausedText:String = "";
-	#end
 
 	override public function new(?muted:Bool) {
 		CustomNoteHandler.spawn();
@@ -726,6 +728,9 @@ class PlayState extends MusicBeatState
 		vSliceCameraFocusX = camPos.x;
 		vSliceCameraFocusY = camPos.y;
 		vSliceCameraFocusLerp = 0;
+		cameraFocusTransitionX = camPos.x;
+		cameraFocusTransitionY = camPos.y;
+		cameraFocusTransitionInitialized = true;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -3130,30 +3135,13 @@ class PlayState extends MusicBeatState
 		{
 			if (!SONG.notes[cameraSectionIndex].mustHitSection)
 			{
-				var camFollowX:Float = dad.getMidpoint().x + 150;
-				var camFollowY:Float = dad.getMidpoint().y - 100;
-
 				if(curChar != "dad") {
 					camMovementPos.x = 0;
 					camMovementPos.y = 0;
 				}
 
 				curChar = "dad";
-
-				switch (dad.curCharacter)
-				{
-					case 'mom':
-						camFollowY = dad.getMidpoint().y;
-					case 'senpai':
-						camFollowY = dad.getMidpoint().y - 430;
-						camFollowX = dad.getMidpoint().x - 100;
-					case 'senpai-angry':
-						camFollowY = dad.getMidpoint().y - 430;
-						camFollowX = dad.getMidpoint().x - 100;
-				}
-
-				camPos.x = camFollowX;
-				camPos.y = camFollowY;
+				CameraFocusPositioner.getOpponentFocus(this, camPos);
 
 				if (dad.curCharacter == 'mom')
 					setOpponentVocalsVolume(1);
@@ -3166,32 +3154,13 @@ class PlayState extends MusicBeatState
 
 			if(SONG.notes[cameraSectionIndex].mustHitSection)
 			{
-				var camFollowX:Float = boyfriend.getMidpoint().x - 100;
-				var camFollowY:Float = boyfriend.getMidpoint().y - 100;
-
 				if(curChar != "bf") {
 					camMovementPos.x = 0;
 					camMovementPos.y = 0;
 				}
 
 				curChar = "bf";
-
-				switch (curStage)
-				{
-					case 'limo':
-						camFollowX = boyfriend.getMidpoint().x - 300;
-					case 'mall':
-						camFollowY = boyfriend.getMidpoint().y - 200;
-					case 'school':
-						camFollowX = boyfriend.getMidpoint().x - 200;
-						camFollowY = boyfriend.getMidpoint().y - 200;
-					case 'schoolEvil':
-						camFollowX = boyfriend.getMidpoint().x - 200;
-						camFollowY = boyfriend.getMidpoint().y - 200;
-				}
-
-				camPos.x = camFollowX;
-				camPos.y = camFollowY;
+				CameraFocusPositioner.getPlayerFocus(this, camPos);
 
 				if (SONG.song.toLowerCase() == 'tutorial')
 				{
@@ -3205,16 +3174,25 @@ class PlayState extends MusicBeatState
 				camPos = newCamPos;
 			}
 
-				var followX:Float = camPos.x + camMovementPos.x;
-				var followY:Float = camPos.y + camMovementPos.y;
+				var focusOnlyX:Float = camPos.x;
+				var focusOnlyY:Float = camPos.y;
+				var followX:Float = focusOnlyX + camMovementPos.x;
+				var followY:Float = focusOnlyY + camMovementPos.y;
 
 				if(vSliceCameraFocusEnabled) {
 					var focusLerp:Float = FlxMath.bound(vSliceCameraFocusLerp, 0, 1);
-					followX = FlxMath.lerp(vSliceCameraFocusX, camPos.x, focusLerp) + camMovementPos.x;
-					followY = FlxMath.lerp(vSliceCameraFocusY, camPos.y, focusLerp) + camMovementPos.y;
+					focusOnlyX = FlxMath.lerp(vSliceCameraFocusX, camPos.x, focusLerp);
+					focusOnlyY = FlxMath.lerp(vSliceCameraFocusY, camPos.y, focusLerp);
+					followX = focusOnlyX + camMovementPos.x;
+					followY = focusOnlyY + camMovementPos.y;
 				}
 
+			updateCameraFocusTransition(focusOnlyX, focusOnlyY);
 			camFollow.setPosition(followX, followY);
+		}
+
+		if(playLua != null) {
+			playLua.updateOnCameraFocus();
 		}
 
 		if (camZooming || Math.abs(cameraBopGameOffset) > 0.0001 || Math.abs(cameraBopHudOffset) > 0.0001)
@@ -3944,6 +3922,19 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	private function updateCameraFocusTransition(targetX:Float, targetY:Float):Void {
+		if(!cameraFocusTransitionInitialized) {
+			cameraFocusTransitionX = targetX;
+			cameraFocusTransitionY = targetY;
+			cameraFocusTransitionInitialized = true;
+			return;
+		}
+
+		var lerp:Float = getGameplayCameraFollowLerp();
+		cameraFocusTransitionX = FlxMath.lerp(cameraFocusTransitionX, targetX, lerp);
+		cameraFocusTransitionY = FlxMath.lerp(cameraFocusTransitionY, targetY, lerp);
+	}
+
 	public function setScriptedCameraFocus(x:Float, y:Float, snap:Bool = true):Void {
 		vSliceCameraFocusEnabled = true;
 		vSliceCameraFocusX = x;
@@ -3951,6 +3942,9 @@ class PlayState extends MusicBeatState
 
 		if(snap) {
 			camFollow.setPosition(x + camMovementPos.x, y + camMovementPos.y);
+			cameraFocusTransitionX = x;
+			cameraFocusTransitionY = y;
+			cameraFocusTransitionInitialized = true;
 			FlxG.camera.focusOn(camFollow.getPosition());
 		}
 	}
@@ -3961,6 +3955,9 @@ class PlayState extends MusicBeatState
 
 		if(snap) {
 			camFollow.setPosition(camPos.x + camMovementPos.x, camPos.y + camMovementPos.y);
+			cameraFocusTransitionX = camPos.x;
+			cameraFocusTransitionY = camPos.y;
+			cameraFocusTransitionInitialized = true;
 			FlxG.camera.focusOn(camFollow.getPosition());
 		}
 	}
@@ -3980,6 +3977,9 @@ class PlayState extends MusicBeatState
 
 		if(snap && camFollow != null) {
 			camFollow.setPosition(camPos.x, camPos.y);
+			cameraFocusTransitionX = camPos.x;
+			cameraFocusTransitionY = camPos.y;
+			cameraFocusTransitionInitialized = true;
 			FlxG.camera.focusOn(camFollow.getPosition());
 			FlxG.camera.zoom = defaultCamZoom;
 		}

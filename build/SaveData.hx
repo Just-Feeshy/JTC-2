@@ -262,6 +262,9 @@ class SaveData {
         }
 
         try {
+            #if web
+            return null;
+            #else
             var vendor = GL.getString(GL.VENDOR);
             var renderer = GL.getString(GL.RENDERER);
             var info = "";
@@ -279,6 +282,7 @@ class SaveData {
             }
 
             return info.length > 0 ? info : null;
+            #end
         } catch(e) {
             return null;
         }

@@ -743,7 +743,23 @@ class OptionsMenuState extends MusicBeatState {
 
 								option.description = "Preview and export Rim Shadow / Color Adjust event payloads.";
 								setting(option, "", option.ID);
-							}),
+							})
+							#if FEATURE_STAGE_EDITOR
+							,
+							new Options(0, 40, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 4;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									FlxG.switchState(new stageeditor.StageEditorState());
+
+								option.description = "Funkin-style stage editor (haxeui XML UI, JTC2 backend).";
+								setting(option, "", option.ID);
+							})
+							#end
+							,
 						]
 					}
 				];
@@ -843,7 +859,7 @@ class OptionsMenuState extends MusicBeatState {
 
 		super.create();
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableCameras.set("cameraBackground", camBackground);
 			modifiableCameras.set("cameraMenu", camNoBlur);
@@ -921,7 +937,7 @@ class OptionsMenuState extends MusicBeatState {
 		menuBGOverlay.scrollFactor.set();
 		add(menuBGOverlay);
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			if(menuBG != null) {
 				modifiableSprites.set("menuBG", menuBG);
@@ -1004,7 +1020,7 @@ class OptionsMenuState extends MusicBeatState {
     }
 
 	function optionLuaCallback(name:String):Void {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).call("whenOptionPressed", [name]);
 		}

@@ -5,6 +5,8 @@ import flixel.addons.text.FlxTypeText;
 
 import SaveData.SaveType;
 
+using StringTools;
+
 class DialogueText extends FlxTypeText {
     var attachedSprite:FlxSprite;
     var animationShould:String;
@@ -20,8 +22,12 @@ class DialogueText extends FlxTypeText {
 
         if (_typing || _erasing) {
             if ((_typing && _timer >= delay) || (_erasing && _timer >= eraseDelay)) {
-                if(attachedSprite != null) {
-                    attachedSprite.animation.play(animationShould);
+                if(attachedSprite != null && animationShould != null && animationShould.trim() != "") {
+                    var curAnim = attachedSprite.animation.curAnim;
+
+                    if(curAnim == null || curAnim.name != animationShould || curAnim.finished) {
+                        attachedSprite.animation.play(animationShould);
+                    }
                 }
             }
         }

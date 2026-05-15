@@ -157,6 +157,13 @@ class Paths
 		if (localPath != null)
 			return localPath;
 
+		var modAssetId = 'mod_assets/$file';
+		if (builtInAssetExists(modAssetId, type))
+			return modAssetId;
+
+		if (builtInAssetExists(file, type))
+			return file;
+
 		var builtInAssetId = getBuiltInAssetId(file, library);
 		if (builtInAssetExists(builtInAssetId, type))
 			return builtInAssetId;
@@ -801,9 +808,23 @@ class Paths
 		return asset;
 	}
 
+	static function resolveAudioPath(folder:String, key:String, type:AssetType, library:Null<String>):String
+	{
+		var primaryPath = getPath('$folder/$key.$SOUND_EXT', type, library);
+		if (assetExists(primaryPath, type))
+			return primaryPath;
+
+		var alternateExt = SOUND_EXT == "mp3" ? "ogg" : "mp3";
+		var alternatePath = getPath('$folder/$key.$alternateExt', type, library);
+		if (assetExists(alternatePath, type))
+			return alternatePath;
+
+		return primaryPath;
+	}
+
 	inline static public function sound(key:String, ?library:String)
 	{
-		var path = getPath('sounds/$key.$SOUND_EXT', SOUND, library);
+		var path = resolveAudioPath("sounds", key, SOUND, library);
 		var sound = loadSoundAsset(path);
 
 		if(sound != null) {
@@ -816,7 +837,7 @@ class Paths
 
 	inline static public function music(key:String, ?library:String)
 	{
-		var path = getPath('music/$key.$SOUND_EXT', MUSIC, library);
+		var path = resolveAudioPath("music", key, MUSIC, library);
 		var music = loadSoundAsset(path);
 
 		if(music != null) {
@@ -950,12 +971,19 @@ class Paths
 	}
 
 	static public function lua(key:String) {
-		var path = getPath('scripts/$key.lua', TEXT, null);
-		if(assetExists(path, TEXT)) {
-			return path;
-		}else {
-			trace("Error: could not locate asset - " + path);
-			return "";
+		var candidates:Array<String> = [
+			'mod_assets/scripts/$key.lua',
+			'scripts/$key.lua',
+			getPath('scripts/$key.lua', TEXT, null)
+		];
+
+		for(path in candidates) {
+			if(assetExists(path, TEXT)) {
+				return path;
+			}
 		}
+
+		trace("Error: could not locate asset - " + candidates[candidates.length - 1]);
+		return "";
 	}
 }

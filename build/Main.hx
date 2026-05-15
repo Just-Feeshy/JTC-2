@@ -8,6 +8,8 @@ import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
+import ui.FullScreenScaleMode;
+import util.WindowUtil;
 
 @:allow(Preloader)
 class Main extends Sprite
@@ -59,6 +61,7 @@ class Main extends Sprite
 	private function setupGame():Void
 	{
 		initHaxeUI();
+		WindowUtil.initWindowEvents();
 
 		var stageWidth:Int = Lib.current.stage.stageWidth;
 		var stageHeight:Int = Lib.current.stage.stageHeight;
@@ -81,6 +84,20 @@ class Main extends Sprite
 		SaveData.bindProjectSave();
 
 		addChild(feeshmora);
+
+		#if !html5
+		FlxG.scaleMode = new FullScreenScaleMode();
+		FlxG.signals.preUpdate.add(updateFullScreenScaleMode);
+		#end
+	}
+
+	private function updateFullScreenScaleMode():Void
+	{
+		#if !html5
+		if(FullScreenScaleMode.instance != null) {
+			FullScreenScaleMode.instance.onMeasurePostAwait();
+		}
+		#end
 	}
 
 	private function initHaxeUI():Void

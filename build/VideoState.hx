@@ -117,7 +117,7 @@ class VideoState extends HelperStates {
 
         var netConnect = new NetConnection();
 		netConnect.connect(null);
-		var netStream = new NetStream(netConnect);
+		netStream = new NetStream(netConnect);
 		netStream.client = {
 			onMetaData: function() {
 				player.attachNetStream(netStream);
@@ -136,7 +136,7 @@ class VideoState extends HelperStates {
 			}
 		});
 
-		netStream.play(name);
+		netStream.play(path);
         #end
     }
 

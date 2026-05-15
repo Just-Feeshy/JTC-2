@@ -6,6 +6,8 @@ import CoolUtil;
 import HealthIcon;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import openfl.Lib;
@@ -29,7 +31,7 @@ class PlayLua
 
 	public inline function hasScript():Bool
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		return !luaDetachedForStateSwitch && ownedLua != null;
 		#else
 		return false;
@@ -42,7 +44,7 @@ class PlayLua
 	}
 
 	public inline function releaseSongCacheImages(song:String):Void {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(!hasScript()) {
 			Cache.releaseSongCacheImages(song);
 		}
@@ -67,7 +69,7 @@ class PlayLua
 
 	public function resumeLuaSpriteAnimations():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var lua:ModLua = getLua();
 
 		if(lua != null) {
@@ -78,7 +80,7 @@ class PlayLua
 
 	public function pauseLuaSpriteAnimations():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var lua:ModLua = getLua();
 
 		if(lua != null) {
@@ -89,7 +91,7 @@ class PlayLua
 
 	public function pauseLuaTweens():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var lua:ModLua = getLua();
 
 		if(lua != null) {
@@ -100,7 +102,7 @@ class PlayLua
 
 	public function resumeLuaTweens():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var lua:ModLua = getLua();
 
 		if(lua != null) {
@@ -170,7 +172,7 @@ class PlayLua
 
 	public function loadScript():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var scriptPath:String = resolveScriptKey();
 
 		if(ownedLua != null) {
@@ -188,7 +190,7 @@ class PlayLua
 
 	public function reloadScriptForSongRestart():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var scriptPath:String = resolveScriptKey();
 
 		if(scriptPath == null) {
@@ -218,7 +220,7 @@ class PlayLua
 
 	public function generateStaticBindings():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(!hasScript())
 			return;
 
@@ -1149,7 +1151,7 @@ class PlayLua
 
 	public function generateNoteBindings():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(!hasScript())
 			return;
 
@@ -1337,6 +1339,9 @@ class PlayLua
 
 		set('cameraX', playState.camFollow.x);
 		set('cameraY', playState.camFollow.y);
+		var cameraFocusBlend:Float = getCameraFocusBlend();
+		set("cameraFocus", cameraFocusBlend);
+		set("cameraFocusBlend", cameraFocusBlend);
 		set("health", playState.health);
 
 		var normalizedHealth:Float = playState.health / 2;
@@ -1377,6 +1382,49 @@ class PlayLua
 		set("iconP2_ID_Dead", playState.iconP2.iconAnimInfo[1]);
 		set("iconP1_ID_Winning", playState.iconP1.iconAnimInfo[2]);
 		set("iconP2_ID_Winning", playState.iconP2.iconAnimInfo[2]);
+	}
+
+	public function updateOnCameraFocus():Void
+	{
+		if(!hasScript())
+			return;
+
+		var cameraFocusBlend:Float = getCameraFocusBlend();
+		set("cameraFocus", cameraFocusBlend);
+		set("cameraFocusBlend", cameraFocusBlend);
+		call("updateOnCameraFocus", [cameraFocusBlend]);
+	}
+
+	public function getCameraFocusBlend():Float
+	{
+		if(playState == null || playState.camFollow == null || playState.dad == null || playState.boyfriend == null) {
+			return 0;
+		}
+
+		var opponentPoint:FlxPoint = CameraFocusPositioner.getOpponentFocus(playState);
+		var playerPoint:FlxPoint = CameraFocusPositioner.getPlayerFocus(playState);
+		var opponentX:Float = opponentPoint.x;
+		var opponentY:Float = opponentPoint.y;
+		var playerX:Float = playerPoint.x;
+		var playerY:Float = playerPoint.y;
+
+		var dx:Float = playerX - opponentX;
+		var dy:Float = playerY - opponentY;
+		var lengthSquared:Float = (dx * dx) + (dy * dy);
+
+		if(lengthSquared <= 0.0001) {
+			opponentPoint.put();
+			playerPoint.put();
+			return playState.curChar == "bf" ? 1 : 0;
+		}
+
+		var cameraX:Float = playState.cameraFocusTransitionX;
+		var cameraY:Float = playState.cameraFocusTransitionY;
+
+		var focusBlend:Float = FlxMath.bound((((cameraX - opponentX) * dx) + ((cameraY - opponentY) * dy)) / lengthSquared, 0, 1);
+		opponentPoint.put();
+		playerPoint.put();
+		return focusBlend;
 	}
 
 	public function updatePerSectionVars():Void

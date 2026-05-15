@@ -8621,6 +8621,8 @@ class UselessShit {
 
         var sound2:ByteArray = ByteArray.fromBytesData(b);
         return FeshBytesHandler.loadSoundFromByteArray(sound2);
+        #else
+        return null;
         #end
     }
 }

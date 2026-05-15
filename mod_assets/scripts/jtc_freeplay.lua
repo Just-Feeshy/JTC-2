@@ -40,6 +40,9 @@ local BASE_SPRAY_CURVE_MAX = math.exp(math.pi)
 local SPRAY_CURVE_MIN = BASE_SPRAY_CURVE_MIN
 local SPRAY_CURVE_MAX = BASE_SPRAY_CURVE_MAX * 1.32
 local SPRAY_DURATION_SCALE = (SPRAY_CURVE_MAX - SPRAY_CURVE_MIN) / (BASE_SPRAY_CURVE_MAX - BASE_SPRAY_CURVE_MIN)
+local SPRAY_VOLUME_CURVE_A = 0.15
+local SPRAY_VOLUME_CURVE_B = 1.5
+local SPRAY_VOLUME_MAX = 2
 
 local GRAFFITI_HEIGHT = 444
 local GRAFFITI_Y_OFFSET = 0
@@ -73,6 +76,15 @@ local function curveStep(edge0, edge1, value)
     local t = (value - edge0) / (edge1 - edge0)
     t = math.max(0, math.min(t, 1))
     return t * t * (3 - 2 * t)
+end
+
+local function sprayVolumeCurve(x)
+    x = math.max(0, math.min(x, 1))
+
+    local peakX = SPRAY_VOLUME_CURVE_A / (SPRAY_VOLUME_CURVE_A + SPRAY_VOLUME_CURVE_B)
+    local maxVal = math.pow(peakX, SPRAY_VOLUME_CURVE_A) * math.pow(1.0 - peakX, SPRAY_VOLUME_CURVE_B)
+
+    return math.pow(x, SPRAY_VOLUME_CURVE_A) * math.pow(1.0 - x, SPRAY_VOLUME_CURVE_B) / maxVal
 end
 
 function onCreate()
@@ -435,9 +447,9 @@ function startGraffitiReveal(index)
     graffitiRevealTime[index] = 0
 
     if playSoundAt ~= nil then
-        playSoundAt("spray", 1500, 2, "freeplaySpray")
+        playSoundAt("spray", 1500, 0, "freeplaySpray")
     elseif playSound ~= nil then
-        playSound("spray", 2, "freeplaySpray")
+        playSound("spray", 0, "freeplaySpray")
     end
 
     graffitiRevealActive[index] = true
@@ -459,11 +471,11 @@ function startGraffitiReveal(index)
     end
 
     setSpriteAlpha(canName, 1)
-    updateSprayVisuals(index, canName, 0)
     if spriteExist(FREEPLAY_SECTOR_NAME) then
         playAnimationByPrefix(FREEPLAY_SECTOR_NAME, "loop", "fart", 48, true)
-        setSpriteAlpha(FREEPLAY_SECTOR_NAME, SPRAY_VISUAL_ALPHA)
+        setSpriteAlpha(FREEPLAY_SECTOR_NAME, 0)
     end
+    updateSprayVisuals(index, canName, 0)
     activeGraffitiIndex = index
 end
 
@@ -481,6 +493,8 @@ function resetSprayCan()
         local previousIndex = activeGraffitiIndex
         hideGraffiti(previousIndex, true)
     end
+
+    stopSpraySound()
 
     if spriteExist(graffitiCanName) then
         setSpriteAlpha(graffitiCanName, 0)
@@ -587,6 +601,14 @@ function updateSprayScale(progress)
     )
 end
 
+function updateSprayVisualAlpha(progress)
+    if not spriteExist(FREEPLAY_SECTOR_NAME) then
+        return
+    end
+
+    setSpriteAlpha(FREEPLAY_SECTOR_NAME, SPRAY_VISUAL_ALPHA * sprayVolumeCurve(progress))
+end
+
 function updateSprayVisuals(index, canName, progress)
     local sprName = graffitiSprites[index]
 
@@ -603,6 +625,7 @@ function updateSprayVisuals(index, canName, progress)
 
     setSpritePosition(canName, xOffset + gWidth / 4.0, yOffset)
     updateSprayScale(progress)
+    updateSprayVisualAlpha(progress)
     updateSpraySector(canName)
 end
 
@@ -639,6 +662,22 @@ function updateGraffitiRevealShader(index, canName)
     setShaderFloat(sprName, "trailRadius", trailRadius)
     setShaderFloat(sprName, "fullReveal", 0)
     setShaderFloat(sprName, "sprayT", sprayT)
+end
+
+function updateSpraySound(progress)
+    if setSoundVolume == nil then
+        return
+    end
+
+    setSoundVolume("freeplaySpray", SPRAY_VOLUME_MAX * sprayVolumeCurve(progress))
+end
+
+function stopSpraySound()
+    if cancelSound ~= nil then
+        cancelSound("freeplaySpray")
+    elseif setSoundVolume ~= nil then
+        setSoundVolume("freeplaySpray", 0)
+    end
 end
 
 function updateGraffitiFullReveal(index, progress)
@@ -687,6 +726,7 @@ function updateGraffitiAnimation(elapsed)
 
                 updateSprayVisuals(i, canName, progress)
                 updateGraffitiRevealShader(i, canName)
+                updateSpraySound(progress)
             end
 
             if graffitiRevealTime[i] >= CAN_ANIM_DURATION then
@@ -704,6 +744,8 @@ function updateGraffitiAnimation(elapsed)
                 if spriteExist(FREEPLAY_SECTOR_NAME) then
                     setSpriteAlpha(FREEPLAY_SECTOR_NAME, 0)
                 end
+
+                stopSpraySound()
             end
         end
 
@@ -750,6 +792,7 @@ function destroyStuff()
 
     activeGraffitiIndex = nil
     pendingSongLaunchIndex = nil
+    stopSpraySound()
 
     destroySprite(FREEPLAY_SECTOR_NAME)
     destroySprite(graffitiCanName)

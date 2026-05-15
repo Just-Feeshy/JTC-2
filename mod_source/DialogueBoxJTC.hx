@@ -41,8 +41,6 @@ class DialogueBoxJTC extends DialogueBuilder {
     override function refreshDisplay():Void {
         super.refreshDisplay();
 
-        speechBubble.flipX = !speechBubble.flipX;
-
         if(displayText.color == 16766208) {
             implementShadowTextColor(FlxColor.fromInt(0xcc7800));
             displayText.color = 15117568;

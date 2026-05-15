@@ -153,7 +153,7 @@ class MainMenuState extends MusicBeatState
 		DiscordClient.setPresence({state: "In the Menus", details: null});
 		#end
 
-        #if !(USING_LUA && cpp)
+        #if !USING_LUA
         if(FlxG.sound.music != null) {
             if(FlxG.sound.music.playing && fromFreeplay) {
                 FlxG.sound.music.stop();
@@ -211,7 +211,7 @@ class MainMenuState extends MusicBeatState
 
 		super.create();
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableCameras.set("cameraBackground", camX);
 			modifiableCameras.set("cameraMenu", camNoBump);
@@ -376,7 +376,7 @@ class MainMenuState extends MusicBeatState
 				var selectedOption:String = optionShit[curSelected];
 				var hasLuaScript:Bool = false;
 
-				#if (USING_LUA && cpp)
+				#if USING_LUA
 				hasLuaScript = HelperStates.luaExist(Type.getClass(this));
 				#end
 
@@ -386,7 +386,7 @@ class MainMenuState extends MusicBeatState
 					{
 						spr.updateHitbox();
 
-						#if (USING_LUA && cpp)
+						#if USING_LUA
 						if(hasLuaScript) {
 							HelperStates.getLua(Type.getClass(this)).call("callOptionChoice", [selectedOption]);
 						}
@@ -417,7 +417,7 @@ class MainMenuState extends MusicBeatState
 	}
 
 	function getLuaOptions() {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			var luaOptionShit:Array<String> = HelperStates.getLua(Type.getClass(this)).call("setupCustomOptions", [curSelected]);
 

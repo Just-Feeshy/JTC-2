@@ -80,6 +80,7 @@ class TitleState extends MusicBeatState {
 		if(!callLua("cancelDefaultIntro", [])) {
 			startIntro();
 		}
+
 	}
 
 	function startIntro()
@@ -147,7 +148,7 @@ class TitleState extends MusicBeatState {
 
 		FlxG.mouse.visible = false;
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableSprites.set("logoBl", logoBl);
 			modifiableSprites.set("gfDance", gfDance);
@@ -200,11 +201,6 @@ class TitleState extends MusicBeatState {
 			pressedEnter = FlxG.keys.justPressed.ENTER;
         }
 
-		if (FlxG.keys.justPressed.F)
-		{
-			FlxG.fullscreen = !FlxG.fullscreen;
-		}
-
 		#if mobile
 		for (touch in FlxG.touches.list)
 		{
@@ -225,6 +221,12 @@ class TitleState extends MusicBeatState {
 			if (gamepad.justPressed.B)
 				pressedEnter = true;
 		}
+
+        #if (USING_LUA && web)
+        if(pressedEnter) {
+            ModLua.retryPendingWebMusic();
+        }
+        #end
 
 		if(!disableControls) {
 			if (pressedEnter && !skippedIntro && initialized) {

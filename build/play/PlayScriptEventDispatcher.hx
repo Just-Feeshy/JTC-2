@@ -117,13 +117,14 @@ class PlayScriptEventDispatcher
 		var getModLuaMethod:Dynamic = Reflect.field(target, "getModLua");
 		if(getModLuaMethod != null)
 		{
-			return cast Reflect.callMethod(target, getModLuaMethod, []);
-		}
+			var resolved:Dynamic = Reflect.callMethod(target, getModLuaMethod, []);
+			if(resolved == null)
+			{
+				return null;
+			}
 
-		var targetClass:Class<Dynamic> = Type.getClass(target);
-		if(targetClass != null && HelperStates.luaExist(targetClass))
-		{
-			return HelperStates.getLua(targetClass);
+			var resolvedLua:ModLua = cast resolved;
+			return resolvedLua;
 		}
 
 		return null;

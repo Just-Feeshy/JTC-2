@@ -78,7 +78,7 @@ class HelperStates extends FlxState {
 		/**
 		* Interesting, I know. Not in a good way.
 		*/
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).execute();
 
@@ -157,7 +157,7 @@ class HelperStates extends FlxState {
     }
 
 	public function onCreate():Dynamic {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		setLua("curElapsed", 0);
 
 		if(HelperStates.luaExist(Type.getClass(this)))
@@ -168,7 +168,7 @@ class HelperStates extends FlxState {
 	}
 
 	public function getModLua():ModLua {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			return HelperStates.getLua(Type.getClass(this));
 		}
@@ -178,7 +178,7 @@ class HelperStates extends FlxState {
 	}
 
 	public function addCallback(name:String, method:Dynamic):Void {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).addCallback(name, method);
 		}
@@ -186,7 +186,7 @@ class HelperStates extends FlxState {
 	}
 
 	public function attachSprite(name:String, spr:FlxSprite):Void {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			if(!HelperStates.getLua(Type.getClass(this)).luaSprites.exists(name))
 				HelperStates.getLua(Type.getClass(this)).luaSprites.set(name, spr);
@@ -195,7 +195,7 @@ class HelperStates extends FlxState {
 	}
 
 	public function callLua(name:String, args:Array<Dynamic>):Dynamic {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this)))
 			return HelperStates.getLua(Type.getClass(this)).call(name, args);
 		#end
@@ -208,7 +208,7 @@ class HelperStates extends FlxState {
 	}
 
 	public function setLua(variable:String, data:Dynamic):Void {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).set(variable, data);
 		}
@@ -216,7 +216,7 @@ class HelperStates extends FlxState {
 	}
 
 	public function resetScript() {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			var file:String = HelperStates.getLua(Type.getClass(this)).luaScript;
 
@@ -246,7 +246,7 @@ class HelperStates extends FlxState {
 			var playState:PlayState = cast this;
 			playState.updateLuaVars();
 
-			#if (USING_LUA && cpp)
+			#if USING_LUA
 			// Call onUpdate on the song-specific script (playLua)
 			var songLua:ModLua = playState.getModLua();
 			if(songLua != null) {
@@ -267,7 +267,7 @@ class HelperStates extends FlxState {
 	}
 
 	override function destroy() {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).close();
 		}
@@ -339,7 +339,34 @@ class HelperStates extends FlxState {
 	*/
 	function createTransition(transType:String, fade:TransitionFade):TransitionBuilder {
 		var transitionDuration:Float = transType == "void" ? 0.18 : 0.5;
-		return Type.createInstance(transitionBuilds.get(transType), [transitionDuration, fade]);
+		var transitionClass:Class<TransitionBuilder> = transitionBuilds.get(transType);
+
+		if(transitionClass == null) {
+			return null;
+		}
+
+		try {
+			return Type.createInstance(transitionClass, [transitionDuration, fade]);
+		}catch(e:Dynamic) {
+			#if html5
+			trace('Failed to create transition "$transType" on HTML5: ' + Std.string(e));
+
+			if(transType != "void") {
+				var fallbackClass:Class<TransitionBuilder> = transitionBuilds.get("void");
+				if(fallbackClass != null) {
+					try {
+						return Type.createInstance(fallbackClass, [0.18, fade]);
+					}catch(fallbackError:Dynamic) {
+						trace('Failed to create fallback transition on HTML5: ' + Std.string(fallbackError));
+					}
+				}
+			}
+
+			return null;
+			#else
+			throw e;
+			#end
+		}
 	}
 
 	function finishedTransition() {
@@ -357,7 +384,7 @@ class HelperStates extends FlxState {
 				return;
 			}
 
-			#if (USING_LUA && cpp)
+			#if USING_LUA
 			_transition.finishCallback = function() {
 				callLua("finishedTransitionIn", []);
 			}
@@ -383,7 +410,7 @@ class HelperStates extends FlxState {
 			_transition.finishCallback = function() {
 				finishedTransition();
 
-				#if (USING_LUA && cpp)
+				#if USING_LUA
 				callLua("finishedTransitionOut", []);
 				#end
 

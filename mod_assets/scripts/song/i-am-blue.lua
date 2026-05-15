@@ -1,9 +1,9 @@
-local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
 local frost_modchart = {}
 local pulseStepIntensity = {}
 local strumWavePulse = 0
 local strumWaveTime = 0
 local strumWaveSeed = 0
+local baseGameZoom = 0
 local strumWaveShaderActive = false
 local strumWaveShaderInitialized = false
 local strumWaveLaneCount = 8
@@ -12,6 +12,7 @@ local strumWaveLaneCentersB = {0, 0, 0, 0}
 local bounceStoppedAtOutro = false
 
 local INTENSITY_MULTIPLIER = 1.5
+local CAMERA_ZOOM_MULTIPLIER = 0.1
 local STRUM_WAVE_SHADER = "i_am_blue_strum_wave"
 local STRUM_WAVE_CAMERA = "camNoteSustain"
 local STRUM_WAVE_SIZE = 160 * 0.7
@@ -22,12 +23,21 @@ local STRUM_WAVE_LENGTH_MAX = STRUM_WAVE_SIZE * 3.0
 local STRUM_WAVE_DECAY_RATE = 4.2
 local STRUM_WAVE_MAX_PULSE = 36
 local STRUM_WAVE_KICK = 18
-local FOCUS_HOLD_ZOOM = 0.92
-local FOCUS_SWITCH_ZOOM_OUT = 0.67
-local FOCUS_SWITCH_OUT_DURATION_STEPS = 2
-local FOCUS_SWITCH_IN_DURATION_STEPS = 4
-local FOCUS_SWITCH_DELAY = 0.045
-local FOCUS_FOLLOW_LERP = 0.28
+
+-- Just-Feeshy: Wrote this shit while procastinating on my college work
+
+local function smoothPeak(x, y, k)
+    return math.max(k - math.abs(x - y), 0) ^ 3 / (6 * k * k)
+end
+
+local function smoothMax(d1, d2, k)
+    return math.max(d1, d2) + smoothPeak(d1, d2, k)
+end
+
+local function normParabola(x)
+    local parabola = 1 - ((2.4 * x - 1.2) ^ 2)
+    return smoothMax(parabola, 0, 0.5)
+end
 
 local function addPulseStep(stepValue, intensity)
     pulseStepIntensity[stepValue] = intensity
@@ -131,7 +141,7 @@ local function buildPulseSteps()
     addPulseSteps({624, 628, 632, 636}, 0.80)
 end
 
-local function pulseCamera(stepValue)
+local function pulseStrumWave(stepValue)
     local intensity = (pulseStepIntensity[stepValue] or 0) * INTENSITY_MULTIPLIER
 
     if intensity <= 0 then
@@ -151,30 +161,19 @@ function onCreate()
     frost_modchart = {}
 
     buildPulseSteps()
-    jtc_camera.reset()
-    jtc_camera.configureFocusSwitch({
-        enabled = true,
-        holdZoom = FOCUS_HOLD_ZOOM,
-        switchZoomOut = FOCUS_SWITCH_ZOOM_OUT,
-        switchOutDurationSteps = FOCUS_SWITCH_OUT_DURATION_STEPS,
-        switchInDurationSteps = FOCUS_SWITCH_IN_DURATION_STEPS,
-        switchDelay = FOCUS_SWITCH_DELAY,
-        followLerp = FOCUS_FOLLOW_LERP
-    })
 
 	frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
 	if frost_modchart.initStrumsAndNotes ~= nil then
 		frost_modchart.initStrumsAndNotes()
 	end
 
+	baseGameZoom = getCameraZoom("camGAME") or 1
 	ensureStrumWaveShader()
 	updateStrumWaveShader()
 end
 
 function onUpdate(elapsed)
     local safeElapsed = elapsed or 0
-
-    jtc_camera.onUpdate(safeElapsed)
 
     if strumWavePulse > 0 then
         strumWaveTime = strumWaveTime + safeElapsed
@@ -204,19 +203,18 @@ end
 function onStepHit()
     local stepValue = (curStep or 0) + 1
 
-    pulseCamera(stepValue)
+    pulseStrumWave(stepValue)
+end
+
+function updateOnCameraFocus(value)
+	local zoom = baseGameZoom - normParabola(value) * CAMERA_ZOOM_MULTIPLIER
+	setGameplayCameraZoom(zoom, true, false)
+    print("i-am-blue camera focus: " .. tostring(value) .. " zoom: " .. tostring(zoom))
 end
 
 function onResume()
     strumWavePulse = math.max(strumWavePulse, STRUM_WAVE_KICK)
     strumWaveTime = 0
-end
-
-function onPause()
-end
-
-function whenEventTriggered(skill, value, value2)
-    jtc_camera.whenEventTriggered(skill, value, value2)
 end
 
 function onDestroy()

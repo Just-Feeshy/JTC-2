@@ -7,6 +7,7 @@ import flixel.math.FlxPoint;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import feshixl.group.FeshEventGroup.IFeshEvent;
+import play.CameraFocusPositioner;
 
 using StringTools;
 
@@ -433,22 +434,19 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
                     return null;
                 }
 
-                var boyfriendPoint = playState.boyfriend.getMidpoint();
-                return new FlxPoint(boyfriendPoint.x - 100, boyfriendPoint.y - 100);
+                return CameraFocusPositioner.getPlayerFocus(playState);
             case 1:
                 if(playState.dad == null) {
                     return null;
                 }
 
-                var dadPoint = playState.dad.getMidpoint();
-                return new FlxPoint(dadPoint.x + 150, dadPoint.y - 100);
+                return CameraFocusPositioner.getOpponentFocus(playState);
             case 2:
                 if(playState.gf == null) {
                     return null;
                 }
 
-                var girlfriendPoint = playState.gf.getMidpoint();
-                return new FlxPoint(girlfriendPoint.x, girlfriendPoint.y);
+                return CameraFocusPositioner.getCharacterFocus(playState.gf, "girlfriend", PlayState.curStage);
         }
 
         return null;

@@ -299,7 +299,7 @@ class PauseSubState extends MusicBeatSubstate
 
 	function loadPauseLua():Void
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(pauseLua != null) {
 			return;
 		}
@@ -380,7 +380,7 @@ class PauseSubState extends MusicBeatSubstate
 
 	private function shouldUsePauseLua():Bool
 	{
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var scriptPath = Paths.getPath('scripts/$PAUSE_LUA_SCRIPT.lua', TEXT, null);
 		return Paths.assetExists(scriptPath, TEXT);
 		#else

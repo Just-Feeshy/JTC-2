@@ -31,7 +31,23 @@ local function buildPulseSteps()
 
     index = 1
     for i = 216, 480, 4 do
+		local curSection = i % 16
+
+		if curSection == 6 or curSection == 8 then
+			pulseStepIntensity[index] = i
+			index = index + 1
+		end
+
 	    pulseStepIntensity[index] = i
+	    index = index + 1
+    end
+    addPulseSteps(pulseStepIntensity, 0.89)
+
+    index = 1
+    for i = 480, 608, 16 do
+	    pulseStepIntensity[index] = i
+
+
 	    index = index + 1
     end
     addPulseSteps(pulseStepIntensity, 0.89)

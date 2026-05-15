@@ -153,6 +153,8 @@ class CrashLogDisplay extends Sprite {
 
     @:noCompletion
     function __closeApplication(window:Window):Void {
+        #if sys
         Sys.exit(0);
+        #end
     }
 }

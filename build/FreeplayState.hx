@@ -73,7 +73,7 @@ class FreeplayState extends MusicBeatState
 	var camFreeplay:FlxCamera;
 	var camBackground:FlxCamera;
 
-	#if (USING_LUA && cpp)
+	#if USING_LUA
 	private var hasGraffiti:Array<Bool> = [];
 	private var luaReady:Bool = false;
 	#end
@@ -93,7 +93,7 @@ class FreeplayState extends MusicBeatState
 
 		var index:Int = 0;
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		hasGraffiti = [];
 		#end
 
@@ -168,7 +168,7 @@ class FreeplayState extends MusicBeatState
 			iconArray.push(icon);
 			add(icon);
 
-			#if (USING_LUA && cpp)
+			#if USING_LUA
 			if(HelperStates.luaExist(Type.getClass(this))) {
 				modifiableSprites.set('freeplayIcon_' + i, icon);
 				hasGraffiti.push(Paths.image('Graffiti/' + songs[i].songName.toLowerCase()) != null);
@@ -207,7 +207,7 @@ class FreeplayState extends MusicBeatState
 
 		var swag:Alphabet = new Alphabet(1, 0, "swag");
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			modifiableSprites.set("menuBG", menuBG);
 			modifiableCameras.set("cameraBackground", camBackground);
@@ -406,9 +406,9 @@ class FreeplayState extends MusicBeatState
 		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
 		#end
 
-		diffText.text = CoolUtil.difficultyArray[curDifficulty].toUpperCase();
+		diffText.text = difficultyCount > 1 ? CoolUtil.difficultyArray[curDifficulty].toUpperCase() : "";
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(luaReady) {
 			setLua("curDifficulty", curDifficulty);
 			callLua("onFreeplayDifficultyChange", [curDifficulty, change]);
@@ -467,7 +467,7 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(luaReady) {
 			setLua("curSelected", curSelected);
 			callLua("onFreeplaySelectionChange", [curSelected, change]);
@@ -475,7 +475,7 @@ class FreeplayState extends MusicBeatState
 		#end
 	}
 
-	#if (USING_LUA && cpp)
+	#if USING_LUA
 	override function onCreate():Dynamic {
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			setupLuaBindings();

@@ -40,7 +40,7 @@
 
 	<classpath name="build" />
 	<classpath path="mod_source" />
-    <classpath path="linc_luajit" />
+    <classpath path="linc_luajit" unless="web" />
 	<classpath path="../Funkin/.haxelib/haxeui-core/git" />
 	<classpath path="../Funkin/.haxelib/haxeui-flixel/git" />
 
@@ -52,6 +52,10 @@
 	<define name="TOGGLEABLE_MODIFIERS" />
 	<define name="haxeui" />
 	<define name="haxeui_flixel" />
+
+	<!-- Enables the ported Funkin Stage Editor (build/stageeditor/StageEditorState.hx) -->
+	<!-- <define name="FEATURE_STAGE_EDITOR" if="debug" />
+	<define name="FEATURE_STAGE_EDITOR" if="USING_MOD_DEBUG" /> -->
 
     <!-- Disable Deprecation Warnings -->
     <haxedef name="no-deprecation-warnings" />
@@ -107,8 +111,12 @@
 	<assets path="assets/week6"    library="week6"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
 	<assets path="assets/week6"    library="week6"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
 
-	<assets path='config' embed='false' />
-	<assets path='mod_assets' embed='false'/>
+	<assets path='config' embed='true' if="web" />
+	<assets path='config' embed='false' unless="web" />
+	<assets path='mod_assets/images' rename='mod_assets/images' embed='true' if="web" />
+	<assets path='mod_assets/music' rename='mod_assets/music' embed='true' if="web" />
+	<assets path='mod_assets/scripts' rename='mod_assets/scripts' embed='true' if="web" />
+	<assets path='mod_assets' embed='false' unless="web" />
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
 	<assets path="../Funkin/.haxelib/haxeui-flixel/git/haxe/ui/backend/flixel/_module/styles" rename="haxeui-flixel/styles" embed="true" />
 
@@ -122,6 +130,7 @@
 		THEN UHHH I USED THE NAME OF THE FONT WITH SETFORMAT() ON THE TEXT!!!
 		NOT USING A DIRECT THING TO THE ASSET!!!
 	-->
+	<assets path="vendor/fengari" rename="vendor/fengari" if="web" />
 	<assets path="assets/fonts" embed='true'/>
 	<!-- _______________________________ Libraries ______________________________ -->
 

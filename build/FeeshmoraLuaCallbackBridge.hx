@@ -10,11 +10,13 @@ import llua.State;
 using StringTools;
 
 class FeeshmoraLuaCallbackBridge {
+    #if (USING_LUA && cpp)
     public static inline function init(l:State):Void {
-        #if (USING_LUA && cpp)
         Lua.set_callbacks_function(cpp.Callable.fromStaticFunction(callback_handler));
-        #end
     }
+    #else
+    public static inline function init(?l:Dynamic):Void {}
+    #end
 
     #if (USING_LUA && cpp)
     public static function callback_handler(l:State, fname:String):Int {

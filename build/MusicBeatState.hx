@@ -23,7 +23,7 @@ class MusicBeatState extends HelperStates
 	}
 
 	override function onCreate():Dynamic {
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var stateLua = getModLua();
 		if(stateLua != null) {
 			stateLua.set("curStep", curStep);
@@ -62,7 +62,7 @@ class MusicBeatState extends HelperStates
 		lastStep = curStep;
 		lastBeat = curBeat;
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {
 			HelperStates.getLua(Type.getClass(this)).set("curStep", curStep);
 			HelperStates.getLua(Type.getClass(this)).set("curBeat", curBeat);
@@ -83,7 +83,7 @@ class MusicBeatState extends HelperStates
 	private function updateBeat():Void {
 		curBeat = Conductor.instance.currentBeat;
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var stateLua = getModLua();
 		if(stateLua != null)
 			stateLua.call("updateBeat", []);
@@ -93,7 +93,7 @@ class MusicBeatState extends HelperStates
 	private function updateCurStep():Void {
 		curStep = Conductor.instance.currentStep;
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var stateLua = getModLua();
 		if(stateLua != null)
 			stateLua.call("updateCurStep", []);
@@ -104,7 +104,7 @@ class MusicBeatState extends HelperStates
 		curStep = Conductor.instance.currentStep;
 		curBeat = Conductor.instance.currentBeat;
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var stateLua = getModLua();
 		if(stateLua != null) {
 			stateLua.set("curStep", curStep);
@@ -128,7 +128,7 @@ class MusicBeatState extends HelperStates
 		curStep = Conductor.instance.currentStep;
 		curBeat = Conductor.instance.currentBeat;
 
-		#if (USING_LUA && cpp)
+		#if USING_LUA
 		var stateLua = getModLua();
 		if(stateLua != null) {
 			stateLua.set("curStep", curStep);
