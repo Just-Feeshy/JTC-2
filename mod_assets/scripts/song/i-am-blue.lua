@@ -209,7 +209,7 @@ end
 function updateOnCameraFocus(value)
 	local zoom = baseGameZoom - normParabola(value) * CAMERA_ZOOM_MULTIPLIER
 	setGameplayCameraZoom(zoom, true, false)
-    print("i-am-blue camera focus: " .. tostring(value) .. " zoom: " .. tostring(zoom))
+    -- print("i-am-blue camera focus: " .. tostring(value) .. " zoom: " .. tostring(zoom))
 end
 
 function onResume()

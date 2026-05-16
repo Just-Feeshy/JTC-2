@@ -54,6 +54,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     var dialogueSongPosition:Float = 0;
     var dialogueBeatLengthMs:Float = 0;
     var lastDialogueBeat:Int = -1;
+    var dialogueCameraTween:FlxTween;
 
     var girlfriend:Character;
 
@@ -392,13 +393,21 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         blurFilter = new ShaderFilter(blurEffect);
 
         new FlxTimer().start(0.1, function(tmr:FlxTimer) {
-            playstate.camFollow.x = playstate.gf.getGraphicMidpoint().x;
-            playstate.camFollow.y = playstate.gf.getGraphicMidpoint().y;
-            playstate.camGame.focusOn(playstate.camFollow.getPosition());
-
             playstate.camGame.setTrashFilters([blurFilter]);
 
-            new FlxTimer().start(0.3, function(tmr:FlxTimer) {
+            var targetFocus = playstate.gf.getGraphicMidpoint();
+            playstate.camFollow.setPosition(
+                playstate.camGame.scroll.x + (playstate.camGame.width * 0.5),
+                playstate.camGame.scroll.y + (playstate.camGame.height * 0.5)
+            );
+
+            dialogueCameraTween = FlxTween.tween(playstate.camFollow, {x: targetFocus.x, y: targetFocus.y}, 0.55, {
+                ease: FlxEase.quadOut
+            });
+
+            targetFocus.put();
+
+            new FlxTimer().start(0.2, function(tmr:FlxTimer) {
                 FlxTween.tween(blurEffect, {size: 20}, 0.75, {
                     ease: FlxEase.quadOut,
                     onUpdate: function(_:FlxTween) {
@@ -482,6 +491,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     override function destroy():Void {
+        dialogueCameraTween = FlxDestroyUtil.destroy(dialogueCameraTween);
         girlfriend = null;
         playstateRef = null;
         blurFilter = null;

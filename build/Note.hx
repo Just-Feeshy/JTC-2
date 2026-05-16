@@ -15,7 +15,6 @@ import flixel.util.FlxTimer;
 import flixel.util.FlxDestroyUtil;
 import flixel.sound.FlxSound;
 import flixel.text.FlxText;
-import feshixl.math.FeshMath;
 
 import template.CustomNote;
 import SaveData.SaveType;
@@ -35,6 +34,8 @@ class Note extends feshixl.FeshMinSprite {
 	public var prevNote:Note;
 	public var downscrollNote:Bool;
 	public var setupPosition:Float = 0;
+
+	public var hideRender:Bool = false;
 
 	public var playAnyAnimation:Bool = true;
 
@@ -283,18 +284,16 @@ class Note extends feshixl.FeshMinSprite {
 
 		this.prevNote = prevNote;
 
-		if (FlxG.save.data.helpme && sustainNote)
-			flipY = true;
-
 		if (isSustainNote && prevNote != null)
 		{
 			noteScore * 0.2;
 
 			alpha = 1;
 
-			if (PlayState.curStage.startsWith('school') && noteAbstract == "regular") {
-				x += 30;
-			}
+			if (FlxG.save.data.helpme)
+				angle = 180;
+
+			x += width / 2;
 
 			if(PlayState.SONG.fifthKey) {
 				switch (noteData)
@@ -302,7 +301,7 @@ class Note extends feshixl.FeshMinSprite {
 					case 2:
 						if(noteAbstract == "regular")
 							setColorTransform(2,2,0,2,100,100,0,0);
-						
+
 						animation.play('redhold end');
 					case 3:
 						animation.play('greenhold end');
@@ -329,6 +328,8 @@ class Note extends feshixl.FeshMinSprite {
 
 			updateHitbox();
 
+			x -= width / 2;
+
 			if (PlayState.curStage.startsWith('school'))
 				x += 30;
 
@@ -351,7 +352,7 @@ class Note extends feshixl.FeshMinSprite {
 						case 4:
 							prevNote.animation.play('redhold');
 					}
-				}else {	
+				}else {
 					switch (prevNote.noteData)
 					{
 						case 0:
@@ -365,7 +366,8 @@ class Note extends feshixl.FeshMinSprite {
 					}
 				}
 
-				makeLongNote(prevNote);
+				prevNote.scale.y *= Conductor.instance.stepLengthMs / 100 * 1.5 * howSpeed;
+				prevNote.updateHitbox();
 			}
 		}else if(!isSustainNote) {
 			earlyHit = 1;
@@ -482,7 +484,7 @@ class Note extends feshixl.FeshMinSprite {
 	}
 
 	public function setInverseAxis(strumPos:Float, strumAngle:Float):Float {
-		return (strumPos + noteOffset.x) + Math.sin(strumAngle + directionAngle) * caculatePos + visualOffset.x;
+		return (strumPos + noteOffset.x) + visualOffset.x;
 	}
 
 	public function getNoteAxis():Float {
@@ -490,19 +492,7 @@ class Note extends feshixl.FeshMinSprite {
 	}
 
 	public function setNoteAxis(strumPos:Float, strumAngle:Float):Void {
-		y = (strumPos + noteOffset.y) + Math.cos(strumAngle + directionAngle) * caculatePos;
-
-		var yAddon:Float = 0;
-
-		if(height < 50) {
-			yAddon = ((Note.swagWidth - height - 10) * 0.5) * Math.abs(Math.sin(FeshMath.radians(angle)));
-		}
-
-		y += yAddon + restartVisualOffsetY + visualOffset.y;
-
-		if(isHoldEndPiece()) {
-			y += getHoldEndOffsetY();
-		}
+		y = (strumPos + noteOffset.y) + caculatePos + getFunkinDownscrollSustainOffsetY() + restartVisualOffsetY + visualOffset.y;
 	}
 
 	//More complicated method
@@ -669,67 +659,28 @@ class Note extends feshixl.FeshMinSprite {
 		return customNote;
 	}
 
-	function makeLongNote(note:Note):Void {
-		note.scale.y = note.sustainBaseScaleY * getSustainLengthScale();
-		note.updateHitbox();
-	}
-
-	inline function isHoldEndPiece():Bool {
-		return isSustainNote
-			&& animation != null
-			&& animation.curAnim != null
-			&& animation.curAnim.name != null
-			&& animation.curAnim.name.endsWith("hold end");
-	}
-
-	function syncPrevSustainLength():Void {
-		if(!isSustainNote || prevNote == null || !prevNote.isSustainNote) {
-			return;
-		}
-
-		if(prevNote.scale == null || !prevNote.exists || !prevNote.alive) {
-			return;
-		}
-
-		prevNote.scale.y = prevNote.sustainBaseScaleY * getSustainLengthScale();
-		prevNote.updateHitbox();
-	}
-
-	function getHoldEndOffsetY():Float {
-		if(!downscrollNote || prevNote == null || !prevNote.isSustainNote) {
+	function getFunkinDownscrollSustainOffsetY():Float {
+		if(!downscrollNote || !isSustainNote) {
 			return 0;
 		}
 
-		if(prevNote.scale == null || !prevNote.exists || !prevNote.alive) {
-			return 0;
+		var fakeCrochet:Float = Conductor.instance.beatLengthMs;
+		var pixel:Bool = PlayState.curStage.startsWith('school') && noteAbstract == "regular";
+		var yOff:Float = 0;
+
+		if(animation.curAnim != null && animation.curAnim.name.endsWith("end")) {
+			yOff = 10.5 * (fakeCrochet / 400) * 1.5 * howSpeed + (46 * (howSpeed - 1));
+			yOff -= 46 * (1 - (fakeCrochet / 600)) * howSpeed;
+			if(pixel)
+				yOff += 8;
+		}else {
+			yOff = -(height - 60) * howSpeed;
 		}
 
-		var baseHeight:Float = prevNote.frameHeight * prevNote.sustainBaseScaleY;
-		var scaledHeight:Float = prevNote.height;
-		var deltaHeight:Float = scaledHeight - baseHeight;
+		if(pixel)
+			yOff += 4;
 
-		if(deltaHeight <= 0) {
-			return 0;
-		}
-
-		return deltaHeight * 0.5;
-	}
-
-	function getSustainLengthScale():Float {
-		var baseScale:Float = Conductor.instance.stepLengthMs / 100 * 1.5 * howSpeed;
-
-		if(prevNote == null || prevNote.scale == null || !prevNote.exists || !prevNote.alive) {
-			return baseScale;
-		}
-
-		var noteDelta:Float = Math.abs(getNoteTime() - prevNote.getNoteTime());
-		if(noteDelta <= 0) {
-			noteDelta = Conductor.instance.stepLengthMs;
-		}
-
-		var visualDelta:Float = Math.abs(PlayScrollSpeed.getVisualSongDelta(prevNote.getNoteTime(), getNoteTime()));
-		var visualRatio:Float = noteDelta <= 0 ? 1 : visualDelta / noteDelta;
-		return baseScale * visualRatio;
+		return yOff;
 	}
 
 	inline function resolveSongPosition(songPosition:Null<Float>):Float {
@@ -765,8 +716,6 @@ class Note extends feshixl.FeshMinSprite {
 
 		if(hasCustomAddon != null)
 			hasCustomAddon.noteUpdate(this);
-		
-		syncPrevSustainLength();
 
 		if (mustPress)
 		{
@@ -845,7 +794,11 @@ class Note extends feshixl.FeshMinSprite {
 	@:noCompletion
 	override function set_visible(Value:Bool):Bool {
 		if(modifiedSymbol != null) {
-			modifiedSymbol.visible = Value;
+			modifiedSymbol.visible = hideRender ? false : Value;
+		}
+
+		if(hideRender) {
+			return visible = false;
 		}
 
 		if(Main.feeshmoraModifiers && DefaultHandler.modifiers != null && DefaultHandler.modifiers.blindEffect.enabled) {
@@ -853,6 +806,11 @@ class Note extends feshixl.FeshMinSprite {
 		}
 
 		return visible = Value;
+	}
+
+	override public function draw():Void {
+		if(hideRender) return;
+		super.draw();
 	}
 
 	override function kill():Void {
