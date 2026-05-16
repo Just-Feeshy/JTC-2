@@ -244,6 +244,7 @@ class PlayState extends MusicBeatState
 	private var ownedCamHUD:PlayCamera;
 	private var ownedCamNOTE:CameraNote;
 	private var ownedCamNoteSustain:PlayCamera;
+	private var ownedCamNoteStrum:PlayCamera;
 	private var ownedCamNoteSplash:PlayCamera;
 	private var playAudio:PlayAudio;
 	private var playEvents:PlayEvents;
@@ -509,10 +510,12 @@ class PlayState extends MusicBeatState
 
 		camGame = new PlayCamera();
 		camNOTE = new CameraNote();
+		camNOTE.createStrumCam();
 		camNOTE.createSustainCam();
 		camNOTE.createSplashCam();
 		camHUD = new PlayCamera();
 		ownedCamNOTE = camNOTE;
+		ownedCamNoteStrum = camNOTE.camNoteStrum;
 		ownedCamNoteSustain = camNOTE.camNoteSustain;
 		ownedCamNoteSplash = camNOTE.camNoteSplash;
 		ownedCamHUD = camHUD;
@@ -520,6 +523,7 @@ class PlayState extends MusicBeatState
 		camNOTE.bgColor.alpha = 0;
 
 		FlxG.cameras.reset(camGame);
+		FlxG.cameras.add(camNOTE.camNoteStrum);
 		FlxG.cameras.add(camNOTE.camNoteSustain);
 		FlxG.cameras.add(camNOTE);
 		FlxG.cameras.add(camNOTE.camNoteSplash);
@@ -798,7 +802,7 @@ class PlayState extends MusicBeatState
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
 
-		strumLineNotes.cameras = [camNOTE.camNoteSustain];
+		strumLineNotes.cameras = [camNOTE.camNoteStrum];
 		notes.cameras = [camNOTE];
 		grpHoldCover.cameras = [camNOTE.camNoteSplash];
 		grpSplash.cameras = [camNOTE.camNoteSplash];
@@ -1139,6 +1143,7 @@ class PlayState extends MusicBeatState
 	var startTimer:FlxTimer;
 	var restartIntroTimer:FlxTimer;
 	var restartVwooshNotes:FlxTypedGroup<Note>;
+	var restartVwooshTrails:FlxTypedGroup<SustainTrail>;
 	var perfectMode:Bool = false;
 	private static inline var RESTART_NOTE_INTRO_TIME:Float = 0.5;
 	private static inline var RESTART_NOTE_INTRO_OFFSET:Float = 200;
@@ -1582,8 +1587,29 @@ class PlayState extends MusicBeatState
 		restartVwooshNotes = null;
 	}
 
+	function clearRestartVwooshTrails():Void {
+		if(restartVwooshTrails == null) {
+			return;
+		}
+
+		for(trail in restartVwooshTrails.members.copy()) {
+			if(trail == null) {
+				continue;
+			}
+
+			restartVwooshTrails.remove(trail, true);
+			trail.kill();
+			trail.destroy();
+		}
+
+		remove(restartVwooshTrails, true);
+		restartVwooshTrails.destroy();
+		restartVwooshTrails = null;
+	}
+
 	function vwooshNotesOut():Void {
 		clearRestartVwooshNotes();
+		clearRestartVwooshTrails();
 
 		if(notes == null) {
 			return;
@@ -1625,6 +1651,37 @@ class PlayState extends MusicBeatState
 				}
 			});
 		}
+
+		if(sustainTrails != null) {
+			restartVwooshTrails = new FlxTypedGroup<SustainTrail>();
+			restartVwooshTrails.cameras = [camNOTE.camNoteSustain];
+			add(restartVwooshTrails);
+
+			for(trail in sustainTrails.members.copy()) {
+				if(trail == null || !trail.alive) {
+					continue;
+				}
+
+				sustainTrails.remove(trail, true);
+				restartVwooshTrails.add(trail);
+				trail.headNote = null;
+				trail.yOffset = 0;
+
+				var targetY:Float = trail.flipY ? trail.y - FlxG.height : trail.y + FlxG.height;
+
+				FlxTween.tween(trail, {y: targetY}, RESTART_NOTE_INTRO_TIME, {
+					ease: FlxEase.expoIn,
+					onComplete: function(_) {
+						if(restartVwooshTrails != null) {
+							restartVwooshTrails.remove(trail, true);
+						}
+
+						trail.kill();
+						trail.destroy();
+					}
+				});
+			}
+		}
 	}
 
 	function vwooshNotesIn():Void {
@@ -1645,6 +1702,22 @@ class PlayState extends MusicBeatState
 				}
 			});
 		});
+
+		if(sustainTrails != null) {
+			sustainTrails.forEachAlive(function(trail:SustainTrail) {
+				if(trail == null) {
+					return;
+				}
+
+				trail.yOffset = trail.flipY ? -RESTART_NOTE_INTRO_OFFSET : RESTART_NOTE_INTRO_OFFSET;
+				FlxTween.tween(trail, {yOffset: 0}, RESTART_NOTE_INTRO_TIME, {
+					ease: FlxEase.expoOut,
+					onComplete: function(_) {
+						trail.yOffset = 0;
+					}
+				});
+			});
+		}
 	}
 
 	function updateCountdownConductor(elapsed:Float):Void {
@@ -1804,6 +1877,7 @@ class PlayState extends MusicBeatState
 			vwooshNotesOut();
 		} else {
 			clearRestartVwooshNotes();
+			clearRestartVwooshTrails();
 		}
 
 		Conductor.instance.forceBPM(null);
@@ -1842,6 +1916,10 @@ class PlayState extends MusicBeatState
 		if(camNOTE.camNoteSustain != null) {
 			camNOTE.camNoteSustain.stopFX();
 			camNOTE.camNoteSustain.visible = true;
+		}
+		if(camNOTE.camNoteStrum != null) {
+			camNOTE.camNoteStrum.stopFX();
+			camNOTE.camNoteStrum.visible = true;
 		}
 		if(camNOTE.camNoteSplash != null) {
 			camNOTE.camNoteSplash.stopFX();
@@ -2467,7 +2545,7 @@ class PlayState extends MusicBeatState
 		add(sustainTrails);
 		sustainChainsByHead = new Map();
 
-		if (strumLineNotes != null) strumLineNotes.cameras = [camNOTE.camNoteSustain];
+		if (strumLineNotes != null) strumLineNotes.cameras = [camNOTE.camNoteStrum];
 
 		notes = new FlxTypedGroup<Note>();
 		add(notes);
@@ -2638,6 +2716,7 @@ class PlayState extends MusicBeatState
 						if (SaveData.getData(PLAY_AS_OPPONENT)) trail.mustPress = !trail.mustPress;
 						trail.scrollFactor.set();
 						trail.cameras = [camNOTE.camNoteSustain];
+						trail.alpha = 0;
 						sustainTrails.add(trail);
 					} else {
 						trail.destroy();
@@ -3062,16 +3141,23 @@ class PlayState extends MusicBeatState
 
 			var anchor:Float = Note.swagWidth * 0.5;
 			trail.x = strum.x + (Note.swagWidth - trail.width) * 0.5;
+			trail.alpha = 1;
+
+			if (trail.mustPress && trail.hitNote && !strum.keyHeld) {
+				if (toRemove == null) toRemove = [];
+				toRemove.push(trail);
+				return;
+			}
 
 			if (trail.hitNote && !trail.missedNote) {
 				if (trail.flipY) {
-					trail.y = strum.y + anchor - trail.height + trail.yOffset;
+					trail.y = strum.y + anchor + trailCaculate - trail.height + trail.yOffset;
 				} else {
-					trail.y = strum.y + anchor + trail.yOffset;
+					trail.y = strum.y + anchor + trailCaculate + trail.yOffset;
 				}
-				trail.sustainLength = Math.max(0, (trail.strumTime + trail.fullSustainLength) - songPos);
+				trail.updateClipping(songPos);
 
-				if (trail.sustainLength <= 0) {
+				if (songPos >= trail.strumTime + trail.fullSustainLength) {
 					if (toRemove == null) toRemove = [];
 					toRemove.push(trail);
 					return;
@@ -4832,6 +4918,7 @@ class PlayState extends MusicBeatState
 
 		var stateCamNOTE:CameraNote = ownedCamNOTE;
 		var stateCamNoteSustain:PlayCamera = ownedCamNoteSustain;
+		var stateCamNoteStrum:PlayCamera = ownedCamNoteStrum;
 		var stateCamHUD:PlayCamera = ownedCamHUD;
 
 		// Leaving gameplay while paused skips closeSubState(), so resume global managers here.
@@ -4879,6 +4966,16 @@ class PlayState extends MusicBeatState
 					stateCamNoteSustain.destroy();
 					ownedCamNoteSustain = null;
 					stateCamNOTE.camNoteSustain = null;
+				}
+
+				if(stateCamNoteStrum != null) {
+					stateCamNoteStrum.eraseFilters();
+					stateCamNoteStrum.clearRenderState();
+					stateCamNoteStrum.visible = false;
+					FlxG.cameras.remove(stateCamNoteStrum, false);
+					stateCamNoteStrum.destroy();
+					ownedCamNoteStrum = null;
+					stateCamNOTE.camNoteStrum = null;
 				}
 			}
 
@@ -4954,6 +5051,7 @@ class PlayState extends MusicBeatState
 		clearGameplayCameraFilterStack(ownedCamHUD);
 		clearGameplayCameraFilterStack(ownedCamNOTE);
 		clearGameplayCameraFilterStack(ownedCamNoteSustain);
+		clearGameplayCameraFilterStack(ownedCamNoteStrum);
 	}
 
 	private function clearGameplayCameraFilterStack(camera:FlxCamera):Void {
@@ -4977,6 +5075,7 @@ class PlayState extends MusicBeatState
 		var statePlayLua:PlayLua = playLua;
 		var stateCamNOTE:CameraNote = ownedCamNOTE;
 		var stateCamNoteSustain:PlayCamera = ownedCamNoteSustain;
+		var stateCamNoteStrum:PlayCamera = ownedCamNoteStrum;
 		var stateCamHUD:PlayCamera = ownedCamHUD;
 
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, getPressed);
