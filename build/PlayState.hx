@@ -3190,10 +3190,14 @@ class PlayState extends MusicBeatState
 			if (strum == null) return;
 
 			var speed:Float = head != null ? head.howSpeed : trail.scrollSpeed;
-			var visualDelta:Float = PlayScrollSpeed.getVisualSongDelta(DefaultHandler.getNoteTime(trail.strumTime), songPos);
+			var trailStartTime:Float = DefaultHandler.getNoteTime(trail.strumTime);
+			var trailEndTime:Float = DefaultHandler.getNoteTime(trail.strumTime + trail.fullSustainLength);
+			var visualDelta:Float = PlayScrollSpeed.getVisualSongDelta(trailStartTime, songPos);
+			var visualFullLength:Float = Math.max(0, PlayScrollSpeed.getVisualSongDelta(trailStartTime, trailEndTime));
 			var trailCaculate:Float = (-0.45 * (trail.flipY ? -1 : 1)) * visualDelta * FlxMath.roundDecimal(speed, 2);
 
 			var anchor:Float = Note.swagWidth * 0.5;
+			trail.updateVisualLength(visualFullLength);
 			trail.x = strum.x + (Note.swagWidth - trail.width) * 0.5;
 			trail.alpha = 1;
 
@@ -3209,15 +3213,15 @@ class PlayState extends MusicBeatState
 				} else {
 					trail.y = strum.y + anchor + trailCaculate + trail.yOffset;
 				}
-				trail.updateClipping(songPos);
+				trail.updateClipping(songPos, Math.max(0, visualDelta), visualFullLength);
 
-				if (songPos >= trail.strumTime + trail.fullSustainLength) {
+				if (songPos >= trailEndTime) {
 					if (toRemove == null) toRemove = [];
 					toRemove.push(trail);
 					return;
 				}
 			} else if (trail.missedNote) {
-				var renderEnd:Float = trail.strumTime + trail.fullSustainLength + Conductor.instance.safeZoneOffset * 2;
+				var renderEnd:Float = trailEndTime + Conductor.instance.safeZoneOffset * 2;
 				if (songPos >= renderEnd) {
 					if (toRemove == null) toRemove = [];
 					toRemove.push(trail);

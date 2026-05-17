@@ -329,11 +329,11 @@ class PlayAudio
 		}
 	}
 
-	public function setSongPlaybackRate(rate:Float):Void
+	public function setSongPlaybackRate(rate:Float, force:Bool = false):Void
 	{
 		var boundedRate:Float = Math.min(1, Math.max(0.0001, rate));
 
-		if(Math.abs(currentPlaybackRate - boundedRate) < 0.0005)
+		if(!force && Math.abs(currentPlaybackRate - boundedRate) < 0.0005)
 			return;
 
 		currentPlaybackRate = boundedRate;
@@ -380,6 +380,8 @@ class PlayAudio
 
 	public function applyTimeFreezeValue(previousFreeze:Float, nextFreeze:Float):Void
 	{
+		var nextPlaybackRate:Float = playState.getTimeFreezePlaybackRate(nextFreeze);
+
 		if(nextFreeze >= 1)
 		{
 			if(!freezePausedAudio)
@@ -391,14 +393,14 @@ class PlayAudio
 				freezePausedAudio = true;
 			}
 
-			currentPlaybackRate = playState.getTimeFreezePlaybackRate(nextFreeze);
 			return;
 		}
 
+		var resumedFromFreeze:Bool = freezePausedAudio;
 		if(freezePausedAudio)
 			resumeAudioFromTimeFreeze();
 
-		setSongPlaybackRate(playState.getTimeFreezePlaybackRate(nextFreeze));
+		setSongPlaybackRate(nextPlaybackRate, resumedFromFreeze);
 	}
 
 	inline function isSongAudioBlocked():Bool

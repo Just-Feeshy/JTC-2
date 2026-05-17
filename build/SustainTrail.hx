@@ -103,8 +103,17 @@ class SustainTrail extends FlxSprite {
 	}
 
 	function triggerRedraw():Void {
-		graphicHeight = sustainHeight(sustainLength, scrollSpeed);
+		updateVisualLength(sustainLength);
 		updateClipping();
+	}
+
+	public function updateVisualLength(visualLength:Float):Void {
+		var nextHeight:Float = sustainHeight(Math.max(0, visualLength), scrollSpeed);
+		if(Math.abs(graphicHeight - nextHeight) <= 0.001) {
+			return;
+		}
+
+		graphicHeight = nextHeight;
 		updateHitbox();
 	}
 
@@ -115,11 +124,14 @@ class SustainTrail extends FlxSprite {
 		origin.set(width * 0.5, height * 0.5);
 	}
 
-	public function updateClipping(songTime:Float = 0):Void {
+	public function updateClipping(songTime:Float = 0, ?visualElapsed:Null<Float>, ?visualFullLength:Null<Float>):Void {
 		if (graphic == null) return;
 
-		var elapsed:Float = songTime - strumTime;
-		var clipHeight:Float = FlxMath.bound(sustainHeight(sustainLength - elapsed, scrollSpeed), 0, graphicHeight);
+		var fullLength:Float = visualFullLength != null ? visualFullLength : sustainLength;
+		updateVisualLength(fullLength);
+
+		var elapsed:Float = visualElapsed != null ? visualElapsed : songTime - strumTime;
+		var clipHeight:Float = FlxMath.bound(sustainHeight(fullLength - elapsed, scrollSpeed), 0, graphicHeight);
 		if (clipHeight <= 0.1) {
 			visible = false;
 			return;

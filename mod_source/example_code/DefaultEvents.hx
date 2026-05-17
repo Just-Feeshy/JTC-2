@@ -162,7 +162,7 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 }
 
                 storeTween(eventName, FlxTween.num(playState.timeFreeze, targetFreeze, durationSeconds, {
-                    ease: FlxEase.sineInOut,
+                    ease: smoothTimeFreezeEase,
                     onComplete: function(tween:FlxTween) {
                         playState.setTimeFreezeValue(targetFreeze);
                         cancelTween(eventName);
@@ -286,6 +286,11 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 
             eventTweens.set(name, tween);
         }
+    }
+
+    static function smoothTimeFreezeEase(t:Float):Float {
+        var clamped:Float = FlxMath.bound(t, 0, 1);
+        return clamped * clamped * clamped * (clamped * (clamped * 6 - 15) + 10);
     }
 
     function setModifierToDefault(mod:String):Void {
