@@ -2143,7 +2143,34 @@ class PlayState extends MusicBeatState
 		var current:Note = note.prevNote;
 
 		while(current != null) {
+			if(current.sustainChainMissed || current.tooLate || (current.shouldBeDead && !current.wasGoodHit)) {
+				return false;
+			}
+
 			if(current.wasGoodHit || current.shouldBeDead) {
+				return true;
+			}
+
+			if(!current.isSustainNote || current.prevNote == null || current.prevNote == current) {
+				break;
+			}
+
+			current = current.prevNote;
+		}
+
+		return false;
+	}
+
+	private function isSustainChainMissed(note:Note):Bool
+	{
+		if(note == null) {
+			return false;
+		}
+
+		var current:Note = note;
+
+		while(current != null) {
+			if(current.sustainChainMissed || current.tooLate || (current.shouldBeDead && !current.wasGoodHit)) {
 				return true;
 			}
 
@@ -2166,6 +2193,7 @@ class PlayState extends MusicBeatState
 				&& note.mustPress == mustPress
 				&& !note.sustainChainMissed
 				&& !note.shouldBeDead
+				&& !isSustainChainMissed(note)
 				&& isSustainChainStarted(note);
 		}
 
@@ -2284,6 +2312,7 @@ class PlayState extends MusicBeatState
 		}
 
 		chainNote.sustainChainMissed = true;
+		stopHoldCoverForLane(chainNote.noteData, chainNote.mustPress);
 
 		for(candidate in notes.members) {
 			if(candidate != null && isSustainChainDescendantOf(candidate, chainNote)) {
@@ -2294,6 +2323,27 @@ class PlayState extends MusicBeatState
 		for(candidate in unspawnNotes) {
 			if(candidate != null && isSustainChainDescendantOf(candidate, chainNote)) {
 				candidate.sustainChainMissed = true;
+			}
+		}
+	}
+
+	private function markSustainChainForHeadMissed(headNote:Note):Void
+	{
+		if(headNote == null) {
+			return;
+		}
+
+		var chain:Array<Note> = sustainChainsByHead.get(headNote);
+
+		if(chain == null) {
+			return;
+		}
+
+		stopHoldCoverForLane(headNote.noteData, headNote.mustPress);
+
+		for(piece in chain) {
+			if(piece != null) {
+				piece.sustainChainMissed = true;
 			}
 		}
 	}
@@ -3117,13 +3167,17 @@ class PlayState extends MusicBeatState
 
 			if (head != null) {
 				if (head.wasGoodHit) trail.hitNote = true;
-				if (head.tooLate) trail.missedNote = true;
+				if (head.tooLate) {
+					trail.missedNote = true;
+					markSustainChainForHeadMissed(head);
+				}
 
 				var chain:Array<Note> = sustainChainsByHead.get(head);
 				if (chain != null) {
 					for (piece in chain) {
 						if (piece != null && piece.sustainChainMissed) {
 							trail.missedNote = true;
+							stopHoldCoverForLane(trail.noteDirection, trail.mustPress);
 							break;
 						}
 					}
@@ -4054,6 +4108,23 @@ class PlayState extends MusicBeatState
 
 		if(cover != null) {
 			cover.endHold();
+		}
+	}
+
+	function stopHoldCoverForLane(lane:Int, currentSide:Bool):Void {
+		var holdCoverSprites = currentSide ? currentHoldCoverSprites : oppositeHoldCoverSprites;
+		var holdCoverTimers = currentSide ? currentHoldCoverTimers : oppositeHoldCoverTimers;
+
+		if(lane < 0 || lane >= holdCoverSprites.length) {
+			return;
+		}
+
+		holdCoverTimers[lane] = 0;
+
+		var cover:HoldCoverSprite = holdCoverSprites[lane];
+
+		if(cover != null) {
+			cover.hideInstant();
 		}
 	}
 

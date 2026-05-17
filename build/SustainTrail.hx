@@ -18,6 +18,7 @@ import flixel.math.FlxMath;
  */
 class SustainTrail extends FlxSprite {
 	static final TRIANGLE_VERTEX_INDICES:Array<Int> = [0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7];
+	static inline final HOLD_STRIP_COLOR_COUNT:Int = 5;
 
 	public static inline var PIXELS_PER_MS:Float = 0.45;
 
@@ -74,7 +75,7 @@ class SustainTrail extends FlxSprite {
 		flipY = downscroll;
 		alpha = 1.0;
 
-		graphicWidth = graphic.width / 8 * zoom;
+		graphicWidth = graphic.width / (HOLD_STRIP_COLOR_COUNT * 2) * zoom;
 
 		this.fullSustainLength = sustainLength;
 		this.sustainLength = sustainLength;
@@ -149,10 +150,15 @@ class SustainTrail extends FlxSprite {
 
 		ensureLen(uvtData, 16);
 
-		uvtData[0 * 2] = 1 / 4 * (noteDirection % 4);
+		var colorIndex:Int = getHoldStripColorIndex();
+		var bodyU:Float = colorIndex / HOLD_STRIP_COLOR_COUNT;
+		var capU:Float = bodyU + (1 / (HOLD_STRIP_COLOR_COUNT * 2));
+		var segmentUWidth:Float = 1 / (HOLD_STRIP_COLOR_COUNT * 2);
+
+		uvtData[0 * 2] = bodyU;
 		uvtData[0 * 2 + 1] = (-partHeight) / graphic.height / zoom;
 
-		uvtData[1 * 2] = uvtData[0 * 2] + 1 / 8;
+		uvtData[1 * 2] = uvtData[0 * 2] + segmentUWidth;
 		uvtData[1 * 2 + 1] = uvtData[0 * 2 + 1];
 
 		uvtData[2 * 2] = uvtData[0 * 2];
@@ -175,10 +181,10 @@ class SustainTrail extends FlxSprite {
 		vertices[7 * 2] = vertices[3 * 2];
 		vertices[7 * 2 + 1] = vertices[6 * 2 + 1];
 
-		uvtData[4 * 2] = uvtData[2 * 2] + 1 / 8;
+		uvtData[4 * 2] = capU;
 		uvtData[4 * 2 + 1] = if (partHeight > 0) 0 else (bottomHeight - clipHeight) / zoom / graphic.height;
 
-		uvtData[5 * 2] = uvtData[4 * 2] + 1 / 8;
+		uvtData[5 * 2] = uvtData[4 * 2] + segmentUWidth;
 		uvtData[5 * 2 + 1] = uvtData[4 * 2 + 1];
 
 		uvtData[6 * 2] = uvtData[4 * 2];
@@ -186,6 +192,20 @@ class SustainTrail extends FlxSprite {
 
 		uvtData[7 * 2] = uvtData[5 * 2];
 		uvtData[7 * 2 + 1] = uvtData[6 * 2 + 1];
+	}
+
+	function getHoldStripColorIndex():Int {
+		if(PlayState.SONG != null && PlayState.SONG.fifthKey) {
+			return Std.int(FlxMath.bound(noteDirection, 0, HOLD_STRIP_COLOR_COUNT - 1));
+		}
+
+		return switch(noteDirection % 4) {
+			case 0: 0; // purple
+			case 1: 1; // blue
+			case 2: 3; // green
+			case 3: 4; // red
+			default: 0;
+		}
 	}
 
 	static inline function ensureLen(v:DrawData<Float>, n:Int):Void {
