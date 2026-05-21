@@ -83,30 +83,29 @@ class VideoState extends HelperStates {
 
     public function playVideo() {
         #if cpp
-        bitmap = new Video(SaveData.getData(SaveType.GRAPHICS));
-/*
-        if(FlxG.stage.stageHeight / 9 < FlxG.stage.stageWidth / 16) {
-            bitmap.set_width(FlxG.stage.stageHeight * (16 / 9));
-            bitmap.set_height(FlxG.stage.stageHeight);
-        }else {
-            bitmap.set_width(FlxG.stage.stageWidth);
-            bitmap.set_height(FlxG.stage.stageWidth / (16 / 9));
+        var resolved:String = checkFile(path);
+        if(!FileSystem.exists(resolved)) {
+            trace("Video file does not exist: " + resolved);
+            requestExit();
+            return;
         }
-*/
+
+        bitmap = new Video(SaveData.getData(SaveType.GRAPHICS));
+
         bitmap.onEndReached.add(finishedVideo);
         bitmap.onEncounteredError.add(onVLCError);
+        bitmap.onOpening.add(function():Void {
+            if(bitmap == null) return;
+            bitmap.role = LibVLC_Role_Game;
+
+            if(!FlxG.signals.postUpdate.has(postUpdate)) {
+                FlxG.signals.postUpdate.add(postUpdate);
+            }
+        });
 
         FlxG.game.addChildAt(bitmap, 0);
-		bitmap.load(checkFile(path), []);
+        bitmap.load(resolved, []);
         bitmap.play();
-
-		bitmap.onOpening.add(function():Void {
-		    bitmap.role = LibVLC_Role_Game;
-
-		    if(!FlxG.signals.postUpdate.has(postUpdate)) {
-				FlxG.signals.postUpdate.add(postUpdate);
-			}
-		});
         #end
 
         #if web
@@ -127,12 +126,15 @@ class VideoState extends HelperStates {
 		};
 		netConnect.addEventListener(NetStatusEvent.NET_STATUS, function(event:NetStatusEvent) {
 			if(event.info.code == "NetStream.Play.Complete") {
-				netStream.dispose();
+				if(netStream != null) {
+					netStream.dispose();
+					netStream = null;
+				}
 				if(FlxG.game.contains(player)) {
                     FlxG.game.removeChild(player);
                 }
 
-				FlxG.switchState(state);
+				requestExit();
 			}
 		});
 
@@ -141,24 +143,41 @@ class VideoState extends HelperStates {
     }
 
     override function update(elapsed:Float) {
-		#if cpp
-		if(bitmap.isPlaying && controls.ACCEPT) {
-		     requestExit();
-		}
-		#end
+        #if cpp
+        if(bitmap != null && bitmap.isPlaying && (controls.ACCEPT || controls.BACK)) {
+             requestExit();
+        }
+        #end
 
         super.update(elapsed);
     }
 
     override function finishedTransition() {
-        SPACE.destroy();
-        SPACE = null;
+        if(SPACE != null) {
+            SPACE.destroy();
+            SPACE = null;
+        }
 
         #if cpp
         onVLCComplete();
         #end
 
         super.finishedTransition();
+    }
+
+    override function destroy():Void {
+        #if cpp
+        onVLCComplete();
+        #end
+
+        #if web
+        if(netStream != null) {
+            netStream.dispose();
+            netStream = null;
+        }
+        #end
+
+        super.destroy();
     }
 
     function finishedVideo() {
@@ -198,7 +217,7 @@ class VideoState extends HelperStates {
 
     @:noCompletion function onVLCError(message:String) {
         trace("Error: could not locate video because of [" + message + "]");
-        // FlxG.switchState(state);
+        requestExit();
     }
 
     @:noCompletion function checkFile(fileName:String):String {
@@ -206,21 +225,19 @@ class VideoState extends HelperStates {
 	}
 
 	@:noCompletion function postUpdate() {
-		{
-			bitmap.width = FlxG.scaleMode.gameSize.x;
-			bitmap.height = FlxG.scaleMode.gameSize.y;
-		}
+		if(bitmap == null) return;
+
+		bitmap.width = FlxG.scaleMode.gameSize.x;
+		bitmap.height = FlxG.scaleMode.gameSize.y;
 
 		#if FLX_SOUND_SYSTEM
 		{
-
 			final curVolume:Int = Math.floor((FlxG.sound.muted ? 0 : 1) * FlxG.sound.volume * 300);
 
 			if (bitmap.volume != curVolume)
 				bitmap.volume = curVolume;
 		}
 		#end
-
 	}
     #end
 }
