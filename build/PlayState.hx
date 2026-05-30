@@ -3202,6 +3202,7 @@ class PlayState extends MusicBeatState
 			trail.alpha = 1;
 
 			if (trail.mustPress && trail.hitNote && !strum.keyHeld) {
+				stopHoldCoverForLane(trail.noteDirection, true);
 				if (toRemove == null) toRemove = [];
 				toRemove.push(trail);
 				return;
@@ -3216,6 +3217,11 @@ class PlayState extends MusicBeatState
 				trail.updateClipping(songPos, Math.max(0, visualDelta), visualFullLength);
 
 				if (songPos >= trailEndTime) {
+					if (trail.mustPress) {
+						endHoldCoverForLane(trail.noteDirection, true);
+					} else {
+						stopHoldCoverForLane(trail.noteDirection, false);
+					}
 					if (toRemove == null) toRemove = [];
 					toRemove.push(trail);
 					return;
@@ -4149,7 +4155,7 @@ class PlayState extends MusicBeatState
 					endHoldCoverForLane(lane, true);
 				}
 			}else if(holdCoverTimers[lane] <= 0) {
-				endHoldCoverForLane(lane, false);
+				stopHoldCoverForLane(lane, false);
 			}
 
 			lane++;

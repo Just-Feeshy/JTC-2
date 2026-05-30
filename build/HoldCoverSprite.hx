@@ -89,11 +89,13 @@ class HoldCoverSprite extends FlxSprite {
 			case 'start':
 				if(activeHold) {
 					playCoverAnim('hold', true);
-				}else {
-					ending = true;
+				}else if(ending) {
 					visible = true;
 					active = true;
 					playCoverAnim('end', true);
+				}else {
+					visible = false;
+					active = false;
 				}
 			case 'end':
 				activeHold = false;
