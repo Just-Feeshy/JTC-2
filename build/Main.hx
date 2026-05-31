@@ -81,9 +81,19 @@ class Main extends Sprite
 
 		feeshmora = new FlxGame(gameWidth, gameHeight, initialState, #if (flixel < "5.0.0") zoom, #end framerate, framerate, skipSplash, startFullscreen);
 
+		@:privateAccess
+		feeshmora._customSoundTray = FunkinSoundTray;
+
+		// Register Funkin cursors with HaxeUI's CursorHelper BEFORE the game
+		// starts spinning up UI - otherwise the first hover races our setup
+		// and HaxeUI sticks to its default pointer hand.
+		FunkinCursor.registerHaxeUICursors();
+
 		SaveData.bindProjectSave();
 
 		addChild(feeshmora);
+
+		FlxG.signals.postGameStart.addOnce(FunkinCursor.load);
 
 		#if !html5
 		FlxG.scaleMode = new FullScreenScaleMode();

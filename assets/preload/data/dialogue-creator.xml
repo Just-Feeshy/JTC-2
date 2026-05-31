@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vbox width="100%" height="100%" style="padding: 16px;">
+	<hbox width="100%" height="100%">
+		<vbox width="100%" height="100%" style="padding-right: 16px;">
+			<label id="instructionsLabel" width="100%" text="ESC - Back | Click tabs to switch panels" />
+			<spacer height="8" />
+			<label id="statusLabel" width="100%" text="" />
+			<spacer height="100%" />
+		</vbox>
+		<vbox width="480" height="100%">
+			<tabview width="100%" height="100%">
+
+				<vbox text="Dialogue" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<hbox width="100%">
+						<label width="35%" text="Sprite Slot" verticalAlign="center" />
+						<dropdown id="slotSelector" width="65%" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Asset" verticalAlign="center" />
+						<dropdown id="assetSelector" width="65%" />
+					</hbox>
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="attachAssetButton" width="50%" text="Attach Asset to Slot" />
+						<button id="centerXButton" width="50%" text="Reset X Position" />
+					</hbox>
+					<spacer height="6" />
+					<hbox width="100%">
+						<label width="35%" text="X Position" verticalAlign="center" />
+						<number-stepper id="xPosStepper" width="65%" step="1" min="-2000" max="4000" pos="0" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Y Position" verticalAlign="center" />
+						<number-stepper id="yPosStepper" width="65%" step="1" min="-2000" max="4000" pos="0" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Size" verticalAlign="center" />
+						<number-stepper id="sizeStepper" width="65%" step="0.05" min="0.1" max="10.0" precision="2" pos="1.0" />
+					</hbox>
+				</vbox>
+
+				<vbox text="Sprites" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<label width="100%" text="Manage the asset catalog. Each entry pairs a PNG with its XML." />
+					<hbox width="100%">
+						<label width="35%" text="Catalog Entry" verticalAlign="center" />
+						<dropdown id="catalogSelector" width="65%" />
+					</hbox>
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="importXmlButton" width="50%" text="Import XML" />
+						<button id="importPngButton" width="50%" text="Import PNG" />
+					</hbox>
+					<spacer height="6" />
+					<hbox width="100%">
+						<label width="35%" text="New Asset Name" verticalAlign="center" />
+						<textfield id="newAssetNameInput" width="65%" />
+					</hbox>
+					<button id="createAssetButton" width="100%" text="Create Asset Entry" />
+					<spacer height="6" />
+					<label id="catalogErrorLabel" width="100%" text="" />
+				</vbox>
+
+				<vbox text="Animation" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<label id="selectedSlotLabel" width="100%" text="Selected slot: -" />
+					<hbox width="100%">
+						<label width="35%" text="Existing" verticalAlign="center" />
+						<dropdown id="existingAnimSelector" width="65%" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Source Prefix" verticalAlign="center" />
+						<dropdown id="sourcePrefixSelector" width="65%" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Animation Name" verticalAlign="center" />
+						<textfield id="animNameInput" width="65%" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Framerate" verticalAlign="center" />
+						<number-stepper id="framerateStepper" width="65%" step="1" min="0" max="60" pos="24" />
+					</hbox>
+					<checkbox id="loopedCheckbox" text="Looped" selected="false" />
+					<spacer height="6" />
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="createAnimButton" width="50%" text="Create Animation" />
+						<button id="setMainAnimButton" width="50%" text="Set As Main" />
+					</hbox>
+				</vbox>
+
+				<vbox text="Scene" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<hbox width="100%">
+						<label width="35%" text="Scene #" verticalAlign="center" />
+						<number-stepper id="sceneStepper" width="65%" step="1" min="1" max="1" pos="1" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Narrator" verticalAlign="center" />
+						<dropdown id="narratorDropDown" width="65%" />
+					</hbox>
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="importTxtButton" width="50%" text="Import TXT" />
+						<button id="importSoundButton" width="50%" text="Import OGG" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Text" verticalAlign="center" />
+						<textarea id="sceneTextArea" width="65%" height="80" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Hex Color" verticalAlign="center" />
+						<textfield id="hexColorInput" width="65%" text="000000" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Font" verticalAlign="center" />
+						<textfield id="fontStyleInput" width="65%" text="PhantomMuff.ttf" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Speed" verticalAlign="center" />
+						<number-stepper id="speedStepper" width="65%" step="0.1" min="0.1" max="10.0" precision="1" pos="1.0" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Text Size" verticalAlign="center" />
+						<number-stepper id="textSizeStepper" width="65%" step="1" min="8" max="128" pos="32" />
+					</hbox>
+					<hbox width="100%">
+						<label width="35%" text="Sound Index" verticalAlign="center" />
+						<number-stepper id="soundIndexStepper" width="65%" step="1" min="0" max="0" pos="0" />
+					</hbox>
+					<checkbox id="talkCheckbox" text="Talk Animation" selected="false" />
+					<spacer height="6" />
+					<hbox width="100%" style="spacing: 6px;">
+						<button id="playSceneButton" width="50%" text="Play / Refresh" />
+						<button id="newSceneButton" width="50%" text="New Scene" />
+					</hbox>
+					<label id="sceneErrorLabel" width="100%" text="" />
+				</vbox>
+
+				<vbox text="Export" width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+					<label width="100%" text="Saves the conversation as a v2 ConversationData JSON." />
+					<button id="exportButton" width="100%" text="Export JSON" />
+					<spacer height="6" />
+					<label id="exportStatusLabel" width="100%" text="" />
+				</vbox>
+
+			</tabview>
+		</vbox>
+	</hbox>
+</vbox>

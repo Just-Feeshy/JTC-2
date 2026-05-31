@@ -12,26 +12,36 @@ import flixel.util.FlxTimer;
 import flixel.FlxCamera;
 import flixel.FlxState;
 import feshixl.filters.GuassianBlur;
-import feshixl.utils.FeshBytesHandler;
 import feshixl.FeshSprite;
 import openfl.media.Sound;
 import openfl.filters.ShaderFilter;
-import openfl.utils.ByteArray;
-import lime.utils.AssetType; //I got bored.
-import lime.utils.Assets;
-import haxe.io.Bytes;
 import haxe.Json;
-#if sys
-import sys.FileSystem;
-import sys.io.File;
-#end
 
 import SaveData.SaveType;
-import IDialogue;
+import IDialogue.IDialogue;
 import ModInitialize;
+
+import data.dialogue.ConversationData;
+import data.dialogue.ConversationData.DialogueAssetEntry;
+import data.dialogue.DialogueAnimationData;
+import data.dialogue.DialogueSceneData;
+import data.dialogue.DialogueSlot;
+import data.dialogue.DialogueSpriteData;
+import data.dialogue.LegacyDialogueAdapter;
 
 using StringTools;
 
+/**
+ * Runtime presenter for v2 ConversationData.
+ *
+ * The JSON file can be either v1 (`{info: [...]}`) or v2 (`{version, scenes: [...]}`):
+ * `parseJSON` runs both through `LegacyDialogueAdapter.up` so the rest of this class
+ * only ever touches the v2 shape.
+ *
+ * Asset/sound resolution prefers name-based lookups (`assetName` / `soundName`) when
+ * the mod has registered them via `bindAssetToName` / `bindSoundToName`, falling back
+ * to the legacy `assetID` / `soundIndex` positional tables.
+ */
 class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     public var finishCallback:(dialogue:IDialogue)->Void;
 
@@ -39,7 +49,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     var blurFilter:ShaderFilter;
     var playstateRef:PlayState;
 
-    var _info:DialogueInfo;
+    var _info:ConversationData;
 
     var leftPortrait:FeshSprite;
     var rightPortrait:FeshSprite;
@@ -61,7 +71,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     @:noCompletion var shadowText:FlxText;
 
     @:noCompletion var assetBinds:Array<String>;
+    @:noCompletion var assetBindsByName:Map<String, String>;
     @:noCompletion var soundBinds:Array<FlxSound>;
+    @:noCompletion var soundBindsByName:Map<String, FlxSound>;
 
     public function new() {
         _info = parseJSON();
@@ -69,19 +81,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         super();
 
         assetBinds = [];
+        assetBindsByName = new Map();
         soundBinds = [];
-    }
-
-    function soundFromBytes():Void {
-        if(_info.totalSounds == null) {
-            return;
-        }
-
-        var index:Int = 0;
-
-        while(index < _info.totalSounds.length) {
-            soundBinds.push(FeshBytesHandler.loadSoundFromByteArray(ByteArray.fromBytes(_info.totalSounds[index++])));
-        }
+        soundBindsByName = new Map();
     }
 
     function createAfterTransition():Void {
@@ -101,223 +103,180 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         refreshDisplay();
     }
 
+    // ------------------------------------------------------------------------
+    // Scene render
+    // ------------------------------------------------------------------------
+
     function refreshDisplay():Void {
-        if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].leftPortrait.assetID != _info.info[dialogueScene].leftPortrait.assetID || dialogueScene == 0) {
-            if(totalExist(_info.info[dialogueScene].leftPortrait.assetID, IMAGE)) {
-                leftPortrait.implementXML(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID], false));
-                leftPortrait.implementBitmap(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].leftPortrait.assetID], true));
-                leftPortrait.compileSprite();
-            }else {
-                leftPortrait.animation.destroyAnimations();
-                leftPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].leftPortrait.assetID]);
-            }
+        var prevScene = Std.int(Math.max(0, dialogueScene - 1));
 
-            implementAnimPlay("left portrait");
+        if (assetChanged(prevScene, dialogueScene, LeftPortrait) || dialogueScene == 0) {
+            applyAssetToSlot(leftPortrait, dialogueScene, LeftPortrait);
+            implementAnimPlay(LeftPortrait);
         }
-
-        if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].rightPortrait.assetID != _info.info[dialogueScene].rightPortrait.assetID || dialogueScene == 0) {
-            if(totalExist(_info.info[dialogueScene].rightPortrait.assetID, IMAGE)) {
-                rightPortrait.implementXML(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID], false));
-                rightPortrait.implementBitmap(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].rightPortrait.assetID], true));
-                rightPortrait.compileSprite();
-            }else {
-                rightPortrait.animation.destroyAnimations();
-                rightPortrait.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].rightPortrait.assetID]);
-            }
-
-            implementAnimPlay("right portrait");
+        if (assetChanged(prevScene, dialogueScene, RightPortrait) || dialogueScene == 0) {
+            applyAssetToSlot(rightPortrait, dialogueScene, RightPortrait);
+            implementAnimPlay(RightPortrait);
         }
-
-        if(_info.info[Std.int(Math.max(0, dialogueScene - 1))].speechBubble.assetID != _info.info[dialogueScene].speechBubble.assetID || dialogueScene == 0) {
-            if(totalExist(_info.info[dialogueScene].speechBubble.assetID, IMAGE)) {
-                speechBubble.implementXML(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID], false));
-                speechBubble.implementBitmap(resolveDialogueAssetBytes(_info.totalSprites[_info.info[dialogueScene].speechBubble.assetID], true));
-                speechBubble.compileSprite();
-            }else {
-                speechBubble.animation.destroyAnimations();
-                speechBubble.frames = Paths.getSparrowAtlas(assetBinds[_info.info[dialogueScene].speechBubble.assetID]);
-            }
-
-            implementAnimPlay("speech bubble");
+        if (assetChanged(prevScene, dialogueScene, SpeechBubble) || dialogueScene == 0) {
+            applyAssetToSlot(speechBubble, dialogueScene, SpeechBubble);
+            implementAnimPlay(SpeechBubble);
         }
 
         refreshDisplayPosition();
 
-        if(_info.info[dialogueScene].text[0] == "left portrait") {
+        if (sceneData(dialogueScene).text[0] == "left portrait") {
             rightPortrait.visible = false;
             leftPortrait.visible = true;
             speechBubble.flipX = true;
-        }else {
+        } else {
             rightPortrait.visible = true;
             leftPortrait.visible = false;
             speechBubble.flipX = false;
         }
 
-        if(shadowText != null) {
-            add(shadowText);
-        }
+        if (shadowText != null) add(shadowText);
 
-        if(displayText == null) {
-            displayText = new DialogueText(0, 0, Std.int(FlxG.width * 0.8), "", _info.info[dialogueScene].textSize);
+        if (displayText == null) {
+            displayText = new DialogueText(0, 0, Std.int(FlxG.width * 0.8), "", sceneData(dialogueScene).textSize);
             add(displayText);
         }
-        
-        refreshDisplayText(_info.info[dialogueScene].text[1]);
 
-        if(shadowText != null) {
-            refreshShadowText();
-        }
+        refreshDisplayText(sceneData(dialogueScene).text[1]);
+        if (shadowText != null) refreshShadowText();
 
         changingScene = false;
         dialogueScene++;
     }
 
-    function resolveDialogueAssetBytes(file:DialogueFileData, isSprite:Bool):Bytes {
-        if(file == null) {
-            return null;
+    function applyAssetToSlot(spr:FeshSprite, sceneIdx:Int, s:DialogueSlot):Void {
+        var sd = slotDataFor(sceneIdx, s);
+        var path = resolveAssetPath(sd);
+        spr.animation.destroyAnimations();
+        if (path != null) {
+            spr.frames = Paths.getSparrowAtlas(path);
         }
-
-        if(isSprite) {
-            if(file.spriteData != null) {
-                return file.spriteData;
-            }
-
-            if(file.spritePath != null && file.spritePath.trim() != "") {
-                #if sys
-                if(FileSystem.exists(file.spritePath)) {
-                    return File.getBytes(file.spritePath);
-                }
-                #end
-            }
-        } else {
-            if(file.xmlData != null) {
-                return file.xmlData;
-            }
-
-            if(file.xmlPath != null && file.xmlPath.trim() != "") {
-                #if sys
-                if(FileSystem.exists(file.xmlPath)) {
-                    return File.getBytes(file.xmlPath);
-                }
-                #end
-            }
-        }
-
-        return null;
     }
 
-    function totalExist(id:Int, type:AssetType):Bool {
-        if(type == IMAGE && _info.totalSprites == null) {
-            return false;
-        }
-
-        if(type == SOUND && _info.totalSounds == null) {
-            return false;
-        }
-
-        if(type == IMAGE && _info.totalSprites[id] != null) {
-            var file = _info.totalSprites[id];
-
-            if((file.spriteData != null && file.xmlData != null)
-            || ((file.spritePath != null && file.spritePath.trim() != "")
-                && (file.xmlPath != null && file.xmlPath.trim() != ""))) {
-                return true;
-            }
-        }
-
-        if(type == SOUND && _info.totalSounds[id] != null) {
-            return true;
-        }
-
-        return false;
+    function assetChanged(prev:Int, curr:Int, s:DialogueSlot):Bool {
+        var a = slotDataFor(prev, s);
+        var b = slotDataFor(curr, s);
+        if (a.assetName != null || b.assetName != null) return a.assetName != b.assetName;
+        return a.assetID != b.assetID;
     }
 
     function refreshDisplayPosition():Void {
-        leftPortrait.scale.set(_info.info[dialogueScene].leftPortrait.size, _info.info[dialogueScene].leftPortrait.size);
-        rightPortrait.scale.set(_info.info[dialogueScene].rightPortrait.size, _info.info[dialogueScene].rightPortrait.size);
-        speechBubble.scale.set(_info.info[dialogueScene].speechBubble.size, _info.info[dialogueScene].speechBubble.size);
-
-        leftPortrait.updateHitbox();
-        rightPortrait.updateHitbox();
-        speechBubble.updateHitbox();
-        
-        leftPortrait.x = _info.info[dialogueScene].leftPortrait.x;
-        leftPortrait.y = _info.info[dialogueScene].leftPortrait.y;
-        rightPortrait.x = _info.info[dialogueScene].rightPortrait.x;
-        rightPortrait.y = _info.info[dialogueScene].rightPortrait.y;
-        speechBubble.x = _info.info[dialogueScene].speechBubble.x;
-        speechBubble.y = _info.info[dialogueScene].speechBubble.y;
+        for (s in DialogueSlot.ALL) {
+            var spr = spriteForSlot(s);
+            var sd = slotDataFor(dialogueScene, s);
+            spr.scale.set(sd.size, sd.size);
+            spr.updateHitbox();
+            spr.x = sd.x;
+            spr.y = sd.y;
+        }
     }
 
-    function refreshDisplayText(text:String = "") {
-        if(_info.info[dialogueScene].talkingAnimation != null) {
-            if(_info.info[dialogueScene].text[0] == "left portrait") {
-                displayText.attachSprite(leftPortrait);
-            }else {
-                displayText.attachSprite(rightPortrait);
-            }
+    function refreshDisplayText(text:String = ""):Void {
+        var s = sceneData(dialogueScene);
 
-            displayText.shouldPlayAnim(_info.info[dialogueScene].talkingAnimation);
+        if (s.talkingAnimation != null) {
+            if (s.text[0] == "left portrait") displayText.attachSprite(leftPortrait);
+            else displayText.attachSprite(rightPortrait);
+            displayText.shouldPlayAnim(s.talkingAnimation);
         }
 
-        displayText.sounds = [soundBinds[_info.info[dialogueScene].soundIndex]];
+        var sound = resolveSound(s);
+        if (sound != null) displayText.sounds = [sound];
+
         displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
-        displayText.size = _info.info[dialogueScene].textSize;
-        displayText.font = _info.info[dialogueScene].font;
-        displayText.color = _info.info[dialogueScene].textColor;
+        displayText.size = s.textSize;
+        displayText.font = s.font;
+        displayText.color = s.textColor;
 
-        if(text.trim() != "") {
+        if (text.trim() != "") {
             displayText.resetText(text);
-            displayText.start(0.04 / _info.info[dialogueScene].speed, true);
+            displayText.start(0.04 / s.speed, true);
         }
     }
 
-    function refreshShadowText() {
+    function refreshShadowText():Void {
+        var s = sceneData(dialogueScene);
         shadowText.setPosition(displayText.x + 2, displayText.y + 2);
-        shadowText.size = _info.info[dialogueScene].textSize;
-
-        shadowText.font = _info.info[dialogueScene].font;
+        shadowText.size = s.textSize;
+        shadowText.font = s.font;
     }
 
-    function implementAnimPlay(sprString:String):Void {
-        var dialogueInfo:DialogueSpriteData = null;
-        var spr:FeshSprite = null;
+    function implementAnimPlay(s:DialogueSlot):Void {
+        var sd = slotDataFor(dialogueScene, s);
+        var spr = spriteForSlot(s);
+        if (sd.animations.length == 0) return;
 
-        switch(sprString) {
-            case "left portrait": spr = leftPortrait;
-            case "right portrait": spr = rightPortrait;
-            case "speech bubble": spr = speechBubble;
-            default: return;
-        }
+        var anim = sd.animations[FlxG.random.int(0, sd.animations.length - 1)];
+        spr.animation.addByPrefix(anim.name, anim.prefix, anim.framerate, anim.looped);
+        spr.animation.play(anim.name);
+    }
 
-        switch(sprString) {
-            case "left portrait": dialogueInfo = _info.info[dialogueScene].leftPortrait;
-            case "right portrait": dialogueInfo = _info.info[dialogueScene].rightPortrait;
-            case "speech bubble": dialogueInfo = _info.info[dialogueScene].speechBubble;
-            default: return;
-        }
+    // ------------------------------------------------------------------------
+    // Slot routing
+    // ------------------------------------------------------------------------
 
-        if(dialogueInfo.animations.length > 0) {
-            var animationInfo:AnimationInfo = dialogueInfo.animations[FlxG.random.int(0, dialogueInfo.animations.length - 1)];
-            spr.animation.addByPrefix(animationInfo.name, animationInfo.prefix, animationInfo.framerate, animationInfo.looped);
-            spr.animation.play(animationInfo.name);
+    inline function sceneData(i:Int):DialogueSceneData return _info.scenes[i];
+
+    function slotDataFor(sceneIdx:Int, s:DialogueSlot):DialogueSpriteData {
+        return switch (s) {
+            case SpeechBubble: _info.scenes[sceneIdx].speechBubble;
+            case LeftPortrait: _info.scenes[sceneIdx].leftPortrait;
+            case RightPortrait: _info.scenes[sceneIdx].rightPortrait;
         }
     }
+
+    function spriteForSlot(s:DialogueSlot):FeshSprite {
+        return switch (s) {
+            case SpeechBubble: speechBubble;
+            case LeftPortrait: leftPortrait;
+            case RightPortrait: rightPortrait;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Asset / sound resolution
+    // ------------------------------------------------------------------------
+
+    function resolveAssetPath(sd:DialogueSpriteData):String {
+        if (sd == null) return null;
+        if (sd.assetName != null && assetBindsByName.exists(sd.assetName)) {
+            return assetBindsByName.get(sd.assetName);
+        }
+        if (sd.assetID >= 0 && sd.assetID < assetBinds.length) {
+            return assetBinds[sd.assetID];
+        }
+        return null;
+    }
+
+    function resolveSound(s:DialogueSceneData):FlxSound {
+        if (s.soundName != null && soundBindsByName.exists(s.soundName)) {
+            return soundBindsByName.get(s.soundName);
+        }
+        if (s.soundIndex >= 0 && s.soundIndex < soundBinds.length) {
+            return soundBinds[s.soundIndex];
+        }
+        return null;
+    }
+
+    // ------------------------------------------------------------------------
+    // Beat / dance / song
+    // ------------------------------------------------------------------------
 
     public function implementShadowText():Void {
-        shadowText = new FlxText(0, 0, Std.int(FlxG.width * 0.8), "", _info.info[dialogueScene].textSize);
+        shadowText = new FlxText(0, 0, Std.int(FlxG.width * 0.8), "", sceneData(dialogueScene).textSize);
     }
 
     public function implementShadowTextColor(color:FlxColor):Void {
-        if(shadowText != null) {
-            shadowText.color = color;
-        }
+        if (shadowText != null) shadowText.color = color;
     }
 
     public function implementSong(path:Sound, bpm:Int):Void {
-        if(FlxG.sound.music.playing) {
-			FlxG.sound.music.stop();
-        }
+        if (FlxG.sound.music.playing) FlxG.sound.music.stop();
 
         dialogueSongPosition = 0;
         dialogueBeatLengthMs = (60 / Math.max(bpm, 1)) * 1000;
@@ -328,33 +287,24 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     }
 
     function syncDialogueDanceBeat():Void {
-        if(FlxG.sound.music == null || dialogueBeatLengthMs <= 0) {
+        if (FlxG.sound.music == null || dialogueBeatLengthMs <= 0) {
             lastDialogueBeat = -1;
             return;
         }
-
         lastDialogueBeat = Math.floor(FlxG.sound.music.time / dialogueBeatLengthMs);
     }
 
     function updateDialogueGirlfriendDance():Void {
-        if(FlxG.sound.music == null || !playSong || dialogueBeatLengthMs <= 0) {
-            return;
-        }
+        if (FlxG.sound.music == null || !playSong || dialogueBeatLengthMs <= 0) return;
 
-		dialogueSongPosition = FlxG.sound.music.time;
+        dialogueSongPosition = FlxG.sound.music.time;
         var dialogueBeat:Int = Math.floor(dialogueSongPosition / dialogueBeatLengthMs);
-
-        if(dialogueBeat == lastDialogueBeat) {
-            return;
-        }
-
+        if (dialogueBeat == lastDialogueBeat) return;
         lastDialogueBeat = dialogueBeat;
 
-        if(girlfriend == null || girlfriend.animation.curAnim == null) {
-            return;
-        }
+        if (girlfriend == null || girlfriend.animation.curAnim == null) return;
 
-        if(dialogueBeat % girlfriend.danceBeatTimer == 0
+        if (dialogueBeat % girlfriend.danceBeatTimer == 0
             && !girlfriend.isSinging()
             && !girlfriend.stunned
             && girlfriend.shouldPlayDance) {
@@ -362,26 +312,35 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         }
     }
 
-    public function bindAssetsFromBytes():Void {
-        if(_info.totalSprites == null) {
-            return;
-        }
-
-        var index:Int = 0;
-    }
+    // ------------------------------------------------------------------------
+    // Binding API (called by per-mod subclasses)
+    // ------------------------------------------------------------------------
 
     public function bindAssetToID(ID:Int, path:String):Void {
         Cache.cacheAsset(path);
         assetBinds[ID] = path;
     }
 
+    public function bindAssetToName(name:String, path:String):Void {
+        Cache.cacheAsset(path);
+        assetBindsByName.set(name, path);
+    }
+
     public function bindSoundToID(ID:Int, path:Sound):Void {
         soundBinds[ID] = new FlxSound().loadEmbedded(path);
+    }
+
+    public function bindSoundToName(name:String, path:Sound):Void {
+        soundBindsByName.set(name, new FlxSound().loadEmbedded(path));
     }
 
     public function bindRawSoundToID(ID:Int, sound:FlxSound):Void {
         soundBinds[ID] = sound;
     }
+
+    // ------------------------------------------------------------------------
+    // Lifecycle
+    // ------------------------------------------------------------------------
 
     public function createDialogue(state:FlxState):Void {
         var playstate:PlayState = cast(state, PlayState);
@@ -411,12 +370,12 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
                 FlxTween.tween(blurEffect, {size: 20}, 0.75, {
                     ease: FlxEase.quadOut,
                     onUpdate: function(_:FlxTween) {
-                        if(playstateRef != null && playstateRef.camGame != null) {
+                        if (playstateRef != null && playstateRef.camGame != null) {
                             playstateRef.camGame.invalidateFilters();
                         }
                     },
                     onComplete: function(twn:FlxTween) {
-                        if(playstateRef != null && playstateRef.camGame != null) {
+                        if (playstateRef != null && playstateRef.camGame != null) {
                             playstateRef.camGame.invalidateFilters();
                         }
 
@@ -428,9 +387,9 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         });
     }
 
-    public function parseJSON():DialogueInfo {
-        var dialogueData:DialogueInfo = cast Json.parse(Paths.readText(Paths.json(PlayState.SONG.song.toLowerCase() + "/dialogue")).trim());
-        return dialogueData;
+    public function parseJSON():ConversationData {
+        var raw:Dynamic = Json.parse(Paths.readText(Paths.json(PlayState.SONG.song.toLowerCase() + "/dialogue")).trim());
+        return LegacyDialogueAdapter.up(raw);
     }
 
     public function attachToCamera(camera:FlxCamera):Void {
@@ -444,47 +403,44 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
     override function update(elapsed:Float):Void {
         updateDialogueGirlfriendDance();
 
-        if(controls.ACCEPT && !changingScene && dialogueScene < _info.info.length) {
+        if (controls.ACCEPT && !changingScene && dialogueScene < _info.scenes.length) {
             changingScene = true;
-
             refreshDisplay();
-        }else if(controls.ACCEPT && !changingScene && !(dialogueScene < _info.info.length)) { //Too lazy
+        } else if (controls.ACCEPT && !changingScene && !(dialogueScene < _info.scenes.length)) {
             changingScene = true;
 
             leftPortrait = FlxDestroyUtil.destroy(leftPortrait);
             rightPortrait = FlxDestroyUtil.destroy(rightPortrait);
             speechBubble = FlxDestroyUtil.destroy(speechBubble);
-
             displayText = FlxDestroyUtil.destroy(displayText);
-
             shadowText = FlxDestroyUtil.destroy(shadowText);
 
             FlxTween.tween(blurEffect, {size: 0}, 0.75, {
                 ease: FlxEase.quadOut,
                 onUpdate: function(_:FlxTween) {
-                    if(playstateRef != null && playstateRef.camGame != null) {
+                    if (playstateRef != null && playstateRef.camGame != null) {
                         playstateRef.camGame.invalidateFilters();
                     }
                 },
                 onComplete: function(twn:FlxTween) {
-                    if(playstateRef != null && playstateRef.camGame != null) {
+                    if (playstateRef != null && playstateRef.camGame != null) {
                         playstateRef.camGame.invalidateFilters();
                     }
-
                     finishCallback(this);
                 }
             });
         }
 
-        if(shadowText != null && displayText != null) {
+        if (shadowText != null && displayText != null) {
             shadowText.text = displayText.text;
         }
 
-        if(dialogueScene < _info.info.length) {
-            if(FlxG.sound.volume > 0)
-                soundBinds[_info.info[dialogueScene].soundIndex].volume = FlxG.sound.volume + 0.3;
-            else
-                soundBinds[_info.info[dialogueScene].soundIndex].volume = 0;
+        if (dialogueScene < _info.scenes.length) {
+            var s = sceneData(dialogueScene);
+            var snd = resolveSound(s);
+            if (snd != null) {
+                snd.volume = (FlxG.sound.volume > 0) ? (FlxG.sound.volume + 0.3) : 0;
+            }
         }
 
         super.update(elapsed);
@@ -497,11 +453,15 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         blurFilter = null;
         blurEffect = null;
 
-        for(i in 0...soundBinds.length) {
+        for (i in 0...soundBinds.length) {
             soundBinds[i] = FlxDestroyUtil.destroy(soundBinds[i]);
         }
-
         soundBinds = [];
+
+        for (name in soundBindsByName.keys()) {
+            soundBindsByName.set(name, FlxDestroyUtil.destroy(soundBindsByName.get(name)));
+        }
+        soundBindsByName.clear();
 
         super.destroy();
     }

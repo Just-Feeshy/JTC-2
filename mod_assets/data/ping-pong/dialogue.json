@@ -1,46 +1,17 @@
 {
-	"info": [
+	"version": "2.0.0",
+	"scenes": [
 		{
 			"speed": 1,
 			"talkingAnimation": null,
-			"textColor": 16766208,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
-				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [
-					{
-						"prefix": "bfPortraitCool",
-						"name": "bf",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 720,
-				"y": 172,
-				"assetID": 5,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
 			"text": [
 				"left portrait",
 				"..."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -55,26 +26,6 @@
 				"y": 60,
 				"assetID": 3,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
-				"size": 0.8
 			},
 			"rightPortrait": {
 				"animations": [
@@ -91,13 +42,33 @@
 				"assetID": 5,
 				"size": 0.6
 			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"You think wearing a chain and shades will make people think you're *cool*?"
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -111,26 +82,6 @@
 				"x": 200,
 				"y": 60,
 				"assetID": 1,
-				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
 				"size": 0.8
 			},
 			"rightPortrait": {
@@ -148,13 +99,33 @@
 				"assetID": 5,
 				"size": 0.6
 			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"..."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -168,26 +139,6 @@
 				"x": 200,
 				"y": 60,
 				"assetID": 1,
-				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
 				"size": 0.8
 			},
 			"rightPortrait": {
@@ -205,13 +156,33 @@
 				"assetID": 5,
 				"size": 0.6
 			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"..I guess it will, huh?"
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -226,12 +197,22 @@
 				"y": 60,
 				"assetID": 3,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [
+					{
+						"prefix": "bfPortraitCool",
+						"name": "bf",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 720,
+				"y": 172,
+				"assetID": 5,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -246,21 +227,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 5,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"I'm not impressed whatsoever but.."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -275,12 +254,14 @@
 				"y": 60,
 				"assetID": 3,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 5,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -295,21 +276,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 5,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"..you've got a lot of swag for a smurf."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -324,12 +303,14 @@
 				"y": 60,
 				"assetID": 2,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 3200456,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 5,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -344,152 +325,24 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [
-					{
-						"prefix": "bfPortraitCool",
-						"name": "bf",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 720,
-				"y": 172,
-				"assetID": 5,
-				"size": 0.6
-			},
-			"soundIndex": 1,
-			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"right portrait",
 				"Bee boo boo bop."
 			],
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			"textColor": 3200456,
 			"textSize": 32,
+			"soundIndex": 1,
 			"leftPortrait": {
 				"animations": [],
 				"x": 200,
 				"y": 60,
 				"assetID": 2,
-				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
-				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 1,
-				"size": 0.8
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
-			"text": [
-				"left portrait",
-				"Ha! Well that was just the *tip of the iceberg* blue boy!"
-			],
-			"textSize": 32,
-			"leftPortrait": {
-				"animations": [
-					{
-						"prefix": "jtcPortraitShout",
-						"name": "shout",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 200,
-				"y": 60,
-				"assetID": 1,
-				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
-				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 1,
-				"size": 0.8
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
-			"text": [
-				"left portrait",
-				"So you better manifest a coat next cause it's gonna get really *chilly*!"
-			],
-			"textSize": 32,
-			"leftPortrait": {
-				"animations": [
-					{
-						"prefix": "jtcPortraitShout",
-						"name": "shout",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 200,
-				"y": 60,
-				"assetID": 1,
-				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 3200456,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
 				"size": 0.8
 			},
 			"rightPortrait": {
@@ -507,20 +360,170 @@
 				"assetID": 5,
 				"size": 0.6
 			},
-			"soundIndex": 1,
-			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"text": [
+				"left portrait",
+				"Ha! Well that was just the *tip of the iceberg* blue boy!"
+			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
+			"textSize": 32,
+			"soundIndex": 0,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShout",
+						"name": "shout",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			},
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"text": [
+				"left portrait",
+				"So you better manifest a coat next cause it's gonna get really *chilly*!"
+			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
+			"textSize": 32,
+			"soundIndex": 0,
+			"leftPortrait": {
+				"animations": [
+					{
+						"prefix": "jtcPortraitShout",
+						"name": "shout",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 1,
+				"size": 0.8
+			},
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"right portrait",
 				"Ski-bi-dibby-dib yo-da-dub-dub."
 			],
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			"textColor": 3200456,
 			"textSize": 32,
+			"soundIndex": 1,
 			"leftPortrait": {
 				"animations": [],
 				"x": 200,
 				"y": 60,
 				"assetID": 2,
 				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [
+					{
+						"prefix": "bfPortraitCool",
+						"name": "bf",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 720,
+				"y": 172,
+				"assetID": 5,
+				"size": 0.6
+			},
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
 			}
 		}
-	]
+	],
+	"assetCatalog": [],
+	"soundCatalog": []
 }

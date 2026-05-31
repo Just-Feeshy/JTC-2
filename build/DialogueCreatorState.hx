@@ -1,170 +1,187 @@
 package;
 
+import flixel.FlxCamera;
 import flixel.FlxG;
-import flixel.addons.ui.FlxUI;
-import flixel.addons.ui.FlxUICheckBox;
-import flixel.addons.ui.FlxUITabMenu;
-import flixel.addons.ui.FlxUIDropDownMenu;
-import flixel.addons.ui.FlxUIButton;
-import flixel.addons.ui.FlxUIInputText;
-import flixel.addons.ui.FlxUINumericStepper;
 import flixel.input.keyboard.FlxKey;
-import flixel.util.FlxDestroyUtil;
-import flixel.util.FlxColor;
 import flixel.text.FlxText;
-import openfl.events.Event;
-import openfl.events.KeyboardEvent;
-import openfl.events.IOErrorEvent;
-import openfl.utils.ByteArray;
-import openfl.net.FileReference;
-import feshixl.utils.FeshBytesHandler;
-import feshixl.FeshSprite;
-import sys.FileSystem;
-import sys.io.File;
+import flixel.util.FlxColor;
+import flixel.util.FlxDestroyUtil;
+import haxe.Json;
 import haxe.io.Bytes;
 import haxe.io.Path;
-import haxe.Json;
+import haxe.ui.backend.flixel.UIState;
+import haxe.ui.components.Button;
+import haxe.ui.components.CheckBox;
+import haxe.ui.components.DropDown;
+import haxe.ui.components.Label;
+import haxe.ui.components.NumberStepper;
+import haxe.ui.components.TextArea;
+import haxe.ui.components.TextField;
+import openfl.events.Event;
+import openfl.events.IOErrorEvent;
+import openfl.events.KeyboardEvent;
+import openfl.net.FileReference;
+import sys.FileSystem;
+import sys.io.File;
 
-#if json2object
-import json2object.JsonParser;
-#end
+import data.dialogue.ConversationData;
+import data.dialogue.ConversationData.DialogueAssetEntry;
+import data.dialogue.ConversationData.DialogueSoundEntry;
+import data.dialogue.DialogueAnimationData;
+import data.dialogue.DialogueSceneData;
+import data.dialogue.DialogueSlot;
+import data.dialogue.DialogueSpriteData;
+import data.dialogue.LegacyDialogueAdapter;
+
+import feshixl.FeshSprite;
 
 import SaveData.SaveType;
-import ModInitialize.AnimationInfo;
-import IDialogue;
 
 using StringTools;
 
-enum abstract FileStatus(String) {
-    var NONE = "none";
-    var OVERRIDE = "override";
-    var DOCUMENT = "document";
-    var SOUND = "sound";
+private enum abstract ImportKind(String) from String to String {
+    var CatalogXml = "xml";
+    var CatalogPng = "png";
+    var SceneTxt = "txt";
+    var SceneSound = "ogg";
 }
 
 /**
-* BONUS CHALLENGE: Don't override the `update` method.
-*/
-class DialogueCreatorState extends MusicBeatState {
-    var UI_thingy:FlxUITabMenu;
+ * Editor for v2 ConversationData dialogue files.
+ *
+ * Built on HaxeUI (see assets/preload/data/dialogue-creator.xml) following the same
+ * pattern as ShaderEventEditorState. The state owns one in-memory ConversationData;
+ * every widget edit mutates that, and refreshes are pull-based: rebuild widgets from
+ * data, never the other direction implicitly.
+ */
+@:build(haxe.ui.ComponentBuilder.build("assets/preload/data/dialogue-creator.xml"))
+class DialogueCreatorState extends UIState {
+    // --- Cameras ---
+    var camHUD:FlxCamera;
+    var camGame:FlxCamera;
 
-    var _file:FileReference;
+    // --- Data being edited ---
+    var data:ConversationData;
+    var sceneIndex:Int = 0;
+    var slot:DialogueSlot = SpeechBubble;
 
-    var _info:DialogueInfo;
-
-    var fileStatus:FileStatus;
-    var fileType:Array<String> = [];
-
-    var totalSprites:Array<DialogueFileData>;
-
+    // --- Preview sprites (live on camGame) ---
     var leftPortrait:FeshSprite;
     var rightPortrait:FeshSprite;
     var speechBubble:FeshSprite;
+    var displayText:DialogueText;
 
-    var curSprite:String;
+    // --- File IO ---
+    var fileRef:FileReference;
+    var pendingImport:ImportKind;
 
-    var dialogueScene:Int = 0;
-    var selectedAsset:Int = 0;
+    // --- Re-entrancy guard ---
+    var suppressEvents:Bool = false;
 
-    var changeSprite:Bool = false;
+    // --- HaxeUI component refs (matched to ids in dialogue-creator.xml) ---
+    var instructionsLabel:Label;
+    var statusLabel:Label;
+    var slotSelector:DropDown;
+    var assetSelector:DropDown;
+    var attachAssetButton:Button;
+    var centerXButton:Button;
+    var xPosStepper:NumberStepper;
+    var yPosStepper:NumberStepper;
+    var sizeStepper:NumberStepper;
+    var catalogSelector:DropDown;
+    var importXmlButton:Button;
+    var importPngButton:Button;
+    var newAssetNameInput:TextField;
+    var createAssetButton:Button;
+    var catalogErrorLabel:Label;
+    var selectedSlotLabel:Label;
+    var existingAnimSelector:DropDown;
+    var sourcePrefixSelector:DropDown;
+    var animNameInput:TextField;
+    var framerateStepper:NumberStepper;
+    var loopedCheckbox:CheckBox;
+    var createAnimButton:Button;
+    var setMainAnimButton:Button;
+    var sceneStepper:NumberStepper;
+    var narratorDropDown:DropDown;
+    var importTxtButton:Button;
+    var importSoundButton:Button;
+    var sceneTextArea:TextArea;
+    var hexColorInput:TextField;
+    var fontStyleInput:TextField;
+    var speedStepper:NumberStepper;
+    var textSizeStepper:NumberStepper;
+    var soundIndexStepper:NumberStepper;
+    var talkCheckbox:CheckBox;
+    var playSceneButton:Button;
+    var newSceneButton:Button;
+    var sceneErrorLabel:Label;
+    var exportButton:Button;
+    var exportStatusLabel:Label;
 
     public function new() {
         super();
     }
 
     override function create():Void {
-        totalSprites = [];
+        camHUD = new FlxCamera();
+        camGame = new FlxCamera();
+        camHUD.bgColor.alpha = 0;
 
-        _info = {info: [{
+        FlxG.cameras.reset(camGame);
+        FlxG.cameras.add(camHUD);
+        FlixelCompat.setDefaultCameras([camHUD]);
+
+        data = makeDefaultConversation();
+
+        super.create();
+        this.root.cameras = [camHUD];
+
+        setupPreviewSprites();
+        wireUi();
+        refreshAll();
+
+        FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onGlobalKey);
+    }
+
+    // ------------------------------------------------------------------------
+    // Setup
+    // ------------------------------------------------------------------------
+
+    static function makeDefaultConversation():ConversationData {
+        return {
+            version: "2.0.0",
+            scenes: [makeDefaultScene()],
+            assetCatalog: [],
+            soundCatalog: []
+        };
+    }
+
+    static function makeDefaultScene():DialogueSceneData {
+        return {
             speed: 1.0,
-
             talkingAnimation: null,
-
-            text: ["", ""],
-            font: Paths.font("PhantomMuff.ttf"),
+            text: ["left portrait", ""],
+            font: "PhantomMuff.ttf",
             textColor: 0xFF000000,
             textSize: 32,
             soundIndex: 0,
-
-            leftPortrait: {animations: [], assetID: 2, size: 0.8, x: 200, y: 60},
-            rightPortrait: {animations: [], assetID: 1, size: 0.8, x: 720, y: 60},
-            speechBubble: {animations: [], assetID: 0, size: 0.8, x: 144, y: 400}
-        }], totalSprites: this.totalSprites, totalSounds: []};
-
-        var tabs = [
-            {name: "Dialogue", label: "Dialogue"},
-			{name: "E Sprites", label: 'Sprites'},
-            {name: "F Animation", label: 'Animation'},
-            {name: "Scene", label: 'Scene'},
-            {name: "T Export", label: 'Export'}
-		];
-
-        fileStatus = NONE;
-
-        refreshDisplay();
-
-        UI_thingy = new FlxUITabMenu(null, tabs, true);
-
-		UI_thingy.resize(300, 400);
-		UI_thingy.x = Std.int(FlxG.width - UI_thingy.width - 50);
-        UI_thingy.screenCenter(Y);
-        UI_thingy.y -= Std.int(UI_thingy.height / 4);
-        UI_thingy.scrollFactor.set();
-
-        add(UI_thingy);
-
-        createDialogueUI();
-        createDisplayUI();
-        createAnimationUI();
-        createSceneUI();
-        createExportUI();
-
-        FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
-
-        var escapeText:FlxText = new FlxText(30, 30, "ESCAPE - To Exit\n\nMade By: Feeshy");
-        add(escapeText);
-
-        super.create();
+            leftPortrait: {assetID: 2, animations: [], size: 0.8, x: 200, y: 60},
+            rightPortrait: {assetID: 1, animations: [], size: 0.8, x: 720, y: 60},
+            speechBubble: {assetID: 0, animations: [], size: 0.8, x: 144, y: 400}
+        };
     }
 
-    function refreshDisplay():Void {
-        _info.totalSprites = totalSprites;
-
-        var leftPortraitAnim:String = null;
-        var rightPortraitAnim:String = null;
-        var speechBubbleAnim:String = null;
-
-        if(leftPortrait != null) {
-            leftPortraitAnim = leftPortrait.animation.name;
-        }
-
-        if(rightPortrait != null) {
-            rightPortraitAnim = rightPortrait.animation.name;
-        }
-
-        if(speechBubble != null) {
-            speechBubbleAnim = speechBubble.animation.name;
-        }
-
-        remove(leftPortrait);
-        remove(rightPortrait);
-        remove(speechBubble);
-
-        leftPortrait = FlxDestroyUtil.destroy(leftPortrait);
-        rightPortrait = FlxDestroyUtil.destroy(rightPortrait);
-        speechBubble = FlxDestroyUtil.destroy(speechBubble);
-
+    function setupPreviewSprites():Void {
         leftPortrait = new FeshSprite();
         rightPortrait = new FeshSprite();
         speechBubble = new FeshSprite();
 
-        leftPortrait.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].leftPortrait.assetID]));
-        rightPortrait.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].rightPortrait.assetID]));
-        speechBubble.implementXML(safelyGetAssetInfo("xml", totalSprites[_info.info[dialogueScene].speechBubble.assetID]));
-
-        leftPortrait.implementBitmap(safelyGetAssetInfo("sprite", totalSprites[_info.info[dialogueScene].leftPortrait.assetID]));
-        rightPortrait.implementBitmap(safelyGetAssetInfo("sprite", totalSprites[_info.info[dialogueScene].rightPortrait.assetID]));
-        speechBubble.implementBitmap(safelyGetAssetInfo("sprite", totalSprites[_info.info[dialogueScene].speechBubble.assetID]));
+        for (s in [leftPortrait, rightPortrait, speechBubble]) {
+            s.antialiasing = SaveData.getData(SaveType.GRAPHICS);
+            s.cameras = [camGame];
+            add(s);
+        }
 
         speechBubble.defaultCompiler = function() {
             speechBubble.frames = Paths.getSparrowAtlas("speech_bubble_talking", "shared");
@@ -172,1005 +189,596 @@ class DialogueCreatorState extends MusicBeatState {
             speechBubble.playAnim("normal");
         }
 
-        add(leftPortrait);
-        add(rightPortrait);
-        add(speechBubble);
-
-        leftPortrait.completeCallback = function() {
-            implementAnimToSprite(leftPortrait, "left portrait");
-            leftPortrait.playAnim(leftPortraitAnim);
-        }
-
-        rightPortrait.completeCallback = function() {
-            implementAnimToSprite(rightPortrait, "right portrait");
-            rightPortrait.playAnim(rightPortraitAnim);
-        }
-
-        speechBubble.completeCallback = function() {
-            implementAnimToSprite(speechBubble, "speech bubble");
-            speechBubble.playAnim(speechBubbleAnim);
-        }
-
-        leftPortrait.compileSprite();
-        rightPortrait.compileSprite();
-        speechBubble.compileSprite();
-
-        refreshDisplayPosition();
-
-        leftPortrait.antialiasing = SaveData.getData(SaveType.GRAPHICS);
-        rightPortrait.antialiasing = SaveData.getData(SaveType.GRAPHICS);
-        speechBubble.antialiasing = SaveData.getData(SaveType.GRAPHICS);
-
-        if(thisSprite != null) {
-            thisSprite.text = "Selected sprite: " + dialogueSpriteSelector.selectedLabel;
-        }
-
-        if(curSprite == null) {
-            curSprite = "speech bubble";
-        }
-
-        if(spriteSelector != null) {
-            var tempSelected:String = spriteSelector.selectedLabel;
-            spriteSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(getSpriteNames(), true));
-            spriteSelector.selectedLabel = tempSelected;
-        }
-
-        if(dialogueAssetSelector != null) {
-            var tempSelected:String = dialogueAssetSelector.selectedLabel;
-            dialogueAssetSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(getSpriteNames(), true));
-            dialogueAssetSelector.selectedLabel = tempSelected;
-        }
-
-        if(animSourceSelector != null) {
-            animSourceSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(getSpriteAnimations(dialogueSpriteSelector.selectedLabel), true));
-        }
-
-        if(animSelector != null) {
-            animSelector.setData(FlxUIDropDownMenu.makeStrIdLabelArray(getSprAnimDataName(dialogueSpriteSelector.selectedLabel), true));
-        }
-
-        if(narratorDropDown != null) {
-            narratorDropDown.selectedLabel = _info.info[dialogueScene].text[0];
-
-            if(narratorDropDown.selectedLabel == "left portrait") {
-                rightPortrait.visible = false;
-                leftPortrait.visible = true;
-                speechBubble.flipX = true;
-            }else {
-                rightPortrait.visible = true;
-                leftPortrait.visible = false;
-                speechBubble.flipX = false;
-            }
-        }
-
-        if(sceneStepper != null) {
-            sceneStepper.value = dialogueScene + 1;
-            sceneStepper.max = _info.info.length - 1;
-        }
-
-        if(soundIndexStepper != null) {
-            soundIndexStepper.max = _info.totalSounds.length;
-            soundIndexStepper.value = _info.info[dialogueScene].soundIndex;
-        }
-
-        setSpriteSteppers();
-
-        refreshDisplayText(_info.info[dialogueScene].text[1]);
-        refreshDisplaySound();
+        var escText:FlxText = new FlxText(30, 30, "ESCAPE - To Exit\n\nDialogue Creator v2");
+        escText.cameras = [camGame];
+        add(escText);
     }
 
-    var displayText:DialogueText;
+    function wireUi():Void {
+        instructionsLabel.text = "ESC - Back to Editors";
+        statusLabel.text = "";
 
-    function refreshDisplayText(text:String = ""):Void {
-        if(hexColorInput != null) {
-            if(hexColorInput.text.trim() != "") {
-                _info.info[dialogueScene].textColor = Std.parseInt("0x" + hexColorInput.text.replace("#", ""));
+        // ---- Dialogue tab ----
+        populateDropDown(slotSelector, [for (s in DialogueSlot.ALL) (s : String)]);
+        selectDropDownItem(slotSelector, (slot : String));
+
+        slotSelector.onChange = function(_) {
+            if (suppressEvents) return;
+            slot = cast getDropDownValue(slotSelector, (slot : String));
+            selectedSlotLabel.text = "Selected slot: " + (slot : String);
+            refreshSlotWidgets();
+        };
+
+        assetSelector.onChange = function(_) {/* selection commits on attach */};
+
+        attachAssetButton.onClick = function(_) {
+            var name = getDropDownValue(assetSelector, null);
+            if (name == null || name == "") return;
+            var idx = catalogIndex(name);
+            slotData().assetName = name;
+            slotData().assetID = idx;
+            rebuildPreview();
+        };
+
+        centerXButton.onClick = function(_) {
+            switch (slot) {
+                case SpeechBubble:
+                    speechBubble.screenCenter(X);
+                    slotData().x = speechBubble.x;
+                case RightPortrait:
+                    rightPortrait.x = FlixelCompat.getScreenCenter(rightPortrait, X) + 300;
+                    slotData().x = rightPortrait.x;
+                case LeftPortrait:
+                    leftPortrait.x = FlixelCompat.getScreenCenter(leftPortrait, X) - 300;
+                    slotData().x = leftPortrait.x;
             }
+            refreshSlotWidgets();
+            refreshPreviewPosition();
+        };
 
-            hexColorInput.text = "";
-        }
+        xPosStepper.onChange = function(_) {
+            if (suppressEvents) return;
+            slotData().x = xPosStepper.pos;
+            refreshPreviewPosition();
+        };
+        yPosStepper.onChange = function(_) {
+            if (suppressEvents) return;
+            slotData().y = yPosStepper.pos;
+            refreshPreviewPosition();
+        };
+        sizeStepper.onChange = function(_) {
+            if (suppressEvents) return;
+            slotData().size = sizeStepper.pos;
+            refreshPreviewPosition();
+        };
 
-        if(fontStyleInput != null) {
-            if(fontStyleInput.text.trim() != "") {
-                if(Paths.font(fontStyleInput.text) != null) {
-                    _info.info[dialogueScene].font = Paths.font(fontStyleInput.text);
-                }else {
-                    _info.info[dialogueScene].font = fontStyleInput.text;
-                }
-            }
+        // ---- Sprites tab ----
+        importXmlButton.onClick = function(_) startImport(CatalogXml);
+        importPngButton.onClick = function(_) startImport(CatalogPng);
 
-            fontStyleInput.text = "";
-        }
-
-        if(displayText != null) {
-            displayText.sounds = [FeshBytesHandler.loadSoundFromByteArray(ByteArray.fromBytes(_info.totalSounds[_info.info[dialogueScene].soundIndex]))];
-            displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
-            displayText.size = _info.info[dialogueScene].textSize;
-            displayText.font = _info.info[dialogueScene].font;
-            displayText.color = _info.info[dialogueScene].textColor;
-
-            if(text.trim() != "") {
-                displayText.resetText(text);
-                displayText.start(0.04 / _info.info[dialogueScene].speed, true);
-            }
-        }else {
-            displayText = new DialogueText(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10, Std.int(FlxG.width * 0.8), "", _info.info[dialogueScene].textSize);
-            add(displayText);
-            displayText.font = _info.info[dialogueScene].font;
-            displayText.color = _info.info[dialogueScene].textColor;
-        }
-    }
-
-    function refreshDisplaySound():Void {
-        if(speedStepper != null) {
-            _info.info[dialogueScene].speed = Std.int(speedStepper.value);
-        }
-
-        if(talkCheckbox != null) {
-            if(talkCheckbox.checked) {
-                _info.info[dialogueScene].talkingAnimation = animSelector.selectedLabel;
-            }else {
-                _info.info[dialogueScene].talkingAnimation = null;
-            }
-        }
-    }
-
-    function refreshDisplayPosition():Void {
-        leftPortrait.scale.set(_info.info[dialogueScene].leftPortrait.size, _info.info[dialogueScene].leftPortrait.size);
-        rightPortrait.scale.set(_info.info[dialogueScene].rightPortrait.size, _info.info[dialogueScene].rightPortrait.size);
-        speechBubble.scale.set(_info.info[dialogueScene].speechBubble.size, _info.info[dialogueScene].speechBubble.size);
-
-        leftPortrait.updateHitbox();
-        rightPortrait.updateHitbox();
-        speechBubble.updateHitbox();
-        
-        leftPortrait.x = _info.info[dialogueScene].leftPortrait.x;
-        leftPortrait.y = _info.info[dialogueScene].leftPortrait.y;
-        rightPortrait.x = _info.info[dialogueScene].rightPortrait.x;
-        rightPortrait.y = _info.info[dialogueScene].rightPortrait.y;
-        speechBubble.x = _info.info[dialogueScene].speechBubble.x;
-        speechBubble.y = _info.info[dialogueScene].speechBubble.y;
-    }
-
-    function clearDisplayText():Void {
-        displayText.resetText(_info.info[dialogueScene].text[1]);
-        displayText.start(0.04 / _info.info[dialogueScene].speed, true);
-    }
-
-    var dialogueSpriteSelector:FlxUIDropDownMenu;
-    var dialogueAssetSelector:FlxUIDropDownMenu;
-
-    var xPosStepper:FlxUINumericStepper;
-    var yPosStepper:FlxUINumericStepper;
-    var sizeStepper:FlxUINumericStepper;
-
-    function createDialogueUI():Void {
-        var tab_group_dialogue = new FlxUI(null, UI_thingy);
-        tab_group_dialogue.name = "Dialogue";
-
-        var instructionSprite:FlxText = new FlxText(10, 10, "Select sprite");
-
-        dialogueSpriteSelector = new FlxUIDropDownMenu(10, 30, FlxUIDropDownMenu.makeStrIdLabelArray(["speech bubble", "left portrait", "right portrait"], true), function(choose:String) {
-            changeSprite = true;
-        });
-        dialogueSpriteSelector.selectedLabel = "speech bubble";
-
-        dialogueAssetSelector = new FlxUIDropDownMenu(10 + dialogueSpriteSelector.x + dialogueSpriteSelector.width, 30, FlxUIDropDownMenu.makeStrIdLabelArray(getSpriteNames(), true), function(choose:String) {
-            //changeSprite = true;
-        });
-        dialogueAssetSelector.selectedLabel = getSpriteNames()[0];
-
-        var attachAssets:FlxUIButton = new FlxUIButton(10, dialogueSpriteSelector.y + dialogueSpriteSelector.height + 10, "Attach Asset\nTo Sprite", function() {
-            if(dialogueAssetSelector.selectedLabel.trim() == "") {
+        createAssetButton.onClick = function(_) {
+            var name = StringTools.trim(newAssetNameInput.text);
+            catalogErrorLabel.text = "";
+            if (name == "") {
+                catalogErrorLabel.text = "Asset name required.";
                 return;
             }
-
-            switch(dialogueSpriteSelector.selectedLabel) {
-                case "speech bubble": _info.info[dialogueScene].speechBubble.assetID = getSpriteNames().indexOf(dialogueAssetSelector.selectedLabel);
-                case "right portrait": _info.info[dialogueScene].rightPortrait.assetID = getSpriteNames().indexOf(dialogueAssetSelector.selectedLabel);
-                case "left portrait": _info.info[dialogueScene].leftPortrait.assetID = getSpriteNames().indexOf(dialogueAssetSelector.selectedLabel);
-                default: return;
-            }
-
-            changeSprite = true;
-        });
-        attachAssets.color = FlxColor.LIME;
-        attachAssets.label.color = FlxColor.WHITE;
-        attachAssets.resize(attachAssets.width, attachAssets.height * 1.5);
-
-        var instructionAsset:FlxText = new FlxText(dialogueAssetSelector.x, 10, "Select asset");
-
-        var centerXButton:FlxUIButton = new FlxUIButton(attachAssets.x + attachAssets.width + 5, attachAssets.y, "Reset Sprite's X Position", function() {
-            switch(dialogueSpriteSelector.selectedLabel) {
-                case "speech bubble": {speechBubble.screenCenter(X); _info.info[dialogueScene].speechBubble.x = speechBubble.x;}
-                case "right portrait": {rightPortrait.x = FlixelCompat.getScreenCenter(rightPortrait, X) + 300; _info.info[dialogueScene].rightPortrait.x = rightPortrait.x;}
-                case "left portrait": {leftPortrait.x = FlixelCompat.getScreenCenter(leftPortrait, X) - 300; _info.info[dialogueScene].leftPortrait.x = leftPortrait.x;}
-                default: return;
-            }
-
-            changeSprite = true;
-        });
-        centerXButton.color = 0x00eeff;
-        centerXButton.label.color = FlxColor.WHITE;
-        centerXButton.resize(centerXButton.width, centerXButton.height * 1.5);
-
-        xPosStepper = new FlxUINumericStepper(10, attachAssets.y + attachAssets.height + 10, 1, _info.info[dialogueScene].speechBubble.x, -FlxG.width, FlxG.width);
-        xPosStepper.name = "info_xSprite";
-
-        yPosStepper = new FlxUINumericStepper(10, xPosStepper.y + xPosStepper.height, 1, _info.info[dialogueScene].speechBubble.y, -FlxG.height, FlxG.height);
-        yPosStepper.name = "info_ySprite";
-
-        sizeStepper = new FlxUINumericStepper(10, yPosStepper.y + yPosStepper.height + 5, 0.1, _info.info[dialogueScene].speechBubble.size, 0.1, 10.0, 1);
-        sizeStepper.name = "info_sizeSprite";
-
-        var xPosText:FlxText = new FlxText(xPosStepper.x + xPosStepper.width + 5, xPosStepper.y, "X");
-        var yPosText:FlxText = new FlxText(yPosStepper.x + yPosStepper.width + 5, yPosStepper.y, "Y");
-        var sizeText:FlxText = new FlxText(sizeStepper.x + sizeStepper.width + 5, sizeStepper.y, "size");
-
-        tab_group_dialogue.add(instructionSprite);
-        tab_group_dialogue.add(instructionAsset);
-        tab_group_dialogue.add(dialogueSpriteSelector);
-        tab_group_dialogue.add(dialogueAssetSelector);
-        tab_group_dialogue.add(attachAssets);
-        tab_group_dialogue.add(centerXButton);
-        tab_group_dialogue.add(xPosStepper);
-        tab_group_dialogue.add(yPosStepper);
-        tab_group_dialogue.add(sizeStepper);
-        tab_group_dialogue.add(xPosText);
-        tab_group_dialogue.add(yPosText);
-        tab_group_dialogue.add(sizeText);
-
-        UI_thingy.addGroup(tab_group_dialogue);
-    }
-
-    var spriteSelector:FlxUIDropDownMenu;
-    var unableLabel:FlxText;
-
-    function createDisplayUI():Void {
-        var tab_group_display = new FlxUI(null, UI_thingy);
-		tab_group_display.name = "E Sprites";
-
-        var instructions:FlxText = new FlxText(10, 10, "Select asset from the drop down menu to modify");
-
-        spriteSelector = new FlxUIDropDownMenu(10, 30, FlxUIDropDownMenu.makeStrIdLabelArray(getSpriteNames(), true), function(choose:String) {
-            //changeSprite = true;
-        });
-        spriteSelector.selectedLabel = getSpriteNames()[0];
-
-        var getXML:FlxUIButton = new FlxUIButton(spriteSelector.width + spriteSelector.x + 20, 30, "Import XML", function() {
-            fileStatus = OVERRIDE;
-            fileType = [".xml"];
-
-            _file = new FileReference();
-			_file.addEventListener(Event.SELECT, onSelect);
-			_file.addEventListener(Event.CANCEL, onCancel);
-
-            _file.browse();
-        });
-
-        var getPNG:FlxUIButton = new FlxUIButton(getXML.x, 5 + getXML.y + getXML.height, "Import PNG", function() {
-            fileStatus = OVERRIDE;
-            fileType = [".png"];
-
-            _file = new FileReference();
-			_file.addEventListener(Event.SELECT, onSelect);
-			_file.addEventListener(Event.CANCEL, onCancel);
-
-            _file.browse();
-        });
-
-        unableLabel = new FlxText(10, 50, "");
-		unableLabel.color = FlxColor.RED;
-
-        var inputName:FlxUIInputText = new FlxUIInputText(getXML.x, getPNG.y + getPNG.height + 20, 80, "", 8);
-
-        var createAsset:FlxUIButton = new FlxUIButton(getXML.x, inputName.y + inputName.height + 5, "Create Asset", function() {
-            if(inputName.text.trim() != "") {
-                totalSprites.push({
-                    name: inputName.text,
-                    spriteData: null,
-                    xmlData: null
-                });
-            }
-
-            inputName.text = "";
-            changeSprite = true;
-        });
-        createAsset.color = FlxColor.GREEN;
-        createAsset.label.color = FlxColor.WHITE;
-
-        var nameText:FlxText = new FlxText(0, inputName.y, "Asset Name: ");
-        nameText.x = inputName.x - 70;
-
-        tab_group_display.add(instructions);
-        tab_group_display.add(spriteSelector);
-        tab_group_display.add(getXML);
-        tab_group_display.add(getPNG);
-        tab_group_display.add(unableLabel);
-        tab_group_display.add(inputName);
-        tab_group_display.add(createAsset);
-        tab_group_display.add(nameText);
-
-        UI_thingy.addGroup(tab_group_display);
-    }
-
-    var thisSprite:FlxText;
-
-    var animSourceSelector:FlxUIDropDownMenu;
-    var animSelector:FlxUIDropDownMenu;
-
-    var inputAnimName:FlxUIInputText;
-    var framerateStepper:FlxUINumericStepper;
-    var loopedCheckbox:FlxUICheckBox;
-
-    function createAnimationUI():Void {
-        var tab_group_animation = new FlxUI(null, UI_thingy);
-        tab_group_animation.name = "F Animation";
-
-        thisSprite = new FlxText(10, 10, "Selected sprite: " + dialogueSpriteSelector.selectedLabel);
-
-        animSelector = new FlxUIDropDownMenu(10, 60, FlxUIDropDownMenu.makeStrIdLabelArray([""], true), function(choose:String) {
-            //empty
-        });
-
-        animSourceSelector = new FlxUIDropDownMenu(142, 60, FlxUIDropDownMenu.makeStrIdLabelArray([""], true), function(choose:String) {
-            //empty
-        });
-
-        var animSourceListTxt:FlxText = new FlxText(142, 40, "Select source animation");
-        var animListTxt:FlxText = new FlxText(10, 40, "Select animation");
-
-        var createAnimButton:FlxUIButton = new FlxUIButton(10, 200, "Create Animation", function() {
-            if(inputAnimName == null) {
+            if (catalogIndex(name) >= 0) {
+                catalogErrorLabel.text = "Asset name already exists.";
                 return;
             }
+            data.assetCatalog.push({name: name, spritePath: null, xmlPath: null});
+            newAssetNameInput.text = "";
+            refreshCatalogDropdowns();
+        };
 
-            if(inputAnimName.text.trim() == "") {
-                return;
-            }
-
-            if(framerateStepper == null) {
-                return;
-            }
-
-            if(loopedCheckbox == null) {
-                return;
-            }
-
-            switch(dialogueSpriteSelector.selectedLabel) {
-                case "speech bubble": _info.info[dialogueScene].speechBubble.animations.push({name: inputAnimName.text, prefix: animSourceSelector.selectedLabel, framerate: Std.int(framerateStepper.value), looped: loopedCheckbox.checked, offset: []});
-                case "right portrait": _info.info[dialogueScene].rightPortrait.animations.push({name: inputAnimName.text, prefix: animSourceSelector.selectedLabel, framerate: Std.int(framerateStepper.value), looped: loopedCheckbox.checked, offset: []});
-                case "left portrait": _info.info[dialogueScene].leftPortrait.animations.push({name: inputAnimName.text, prefix: animSourceSelector.selectedLabel, framerate: Std.int(framerateStepper.value), looped: loopedCheckbox.checked, offset: []});
-                default: return;
-            }
-
-            inputAnimName.text = "";
-            framerateStepper.value = 24;
-            loopedCheckbox.checked = false;
-
-            changeSprite = true;
-        });
-        createAnimButton.color = FlxColor.GREEN;
-        createAnimButton.label.color = FlxColor.WHITE;
-        createAnimButton.resize(createAnimButton.width, createAnimButton.height * 1.5);
-
-        var refreshAnimButton:FlxUIButton = new FlxUIButton(createAnimButton.x + createAnimButton.width + 5, 200, "Set Animation As Main", function() {
-            implementAnimToSprite(leftPortrait, "left portrait");
-            implementAnimToSprite(rightPortrait, "right portrait");
-            implementAnimToSprite(speechBubble, "speech bubble");
-
-            if(animSelector.selectedLabel.trim() == "") {
-                return;
-            }
-
-            switch(dialogueSpriteSelector.selectedLabel) {
-                case "speech bubble": speechBubble.playAnim(animSelector.selectedLabel);
-                case "right portrait": rightPortrait.playAnim(animSelector.selectedLabel);
-                case "left portrait": leftPortrait.playAnim(animSelector.selectedLabel);
-                default: return;
-            }
-
-            if(talkCheckbox.checked) {
-                _info.info[dialogueScene].talkingAnimation = animSelector.selectedLabel;
-                displayText.shouldPlayAnim(_info.info[dialogueScene].talkingAnimation);
-            }else {
-                _info.info[dialogueScene].talkingAnimation = null;
-            }
-        });
-        refreshAnimButton.color = FlxColor.LIME;
-        refreshAnimButton.label.color = FlxColor.WHITE;
-        refreshAnimButton.resize(refreshAnimButton.width, refreshAnimButton.height * 1.5);
-
-        inputAnimName = new FlxUIInputText(10, createAnimButton.y + createAnimButton.height + 10, 80, "");
-        var animNameText:FlxText = new FlxText(inputAnimName.x + inputAnimName.width + 5, inputAnimName.y, "Animation Name");
-
-        framerateStepper = new FlxUINumericStepper(10, inputAnimName.y + inputAnimName.height + 10, 1, 24, 0, 60);
-        framerateStepper.name = "info_framerate";
-
-        var framerateText:FlxText = new FlxText(framerateStepper.x + framerateStepper.width + 10, framerateStepper.y, "Framerate");
-
-        loopedCheckbox = new FlxUICheckBox(10, framerateStepper.y + framerateStepper.height + 10, null, null, "Looped", 50);
-        loopedCheckbox.checked = false;
-
-        tab_group_animation.add(thisSprite);
-        tab_group_animation.add(animSourceSelector);
-        tab_group_animation.add(animSelector);
-        tab_group_animation.add(animSourceListTxt);
-        tab_group_animation.add(animListTxt);
-        tab_group_animation.add(createAnimButton);
-        tab_group_animation.add(refreshAnimButton);
-        tab_group_animation.add(inputAnimName);
-        tab_group_animation.add(animNameText);
-        tab_group_animation.add(framerateStepper);
-        tab_group_animation.add(framerateText);
-        tab_group_animation.add(loopedCheckbox);
-
-        UI_thingy.addGroup(tab_group_animation);
-    }
-
-    var unableLabelOther:FlxText;
-    var narratorDropDown:FlxUIDropDownMenu;
-
-    var hexColorInput:FlxUIInputText;
-    var fontStyleInput:FlxUIInputText;
-
-    var speedStepper:FlxUINumericStepper;
-    var soundIndexStepper:FlxUINumericStepper;
-    var textSizeStepper:FlxUINumericStepper;
-    var sceneStepper:FlxUINumericStepper;
-
-    var talkCheckbox:FlxUICheckBox;
-
-    function createSceneUI():Void {
-        var tab_group_scene = new FlxUI(null, UI_thingy);
-        tab_group_scene.name = "Scene";
-
-        sceneStepper = new FlxUINumericStepper(10, 30, 1, 1, 1, _info.info.length);
-        sceneStepper.name = "info_scene";
-
-        var selectSceneText:FlxText = new FlxText(sceneStepper.x + sceneStepper.width + 10, 30, "Dialogue Scene");
-
-        var getTXT:FlxUIButton = new FlxUIButton(10, 60, "Import TXT", function() {
-            fileStatus = DOCUMENT;
-            fileType = [".txt"];
-
-            _file = new FileReference();
-			_file.addEventListener(Event.SELECT, onSelect);
-			_file.addEventListener(Event.CANCEL, onCancel);
-
-            _file.browse();
-        });
-
-        var getSound:FlxUIButton = new FlxUIButton(10, getTXT.y + getTXT.height + 5, "Import OGG", function() {
-            fileStatus = SOUND;
-            fileType = [".ogg"];
-
-            _file = new FileReference();
-			_file.addEventListener(Event.SELECT, onSelect);
-			_file.addEventListener(Event.CANCEL, onCancel);
-
-            _file.browse();
-        });
-
-        unableLabelOther = new FlxText(getTXT.x, getTXT.y + getTXT.height + 25, "");
-        unableLabelOther.color = FlxColor.RED;
-
-        var playDialogue:FlxUIButton = new FlxUIButton(10, getSound.y + getSound.height + 50, "Play/Refresh Dialogue", function() {
-            if(narratorDropDown.selectedLabel == "left portrait") {
-                leftPortrait.playAnim(leftPortrait.animation.name);
-            }else {
-                rightPortrait.playAnim(rightPortrait.animation.name);
-            }
-
-            if(soundIndexStepper != null) {
-                _info.info[dialogueScene].soundIndex = Std.int(soundIndexStepper.value);
-            }
-
-            refreshDisplayText(_info.info[dialogueScene].text[1]);
-            refreshDisplaySound();
-        });
-        playDialogue.color = FlxColor.LIME;
-        playDialogue.label.color = FlxColor.WHITE;
-        playDialogue.resize(playDialogue.width, playDialogue.height * 1.5);
-
-        var newDialogueScene:FlxUIButton = new FlxUIButton(playDialogue.x + playDialogue.width + 5, playDialogue.y, "Create New Dialogue Scene", function() {
-            _info.info.push({
-                speed: 1.0,
-    
-                talkingAnimation: null,
-    
-                text: ["", ""],
-                font: Paths.font("PhantomMuff-Full-Letters-1.1.5.ttf"),
-                textColor: 0xFF000000,
-                textSize: 32,
-                soundIndex: 0,
-    
-                leftPortrait: {animations: [], assetID: 2, size: 0.8, x: 200, y: 60},
-                rightPortrait: {animations: [], assetID: 1, size: 0.8, x: 720, y: 60},
-                speechBubble: {animations: [], assetID: 0, size: 0.8, x: 144, y: 400}
+        // ---- Animation tab ----
+        createAnimButton.onClick = function(_) {
+            var name = StringTools.trim(animNameInput.text);
+            var prefix = getDropDownValue(sourcePrefixSelector, "");
+            if (name == "" || prefix == "") return;
+            slotData().animations.push({
+                name: name,
+                prefix: prefix,
+                framerate: Std.int(framerateStepper.pos),
+                looped: loopedCheckbox.selected,
+                offset: []
             });
+            animNameInput.text = "";
+            framerateStepper.pos = 24;
+            loopedCheckbox.selected = false;
+            rebuildPreview();
+        };
 
-            dialogueScene = _info.info.length - 1;
-            changeSprite = true;
+        setMainAnimButton.onClick = function(_) {
+            implementSlotAnimations(spriteForSlot(SpeechBubble), SpeechBubble);
+            implementSlotAnimations(spriteForSlot(LeftPortrait), LeftPortrait);
+            implementSlotAnimations(spriteForSlot(RightPortrait), RightPortrait);
 
-            clearDisplayText();
-        });
-        newDialogueScene.color = FlxColor.GREEN;
-        newDialogueScene.label.color = FlxColor.WHITE;
-        newDialogueScene.resize(newDialogueScene.width, newDialogueScene.height * 1.5);
+            var animName = getDropDownValue(existingAnimSelector, "");
+            if (animName == "") return;
 
-        hexColorInput = new FlxUIInputText(10, playDialogue.y + playDialogue.height + 15, 80, "");
-        fontStyleInput = new FlxUIInputText(10, hexColorInput.y + hexColorInput.height + 5, 80, "");
+            spriteForSlot(slot).playAnim(animName);
 
-        var hexColorText:FlxText = new FlxText(hexColorInput.x + hexColorInput.width + 5, hexColorInput.y, "Hex Color");
-        var fontStyleText:FlxText = new FlxText(fontStyleInput.x + fontStyleInput.width + 5, fontStyleInput.y, "Font Style");
-
-        speedStepper = new FlxUINumericStepper(10, fontStyleInput.y + fontStyleInput.height + 10, 0.1, 1.0, 0.1, 10.0, 1);
-        soundIndexStepper = new FlxUINumericStepper(10, speedStepper.y + speedStepper.height, 1, 0, 0, _info.totalSounds.length);
-
-        var speedText:FlxText = new FlxText(speedStepper.x + speedStepper.width + 5, speedStepper.y, "Speed Meter");
-        var soundText:FlxText = new FlxText(soundIndexStepper.x + soundIndexStepper.width + 5, soundIndexStepper.y, "Sound Index");
-
-        textSizeStepper = new FlxUINumericStepper(speedText.x + speedText.width + 5, speedStepper.y, 1, _info.info[dialogueScene].textSize, 8, 128);
-        textSizeStepper.name = "info_textsize";
-
-        var textSizeText:FlxText = new FlxText(textSizeStepper.x + textSizeStepper.width + 5, textSizeStepper.y, "Text Size");
-
-        talkCheckbox = new FlxUICheckBox(hexColorText.x + hexColorText.width + 10, hexColorInput.y, null, null, "Talk Animation", 80);
-        talkCheckbox.checked = (_info.info[dialogueScene].talkingAnimation != null ? true : false);
-
-        narratorDropDown = new FlxUIDropDownMenu(getTXT.x + getTXT.width + 20, 60, FlxUIDropDownMenu.makeStrIdLabelArray(["left portrait", "right portrait"], true), function(choose:String) {
-            switch(choose) {
-                case "left portrait": displayText.attachSprite(leftPortrait);
-                case "right portrait": displayText.attachSprite(rightPortrait);
+            if (talkCheckbox.selected) {
+                scene().talkingAnimation = animName;
+                if (displayText != null) displayText.shouldPlayAnim(animName);
+            } else {
+                scene().talkingAnimation = null;
             }
+        };
 
-            if(choose == "left portrait") {
-                rightPortrait.visible = false;
-                leftPortrait.visible = true;
-                speechBubble.flipX = true;
-            }else {
-                rightPortrait.visible = true;
-                leftPortrait.visible = false;
-                speechBubble.flipX = false;
+        // ---- Scene tab ----
+        sceneStepper.onChange = function(_) {
+            if (suppressEvents) return;
+            var target:Int = Std.int(sceneStepper.pos) - 1;
+            if (target == sceneIndex) return;
+            sceneIndex = clampScene(target);
+            rebuildPreview();
+        };
+
+        narratorDropDown.onChange = function(_) {
+            if (suppressEvents) return;
+            var choice = getDropDownValue(narratorDropDown, "left portrait");
+            scene().text[0] = choice;
+            applyNarratorVisibility(choice);
+            if (displayText != null) {
+                if (choice == "left portrait") displayText.attachSprite(leftPortrait);
+                else displayText.attachSprite(rightPortrait);
             }
-        });
+        };
 
-        if(narratorDropDown.selectedLabel == "left portrait") {
-            rightPortrait.visible = false;
+        importTxtButton.onClick = function(_) startImport(SceneTxt);
+        importSoundButton.onClick = function(_) startImport(SceneSound);
+
+        sceneTextArea.onChange = function(_) {
+            if (suppressEvents) return;
+            scene().text[1] = sceneTextArea.text;
+        };
+
+        hexColorInput.onChange = function(_) {
+            if (suppressEvents) return;
+            var t = hexColorInput.text.replace("#", "").trim();
+            if (t == "") return;
+            var parsed = Std.parseInt("0x" + t);
+            if (parsed != null) scene().textColor = parsed;
+        };
+
+        fontStyleInput.onChange = function(_) {
+            if (suppressEvents) return;
+            var t = fontStyleInput.text.trim();
+            if (t == "") return;
+            var resolved = Paths.font(t);
+            scene().font = (resolved != null) ? resolved : t;
+        };
+
+        speedStepper.onChange = function(_) {
+            if (suppressEvents) return;
+            scene().speed = speedStepper.pos;
+        };
+        textSizeStepper.onChange = function(_) {
+            if (suppressEvents) return;
+            scene().textSize = Std.int(textSizeStepper.pos);
+        };
+        soundIndexStepper.onChange = function(_) {
+            if (suppressEvents) return;
+            scene().soundIndex = Std.int(soundIndexStepper.pos);
+        };
+        talkCheckbox.onChange = function(_) {
+            if (suppressEvents) return;
+            if (talkCheckbox.selected) {
+                var animName = getDropDownValue(existingAnimSelector, "");
+                scene().talkingAnimation = (animName == "") ? null : animName;
+            } else {
+                scene().talkingAnimation = null;
+            }
+        };
+
+        playSceneButton.onClick = function(_) {
+            var narrator = scene().text[0];
+            if (narrator == "left portrait") leftPortrait.playAnim(leftPortrait.animation.name);
+            else rightPortrait.playAnim(rightPortrait.animation.name);
+            refreshPreviewText(scene().text[1]);
+        };
+
+        newSceneButton.onClick = function(_) {
+            data.scenes.push(makeDefaultScene());
+            sceneIndex = data.scenes.length - 1;
+            rebuildPreview();
+        };
+
+        // ---- Export tab ----
+        exportButton.onClick = function(_) exportToJson();
+    }
+
+    // ------------------------------------------------------------------------
+    // Refresh helpers
+    // ------------------------------------------------------------------------
+
+    function refreshAll():Void {
+        refreshCatalogDropdowns();
+        rebuildPreview();
+    }
+
+    /**
+     * Full refresh: rebuild preview sprites from current scene's slot data, sync
+     * every widget that depends on the scene/slot.
+     */
+    function rebuildPreview():Void {
+        var leftAnim = (leftPortrait.animation.name != null) ? leftPortrait.animation.name : null;
+        var rightAnim = (rightPortrait.animation.name != null) ? rightPortrait.animation.name : null;
+        var bubbleAnim = (speechBubble.animation.name != null) ? speechBubble.animation.name : null;
+
+        loadSpriteFromCatalog(leftPortrait, slotDataFor(LeftPortrait), LeftPortrait, leftAnim);
+        loadSpriteFromCatalog(rightPortrait, slotDataFor(RightPortrait), RightPortrait, rightAnim);
+        loadSpriteFromCatalog(speechBubble, slotDataFor(SpeechBubble), SpeechBubble, bubbleAnim);
+
+        refreshPreviewPosition();
+        refreshPreviewText(scene().text[1]);
+
+        applyNarratorVisibility(scene().text[0]);
+        refreshAnimDropdowns();
+        refreshSlotWidgets();
+        refreshSceneWidgets();
+    }
+
+    function loadSpriteFromCatalog(spr:FeshSprite, spriteData:DialogueSpriteData, which:DialogueSlot, preserveAnim:String):Void {
+        var entry = resolveCatalogEntry(spriteData);
+
+        var spriteBytes:Bytes = (entry != null) ? readPathBytes(entry.spritePath) : null;
+        var xmlBytes:Bytes = (entry != null) ? readPathBytes(entry.xmlPath) : null;
+
+        spr.implementXML(xmlBytes);
+        spr.implementBitmap(spriteBytes);
+
+        spr.completeCallback = function() {
+            implementSlotAnimations(spr, which);
+            if (preserveAnim != null && spr.animation.getByName(preserveAnim) != null) {
+                spr.playAnim(preserveAnim);
+            }
+        }
+
+        spr.compileSprite();
+    }
+
+    function refreshPreviewPosition():Void {
+        for (s in DialogueSlot.ALL) {
+            var spr = spriteForSlot(s);
+            var sd = slotDataFor(s);
+            spr.scale.set(sd.size, sd.size);
+            spr.updateHitbox();
+            spr.x = sd.x;
+            spr.y = sd.y;
+        }
+    }
+
+    function refreshPreviewText(text:String):Void {
+        if (displayText == null) {
+            displayText = new DialogueText(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10,
+                Std.int(FlxG.width * 0.8), "", scene().textSize);
+            displayText.cameras = [camGame];
+            add(displayText);
+        }
+
+        displayText.setPosition(speechBubble.x + 100, speechBubble.y + Std.int(speechBubble.height / 3) + 10);
+        displayText.size = scene().textSize;
+        displayText.font = scene().font;
+        displayText.color = scene().textColor;
+
+        if (text != null && text.trim() != "") {
+            displayText.resetText(text);
+            displayText.start(0.04 / scene().speed, true);
+        }
+    }
+
+    function applyNarratorVisibility(narrator:String):Void {
+        if (narrator == "left portrait") {
             leftPortrait.visible = true;
+            rightPortrait.visible = false;
             speechBubble.flipX = true;
-        }else {
-            rightPortrait.visible = true;
+        } else {
             leftPortrait.visible = false;
+            rightPortrait.visible = true;
             speechBubble.flipX = false;
         }
-
-        tab_group_scene.add(sceneStepper);
-        tab_group_scene.add(selectSceneText);
-        tab_group_scene.add(getTXT);
-        tab_group_scene.add(getSound);
-        tab_group_scene.add(playDialogue);
-        tab_group_scene.add(newDialogueScene);
-        tab_group_scene.add(narratorDropDown);
-        tab_group_scene.add(unableLabelOther);
-        tab_group_scene.add(hexColorInput);
-        tab_group_scene.add(fontStyleInput);
-        tab_group_scene.add(hexColorText);
-        tab_group_scene.add(fontStyleText);
-        tab_group_scene.add(speedStepper);
-        tab_group_scene.add(soundIndexStepper);
-        tab_group_scene.add(speedText);
-        tab_group_scene.add(soundText);
-        tab_group_scene.add(talkCheckbox);
-        tab_group_scene.add(textSizeStepper);
-        tab_group_scene.add(textSizeText);
-
-        UI_thingy.addGroup(tab_group_scene);
     }
 
-    function createExportUI():Void {
-        var tab_group_export = new FlxUI(null, UI_thingy);
-        tab_group_export.name = "T Export";
-
-        var exportToJson:FlxUIButton = new FlxUIButton(10, 30, "Export", function() {
-            saveLevel();
-        });
-
-        tab_group_export.add(exportToJson);
-
-        UI_thingy.addGroup(tab_group_export);
+    function refreshSlotWidgets():Void {
+        suppressEvents = true;
+        var sd = slotData();
+        xPosStepper.pos = sd.x;
+        yPosStepper.pos = sd.y;
+        sizeStepper.pos = sd.size;
+        selectedSlotLabel.text = "Selected slot: " + (slot : String);
+        suppressEvents = false;
     }
 
-    function getSpriteAnimations(spriteName:String):Array<String> {
-        var animation:Array<String>;
+    function refreshSceneWidgets():Void {
+        suppressEvents = true;
+        sceneStepper.max = data.scenes.length;
+        sceneStepper.pos = sceneIndex + 1;
 
-        switch(spriteName) {
-            case "speech bubble": animation = speechBubble.getSourceAnimationName();
-            case "right portrait": animation = rightPortrait.getSourceAnimationName();
-            case "left portrait": animation = leftPortrait.getSourceAnimationName();
-            default: animation = [];
-        }
+        soundIndexStepper.max = Math.max(0, data.soundCatalog.length - 1);
+        soundIndexStepper.pos = scene().soundIndex;
 
-        if(animation.length == 0) {
-            animation.push("");
-        }
+        speedStepper.pos = scene().speed;
+        textSizeStepper.pos = scene().textSize;
+        talkCheckbox.selected = (scene().talkingAnimation != null);
 
-        return animation;
+        if (sceneTextArea.text != scene().text[1]) sceneTextArea.text = scene().text[1];
+
+        populateDropDown(narratorDropDown, ["left portrait", "right portrait"]);
+        selectDropDownItem(narratorDropDown, scene().text[0]);
+        suppressEvents = false;
     }
 
-    function getSprAnimDataName(spriteName:String):Array<String> {
-        var animNames:Array<String> = [];
-        var index = 0;
+    function refreshCatalogDropdowns():Void {
+        suppressEvents = true;
 
-        var animHandler:Array<AnimationInfo>;
-        
-        switch(spriteName) {
-            case "speech bubble": animHandler = _info.info[dialogueScene].speechBubble.animations;
-            case "right portrait": animHandler = _info.info[dialogueScene].rightPortrait.animations;
-            case "left portrait": animHandler = _info.info[dialogueScene].leftPortrait.animations;
-            default: animHandler = [];
-        }
+        var names:Array<String> = [for (e in data.assetCatalog) e.name];
+        if (names.length == 0) names = [""];
 
-        while(index < animHandler.length) {
-            animNames.push(animHandler[index++].name);
-        }
+        var prevAsset = getDropDownValue(assetSelector, "");
+        populateDropDown(assetSelector, names);
+        selectDropDownItem(assetSelector, prevAsset != "" ? prevAsset : names[0]);
 
-        if(animNames.length == 0) {
-            animNames.push("");
-        }
+        var prevCat = getDropDownValue(catalogSelector, "");
+        populateDropDown(catalogSelector, names);
+        selectDropDownItem(catalogSelector, prevCat != "" ? prevCat : names[0]);
 
-        return animNames;
+        suppressEvents = false;
     }
 
-    function implementAnimToSprite(spr:FeshSprite, spriteName:String):Void {
-        var index = 0;
+    function refreshAnimDropdowns():Void {
+        suppressEvents = true;
+        var spr = spriteForSlot(slot);
+        var prefixes = spr.getSourceAnimationName();
+        if (prefixes.length == 0) prefixes = [""];
+        populateDropDown(sourcePrefixSelector, prefixes);
 
-        var animHandler:Array<AnimationInfo>;
-        
-        switch(spriteName) {
-            case "speech bubble": animHandler = _info.info[dialogueScene].speechBubble.animations;
-            case "right portrait": animHandler = _info.info[dialogueScene].rightPortrait.animations;
-            case "left portrait": animHandler = _info.info[dialogueScene].leftPortrait.animations;
-            default: animHandler = [];
+        var existing:Array<String> = [for (a in slotData().animations) a.name];
+        if (existing.length == 0) existing = [""];
+        populateDropDown(existingAnimSelector, existing);
+        suppressEvents = false;
+    }
+
+    // ------------------------------------------------------------------------
+    // Slot routing
+    // ------------------------------------------------------------------------
+
+    inline function scene():DialogueSceneData return data.scenes[sceneIndex];
+    inline function slotData():DialogueSpriteData return slotDataFor(slot);
+
+    function slotDataFor(s:DialogueSlot):DialogueSpriteData {
+        return switch (s) {
+            case SpeechBubble: scene().speechBubble;
+            case LeftPortrait: scene().leftPortrait;
+            case RightPortrait: scene().rightPortrait;
         }
+    }
 
+    function spriteForSlot(s:DialogueSlot):FeshSprite {
+        return switch (s) {
+            case SpeechBubble: speechBubble;
+            case LeftPortrait: leftPortrait;
+            case RightPortrait: rightPortrait;
+        }
+    }
+
+    function implementSlotAnimations(spr:FeshSprite, s:DialogueSlot):Void {
         spr.animation.destroyAnimations();
-
-        while(index < animHandler.length) {
-            spr.animation.addByPrefix(animHandler[index].name, animHandler[index].prefix, animHandler[index].framerate, animHandler[index].looped);
-
-            index++;
+        for (a in slotDataFor(s).animations) {
+            spr.animation.addByPrefix(a.name, a.prefix, a.framerate, a.looped);
         }
     }
 
-    function getSpriteNames():Array<String> {
-        var spriteArray:Array<String> = [];
+    // ------------------------------------------------------------------------
+    // Catalog resolution
+    // ------------------------------------------------------------------------
 
-        for(i in 0...totalSprites.length) {
-            spriteArray.push(totalSprites[i].name);
+    function catalogIndex(name:String):Int {
+        if (name == null) return -1;
+        for (i in 0...data.assetCatalog.length) {
+            if (data.assetCatalog[i].name == name) return i;
         }
-
-        if(spriteArray[0] == null) {
-            spriteArray.push("");
-        }
-
-        return spriteArray;
+        return -1;
     }
 
-    function setSpriteSteppers():Void {
-        if(dialogueSpriteSelector == null) {
-            return;
+    function resolveCatalogEntry(sd:DialogueSpriteData):DialogueAssetEntry {
+        if (sd == null) return null;
+        if (sd.assetName != null) {
+            for (e in data.assetCatalog) if (e.name == sd.assetName) return e;
         }
-
-        if(xPosStepper == null) {
-            return;
+        if (sd.assetID >= 0 && sd.assetID < data.assetCatalog.length) {
+            return data.assetCatalog[sd.assetID];
         }
-
-        if(yPosStepper == null) {
-            return;
-        }
-
-        if(sizeStepper == null) {
-            return;
-        }
-
-        if(dialogueSpriteSelector.selectedLabel == "speech bubble") {
-            xPosStepper.value = _info.info[dialogueScene].speechBubble.x;
-            yPosStepper.value = _info.info[dialogueScene].speechBubble.y;
-            sizeStepper.value = _info.info[dialogueScene].speechBubble.size;
-        }else if(dialogueSpriteSelector.selectedLabel == "right portrait") {
-            xPosStepper.value = _info.info[dialogueScene].rightPortrait.x;
-            yPosStepper.value = _info.info[dialogueScene].rightPortrait.y;
-            sizeStepper.value = _info.info[dialogueScene].rightPortrait.size;
-        }else if(dialogueSpriteSelector.selectedLabel == "left portrait") {
-            xPosStepper.value = _info.info[dialogueScene].leftPortrait.x;
-            yPosStepper.value = _info.info[dialogueScene].leftPortrait.y;
-            sizeStepper.value = _info.info[dialogueScene].leftPortrait.size;
-        }
-    }
-
-    function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>):Void {
-        if((id == FlxUIDropDownMenu.CLICK_EVENT || id == "click_button") && changeSprite) {
-            changeSprite = false;
-            refreshDisplay();
-        }
-
-        if(id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper)) {
-            var nums:FlxUINumericStepper = cast sender;
-			var wname = nums.name;
-
-            if(wname == "info_scene") {
-                if(dialogueScene != Std.int(nums.value) - 1) {
-                    dialogueScene = Std.int(nums.value) - 1;
-                    refreshDisplay();
-                }
-            }else if(wname == "info_textsize") {
-                _info.info[dialogueScene].textSize = Std.int(nums.value);
-            }else if(wname == "info_xSprite") {
-                switch(dialogueSpriteSelector.selectedLabel) {
-                    case "speech bubble": _info.info[dialogueScene].speechBubble.x = Std.int(nums.value);
-                    case "right portrait": _info.info[dialogueScene].rightPortrait.x = Std.int(nums.value);
-                    case "left portrait": _info.info[dialogueScene].leftPortrait.x = Std.int(nums.value);
-                    default: return;
-                }
-
-                refreshDisplayPosition();
-            }else if(wname == "info_ySprite") {
-                switch(dialogueSpriteSelector.selectedLabel) {
-                    case "speech bubble": _info.info[dialogueScene].speechBubble.y = Std.int(nums.value);
-                    case "right portrait": _info.info[dialogueScene].rightPortrait.y = Std.int(nums.value);
-                    case "left portrait": _info.info[dialogueScene].leftPortrait.y = Std.int(nums.value);
-                    default: return;
-                }
-
-                refreshDisplayPosition();
-            }else if(wname == "info_sizeSprite") {
-                switch(dialogueSpriteSelector.selectedLabel) {
-                    case "speech bubble": _info.info[dialogueScene].speechBubble.size = nums.value;
-                    case "right portrait": _info.info[dialogueScene].rightPortrait.size = nums.value;
-                    case "left portrait": _info.info[dialogueScene].leftPortrait.size = nums.value;
-                    default: return;
-                }
-
-                refreshDisplayPosition();
-            }
-        }
-    }
-
-    function safelyGetAssetInfo(value:String, file:DialogueFileData):Bytes {
-        if(file != null) {
-            if(value == "sprite") {
-                if(file.spriteData != null) {
-                    return file.spriteData;
-                }
-
-                if(file.spritePath != null && file.spritePath.trim() != "") {
-                    return loadDialogueAssetBytes(file.spritePath);
-                }
-            }else {
-                if(file.xmlData != null) {
-                    return file.xmlData;
-                }
-
-                if(file.xmlPath != null && file.xmlPath.trim() != "") {
-                    return loadDialogueAssetBytes(file.xmlPath);
-                }
-            }
-        }
-
         return null;
     }
 
-    function loadDialogueAssetBytes(path:String):Bytes {
-        if(path == null || path.trim() == "") {
-            return null;
-        }
-
-        var normalizedPath = normalizeDialogueAssetPath(path);
-
-        if(FileSystem.exists(normalizedPath)) {
-            return File.getBytes(normalizedPath);
-        }
-
-        return null;
+    function clampScene(target:Int):Int {
+        if (target < 0) return 0;
+        if (target >= data.scenes.length) return data.scenes.length - 1;
+        return target;
     }
 
-    function normalizeDialogueAssetPath(path:String):String {
-        if(path == null || path.trim() == "") {
-            return "";
-        }
+    // ------------------------------------------------------------------------
+    // HaxeUI dropdown helpers (same shape as ShaderEventEditorState)
+    // ------------------------------------------------------------------------
 
-        var normalizedPath = Path.normalize(path);
-        var cwd = Path.normalize(Sys.getCwd());
+    function populateDropDown(dd:DropDown, items:Array<String>):Void {
+        dd.dataSource.clear();
+        for (item in items) dd.dataSource.add({id: item, text: item});
+    }
 
-        if(normalizedPath.startsWith(cwd)) {
-            normalizedPath = normalizedPath.substr(cwd.length);
-
-            while(normalizedPath.startsWith("/") || normalizedPath.startsWith("\\")) {
-                normalizedPath = normalizedPath.substr(1);
+    function selectDropDownItem(dd:DropDown, value:String):Void {
+        for (i in 0...dd.dataSource.size) {
+            var item:Dynamic = dd.dataSource.get(i);
+            var id:Dynamic = item != null ? Reflect.field(item, "id") : null;
+            if (Std.string(id) == value) {
+                dd.selectedIndex = i;
+                return;
             }
         }
-
-        return normalizedPath;
+        if (dd.dataSource.size > 0) dd.selectedIndex = 0;
     }
 
-    function getSelectedDialogueAssetPath():String {
+    function getDropDownValue(dd:DropDown, fallback:String):String {
+        if (dd.selectedIndex < 0 || dd.selectedIndex >= dd.dataSource.size) return fallback;
+        var item:Dynamic = dd.dataSource.get(dd.selectedIndex);
+        if (item == null) return fallback;
+        var id:Dynamic = Reflect.field(item, "id");
+        return id == null ? fallback : Std.string(id);
+    }
+
+    // ------------------------------------------------------------------------
+    // File IO
+    // ------------------------------------------------------------------------
+
+    function startImport(kind:ImportKind):Void {
+        pendingImport = kind;
+        fileRef = new FileReference();
+        fileRef.addEventListener(Event.SELECT, onFileSelect);
+        fileRef.addEventListener(Event.CANCEL, onFileCancel);
+        fileRef.browse();
+    }
+
+    function onFileSelect(e:Event):Void {
+        fileRef = cast(e.target, FileReference);
+        fileRef.addEventListener(Event.COMPLETE, onFileLoaded);
+        fileRef.load();
+    }
+
+    function onFileLoaded(e:Event):Void {
+        fileRef = cast(e.target, FileReference);
+
+        var expectedExt = "." + (pendingImport : String);
+        if (fileRef.type != expectedExt) {
+            statusLabel.text = "File type mismatch: expected " + expectedExt;
+            cleanupFileRef();
+            return;
+        }
+
+        var path = normalizeAssetPath(getSelectedPath());
+
+        switch (pendingImport) {
+            case CatalogXml | CatalogPng:
+                var name = getDropDownValue(catalogSelector, "");
+                if (name == "") {
+                    catalogErrorLabel.text = "Create or select a catalog entry first.";
+                    cleanupFileRef();
+                    return;
+                }
+                var idx = catalogIndex(name);
+                if (idx < 0) {
+                    catalogErrorLabel.text = "Catalog entry not found: " + name;
+                    cleanupFileRef();
+                    return;
+                }
+                if (pendingImport == CatalogXml) data.assetCatalog[idx].xmlPath = path;
+                else data.assetCatalog[idx].spritePath = path;
+                catalogErrorLabel.text = "Bound " + (pendingImport : String) + ": " + path;
+                rebuildPreview();
+
+            case SceneTxt:
+                scene().text[0] = getDropDownValue(narratorDropDown, "left portrait");
+                scene().text[1] = fileRef.data.toString();
+                refreshSceneWidgets();
+                refreshPreviewText(scene().text[1]);
+
+            case SceneSound:
+                data.soundCatalog.push({
+                    name: Path.withoutExtension(Path.withoutDirectory(path)),
+                    path: path
+                });
+                scene().soundIndex = data.soundCatalog.length - 1;
+                refreshSceneWidgets();
+        }
+
+        cleanupFileRef();
+    }
+
+    function onFileCancel(_):Void {
+        cleanupFileRef();
+    }
+
+    function onFileSaveComplete(_):Void {
+        exportStatusLabel.text = "Saved.";
+        cleanupFileRef();
+    }
+
+    function onFileSaveError(_):Void {
+        exportStatusLabel.text = "Save failed.";
+        cleanupFileRef();
+    }
+
+    function cleanupFileRef():Void {
+        if (fileRef == null) return;
+        fileRef.removeEventListener(Event.SELECT, onFileSelect);
+        fileRef.removeEventListener(Event.CANCEL, onFileCancel);
+        fileRef.removeEventListener(Event.COMPLETE, onFileLoaded);
+        fileRef.removeEventListener(Event.COMPLETE, onFileSaveComplete);
+        fileRef.removeEventListener(IOErrorEvent.IO_ERROR, onFileSaveError);
+        fileRef = null;
+    }
+
+    function getSelectedPath():String {
         #if sys
-        var selectedPath:String = @:privateAccess _file.__path;
-        return normalizeDialogueAssetPath(selectedPath);
+        return @:privateAccess fileRef.__path;
         #else
-        return null;
+        return fileRef.name;
         #end
     }
 
-    function serializeDialogueSprites():Array<Dynamic> {
-        var output:Array<Dynamic> = [];
-
-        for(entry in totalSprites) {
-            var serialized:Dynamic = {
-                name: entry.name
-            };
-
-            if(entry.spritePath != null && entry.spritePath.trim() != "") {
-                Reflect.setField(serialized, "spritePath", normalizeDialogueAssetPath(entry.spritePath));
-            } else if(entry.spriteData != null) {
-                Reflect.setField(serialized, "spriteData", entry.spriteData);
-            }
-
-            if(entry.xmlPath != null && entry.xmlPath.trim() != "") {
-                Reflect.setField(serialized, "xmlPath", normalizeDialogueAssetPath(entry.xmlPath));
-            } else if(entry.xmlData != null) {
-                Reflect.setField(serialized, "xmlData", entry.xmlData);
-            }
-
-            output.push(serialized);
+    static function normalizeAssetPath(path:String):String {
+        if (path == null || path.trim() == "") return "";
+        var n = Path.normalize(path);
+        var cwd = Path.normalize(Sys.getCwd());
+        if (n.startsWith(cwd)) {
+            n = n.substr(cwd.length);
+            while (n.startsWith("/") || n.startsWith("\\")) n = n.substr(1);
         }
-
-        return output;
+        return n;
     }
 
-    function attachKeysToEditor(event:KeyboardEvent):Void {
-        var key:FlxKey = event.keyCode;
+    static function readPathBytes(path:String):Bytes {
+        if (path == null || path.trim() == "") return null;
+        if (FileSystem.exists(path)) return File.getBytes(path);
+        return null;
+    }
 
-        if(key == FlxKey.ESCAPE) {
+    // ------------------------------------------------------------------------
+    // Export
+    // ------------------------------------------------------------------------
+
+    function exportToJson():Void {
+        var json = Json.stringify(data, "\t");
+        if (json == null || json.length == 0) return;
+
+        fileRef = new FileReference();
+        fileRef.addEventListener(Event.COMPLETE, onFileSaveComplete);
+        fileRef.addEventListener(Event.CANCEL, onFileCancel);
+        fileRef.addEventListener(IOErrorEvent.IO_ERROR, onFileSaveError);
+        fileRef.save(json.trim(), "dialogue.json");
+    }
+
+    // ------------------------------------------------------------------------
+    // Lifecycle
+    // ------------------------------------------------------------------------
+
+    function onGlobalKey(event:KeyboardEvent):Void {
+        var key:FlxKey = event.keyCode;
+        if (key == FlxKey.ESCAPE) {
             FlxG.switchState(new OptionsMenuState("editors"));
         }
     }
 
-    function saveLevel():Void {
-        var json:Dynamic = {
-			"info": _info.info
-		};
-
-        var serializedSprites = serializeDialogueSprites();
-
-        if(serializedSprites.length > 0) {
-            Reflect.setField(json, "totalSprites", serializedSprites);
-        }
-
-        var data:String = Json.stringify(json, "\t");
-
-        if ((data != null) && (data.length > 0))
-        {
-            _file = new FileReference();
-            _file.addEventListener(Event.COMPLETE, onSaveComplete);
-            _file.addEventListener(Event.CANCEL, onCancel);
-            _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-            _file.save(data.trim(), "dialogue.json");
-        }
-    }
-
-    function onSelect(event:Event):Void {
-        _file = cast(event.target, FileReference);
-        _file.addEventListener(Event.COMPLETE, onComplete);
-        _file.load();
-    }
-
-	function onSaveComplete(_):Void {
-		clearEvent();
-		FlxG.log.notice("Successfully saved DIALOGUE.");
-	}
-
-	function onComplete(event:Event):Void {
-        clearEvent();
-        _file = cast(event.target, FileReference);
-
-        unableLabel.text = "";
-
-        var foundFile:Bool = false;
-
-        for(i in 0...fileType.length) {
-            if(_file.type == fileType[i]) {
-                foundFile = true;
-                break;
-            }
-        }
-
-        if(!foundFile) {
-            unableLabel.text = "Unable to compile file:\n" + _file.name;
-            return;
-        }
-
-		switch(fileStatus) {
-            case OVERRIDE:
-                if(spriteSelector.selectedLabel.trim() == "") {
-                    unableLabel.text = "Unable to compile file:\n" + _file.name + "\n\n" + "You must create an empty asset value.";
-                    return;
-                }
-
-                if(fileType.contains(".xml")) {
-                    for(i in 0...totalSprites.length) {
-                        if(spriteSelector.selectedLabel == totalSprites[i].name) {
-                            totalSprites[i].xmlPath = getSelectedDialogueAssetPath();
-                            totalSprites[i].xmlData = null;
-                            break;
-                        }
-                    }
-                }else if(fileType.contains(".png")) {
-                    for(i in 0...totalSprites.length) {
-                        if(spriteSelector.selectedLabel == totalSprites[i].name) {
-                            totalSprites[i].spritePath = getSelectedDialogueAssetPath();
-                            totalSprites[i].spriteData = null;
-                            break;
-                        }
-                    }
-                }
-
-                refreshDisplay();
-
-                fileType = [];
-            case DOCUMENT:
-                _info.info[dialogueScene].text[0] = narratorDropDown.selectedLabel;
-                _info.info[dialogueScene].text[1] = _file.data.toString();
-
-                if(!foundFile) {
-                    unableLabelOther.text = "Unable to compile file:\n" + _file.name;
-                    return;
-                }
-
-                fileType = [];
-            case SOUND:
-                _info.totalSounds.push(FeshBytesHandler.bytesFromArray(_file.data));
-
-                if(!foundFile) {
-                    unableLabelOther.text = "Unable to compile file:\n" + _file.name;
-                    return;
-                }
-
-                refreshDisplaySound();
-
-                fileType = [];
-            default:
-                return;
-        }
-	}
-
-	/**
-	 * Called when the save file dialog is cancelled.
-	 */
-	function onCancel(_):Void {
-		clearEvent();
-	}
-
-	function onSaveError(_):Void {
-		clearEvent();
-		FlxG.log.error("Problem saving dialogue data");
-	}
-
-	function clearEvent():Void {
-        _file.removeEventListener(Event.COMPLETE, onComplete);
-        _file.removeEventListener(Event.COMPLETE, onSaveComplete);
-        _file.removeEventListener(Event.CANCEL, onCancel);
-        _file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-        _file.removeEventListener(Event.SELECT, onSelect);
-        _file = null;
-    }
-
     override function destroy():Void {
-        clearEvent();
-        FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, attachKeysToEditor);
-
+        cleanupFileRef();
+        FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onGlobalKey);
+        leftPortrait = FlxDestroyUtil.destroy(leftPortrait);
+        rightPortrait = FlxDestroyUtil.destroy(rightPortrait);
+        speechBubble = FlxDestroyUtil.destroy(speechBubble);
+        displayText = FlxDestroyUtil.destroy(displayText);
         super.destroy();
     }
 }

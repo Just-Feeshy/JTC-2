@@ -49,6 +49,10 @@ class Paths
 	static var remoteSharedAtlasPending:Map<String, Array<FlxAtlasFrames->Void>> = [];
 	static var remoteSharedSoundCache:Map<String, Sound> = [];
 	static var remoteSharedSoundPending:Map<String, Array<Sound->Void>> = [];
+	static var remoteGraphicCache:Map<String, FlxGraphic> = [];
+	static var remoteGraphicPending:Map<String, Array<FlxGraphic->Void>> = [];
+	static var remoteSoundCache:Map<String, Sound> = [];
+	static var remoteSoundPending:Map<String, Array<Sound->Void>> = [];
 
 	static function get_modJSON():ConfigDef {
 		if(!OpenFlAssets.exists("config/mod.json")) {
@@ -653,6 +657,124 @@ class Paths
 			catch (e:Dynamic)
 			{
 				trace('Error: could not build remote shared sound - ' + key + ' -> ' + Std.string(e));
+				finish(null);
+			}
+		});
+		#else
+		onComplete(null);
+		#end
+	}
+
+	static public function getCachedRemoteGraphic(relativePath:String):FlxGraphic
+	{
+		return remoteGraphicCache.exists(relativePath) ? remoteGraphicCache.get(relativePath) : null;
+	}
+
+	static public function loadRemoteGraphic(relativePath:String, onComplete:FlxGraphic->Void):Void
+	{
+		#if sys
+		if (remoteGraphicCache.exists(relativePath))
+		{
+			onComplete(remoteGraphicCache.get(relativePath));
+			return;
+		}
+
+		if (remoteGraphicPending.exists(relativePath))
+		{
+			remoteGraphicPending.get(relativePath).push(onComplete);
+			return;
+		}
+
+		remoteGraphicPending.set(relativePath, [onComplete]);
+
+		function finish(graphic:FlxGraphic):Void
+		{
+			var callbacks = remoteGraphicPending.get(relativePath);
+			remoteGraphicPending.remove(relativePath);
+
+			if (graphic != null)
+				remoteGraphicCache.set(relativePath, graphic);
+
+			if (callbacks != null)
+			{
+				for (callback in callbacks)
+					callback(graphic);
+			}
+		}
+
+		loadRemoteBytes(relativePath, function(imageBytes) {
+			if (imageBytes == null)
+			{
+				finish(null);
+				return;
+			}
+
+			try
+			{
+				var graphicKey = '__remote__/$relativePath';
+				var graphic = Cache.cachePermanentFromByteArray(graphicKey, ByteArray.fromBytes(imageBytes));
+				finish(graphic);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Error: could not build remote graphic - ' + relativePath + ' -> ' + Std.string(e));
+				finish(null);
+			}
+		});
+		#else
+		onComplete(null);
+		#end
+	}
+
+	static public function loadRemoteSound(relativePath:String, onComplete:Sound->Void):Void
+	{
+		#if sys
+		if (remoteSoundCache.exists(relativePath))
+		{
+			onComplete(remoteSoundCache.get(relativePath));
+			return;
+		}
+
+		if (remoteSoundPending.exists(relativePath))
+		{
+			remoteSoundPending.get(relativePath).push(onComplete);
+			return;
+		}
+
+		remoteSoundPending.set(relativePath, [onComplete]);
+
+		function finish(sound:Sound):Void
+		{
+			var callbacks = remoteSoundPending.get(relativePath);
+			remoteSoundPending.remove(relativePath);
+
+			if (sound != null)
+				remoteSoundCache.set(relativePath, sound);
+
+			if (callbacks != null)
+			{
+				for (callback in callbacks)
+					callback(sound);
+			}
+		}
+
+		loadRemoteBytes(relativePath, function(soundBytes) {
+			if (soundBytes == null)
+			{
+				finish(null);
+				return;
+			}
+
+			try
+			{
+				var sound = new Sound();
+				var byteArray = ByteArray.fromBytes(soundBytes);
+				sound.loadCompressedDataFromByteArray(byteArray, byteArray.length);
+				finish(sound);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Error: could not build remote sound - ' + relativePath + ' -> ' + Std.string(e));
 				finish(null);
 			}
 		});

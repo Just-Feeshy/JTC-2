@@ -1,38 +1,17 @@
 {
-	"info": [
+	"version": "2.0.0",
+	"scenes": [
 		{
 			"speed": 1,
 			"talkingAnimation": null,
-			"textColor": 16766208,
-			"speechBubble": {
-				"animations": [
-					{
-						"prefix": "jtcDialogueBox",
-						"name": "open",
-						"framerate": 24,
-						"offset": [],
-						"looped": false
-					}
-				],
-				"x": 13,
-				"y": 320,
-				"assetID": 0,
-				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
 			"text": [
 				"left portrait",
 				"HELL YEAH!"
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -47,12 +26,14 @@
 				"y": 36,
 				"assetID": 6,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -67,21 +48,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"Man, that was so *cold* it gave me *chills*!"
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -96,12 +75,14 @@
 				"y": 36,
 				"assetID": 6,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -116,21 +97,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"Hah, okay, okay, you got me.."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -145,12 +124,14 @@
 				"y": 60,
 				"assetID": 7,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -165,21 +146,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"..I was just messing around."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -194,12 +173,14 @@
 				"y": 60,
 				"assetID": 2,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -214,21 +195,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"I think you're really funkin' *cool*!"
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -243,12 +222,14 @@
 				"y": 60,
 				"assetID": 1,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 3200456,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -262,6 +243,25 @@
 				"x": 13,
 				"y": 320,
 				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"text": [
+				"right portrait",
+				"Bibbidi Bobbidi Boo!"
+			],
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			"textColor": 3200456,
+			"textSize": 32,
+			"soundIndex": 1,
+			"leftPortrait": {
+				"animations": [],
+				"x": 200,
+				"y": 60,
+				"assetID": 1,
 				"size": 0.8
 			},
 			"rightPortrait": {
@@ -279,25 +279,6 @@
 				"assetID": 5,
 				"size": 0.6
 			},
-			"soundIndex": 1,
-			"font": "mod_assets/fonts/FROSTBITE.ttf",
-			"text": [
-				"right portrait",
-				"Bibbidi Bobbidi Boo!"
-			],
-			"textSize": 32,
-			"leftPortrait": {
-				"animations": [],
-				"x": 200,
-				"y": 60,
-				"assetID": 1,
-				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
 			"speechBubble": {
 				"animations": [
 					{
@@ -312,21 +293,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"Haha, woah there, don't get ahead of yourself."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -341,12 +320,14 @@
 				"y": 60,
 				"assetID": 2,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -361,21 +342,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"I'm still AT LEAST ^2 cooler than you."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -390,12 +369,14 @@
 				"y": 60,
 				"assetID": 1,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -410,21 +391,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"But there's nothing wrong in trying, *frostbite*."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -439,12 +418,14 @@
 				"y": 60,
 				"assetID": 2,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -459,21 +440,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"You know, you don't gotta be as *cool* as ME to be the *coolest* YOU."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -488,12 +467,14 @@
 				"y": 60,
 				"assetID": 7,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -508,21 +489,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"We're literally cartoon characters, so we can be whatever the funk we want."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -537,12 +516,14 @@
 				"y": 60,
 				"assetID": 8,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 3200456,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -556,6 +537,25 @@
 				"x": 13,
 				"y": 320,
 				"assetID": 0,
+				"size": 0.8
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
+			"text": [
+				"right portrait",
+				"Skra ta ta ta ta!"
+			],
+			"font": "mod_assets/fonts/FROSTBITE.ttf",
+			"textColor": 3200456,
+			"textSize": 32,
+			"soundIndex": 1,
+			"leftPortrait": {
+				"animations": [],
+				"x": 200,
+				"y": 60,
+				"assetID": 2,
 				"size": 0.8
 			},
 			"rightPortrait": {
@@ -573,25 +573,6 @@
 				"assetID": 5,
 				"size": 0.6
 			},
-			"soundIndex": 1,
-			"font": "mod_assets/fonts/FROSTBITE.ttf",
-			"text": [
-				"right portrait",
-				"Skra ta ta ta ta!"
-			],
-			"textSize": 32,
-			"leftPortrait": {
-				"animations": [],
-				"x": 200,
-				"y": 60,
-				"assetID": 2,
-				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
 			"speechBubble": {
 				"animations": [
 					{
@@ -606,21 +587,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"Hell yeah brother! So be the *coolest* 'Boyfriend.xml' you can be!"
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -635,12 +614,14 @@
 				"y": 60,
 				"assetID": 1,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -655,21 +636,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"Well then, let's wrap this rap up."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -684,12 +663,14 @@
 				"y": 60,
 				"assetID": 7,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -704,21 +685,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"There's only one song left."
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -733,12 +712,14 @@
 				"y": 60,
 				"assetID": 7,
 				"size": 0.8
-			}
-		},
-		{
-			"speed": 1,
-			"talkingAnimation": null,
-			"textColor": 16766208,
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
 			"speechBubble": {
 				"animations": [
 					{
@@ -753,21 +734,19 @@
 				"y": 320,
 				"assetID": 0,
 				"size": 0.8
-			},
-			"rightPortrait": {
-				"animations": [],
-				"x": 720,
-				"y": 60,
-				"assetID": 4,
-				"size": 0.6
-			},
-			"soundIndex": 0,
-			"font": "mod_assets/fonts/cheese.otf",
+			}
+		},
+		{
+			"speed": 1,
+			"talkingAnimation": null,
 			"text": [
 				"left portrait",
 				"You guys had other.. funkin' planned for tonight anyways, right?"
 			],
+			"font": "mod_assets/fonts/cheese.otf",
+			"textColor": 16766208,
 			"textSize": 32,
+			"soundIndex": 0,
 			"leftPortrait": {
 				"animations": [
 					{
@@ -782,7 +761,31 @@
 				"y": 60,
 				"assetID": 2,
 				"size": 0.8
+			},
+			"rightPortrait": {
+				"animations": [],
+				"x": 720,
+				"y": 60,
+				"assetID": 4,
+				"size": 0.6
+			},
+			"speechBubble": {
+				"animations": [
+					{
+						"prefix": "jtcDialogueBox",
+						"name": "open",
+						"framerate": 24,
+						"offset": [],
+						"looped": false
+					}
+				],
+				"x": 13,
+				"y": 320,
+				"assetID": 0,
+				"size": 0.8
 			}
 		}
-	]
+	],
+	"assetCatalog": [],
+	"soundCatalog": []
 }
