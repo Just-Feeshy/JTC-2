@@ -58,11 +58,11 @@ class SaveData {
     public static inline var BASE_GAME_SAVE_NAME:String = "funkin";
     public static inline var BASE_GAME_SAVE_COMPANY:String = "ninjamuffin99";
 
-    @:allow(Preloader)
+    @:allow(BootState)
     @:allow(OptionsMenuState)
     static private var globalFPS:FPS;
 
-    @:allow(Preloader)
+    @:allow(BootState)
     @:allow(OptionsMenuState)
     static private var globalMEM:Memory;
 

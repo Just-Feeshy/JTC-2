@@ -70,7 +70,7 @@ class Register {
 
     @:allow(Strum) private static var strumKeySizes:Map<StrumKey, Float> = new Map<StrumKey, Float>();
 
-    @:allow(Preloader)
+    @:allow(BootState)
     private inline static function setup() {
         /**
         * Default initialization for game.
