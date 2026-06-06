@@ -251,7 +251,13 @@ class Countdown
 			return;
 		}
 
-		var countdownSprite:FlxSprite = new FlxSprite().loadGraphic(Paths.image(graphicPath));
+		var graphic = Paths.image(graphicPath);
+		if(graphic == null)
+		{
+			return;
+		}
+
+		var countdownSprite:FlxSprite = new FlxSprite().loadGraphic(graphic);
 		countdownSprite.scrollFactor.set();
 		countdownSprite.cameras = [PlayState.camHUD];
 
@@ -266,7 +272,7 @@ class Countdown
 		countdownGraphicSprite = countdownSprite;
 
 		var activeTween:FlxTween = null;
-		activeTween = FlxTween.tween(countdownSprite, {y: countdownSprite.y + 100, alpha: 0}, Conductor.instance.beatLengthMs / 1000, {
+		activeTween = FlxTween.tween(countdownSprite, {alpha: 0}, Conductor.instance.beatLengthMs / 1000, {
 			ease: FlxEase.cubeInOut,
 			onComplete: function(_)
 			{
@@ -296,10 +302,10 @@ class Countdown
 
 		var soundId:String = switch(step)
 		{
-			case BEFORE: "intro3";
-			case THREE: "intro2";
-			case TWO: "intro1";
-			case ONE: "introGo";
+			case THREE: "intro3";
+			case TWO: "intro2";
+			case ONE: "intro1";
+			case GO: "introGo";
 			default: null;
 		};
 
@@ -337,9 +343,9 @@ class Countdown
 
 		return switch(step)
 		{
-			case THREE: graphics[0];
-			case TWO: graphics[1];
-			case ONE: graphics[2];
+			case TWO: graphics[0];
+			case ONE: graphics[1];
+			case GO: graphics[2];
 			default: null;
 		};
 	}
