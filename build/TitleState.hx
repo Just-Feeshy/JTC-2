@@ -29,7 +29,7 @@ import openfl.Assets;
 
 using StringTools;
 
-class TitleState extends MusicBeatState {
+class TitleState extends BootState {
 	static var initialized:Bool = false;
 
 	@:isVar var logoBl(get, default):FlxSprite;
@@ -145,8 +145,6 @@ class TitleState extends MusicBeatState {
 		ngSpr.antialiasing = true;
 
 		FlxTween.tween(credTextShit, {y: credTextShit.y + 20}, 2.9, {ease: FlxEase.quadInOut, type: PINGPONG});
-
-		FlxG.mouse.visible = false;
 
 		#if USING_LUA
 		if(HelperStates.luaExist(Type.getClass(this))) {

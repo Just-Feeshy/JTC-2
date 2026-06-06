@@ -183,6 +183,7 @@ class FunkinCursor
 				if (g == null) return;
 				var params = paramsByPath.get(path);
 				if (params == null) return;
+				if (FunkinCursor.cursorMode == null) return;
 				FlxG.mouse.load(g.bitmap, params.scale, params.offsetX, params.offsetY);
 				FlxG.mouse.visible = true;
 			});

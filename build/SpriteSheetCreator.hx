@@ -62,7 +62,7 @@ class SpriteSheetCreator extends MusicBeatState {
     var frameIndex(default, set):Int = 0;
 
     override function create() {
-        FlxG.mouse.visible = true;
+        FunkinCursor.show();
 
         animFrames = new Map<String, Array<FlxGraphic>>();
         animNames = [];

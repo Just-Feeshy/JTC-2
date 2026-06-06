@@ -1063,7 +1063,7 @@ class CharacterCreatorState extends UIState {
 
         if(FlxG.keys.justPressed.ESCAPE) {
             #if !mobile
-            FlxG.mouse.visible = false;
+            FunkinCursor.hide();
             #end
 
             characterAutosave.clear();

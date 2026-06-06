@@ -54,7 +54,7 @@ class VideoState extends HelperStates {
     }
 
     override function create() {
-        FlxG.mouse.visible = false;
+        FunkinCursor.hide();
 
         if (FlxG.sound.music != null) {
             FlxG.sound.music.stop();

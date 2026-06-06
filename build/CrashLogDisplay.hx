@@ -38,7 +38,7 @@ class CrashLogDisplay extends Sprite {
         attributes.fullscreen = false;
         attributes.title = Paths.modJSON.mod.name + " - Crash Report!";
 
-        Mouse.show();
+        FunkinCursor.show();
 
         var window:Window = Lib.current.stage.application.createWindow(attributes);
         window.onClose.add(__closeApplication.bind(window));

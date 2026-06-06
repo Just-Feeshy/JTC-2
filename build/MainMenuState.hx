@@ -116,7 +116,7 @@ class MainMenuState extends MusicBeatState
 	#end
 
 	override function create() {
-        FlxG.mouse.visible = false;
+        FunkinCursor.hide();
 
 		Conductor.instance.trackedSongPosition = 0;
 		Conductor.instance.trackedSongPosition -= Conductor.instance.beatLengthMs * 5;

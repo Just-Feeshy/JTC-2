@@ -26,7 +26,7 @@ class BaseGameOptionsSyncState extends MusicBeatState {
 
     override function create():Void {
         PlayerSettings.init();
-        FlxG.mouse.visible = false;
+        FunkinCursor.hide();
         hasSyncableOptions = SaveData.hasBaseGameOptionsToImport();
 
         var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);

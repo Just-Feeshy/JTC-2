@@ -97,9 +97,9 @@ class OptionsMenuState extends MusicBeatState {
 
     override public function create():Void {
         #if debug
-        FlxG.mouse.visible = true;
+        FunkinCursor.show();
         #else
-        FlxG.mouse.visible = false;
+        FunkinCursor.hide();
         #end
 
 		SaveData.saveClient();

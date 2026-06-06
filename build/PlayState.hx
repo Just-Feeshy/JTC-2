@@ -501,7 +501,7 @@ class PlayState extends MusicBeatState
 
 		Cache.clearNoneCachedAssets();
 
-		FlxG.mouse.visible = false;
+		FunkinCursor.hide();
 		//testSprite.visible = false;
 		eventStorage = [];
 

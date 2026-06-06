@@ -298,7 +298,7 @@ class ChartingState extends MusicBeatState
 		curRenderedNotes = new FlxTypedGroup<Note>();
 		curRenderedSustains = new FlxTypedGroup<FlxSprite>();
 
-		FlxG.mouse.visible = true;
+		FunkinCursor.show();
 		SaveData.bindProjectSave();
 
 		tempBpm = _song.bpm;

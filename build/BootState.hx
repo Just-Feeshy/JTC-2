@@ -38,22 +38,18 @@ import SaveData.SaveType;
 using StringTools;
 
 @:access(openfl.events.Event)
-class BootState extends HelperStates {
+class BootState extends MusicBeatState {
     public function new() {
         super("void", "void");
     }
 
     override function create():Void {
-        FlxG.fixedTimestep = false;
-
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
         SaveData.globalMEM = new Memory(10, 28, 0xFFFFFF);
         SaveData.globalFPS.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("PhantomMuff.ttf")).fontName, 18, 0xFFFFFF);
         SaveData.globalMEM.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("PhantomMuff.ttf")).fontName, 18, 0xFFFFFF);
 
         var fpsMulti:Int = SaveData.getData(SaveType.FPS_MULTIPLIER);
-
-        FlxG.mouse.visible = false;
 
         if(fpsMulti < 1)
             fpsMulti = 1;
@@ -84,8 +80,6 @@ class BootState extends HelperStates {
 
         FlxG.sound.volume = FlxG.save.data.volume;
 
-        super.create();
-
         Register.setup();
         Register.compile();
 
@@ -93,11 +87,10 @@ class BootState extends HelperStates {
         LoadingScene.startBackgroundCache();
         #end
 
-        var nextState:FlxState = SaveData.shouldShowBaseGameSyncPrompt()
-            ? cast new BaseGameOptionsSyncState()
-            : cast Type.createInstance(Preloader._initialState, []);
+        super.create();
 
-        FlxG.switchState(nextState);
+        FlxG.fixedTimestep = false;
+		FunkinCursor.hide();
     }
 
     /**
