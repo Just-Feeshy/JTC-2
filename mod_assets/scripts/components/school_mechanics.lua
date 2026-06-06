@@ -13,6 +13,11 @@ local HUD_ICON_SIZE_RATIO = 0.06
 local HUD_ICON_Y_OFFSET_BASE = 97
 local HUD_ICON_GAP_RATIO = 0.01
 local HUD_ICON_LEFT_NUDGE_RATIO = 0.012
+local COUNTER_FONT = "PhantomMuff.ttf"
+local COUNTER_FONT_SIZE = 28
+local COUNTER_BORDER_SIZE = 3
+local COUNTER_COLOR = "0xFF791EFF"
+local COUNTER_BORDER_COLOR = "0xFF000000"
 local meterNoiseTime = 0
 local notesHit = 0
 
@@ -178,6 +183,64 @@ local function buildBar()
 	end
 end
 
+local function getCounterPositions()
+	local missX, scoreX
+	local baseY = 50;
+	if downscroll then
+		missX = windowWidth * (485 / 1280)
+		scoreX = windowWidth * (855 / 1280)
+	else
+		missX = windowWidth * (470 / 1280)
+		scoreX = windowWidth * (945 / 1280)
+		baseY = windowHeight - baseY
+	end
+	return missX, scoreX, baseY
+end
+
+local function styleCounterText(name)
+	setTextFont(name, COUNTER_FONT)
+	setTextSize(name, COUNTER_FONT_SIZE)
+	setTextColor(name, COUNTER_COLOR)
+	setTextBorder(name, "outline", COUNTER_BORDER_SIZE, COUNTER_BORDER_COLOR)
+	setTextToCamera(name, "camHUD")
+end
+
+local function buildHudCounters()
+	if createText == nil then
+		return
+	end
+
+	createText("missCountTxt", 0, 0, 0, "0", COUNTER_FONT_SIZE)
+	styleCounterText("missCountTxt")
+	addTextToState("missCountTxt")
+
+	createText("scoreCountTxt", 0, 0, 0, "0", COUNTER_FONT_SIZE)
+	styleCounterText("scoreCountTxt")
+	addTextToState("scoreCountTxt")
+end
+
+local function updateHudCounters()
+	if not spriteExist("missCountTxt") and not spriteExist("scoreCountTxt") then
+		return
+	end
+
+	local missX, scoreX, baseY = getCounterPositions()
+	local introOffsetY = 0
+	if spriteExist("schoolWeirdMenuHUD") then
+		introOffsetY = getSpriteY("schoolWeirdMenuHUD")
+	end
+
+	if spriteExist("missCountTxt") then
+		setText("missCountTxt", tostring(math.floor(misses or 0)))
+		setSpritePosition("missCountTxt", missX, baseY + introOffsetY)
+	end
+
+	if spriteExist("scoreCountTxt") then
+		setText("scoreCountTxt", tostring(math.floor(score or 0)))
+		setSpritePosition("scoreCountTxt", scoreX, baseY + introOffsetY)
+	end
+end
+
 local function buildMeter()
 	createSprite("schoolMeterHUD")
 	loadGraphic("schoolMeterHUD", "school_house/menu/meter")
@@ -201,9 +264,11 @@ function school_mechanics.onCreate()
     buildWeirdMenuHud()
     buildBar()
     buildMeter()
+    buildHudCounters()
     applyHudLayout()
     ensureHudSpritesAttached()
     updateMeterAngle(0)
+    updateHudCounters()
 end
 
 function school_mechanics.onStep(step)
@@ -233,6 +298,7 @@ end
 
 function school_mechanics.onUpdate(elapsed)
     updateMeterAngle(elapsed)
+    updateHudCounters()
 
     if opponentStandTransitionActive then
 
@@ -255,6 +321,8 @@ function school_mechanics.hideHud()
 	if spriteExist("schoolWeirdMenuHUD") then setSpriteVisible("schoolWeirdMenuHUD", false) end
 	if spriteExist("schoolBarHUD") then setSpriteVisible("schoolBarHUD", false) end
 	if spriteExist("schoolMeterHUD") then setSpriteVisible("schoolMeterHUD", false) end
+	if spriteExist("missCountTxt") then setSpriteVisible("missCountTxt", false) end
+	if spriteExist("scoreCountTxt") then setSpriteVisible("scoreCountTxt", false) end
 end
 
 function school_mechanics.tweenInHud()
@@ -275,6 +343,9 @@ function school_mechanics.tweenInHud()
 	if spriteExist("schoolMeterHUD") then
 		setSpriteVisible("schoolMeterHUD", true)
 	end
+
+	if spriteExist("missCountTxt") then setSpriteVisible("missCountTxt", true) end
+	if spriteExist("scoreCountTxt") then setSpriteVisible("scoreCountTxt", true) end
 end
 
 return school_mechanics

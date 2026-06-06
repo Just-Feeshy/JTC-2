@@ -1253,26 +1253,11 @@ class PlayState extends MusicBeatState
 		var healthBarBaseY:Float = (healthBar != null) ? healthBar.y : 0;
 		if(healthBar != null) healthBar.y += offset;
 
-		var strumBaseYs:Array<Float> = [];
-		if(strumLineNotes != null) {
-			strumLineNotes.forEachAlive(function(s:Strum) {
-				strumBaseYs.push(s.y);
-				s.y += offset;
-			});
-		}
-
 		FlxTween.num(offset, 0, duration, {ease: FlxEase.cubeOut}, function(v:Float) {
 			for(i in 0...sprites.length) {
 				if(sprites[i] != null) sprites[i].y = baseYs[i] + v;
 			}
 			if(healthBar != null) healthBar.y = healthBarBaseY + v;
-			if(strumLineNotes != null) {
-				var idx:Int = 0;
-				strumLineNotes.forEachAlive(function(s:Strum) {
-					if(idx < strumBaseYs.length) s.y = strumBaseYs[idx] + v;
-					idx++;
-				});
-			}
 		});
 	}
 
