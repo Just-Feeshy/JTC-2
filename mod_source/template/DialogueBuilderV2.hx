@@ -224,6 +224,13 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
         }
     }
 
+    function resolveFontPath(font:String):String {
+        if (font == null || font == "") return font;
+        if (font.indexOf("/") >= 0) return font;
+        var resolved = Paths.font(font);
+        return (resolved != null && resolved != "") ? resolved : font;
+    }
+
     function refreshDisplayText(text:String = ""):Void {
         var s = sceneData(dialogueScene);
 
@@ -239,7 +246,7 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
         var baseY = speechBubble.y + Std.int(speechBubble.height / 3) + 10;
         displayText.setPosition(speechBubble.x + 100, baseY + s.textY);
         displayText.size = s.textSize;
-        displayText.font = s.font;
+        displayText.font = resolveFontPath(s.font);
         displayText.color = s.textColor;
 
         if (text.trim() != "") {
@@ -252,7 +259,7 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
         var s = sceneData(dialogueScene);
         shadowText.setPosition(displayText.x + 2, displayText.y + 2);
         shadowText.size = s.textSize;
-        shadowText.font = s.font;
+        shadowText.font = resolveFontPath(s.font);
     }
 
     function implementAnimPlay(s:DialogueSlot):Void {

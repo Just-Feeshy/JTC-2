@@ -39,8 +39,6 @@ using StringTools;
 
 @:access(openfl.events.Event)
 class BootState extends HelperStates {
-    var loadingScene:LoadingScene;
-
     public function new() {
         super("void", "void");
     }
@@ -86,38 +84,20 @@ class BootState extends HelperStates {
 
         FlxG.sound.volume = FlxG.save.data.volume;
 
-        #if sys
-        loadingScene = new LoadingScene();
-
-        add(loadingScene);
-
-        loadingScene.callback = function() {
-            try {
-                Register.setup();
-                Register.compile();
-
-                var nextState:FlxState = SaveData.shouldShowBaseGameSyncPrompt()
-                    ? cast new BaseGameOptionsSyncState()
-                    : cast Type.createInstance(Preloader._initialState, []);
-
-                FlxG.switchState(nextState);
-            } catch(e) {
-                trace("BootState: callback failed -> " + Std.string(e));
-                throw e;
-            }
-        };
-
-        loadingScene.cacheNecessaries();
-        #end
-
         super.create();
 
-        #if !sys
         Register.setup();
         Register.compile();
 
-        FlxG.switchState(cast Type.createInstance(Preloader._initialState, []));
+        #if sys
+        LoadingScene.startBackgroundCache();
         #end
+
+        var nextState:FlxState = SaveData.shouldShowBaseGameSyncPrompt()
+            ? cast new BaseGameOptionsSyncState()
+            : cast Type.createInstance(Preloader._initialState, []);
+
+        FlxG.switchState(nextState);
     }
 
     /**
@@ -189,8 +169,4 @@ class BootState extends HelperStates {
         new CrashLogDisplay(prevWindow).attachReport([errMsg, "Uncaught Error: " + Std.string(event.error)]);
     }
     #end
-
-    override function update(elapsed:Float):Void {
-        super.update(elapsed / 2);
-    }
 }

@@ -164,6 +164,30 @@ class LoadingScene extends FlxSpriteGroup {
             setCacheValue(1, false);
         });
     }
+
+    public static function startBackgroundCache():Void {
+        bootSongCachesReady = false;
+
+        if(!SaveData.getData(SaveType.CACHE_ASSETS)) {
+            bootSongCachesReady = true;
+            return;
+        }
+
+        Thread.create(() -> {
+            var songAudioEntries:Array<Array<String>> = collectBootSongAudioEntries(collectBootSongDirectories());
+
+            if(songAudioEntries.length <= 0) {
+                bootSongCachesReady = true;
+                return;
+            }
+
+            for(songAudio in songAudioEntries) {
+                cacheSongAudio(songAudio[0], songAudio[1]);
+            }
+
+            bootSongCachesReady = true;
+        });
+    }
     #end
 
     override function update(elapsed:Float) {

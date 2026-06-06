@@ -185,13 +185,12 @@ end
 
 local function getCounterPositions()
 	local missX, scoreX
-	local baseY = 50;
-	if downscroll then
-		missX = windowWidth * (485 / 1280)
-		scoreX = windowWidth * (855 / 1280)
-	else
-		missX = windowWidth * (470 / 1280)
-		scoreX = windowWidth * (945 / 1280)
+	local baseY = 40;
+
+	missX = windowWidth * (475 / 1280)
+	scoreX = windowWidth * (920 / 1280)
+
+	if not downscroll then
 		baseY = windowHeight - baseY
 	end
 	return missX, scoreX, baseY
