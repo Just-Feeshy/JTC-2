@@ -116,28 +116,20 @@ class FunkinSoundTray extends FlxSoundTray
 		if (!assetsReady) return;
 
 		var elapsed = ms / 1000.0;
-		var hasVolume:Bool = (!FlxG.sound.muted && FlxG.sound.volume > 0);
 
-		if (hasVolume)
+		if (_timer > 0)
 		{
-			if (_timer > 0)
+			_timer -= elapsed;
+			if (_timer <= 0)
 			{
-				_timer -= elapsed;
-				if (_timer <= 0)
-				{
-					lerpYPos = -height - 10;
-					alphaTarget = 0;
-				}
-			}
-			else if (y <= -height)
-			{
-				visible = false;
-				active = false;
+				lerpYPos = -height - 10;
+				alphaTarget = 0;
 			}
 		}
-		else if (!visible)
+		else if (y <= -height)
 		{
-			showTray();
+			visible = false;
+			active = false;
 		}
 
 		y = smoothLerp(y, lerpYPos, elapsed, 0.768);

@@ -3,6 +3,7 @@ import flixel.FlxG;
 import feshixl.math.FeshMath;
 
 import template.DialogueBuilder;
+import template.DialogueBuilderV2;
 import example_code.DefaultStage;
 
 import ImportModStuff;
@@ -28,6 +29,7 @@ class Mod {
         Register.implementDialogueToSong("funk-off", DialogueBoxJTC);
         Register.implementDialogueToSong("ping-pong", DialogueBoxJTC);
         Register.implementDialogueToSong("i-am-blue", DialogueBoxJTC);
+        Register.implementDialogueToSong("under-your-spell", DialogueBoxJTC2);
         Register.implementCustomNote("cool", CoolNote);
         Register.implementCustomNote("cheese", CheeseNote);
         Register.implementCustomNote("death", DeathNote);

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="SexyBFnGF.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="SexyBFnGF0000" x="70" y="70" width="854" height="861" frameX="0" frameY="-73" frameWidth="854" frameHeight="934"/>
+	<SubTexture name="SexyBFnGF0001" x="974" y="70" width="854" height="860" frameX="0" frameY="-31" frameWidth="854" frameHeight="934"/>
+	<SubTexture name="SexyBFnGF0002" x="1878" y="70" width="854" height="861" frameX="0" frameY="-9" frameWidth="854" frameHeight="934"/>
+	<SubTexture name="SexyBFnGF0003" x="2782" y="70" width="854" height="861" frameX="0" frameY="-1" frameWidth="854" frameHeight="934"/>
+	<SubTexture name="SexyBFnGF0004" x="70" y="981" width="854" height="860" frameX="0" frameY="0" frameWidth="854" frameHeight="934"/>
+</TextureAtlas>

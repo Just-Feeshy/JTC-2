@@ -45,7 +45,12 @@ local function updateMeterAngle(elapsed)
     local meterX = (cosine * METER_OFFSET.x - sine * METER_OFFSET.y) - METER_OFFSET.x
     local meterY = (sine * METER_OFFSET.x + cosine * METER_OFFSET.y) - METER_OFFSET.y
 
-    setSpriteTransform("schoolMeterHUD", meterX, meterY, finalAngle)
+    local introOffsetY = 0
+    if spriteExist("schoolBarHUD") then
+        introOffsetY = getSpriteY("schoolBarHUD")
+    end
+
+    setSpriteTransform("schoolMeterHUD", meterX, meterY + introOffsetY, finalAngle)
 end
 
 local function setHudSpriteVisible(spriteName, visible)
@@ -244,6 +249,32 @@ end
 
 function school_mechanics.onGoodNote()
 	notesHit = notesHit + 1;
+end
+
+function school_mechanics.hideHud()
+	if spriteExist("schoolWeirdMenuHUD") then setSpriteVisible("schoolWeirdMenuHUD", false) end
+	if spriteExist("schoolBarHUD") then setSpriteVisible("schoolBarHUD", false) end
+	if spriteExist("schoolMeterHUD") then setSpriteVisible("schoolMeterHUD", false) end
+end
+
+function school_mechanics.tweenInHud()
+	local offset = downscroll and (-windowHeight) or windowHeight
+
+	if spriteExist("schoolWeirdMenuHUD") then
+		setSpriteVisible("schoolWeirdMenuHUD", true)
+		setSpriteY("schoolWeirdMenuHUD", offset)
+		doTweenY("schoolHudMenuIntro", "schoolWeirdMenuHUD", 0, 0.9, "cubeout")
+	end
+
+	if spriteExist("schoolBarHUD") then
+		setSpriteVisible("schoolBarHUD", true)
+		setSpriteY("schoolBarHUD", offset)
+		doTweenY("schoolHudBarIntro", "schoolBarHUD", 0, 0.9, "cubeout")
+	end
+
+	if spriteExist("schoolMeterHUD") then
+		setSpriteVisible("schoolMeterHUD", true)
+	end
 end
 
 return school_mechanics

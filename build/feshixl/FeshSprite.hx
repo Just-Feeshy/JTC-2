@@ -78,7 +78,41 @@ class FeshSprite extends FeshMinSprite {
         if(xml == null)
             return;
 
-        this.xmlData = Xml.parse(xml.toString());
+        this.xmlData = Xml.parse(decodeXmlBytes(xml));
+    }
+
+    static function decodeXmlBytes(xml:Bytes):String {
+        var len = xml.length;
+        if (len >= 2 && xml.get(0) == 0xFF && xml.get(1) == 0xFE) {
+            var sb = new StringBuf();
+            var i = 2;
+            while (i + 1 < len) {
+                sb.addChar(xml.get(i) | (xml.get(i + 1) << 8));
+                i += 2;
+            }
+            return stripXmlEncodingDecl(sb.toString());
+        }
+        if (len >= 2 && xml.get(0) == 0xFE && xml.get(1) == 0xFF) {
+            var sb = new StringBuf();
+            var i = 2;
+            while (i + 1 < len) {
+                sb.addChar((xml.get(i) << 8) | xml.get(i + 1));
+                i += 2;
+            }
+            return stripXmlEncodingDecl(sb.toString());
+        }
+        var s = xml.toString();
+        if (s.length > 0 && s.charCodeAt(0) == 0xFEFF) s = s.substr(1);
+        return s;
+    }
+
+    static function stripXmlEncodingDecl(s:String):String {
+        if (s.length > 0 && s.charCodeAt(0) == 0xFEFF) s = s.substr(1);
+        var end = s.indexOf("?>");
+        if (s.substr(0, 5) == "<?xml" && end > 0) {
+            return s.substr(end + 2);
+        }
+        return s;
     }
 
     public function compileSprite() {

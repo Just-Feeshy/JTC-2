@@ -26,3 +26,11 @@ end
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
     school_mechanics.onGoodNote()
 end
+
+function onDialoguePreShow()
+    school_mechanics.hideHud()
+end
+
+function onDialogueFinished()
+    school_mechanics.tweenInHud()
+end

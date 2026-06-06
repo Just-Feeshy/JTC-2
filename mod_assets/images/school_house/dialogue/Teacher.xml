@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Teacher.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Sexy_Teacher0000" x="70" y="70" width="479" height="799" frameX="0" frameY="-60" frameWidth="479" frameHeight="859"/>
+	<SubTexture name="Sexy_Teacher0001" x="599" y="70" width="479" height="799" frameX="0" frameY="-25" frameWidth="479" frameHeight="859"/>
+	<SubTexture name="Sexy_Teacher0002" x="1128" y="70" width="479" height="800" frameX="0" frameY="-7" frameWidth="479" frameHeight="859"/>
+	<SubTexture name="Sexy_Teacher0003" x="70" y="920" width="479" height="799" frameX="0" frameY="-1" frameWidth="479" frameHeight="859"/>
+	<SubTexture name="Sexy_Teacher0004" x="599" y="920" width="479" height="799" frameX="0" frameY="0" frameWidth="479" frameHeight="859"/>
+</TextureAtlas>

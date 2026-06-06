@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="SexyJTC2.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Sexy_JTC20000" x="70" y="70" width="682" height="763" frameX="0" frameY="-40" frameWidth="682" frameHeight="803"/>
+	<SubTexture name="Sexy_JTC20001" x="802" y="70" width="682" height="763" frameX="0" frameY="-17" frameWidth="682" frameHeight="803"/>
+	<SubTexture name="Sexy_JTC20002" x="1534" y="70" width="682" height="763" frameX="0" frameY="-5" frameWidth="682" frameHeight="803"/>
+	<SubTexture name="Sexy_JTC20003" x="2266" y="70" width="682" height="763" frameX="0" frameY="-1" frameWidth="682" frameHeight="803"/>
+	<SubTexture name="Sexy_JTC20004" x="2998" y="70" width="682" height="763" frameX="0" frameY="0" frameWidth="682" frameHeight="803"/>
+</TextureAtlas>

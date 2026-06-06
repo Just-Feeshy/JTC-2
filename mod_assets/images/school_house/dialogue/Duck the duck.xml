@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Duck the duck.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Sexy_duck0000" x="70" y="70" width="443" height="497" frameX="0" frameY="-50" frameWidth="443" frameHeight="547"/>
+	<SubTexture name="Sexy_duck0001" x="563" y="70" width="443" height="497" frameX="0" frameY="-21" frameWidth="443" frameHeight="547"/>
+	<SubTexture name="Sexy_duck0002" x="1056" y="70" width="443" height="498" frameX="0" frameY="-6" frameWidth="443" frameHeight="547"/>
+	<SubTexture name="Sexy_duck0003" x="70" y="618" width="443" height="497" frameX="0" frameY="-1" frameWidth="443" frameHeight="547"/>
+	<SubTexture name="Sexy_duck0004" x="563" y="618" width="443" height="497" frameX="0" frameY="0" frameWidth="443" frameHeight="547"/>
+</TextureAtlas>

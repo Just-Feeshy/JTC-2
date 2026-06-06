@@ -376,6 +376,8 @@ class PlayState extends MusicBeatState
 
 	private var generatedMusic:Bool = false;
 	private var startingSong:Bool = false;
+	private var preDialogueStageGenerated:Bool = false;
+	private var tweenHUDAfterDialogue:Bool = false;
 
 	public var camGame:PlayCamera;
 
@@ -973,6 +975,13 @@ class PlayState extends MusicBeatState
 						inCutscene = true;
 						dialogueBox.finishCallback = clearDialogue;
 
+						if(playLua != null) {
+							playLua.call("generatedStage", []);
+							preDialogueStageGenerated = true;
+							playLua.call("onDialoguePreShow", []);
+						}
+
+						tweenHUDAfterDialogue = true;
 						dialogueBox.createDialogue(this);
 						dialogueBox.attachToCamera(camHUD);
 					}else {
@@ -1085,6 +1094,10 @@ class PlayState extends MusicBeatState
 
 		inCutscene = false;
 		talking = false;
+
+		if(playLua != null) {
+			playLua.call("onDialogueFinished", []);
+		}
 
 		startCountdown();
 	}
@@ -1216,7 +1229,51 @@ class PlayState extends MusicBeatState
 		generateStaticArrows(1);
 		setupHoldCoverSprites();
 
+		if(tweenHUDAfterDialogue) {
+			tweenHUDAfterDialogue = false;
+			tweenInHUD();
+		}
+
 		beginCountdownSequence(true);
+	}
+
+	function tweenInHUD():Void {
+		var fromBelow:Bool = !FlxG.save.data.helpme;
+		var offset:Float = fromBelow ? FlxG.height : -FlxG.height;
+		var duration:Float = 0.9;
+
+		var sprites:Array<FlxSprite> = [healthBarBG, counterTxt, iconP1, iconP2];
+		var baseYs:Array<Float> = [];
+		for(spr in sprites) {
+			if(spr == null) { baseYs.push(0); continue; }
+			baseYs.push(spr.y);
+			spr.y += offset;
+		}
+
+		var healthBarBaseY:Float = (healthBar != null) ? healthBar.y : 0;
+		if(healthBar != null) healthBar.y += offset;
+
+		var strumBaseYs:Array<Float> = [];
+		if(strumLineNotes != null) {
+			strumLineNotes.forEachAlive(function(s:Strum) {
+				strumBaseYs.push(s.y);
+				s.y += offset;
+			});
+		}
+
+		FlxTween.num(offset, 0, duration, {ease: FlxEase.cubeOut}, function(v:Float) {
+			for(i in 0...sprites.length) {
+				if(sprites[i] != null) sprites[i].y = baseYs[i] + v;
+			}
+			if(healthBar != null) healthBar.y = healthBarBaseY + v;
+			if(strumLineNotes != null) {
+				var idx:Int = 0;
+				strumLineNotes.forEachAlive(function(s:Strum) {
+					if(idx < strumBaseYs.length) s.y = strumBaseYs[idx] + v;
+					idx++;
+				});
+			}
+		});
 	}
 
 	function beginCountdownSequence(callGeneratedStage:Bool = true):Void {
@@ -1233,7 +1290,11 @@ class PlayState extends MusicBeatState
 			playLua.set("startedCountdown", true);
 
 			if(callGeneratedStage) {
-				playLua.call("generatedStage", []);
+				if(preDialogueStageGenerated) {
+					preDialogueStageGenerated = false;
+				} else {
+					playLua.call("generatedStage", []);
+				}
 				captureRestartScriptedCameraState();
 			}
 		}

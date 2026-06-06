@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="SexyPICO2.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Sexy_PICO20000" x="70" y="70" width="538" height="746" frameX="0" frameY="-38" frameWidth="538" frameHeight="784"/>
+	<SubTexture name="Sexy_PICO20001" x="658" y="70" width="538" height="746" frameX="0" frameY="-16" frameWidth="538" frameHeight="784"/>
+	<SubTexture name="Sexy_PICO20002" x="1246" y="70" width="538" height="746" frameX="0" frameY="-5" frameWidth="538" frameHeight="784"/>
+	<SubTexture name="Sexy_PICO20003" x="70" y="866" width="538" height="746" frameX="0" frameY="-1" frameWidth="538" frameHeight="784"/>
+	<SubTexture name="Sexy_PICO20004" x="658" y="866" width="538" height="746" frameX="0" frameY="0" frameWidth="538" frameHeight="784"/>
+</TextureAtlas>

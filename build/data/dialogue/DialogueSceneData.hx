@@ -30,6 +30,11 @@ typedef DialogueSceneData = {
     @:default(32)
     var textSize:Int;
 
+    /** Vertical offset applied on top of the auto-positioned text Y. */
+    @:optional
+    @:default(0)
+    var textY:Float;
+
     /**
      * Stable name lookup into the sound binding table.
      * Preferred over `soundIndex` for new content.
@@ -40,6 +45,14 @@ typedef DialogueSceneData = {
     @:optional
     @:default(0)
     var soundIndex:Int;
+
+    @:optional
+    @:default(false)
+    var shakeCamera:Bool;
+
+    @:optional
+    @:default(0.01)
+    var shakeAmplitude:Float;
 
     var leftPortrait:DialogueSpriteData;
     var rightPortrait:DialogueSpriteData;

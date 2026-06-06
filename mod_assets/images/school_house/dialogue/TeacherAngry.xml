@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="TeacherAngry.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="AngryTeacher0000" x="70" y="70" width="578" height="878" frameX="0" frameY="-60" frameWidth="578" frameHeight="938"/>
+	<SubTexture name="AngryTeacher0001" x="698" y="70" width="578" height="877" frameX="0" frameY="-26" frameWidth="578" frameHeight="938"/>
+	<SubTexture name="AngryTeacher0002" x="1326" y="70" width="578" height="877" frameX="0" frameY="-8" frameWidth="578" frameHeight="938"/>
+	<SubTexture name="AngryTeacher0003" x="70" y="998" width="578" height="877" frameX="0" frameY="-1" frameWidth="578" frameHeight="938"/>
+	<SubTexture name="AngryTeacher0004" x="698" y="998" width="578" height="878" frameX="0" frameY="0" frameWidth="578" frameHeight="938"/>
+</TextureAtlas>

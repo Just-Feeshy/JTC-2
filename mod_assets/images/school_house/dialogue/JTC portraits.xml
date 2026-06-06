@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="JTC portraits.png">
+	<!-- Created with Adobe Animate version 24.0.2.12 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="JTC_sexy placeholder0000" x="70" y="70" width="736" height="782" frameX="0" frameY="-78" frameWidth="736" frameHeight="860"/>
+	<SubTexture name="JTC_sexy placeholder0001" x="856" y="70" width="736" height="783" frameX="0" frameY="-32" frameWidth="736" frameHeight="860"/>
+	<SubTexture name="JTC_sexy placeholder0002" x="1642" y="70" width="736" height="783" frameX="0" frameY="-9" frameWidth="736" frameHeight="860"/>
+	<SubTexture name="JTC_sexy placeholder0003" x="2428" y="70" width="736" height="783" frameX="0" frameY="-1" frameWidth="736" frameHeight="860"/>
+	<SubTexture name="JTC_sexy placeholder0004" x="3214" y="70" width="736" height="782" frameX="0" frameY="0" frameWidth="736" frameHeight="860"/>
+</TextureAtlas>
