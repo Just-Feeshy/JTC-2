@@ -1,4 +1,5 @@
 local cursed_queue = require("mod_assets/scripts/components/cursed_queue")
+local school_shader = require("mod_assets/scripts/components/school_shader")
 
 local school_mechanics = {}
 local opponentStandTransitionActive = false
@@ -273,6 +274,8 @@ function school_mechanics.onCreate()
     ensureHudSpritesAttached()
     updateMeterAngle(0)
     updateHudCounters()
+
+    school_shader.enable(1.0, 1.5)
 end
 
 function school_mechanics.onStep(step)
@@ -304,6 +307,7 @@ function school_mechanics.onUpdate(elapsed)
     updateMeterAngle(elapsed)
     updateHudCounters()
     cursed_queue.onUpdate(elapsed)
+    school_shader.onUpdate(elapsed)
 
     if opponentStandTransitionActive then
 
