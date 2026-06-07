@@ -115,6 +115,11 @@ class PlayFlow
 			#end
 		}
 
+		if (playState.playLua != null && playState.playLua.onEnd()) {
+			PlayState.hasWarning = true;
+			return;
+		}
+
 		if (PlayState.isStoryMode) {
 			PlayState.campaignScore += playState.songScore;
 			PlayState.storyPlaylist.remove(PlayState.storyPlaylist[0]);

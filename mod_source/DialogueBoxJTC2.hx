@@ -11,6 +11,8 @@ class DialogueBoxJTC2 extends DialogueBuilderV2 {
     public function new() {
         super();
 
+        implementSong(Paths.music("uysDialogue"), 97);
+
         bindSoundToName("jtcText", Paths.sound("jtcText"));
         bindRawSoundToName("bfngfText", UselessShit.beep());
         bindSoundToName("picoText", Paths.sound("picoText"));

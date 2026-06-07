@@ -129,6 +129,11 @@ class PlayLua
 		set("curElapsed", 0);
 	}
 
+	public function onEnd():Bool
+	{
+		return call("onEnd", []) == true;
+	}
+
 	public function syncResumeState():Void
 	{
 		updateDynamicVars();
@@ -361,6 +366,10 @@ class PlayLua
 
 		playState.addCallback("noteAllowsVoiceAudioUnmute", function(noteType:String) {
 			return CustomNoteHandler.getCustomNoteUnmuteVoiceAudio(noteType);
+		});
+
+		playState.addCallback("getNoteCountByAbstract", function(noteAbstract:String) {
+			return playState.notesByAbstract.exists(noteAbstract) ? playState.notesByAbstract.get(noteAbstract) : 0;
 		});
 
 		playState.addCallback("instaKillPlayer", function() {

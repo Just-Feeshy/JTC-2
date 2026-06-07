@@ -50,6 +50,16 @@
 			],
 			"looped": false
 		},
+		"cursed": {
+			"prefix": "JTC CURSED",
+			"name": "cursed",
+			"framerate": 24,
+			"offset": [
+				-61,
+				188
+			],
+			"looped": false
+		},
 		"idle": {
 			"prefix": "JTC SITTING IDLE",
 			"name": null,
@@ -60,16 +70,6 @@
 			],
 			"looped": false
 		},
-		"singRIGHT": {
-			"prefix": "JTC SITTING RIGHT",
-			"name": null,
-			"framerate": 24,
-			"offset": [
-				0,
-				-34
-			],
-			"looped": false
-		},
 		"singDOWN-alt": {
 			"prefix": "JTC STANDING DOWN",
 			"name": null,
@@ -77,6 +77,16 @@
 			"offset": [
 				1,
 				-25
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "JTC SITTING RIGHT",
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				-34
 			],
 			"looped": false
 		},

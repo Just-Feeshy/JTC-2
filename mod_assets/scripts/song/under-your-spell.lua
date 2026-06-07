@@ -34,3 +34,8 @@ end
 function onDialogueFinished()
     school_mechanics.tweenInHud()
 end
+
+function onEnd()
+    switchState("EndState")
+    return true
+end

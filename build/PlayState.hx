@@ -277,6 +277,7 @@ class PlayState extends MusicBeatState
 	private var missesHold:Int = 0;
 	private var missClicks:Int = 0;
 	private var totalNotesLoaded:Int = 0;
+	public var notesByAbstract:Map<String, Int> = new Map();
 	private var defaultBlur:Float = 0;
 	private var playFPS:Null<Int> = Main.framerate;
 	private var counterTxt:FlxText;
@@ -1410,6 +1411,7 @@ class PlayState extends MusicBeatState
 
 		generatedMusic = false;
 		totalNotesLoaded = 0;
+		notesByAbstract = new Map();
 	}
 
 	function resetStrumVisualState():Void {
@@ -2747,6 +2749,9 @@ class PlayState extends MusicBeatState
 					add(swagNote.trail);
 
 				unspawnNotes.push(swagNote);
+
+				var countKey:String = daNoteAbstract != null ? daNoteAbstract : "regular";
+				notesByAbstract.set(countKey, (notesByAbstract.exists(countKey) ? notesByAbstract.get(countKey) : 0) + 1);
 
 				if(swagNote.hasCustomAddon != null)
 					swagNote.hasCustomAddon.whenIsFirstRendered(swagNote, keys);

@@ -22,7 +22,6 @@ class PlayScoreFeedback
 	public function popUpScore(strumtime:Float, id:Int, abby:String, ?judgeSongPosition:Float, ?noteTag:String):Void
 	{
 		var noteDiff:Float = Math.abs(strumtime - (judgeSongPosition == null ? Conductor.instance.trackedSongPosition : judgeSongPosition));
-		playState.setPlayerVocalsVolume(1, noteTag);
 		var score:Int = 350;
 
 		if (noteDiff > Conductor.instance.safeZoneOffset * 0.9)

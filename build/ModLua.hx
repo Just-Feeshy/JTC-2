@@ -3499,7 +3499,7 @@ class ModLua {
             return null;
         }
 
-        var text:FlxText = luaTexts.get(name);
+        var text:FlxText = luaTexts != null ? luaTexts.get(name) : null;
         var curState = cast FlxG.state;
         var wasStateOwnedText:Bool = text == null && curState is HelperStates && curState.modifiableTexts.exists(name);
 
@@ -3509,7 +3509,7 @@ class ModLua {
         }
 
         if(text == null || !text.exists || text.scale == null) {
-            if(text != null && luaTexts.exists(name)) {
+            if(text != null && luaTexts != null && luaTexts.exists(name)) {
                 luaTexts.remove(name);
             } else if(text != null && wasStateOwnedText) {
                 curState.modifiableTexts.remove(name);
@@ -3633,6 +3633,12 @@ class ModLua {
         if(lua == null) {
             return;
         }
+
+        // Tear down the lua runtime first so no callbacks can fire mid-cleanup.
+        // If a later step throws, lua is already null and ModLua.call() will early-return
+        // rather than invoking callbacks that touch already-nulled maps (e.g. luaTexts).
+        Lua.close(lua);
+        lua = null;
 
         destroyStateOwnedRuntimeObjects();
 
@@ -3762,9 +3768,6 @@ class ModLua {
 		    luaFrameCollections.clear();
 			luaFrameCollections = null;
 		}
-
-        Lua.close(lua);
-        lua = null;
         #elseif (USING_LUA && web)
         if(webLua != null) {
             webLua.close();
