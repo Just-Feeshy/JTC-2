@@ -9,8 +9,6 @@ import flixel.tweens.FlxTween;
 import flixel.FlxObject;
 
 class CrewState extends MusicBeatState {
-    var camFollow:FlxObject;
-
     var officalDevTeam:FlxTypedGroup<CreditSprites>;
     var allTweens:Array<FlxTween>;
 
@@ -51,9 +49,6 @@ class CrewState extends MusicBeatState {
                 dev.y = -10;
             }
         });
-
-        camFollow = new FlxObject(0, 0, 1, 1);
-		add(camFollow);
 
 		changeDev(0);
         super.create();

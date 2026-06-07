@@ -39,6 +39,12 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 
     private var flipped:Bool = false;
 
+    private var timeFreezeActive:Bool = false;
+    private var timeFreezeFrom:Float = 0;
+    private var timeFreezeTo:Float = 0;
+    private var timeFreezeBeatsElapsed:Float = 0;
+    private var timeFreezeBeatsTotal:Float = 0;
+
     public function new() {
         eventTweens = new Map<String, FlxTween>();
     }
@@ -152,24 +158,20 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
                 }
 
                 targetFreeze = FlxMath.bound(targetFreeze, 0, 1);
-                var durationSeconds:Float = (Conductor.instance.beatLengthMs / 500) * durationBeats;
 
                 cancelTween(eventName);
 
-                if(durationSeconds <= 0) {
+                if(durationBeats <= 0) {
+                    timeFreezeActive = false;
                     playState.setTimeFreezeValue(targetFreeze);
                     return;
                 }
 
-                storeTween(eventName, FlxTween.num(playState.timeFreeze, targetFreeze, durationSeconds, {
-                    ease: smoothTimeFreezeEase,
-                    onComplete: function(tween:FlxTween) {
-                        playState.setTimeFreezeValue(targetFreeze);
-                        cancelTween(eventName);
-                    }
-                }, function(value:Float) {
-                    playState.setTimeFreezeValue(value);
-                }));
+                timeFreezeFrom = playState.timeFreeze;
+                timeFreezeTo = targetFreeze;
+                timeFreezeBeatsElapsed = 0;
+                timeFreezeBeatsTotal = durationBeats;
+                timeFreezeActive = true;
             case "strum bounce":
                 offsetBounce = Std.parseInt(eventValue2);
                 DefaultHandler.sizeTimer = Std.parseInt(eventValue);
@@ -246,6 +248,25 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
         }else {
             offsetBounce = 0;
         }
+
+        if(timeFreezeActive) {
+            var bpm:Float = Conductor.instance.activeBpm;
+            if(bpm <= 0) {
+                bpm = 100;
+            }
+
+            timeFreezeBeatsElapsed += FlxG.elapsed * (bpm / 60);
+
+            var progress:Float = timeFreezeBeatsTotal > 0 ? (timeFreezeBeatsElapsed / timeFreezeBeatsTotal) : 1;
+
+            if(progress >= 1) {
+                playState.setTimeFreezeValue(timeFreezeTo);
+                timeFreezeActive = false;
+            } else {
+                var eased:Float = FlxEase.sineInOut(progress);
+                playState.setTimeFreezeValue(timeFreezeFrom + (timeFreezeTo - timeFreezeFrom) * eased);
+            }
+        }
     }
 
     public function whenNoteIsPressed(note:Note, playState:PlayState):Void {
@@ -286,11 +307,6 @@ class DefaultEvents implements IFeshEvent implements IFlxDestroyable {
 
             eventTweens.set(name, tween);
         }
-    }
-
-    static function smoothTimeFreezeEase(t:Float):Float {
-        var clamped:Float = FlxMath.bound(t, 0, 1);
-        return clamped * clamped * clamped * (clamped * (clamped * 6 - 15) + 10);
     }
 
     function setModifierToDefault(mod:String):Void {

@@ -1466,6 +1466,26 @@ class ModLua {
             txt.text = text;
         });
 
+        addProtectedLuaCallback("getTextWidth", function(name:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return 0.0;
+            }
+
+            return txt.width;
+        });
+
+        addProtectedLuaCallback("getTextHeight", function(name:String) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return 0.0;
+            }
+
+            return txt.height;
+        });
+
         addProtectedLuaCallback("setTextPosition", function(name:String, x:Float, y:Float) {
             var txt:FlxText = getText(name);
 

@@ -153,9 +153,9 @@
 	"playAnim": "idle",
 	"file": "school_house/Dearest_BF_.xml",
 	"icon": [
-		26,
+		0,
 		1,
-		26
+		0
 	],
-	"iconFile": "iconGrid"
+	"iconFile": "icons/icon-under-your-spell-bf"
 }

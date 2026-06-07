@@ -144,7 +144,7 @@ class VideoState extends HelperStates {
 
     override function update(elapsed:Float) {
         #if cpp
-        if(bitmap != null && bitmap.isPlaying && (controls.ACCEPT || controls.BACK)) {
+        if(bitmap != null && (controls.ACCEPT || controls.BACK)) {
              requestExit();
         }
         #end

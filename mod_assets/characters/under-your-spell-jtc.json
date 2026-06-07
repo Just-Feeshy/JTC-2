@@ -133,9 +133,9 @@
 	"playAnim": "idle",
 	"file": "school_house/JTC sit.xml, school_house/jtc standing animation.xml, school_house/JTC_standing.xml",
 	"icon": [
-		24,
-		25,
-		30
+		0,
+		1,
+		0
 	],
-	"iconFile": "iconGrid"
+	"iconFile": "icons/icon-under-your-spell-jtc"
 }

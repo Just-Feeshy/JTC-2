@@ -1,5 +1,8 @@
+local cursed_queue = require("mod_assets/scripts/components/cursed_queue")
+
 local school_mechanics = {}
 local opponentStandTransitionActive = false
+local totalMissedCheese = 0
 
 local function activateOpponentAltMode()
 	setOpponentAltAnim("-alt")
@@ -12,7 +15,7 @@ local METER_JITTER_SPEED = 18.0
 local HUD_ICON_SIZE_RATIO = 0.06
 local HUD_ICON_Y_OFFSET_BASE = 97
 local HUD_ICON_GAP_RATIO = 0.01
-local HUD_ICON_LEFT_NUDGE_RATIO = 0.012
+local HUD_ICON_LEFT_NUDGE_RATIO = 0.01
 local COUNTER_FONT = "PhantomMuff.ttf"
 local COUNTER_FONT_SIZE = 28
 local COUNTER_BORDER_SIZE = 3
@@ -185,13 +188,13 @@ end
 
 local function getCounterPositions()
 	local missX, scoreX
-	local baseY = 40;
+	local baseY = 1;
 
 	missX = windowWidth * (475 / 1280)
 	scoreX = windowWidth * (920 / 1280)
 
 	if not downscroll then
-		baseY = windowHeight - baseY
+		baseY = windowHeight - getTextHeight("missCountTxt") - baseY
 	end
 	return missX, scoreX, baseY
 end
@@ -254,7 +257,9 @@ end
 
 function school_mechanics.onCreate()
     opponentStandTransitionActive = false
+	totalMissedCheese = 0
 	notesHit = 0
+	cursed_queue.clear()
 
     if downscroll then
 	    METER_OFFSET.y = METER_OFFSET.y * -1
@@ -278,7 +283,7 @@ function school_mechanics.onStep(step)
 		callEvent("jumpspeed", "0.75", "67")
 	end
 	if step == 632 then
-		callEvent("time freeze", "1", "1.45")
+		callEvent("time freeze", "1", "2.9")
 		playAnim("dad", "stand", true)
 		setCharacterCustomAnimation("dad", true)
 		setCharacterSpecialAnim("dad", true)
@@ -298,6 +303,7 @@ end
 function school_mechanics.onUpdate(elapsed)
     updateMeterAngle(elapsed)
     updateHudCounters()
+    cursed_queue.onUpdate(elapsed)
 
     if opponentStandTransitionActive then
 
@@ -314,6 +320,40 @@ end
 
 function school_mechanics.onGoodNote()
 	notesHit = notesHit + 1;
+end
+
+function school_mechanics.onBeatHit()
+	cursed_queue.onBeatHit()
+end
+
+function school_mechanics.onNoteMiss(noteData, tag, noteAbstract, isSustainNote)
+	if isSustainNote then
+		return
+	end
+
+	if noteAbstract == "cheese fifth" then
+		cursed_queue.enqueue(2)
+		totalMissedCheese = totalMissedCheese + 1
+
+		local totalCheese = getNoteCountByAbstract("cheese fifth")
+		if totalCheese > 0 then
+			local ratio = totalMissedCheese / totalCheese
+			if ratio > 1 then ratio = 1 end
+			setMaxHealth(2 * (1 - ratio * 6))
+		end
+	end
+end
+
+function school_mechanics.queueCursed(count)
+	cursed_queue.enqueue(count)
+end
+
+function school_mechanics.clearCursedQueue()
+	cursed_queue.clear()
+end
+
+function school_mechanics.pendingCursed()
+	return cursed_queue.pending()
 end
 
 function school_mechanics.hideHud()
@@ -345,6 +385,15 @@ function school_mechanics.tweenInHud()
 
 	if spriteExist("missCountTxt") then setSpriteVisible("missCountTxt", true) end
 	if spriteExist("scoreCountTxt") then setSpriteVisible("scoreCountTxt", true) end
+end
+
+function school_mechanics.onEnd()
+	if getHealthNormalized() < 0.67 then
+		switchState("BadEndState")
+		return
+	end
+
+	switchState("GoodEndState")
 end
 
 return school_mechanics

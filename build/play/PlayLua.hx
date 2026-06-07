@@ -913,6 +913,20 @@ class PlayLua
 			return normalizedHealth;
 		});
 
+		playState.addCallback("setMaxHealth", function(value:Float) {
+			if(value < 0) {
+				value = 0;
+			}
+			playState.maxHealth = value;
+			if(playState.health > playState.maxHealth) {
+				playState.setHealth(playState.maxHealth);
+			}
+		});
+
+		playState.addCallback("getMaxHealth", function() {
+			return playState.maxHealth;
+		});
+
 		playState.addCallback("getCharacterIsPlayer", function(name:String) {
 			var character:Character = playState.modifiableCharacters.get(name);
 			return character != null ? character.isPlayer : false;

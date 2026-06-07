@@ -154,6 +154,7 @@ class PlayState extends MusicBeatState
 		public var flipWiggle:Int = 1;
 		public var timeFreeze:Float = 0;
 		public var health:Float = 1;
+		public var maxHealth:Float = 2;
 		public var healthLerp:Float = 1;
 		public var hudIconsStatic:Bool = false;
 		public var isInCountdown:Bool = false;
@@ -772,8 +773,14 @@ class PlayState extends MusicBeatState
 		iconP1 = new HealthIcon(SONG.player1, true);
 		iconP2 = new HealthIcon(SONG.player2, false);
 
-		if(boyfriend.curCharacter != "none") iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
-		if(dad.curCharacter != "none") iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
+		if(boyfriend.curCharacter != "none") {
+			iconP1.loadNewIcons(boyfriend._info.iconFile);
+			iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
+		}
+		if(dad.curCharacter != "none") {
+			iconP2.loadNewIcons(dad._info.iconFile);
+			iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
+		}
 
 		stage.configIcons(iconP1, iconP2);
 
@@ -1504,10 +1511,12 @@ class PlayState extends MusicBeatState
 
 	function resetHealthUi():Void {
 		if(boyfriend.curCharacter != "none") {
+			iconP1.loadNewIcons(boyfriend._info.iconFile);
 			iconP1.createAnim(boyfriend.curCharacter, boyfriend._info.icon, true);
 		}
 
 		if(dad.curCharacter != "none") {
+			iconP2.loadNewIcons(dad._info.iconFile);
 			iconP2.createAnim(dad.curCharacter, dad._info.icon, false);
 		}
 
@@ -2427,7 +2436,7 @@ class PlayState extends MusicBeatState
 		applyPlayerMissFeedback(Std.int(Math.abs(note.noteData)), note.tag, true, note.playAnyAnimation, true);
 		updateLuaVars();
 		updatePerSectionLuaVars();
-		playLua.call("noteMiss", [note.noteData, note.tag]);
+		playLua.call("noteMiss", [note.noteData, note.tag, note.noteAbstract, note.isSustainNote]);
 	}
 
 	/**
@@ -3414,8 +3423,8 @@ class PlayState extends MusicBeatState
 				iconP2.updateHitbox();
 			}
 
-			if (health > 2)
-				health = 2;
+			if (health > maxHealth)
+				health = maxHealth;
 
 			updateHealthBar();
 			healthBar.updateValueFromParent();
@@ -3761,7 +3770,7 @@ class PlayState extends MusicBeatState
 									);
 									updateLuaVars();
 									updatePerSectionLuaVars();
-									playLua.call("noteMiss", [daNote.noteData, daNote.tag]);
+									playLua.call("noteMiss", [daNote.noteData, daNote.tag, daNote.noteAbstract, daNote.isSustainNote]);
 								}
 							}
 						}

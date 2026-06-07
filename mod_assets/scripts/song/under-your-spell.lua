@@ -19,6 +19,14 @@ function onStepHit()
     school_mechanics.onStep(curStep)
 end
 
+function onBeatHit()
+    school_mechanics.onBeatHit()
+end
+
+function noteMiss(noteData, tag, noteAbstract, isSustainNote)
+    school_mechanics.onNoteMiss(noteData, tag, noteAbstract, isSustainNote)
+end
+
 function onUpdate(elapsed)
     school_mechanics.onUpdate(elapsed)
 end
@@ -36,6 +44,6 @@ function onDialogueFinished()
 end
 
 function onEnd()
-    switchState("EndState")
+	school_mechanics.onEnd()
     return true
 end
