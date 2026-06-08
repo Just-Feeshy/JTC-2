@@ -1,5 +1,6 @@
 local school_stage = require("mod_assets/scripts/components/school_stage")
 local school_mechanics = require("mod_assets/scripts/components/school_mechanics")
+local school_shader = require("mod_assets/scripts/components/school_shader")
 
 function generatedStage()
     school_mechanics.onCreate()
@@ -37,13 +38,19 @@ end
 
 function onDialoguePreShow()
     school_mechanics.hideHud()
+    school_shader.startDialogueBlur(0.6)
 end
 
 function onDialogueFinished()
     school_mechanics.tweenInHud()
+    school_shader.endDialogueBlur(0.6)
 end
 
 function onEnd()
 	school_mechanics.onEnd()
     return true
+end
+
+function onSoundFinished(tag)
+    school_mechanics.onSoundFinished(tag)
 end

@@ -12,6 +12,20 @@ local targetIntensity = 0
 local fadeRate = 0
 local currentBloom = DEFAULT_BLOOM
 
+local dialogueBlur = 0
+local dialogueBlurFrom = 0
+local dialogueBlurTo = 0
+local dialogueBlurElapsed = 0
+local dialogueBlurDuration = 0
+
+local function easeInOutCubic(t)
+	if t < 0.5 then
+		return 4 * t * t * t
+	end
+	local f = 2 * t - 2
+	return 0.5 * f * f * f + 1
+end
+
 local function ensureShader()
 	if active then
 		return true
@@ -45,6 +59,7 @@ local function ensureShader()
 	if active then
 		setShaderFloat(TARGET_CAMERA, "intensity", currentIntensity)
 		setShaderFloat(TARGET_CAMERA, "bloomStrength", currentBloom)
+		setShaderFloat(TARGET_CAMERA, "dialogueBlur", dialogueBlur)
 		print("[school_shader] shader ACTIVE on " .. TARGET_CAMERA)
 	end
 
@@ -95,6 +110,27 @@ function school_shader.setIntensity(intensity)
 	school_shader.enable(intensity, 0)
 end
 
+function school_shader.startDialogueBlur(duration)
+	if duration == nil or duration <= 0 then
+		duration = 0.6
+	end
+	dialogueBlurFrom = dialogueBlur
+	dialogueBlurTo = 1
+	dialogueBlurElapsed = 0
+	dialogueBlurDuration = duration
+	ensureShader()
+end
+
+function school_shader.endDialogueBlur(duration)
+	if duration == nil or duration <= 0 then
+		duration = 0.6
+	end
+	dialogueBlurFrom = dialogueBlur
+	dialogueBlurTo = 0
+	dialogueBlurElapsed = 0
+	dialogueBlurDuration = duration
+end
+
 function school_shader.setBloom(value)
 	currentBloom = math.max(0, value)
 	if active then
@@ -124,7 +160,21 @@ function school_shader.onUpdate(elapsed)
 
 	setShaderFloat(TARGET_CAMERA, "intensity", currentIntensity)
 
-	if currentIntensity <= 0 and targetIntensity <= 0 then
+	if dialogueBlurDuration > 0 then
+		dialogueBlurElapsed = dialogueBlurElapsed + elapsed
+		local t = dialogueBlurElapsed / dialogueBlurDuration
+		if t >= 1 then
+			t = 1
+			dialogueBlur = dialogueBlurTo
+			dialogueBlurDuration = 0
+		else
+			dialogueBlur = dialogueBlurFrom + (dialogueBlurTo - dialogueBlurFrom) * easeInOutCubic(t)
+		end
+	end
+
+	setShaderFloat(TARGET_CAMERA, "dialogueBlur", dialogueBlur)
+
+	if currentIntensity <= 0 and targetIntensity <= 0 and dialogueBlur <= 0 and dialogueBlurDuration <= 0 then
 		if removeCameraShader ~= nil then
 			removeCameraShader(TARGET_CAMERA)
 		end

@@ -2,6 +2,7 @@
 
 uniform float intensity;
 uniform float bloomStrength;
+uniform float dialogueBlur;
 
 float redness(vec3 c) {
     return max(0.0, c.r - max(c.g, c.b));
@@ -51,6 +52,28 @@ void main() {
     vec3 result = lit + bloomColor;
 
     result = mix(color, result, clamp(intensity, 0.0, 1.0));
+
+    float db = clamp(dialogueBlur, 0.0, 1.0);
+    if (db > 0.0) {
+        float blurR = 8.0 * db;
+        float blurD = blurR * 0.7071;
+        vec3 blurred = result;
+        blurred += flixel_texture2D(bitmap, uv + vec2( blurR, 0.0) * t).rgb;
+        blurred += flixel_texture2D(bitmap, uv + vec2(-blurR, 0.0) * t).rgb;
+        blurred += flixel_texture2D(bitmap, uv + vec2( 0.0,  blurR) * t).rgb;
+        blurred += flixel_texture2D(bitmap, uv + vec2( 0.0, -blurR) * t).rgb;
+        blurred += flixel_texture2D(bitmap, uv + vec2( blurD,  blurD) * t).rgb;
+        blurred += flixel_texture2D(bitmap, uv + vec2(-blurD,  blurD) * t).rgb;
+        blurred += flixel_texture2D(bitmap, uv + vec2( blurD, -blurD) * t).rgb;
+        blurred += flixel_texture2D(bitmap, uv + vec2(-blurD, -blurD) * t).rgb;
+        blurred /= 9.0;
+
+        vec3 dialoguePurple = blurred * vec3(0.55, 0.25, 1.05);
+        float luma = dot(blurred, vec3(0.299, 0.587, 0.114));
+        dialoguePurple = mix(dialoguePurple, vec3(0.45, 0.15, 0.85) * (0.4 + luma), 0.35);
+
+        result = mix(result, dialoguePurple, db);
+    }
 
     gl_FragColor = vec4(result, texColor.a);
 }

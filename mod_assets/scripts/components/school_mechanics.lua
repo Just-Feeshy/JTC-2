@@ -391,13 +391,49 @@ function school_mechanics.tweenInHud()
 	if spriteExist("scoreCountTxt") then setSpriteVisible("scoreCountTxt", true) end
 end
 
+local function buildGoodEndingCircle()
+	local weirdIndex = getSpriteIndexFromState("schoolWeirdMenuHUD")
+
+	createSprite("endingCircle")
+	loadGraphic("endingCircle", "school_house/menu/circle")
+	setSpriteSize("endingCircle", windowWidth, windowHeight)
+	setSpritePosition("endingCircle", 0, windowHeight)
+	setSpriteToCamera("endingCircle", "camHUD")
+
+	createSprite("endingChain")
+	loadGraphic("endingChain", "school_house/menu/chain")
+	setSpriteSize("endingChain", windowWidth, windowHeight)
+	setSpritePosition("endingChain", 0, windowHeight)
+	setSpriteToCamera("endingChain", "camHUD")
+
+	if weirdIndex >= 0 then
+		insertSpriteToState(weirdIndex, "endingCircle")
+		insertSpriteToState(weirdIndex + 1, "endingChain")
+	else
+		addSpriteToState("endingCircle")
+		addSpriteToState("endingChain")
+	end
+end
+
 function school_mechanics.onEnd()
 	if getHealthNormalized() < 0.67 then
 		switchState("BadEndState")
 		return
 	end
 
-	switchState("GoodEndState")
+	buildGoodEndingCircle()
+	doTweenY("endingCircleIntro", "endingCircle", 0, 0.9, "cubeout")
+	doTweenY("endingChainIntro", "endingChain", 0, 0.9, "cubeout")
+	playSound("chain", 1, "endingChain")
+end
+
+function school_mechanics.onSoundFinished(tag)
+	if tag == "endingChain" then
+		if spriteExist("endingChain") then
+			loadGraphic("endingChain", "school_house/menu/break")
+		end
+		switchState("GoodEndState")
+	end
 end
 
 return school_mechanics

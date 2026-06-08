@@ -3408,6 +3408,7 @@ class PlayState extends MusicBeatState
 		#if (debug || USING_MOD_DEBUG)
 		if(FlxG.keys.justPressed.SIX) {
 			songScore += 1000;
+			health = maxHealth;
 			whenSongFinished();
 		}
 		#end
