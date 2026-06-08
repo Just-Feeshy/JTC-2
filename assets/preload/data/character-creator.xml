@@ -30,7 +30,7 @@
                             <label width="100%" text="Character Selection" />
                             <hbox width="100%">
                                 <label width="32%" text="Current Character" verticalAlign="center" />
-                                <dropdown id="characterSelectorDropDown" width="68%" />
+                                <dropdown id="characterSelectorDropDown" width="68%" dropdownSize="15" />
                             </hbox>
                             <hbox width="100%">
                                 <label width="32%" text="New Character" verticalAlign="center" />
