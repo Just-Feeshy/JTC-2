@@ -545,6 +545,22 @@ class Conductor
   }
 
   /**
+   * Project the song position to a specific wall-clock timestamp (in ms, matching `Timer.stamp() * 1000`).
+   * Captures sub-frame precision for input events: the openfl key handler can sample its own timestamp
+   * and ask "what was the song time at that moment?" instead of being clamped to the frame's music.time read.
+   * Falls back to trackedSongPosition if the song isn't running or no anchor has been recorded yet.
+   */
+  public function getTimeFromTimestamp(timestampMs:Float):Float
+  {
+    if (prevTimestamp <= 0 || FlxG.sound.music == null || !FlxG.sound.music.playing)
+      return this.trackedSongPosition;
+
+    var delta:Float = timestampMs - prevTimestamp;
+    if (delta < 0) delta = 0;
+    return prevTime + delta;
+  }
+
+  /**
    * Can be called in-between frames, usually for input related things
    * that can potentially get processed on exact milliseconds/timestamps.
    * If you need song position, use `Conductor.instance.songPosition` instead

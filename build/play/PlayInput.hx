@@ -53,6 +53,8 @@ class PlayInput
 
 	public function getReleased(event:Event):Void
 	{
+		var inputTimestampMs:Float = haxe.Timer.stamp() * 1000;
+
 		if(playState.paused || playState.inCutscene || playState.startingSong || playState.modifierCheckList('bot mode'))
 			return;
 
@@ -69,7 +71,7 @@ class PlayInput
 			laneHeldKeys.remove(getEvent.keyCode);
 
 			if(laneHeldKeys.length <= 0) {
-				queueLaneInput(index, false, getCurrentInputSongTime());
+				queueLaneInput(index, false, getPreciseInputSongTime(inputTimestampMs));
 			}
 		}
 
@@ -98,6 +100,8 @@ class PlayInput
 
 	public function getPressed(event:Event):Void
 	{
+		var inputTimestampMs:Float = haxe.Timer.stamp() * 1000;
+
 		if(playState.paused || playState.inCutscene || playState.startingSong || playState.disableInputs || playState.modifierCheckList('bot mode')) {
 			return;
 		}
@@ -121,7 +125,7 @@ class PlayInput
 		}
 
 		laneHeldKeys.push(getEvent.keyCode);
-		queueLaneInput(index, true, getCurrentInputSongTime());
+		queueLaneInput(index, true, getPreciseInputSongTime(inputTimestampMs));
 		playState.playLua.call('onKeyPress', [getEvent.keyCode]);
 	}
 
@@ -242,6 +246,17 @@ class PlayInput
 		}
 
 		return Conductor.instance.trackedSongPosition;
+	}
+
+	// Project the OS timestamp captured at openfl key-handler entry onto the song timeline,
+	// so hit timing isn't quantized to the frame's FlxG.sound.music.time read.
+	function getPreciseInputSongTime(inputTimestampMs:Float):Float
+	{
+		if(FlxG.sound.music == null || !FlxG.sound.music.playing) {
+			return getCurrentInputSongTime();
+		}
+
+		return Conductor.instance.getTimeFromTimestamp(inputTimestampMs);
 	}
 
 	inline function getBotplaySongTime():Float

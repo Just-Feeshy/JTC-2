@@ -71,7 +71,7 @@ local phaseTwoBoyfriendDeltaY = 10
 -- offset (skater-boi: -192,-96; flying BF sings: 12,-264), with the
 -- chart's player1X/Y and player2X/Y all zero for frostbeat. See
 -- resetCharactersToPhaseOneBaseline for why we restore these.
-local phaseOneDadBaseX = -92
+local phaseOneDadBaseX = -132
 local phaseOneDadBaseY = 4
 local phaseOneBoyfriendBaseX = 782
 local phaseOneBoyfriendBaseY = -164
