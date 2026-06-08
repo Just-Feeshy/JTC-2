@@ -55,8 +55,12 @@ local dadCarWarmAnimations = {
     "punch"
 }
 
-local deathVariantStep = 630
-local deathVariantCurrent = ""
+local deathWarmAnimations = {
+	"firstDeath",
+	"deathLoop",
+	"deathConfirm"
+}
+
 local phaseTwoDadDeltaX = -120
 local phaseTwoDadDeltaY = 10
 local phaseTwoBoyfriendDeltaX = 240
@@ -91,12 +95,11 @@ local introBoyfriendFaceOffsetY = 310
 local introBoyfriendFaceZoom = 2.15
 local introWarmupIndex = 0
 local introBeginStep = 18
-local introWarmupTotalSteps = 17
+local introWarmupTotalSteps = 16
 
 local gpuWarmSpriteNames = {
     "gpuWarm_skaterExtraNotes",
-    "gpuWarm_skatingFlyingDeath",
-    "gpuWarm_skatingFlyingDeathDemon"
+    "gpuWarm_skatingFlyingDeath"
 }
 
 local jtcStrumAnims = {
@@ -296,76 +299,6 @@ local function createJumpscare()
 	addSpriteToStage("jumpscare")
 end
 
-local function getDeathCameraZoomMultiplier()
-    if daddyIsHere then
-        return 0.5
-    end
-
-    return 1.0
-end
-
-local function applyDeathCharacterVariant(variantName)
-    if variantName == nil then
-        return
-    end
-
-    if createDeathCharacter == nil or loadDeathCharacterGraphic == nil or setDeathCharacterAnimations == nil or addDeathCharacterAnimation == nil then
-        return
-    end
-
-    createDeathCharacter()
-
-    if setDeathCharacterCameraOffset ~= nil then
-        setDeathCharacterCameraOffset(0, 0)
-    end
-
-    if setDeathCharacterCameraZoom ~= nil then
-        setDeathCharacterCameraZoom(getDeathCameraZoomMultiplier())
-    end
-
-    if setDeathCharacterOffset ~= nil then
-        setDeathCharacterOffset(0, 0)
-    end
-
-    if setDeathSounds ~= nil then
-        setDeathSounds("", "", "", "")
-    end
-
-    if variantName == deathVariantCurrent then
-        return
-    end
-
-    if variantName == "demon" then
-        loadDeathCharacterGraphic("skating and flying DEATHDEMON")
-        addDeathCharacterAnimation("firstDeathDad", "firstDeathDad", 24, false)
-        addDeathCharacterAnimation("deathLoopDad", "deathLoopDad", 24, true)
-        addDeathCharacterAnimation("deathConfirmDad", "deathConfirmDad", 24, false)
-        if setDeathCharacterAnimationOffset ~= nil then
-            setDeathCharacterAnimationOffset("firstDeathDad", 886, 378)
-            setDeathCharacterAnimationOffset("deathConfirmDad", 4, 0)
-        end
-        setDeathCharacterAnimations("firstDeathDad", "deathLoopDad", "deathConfirmDad")
-    else
-        loadDeathCharacterGraphic("skating and flying DEATH")
-        addDeathCharacterAnimation("firstDeath", "firstDeath", 24, false)
-        addDeathCharacterAnimation("deathLoop", "deathLoop", 24, true)
-        addDeathCharacterAnimation("deathConfirm", "deathConfirm", 24, false)
-        setDeathCharacterAnimations("firstDeath", "deathLoop", "deathConfirm")
-    end
-
-    deathVariantCurrent = variantName
-end
-
-local function updateDeathCharacterVariant()
-    local stepValue = curStepFloat or curStep or 0
-
-    if stepValue < deathVariantStep then
-        return "normal"
-    else
-        return "death"
-    end
-end
-
 local function resetIntroRuntimeState()
     currentIntroFocusX = baseFunkroadCameraX
     currentIntroFocusY = baseFunkroadCameraY
@@ -434,10 +367,6 @@ local function init()
     resetPhaseTwoRuntimeState()
     resetPunchRuntimeState()
     resetShaderRuntimeState()
-    deathVariantCurrent = ""
-	if clearCustomDeathCharacter ~= nil then
-        clearCustomDeathCharacter()
-    end
 	createJumpscare()
 	frost_bump.reset()
     if setSuppressGameplayCameraBop ~= nil then
@@ -509,6 +438,7 @@ local function enterPhaseTwo()
 
     preparePhaseTwoAssets()
     callEvent("character change", "dad-car", "dad")
+    callEvent("character change", "flying BF sings 2", "boyfriend")
     if removeLoadedCharacter ~= nil then
         removeLoadedCharacter(originalDadCharacter, "dad")
     end
@@ -872,8 +802,6 @@ local function updateIntroWarmup()
     elseif introWarmupIndex == 14 then
         spawnGpuWarmSprite("gpuWarm_skatingFlyingDeath", "skating and flying DEATH")
     elseif introWarmupIndex == 15 then
-        spawnGpuWarmSprite("gpuWarm_skatingFlyingDeathDemon", "skating and flying DEATHDEMON")
-    elseif introWarmupIndex == 16 then
         clearGpuWarmSprites()
     else
         applyIntroOpponentFaceShot()
@@ -990,16 +918,19 @@ updatePhaseTwoPreparation = function(stepValue)
 
     if not phaseTwoDadCarCached and stepValue >= phaseTwoDadCarCacheStep then
         precacheCharacter("dad-car")
+        precacheCharacter("flying BF sings 2")
         phaseTwoDadCarCached = true
     end
 
     if not phaseTwoDadCarLoaded and stepValue >= phaseTwoDadCarLoadStep then
         addCharacterToList("dad-car", "dad")
+        addCharacterToList("flying BF sings 2", "boyfriend")
         phaseTwoDadCarLoaded = true
     end
 
     if not phaseTwoDadCarWarmed and stepValue >= phaseTwoDadCarWarmStep then
         if warmLoadedCharacterAnimations ~= nil then
+            warmLoadedCharacterAnimations("flying BF sings 2", "boyfriend", deathWarmAnimations)
             warmLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
         end
         phaseTwoDadCarWarmed = true
@@ -1007,6 +938,7 @@ updatePhaseTwoPreparation = function(stepValue)
 
     if not phaseTwoDadCarPrimed and stepValue >= phaseTwoDadCarPrimeStep then
         if primeLoadedCharacterAnimations ~= nil then
+            primeLoadedCharacterAnimations("flying BF sings 2", "boyfriend", deathWarmAnimations)
             primeLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
         end
         phaseTwoDadCarPrimed = true
@@ -1300,9 +1232,6 @@ function onResume()
     refreshFrostbiteCarAnimation()
 end
 
-function onGameOver()
-    applyDeathCharacterVariant(updateDeathCharacterVariant())
-end
 
 function setupPunchHealth(amount)
     local punchIcons = {}

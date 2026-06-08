@@ -672,7 +672,7 @@ class OptionsMenuState extends MusicBeatState {
 								if(pressed)
 									FlxG.save.data.playAsOpponent = !FlxG.save.data.playAsOpponent;
 
-								option.description = "Toggle whether to play as opponent.";
+								option.description = "Toggle whether to play as opponent. Buggy as hell though.";
 
 								if(!SaveData.getData(SaveType.PLAY_AS_OPPONENT)) {
 									setting(option, "Off", option.ID);

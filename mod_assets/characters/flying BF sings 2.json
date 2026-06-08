@@ -10,6 +10,46 @@
 			],
 			"looped": false
 		},
+		"singDOWN": {
+			"prefix": "flying dance DOWN",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				21,
+				-11
+			],
+			"looped": false
+		},
+		"singRIGHTmiss": {
+			"prefix": "flying miss RIGHT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				11,
+				-23
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "flying dance UP",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-4,
+				5
+			],
+			"looped": false
+		},
+		"singLEFTmiss": {
+			"prefix": "flying miss LEFT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-27,
+				-15
+			],
+			"looped": false
+		},
 		"deathConfirm": {
 			"prefix": "deathConfirm",
 			"name": "deathConfirm",
@@ -31,51 +71,11 @@
 			"looped": false
 		},
 		"idle": {
-			"prefix": "flying dance IDLE GF",
+			"prefix": "flying dance IDLE",
 			"name": "",
 			"framerate": 24,
 			"offset": [
 				0,
-				0
-			],
-			"looped": false
-		},
-		"singDOWN": {
-			"prefix": "flying dance DOWN GF",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				0,
-				4
-			],
-			"looped": false
-		},
-		"singUP": {
-			"prefix": "flying dance UP GF",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				0,
-				0
-			],
-			"looped": false
-		},
-		"singLEFT": {
-			"prefix": "flying dance LEFT GF",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				11,
-				50
-			],
-			"looped": false
-		},
-		"singRIGHT": {
-			"prefix": "flying dance RIGHT GF",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				-19,
 				0
 			],
 			"looped": false
@@ -90,6 +90,26 @@
 			],
 			"looped": false
 		},
+		"singRIGHT": {
+			"prefix": "flying dance RIGHT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-21,
+				14
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "flying dance LEFT",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				10,
+				53
+			],
+			"looped": false
+		},
 		"singUPmiss": {
 			"prefix": "flying miss UP",
 			"name": "",
@@ -97,26 +117,6 @@
 			"offset": [
 				-10,
 				-27
-			],
-			"looped": false
-		},
-		"singLEFTmiss": {
-			"prefix": "flying miss LEFT",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				-27,
-				-15
-			],
-			"looped": false
-		},
-		"singRIGHTmiss": {
-			"prefix": "flying miss RIGHT",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				11,
-				-23
 			],
 			"looped": false
 		}
@@ -129,11 +129,13 @@
 		"y": -264,
 		"camPosX": 0
 	},
+	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "flying notes BF SINGS.xml, flying notes GF SINGS.xml, skating and flying DEATHDEMON.xml",
+	"file": "flying notes BF SINGS.xml, skating and flying DEATHDEMON.xml",
 	"icon": [
 		31,
 		32,
 		31
-	]
+	],
+	"iconFile": "iconGrid"
 }

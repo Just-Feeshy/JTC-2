@@ -57,7 +57,7 @@
 
     "game_over": {
         "funkroad": {
-            "character": "death-demon",
+            "character": "skatingDeath",
             "animation": "singUP"
         },
 
