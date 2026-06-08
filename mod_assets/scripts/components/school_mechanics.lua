@@ -10,6 +10,11 @@ local chainBroken = false
 local CHAIN_PIVOT_X = -0.415
 local CHAIN_PIVOT_Y = -0.415
 local CHAIN_BREAK_TIME = 2.0
+local endingIntroActive = false
+local endingIntroTime = 0
+local ENDING_INTRO_DURATION = 0.9
+local CHAIN_AUDIO_LENGTH = 6.4
+local endingTransitioned = false
 
 local function activateOpponentAltMode()
 	setOpponentAltAnim("-alt")
@@ -215,6 +220,8 @@ local function getCounterPositions()
 
 	if not downscroll then
 		baseY = windowHeight - getTextHeight("missCountTxt") - baseY
+	else
+		baseY = -baseY
 	end
 	return missX, scoreX, baseY
 end
@@ -365,6 +372,24 @@ function school_mechanics.onUpdate(elapsed)
     cursed_queue.onUpdate(elapsed)
     school_shader.onUpdate(elapsed)
 
+    local introBaseY = 0
+    if endingIntroActive then
+        endingIntroTime = endingIntroTime + elapsed
+        local p = endingIntroTime / ENDING_INTRO_DURATION
+        if p >= 1 then
+            p = 1
+            endingIntroActive = false
+        end
+        local eased = 1 - (1 - p) * (1 - p) * (1 - p)
+        introBaseY = windowHeight * (1 - eased)
+        if spriteExist("endingCircle") then
+            setSpriteY("endingCircle", introBaseY)
+        end
+        if spriteExist("endingChain") then
+            setSpriteY("endingChain", introBaseY)
+        end
+    end
+
     if chainRotationActive and spriteExist("endingChain") then
         local soundT = -1
         if getSoundTime ~= nil then
@@ -383,6 +408,16 @@ function school_mechanics.onUpdate(elapsed)
             chainBroken = true
             loadGraphic("endingChain", "school_house/menu/break")
             setSpritePosition("endingChain", 0, 0)
+        end
+
+        if not endingTransitioned and t >= CHAIN_AUDIO_LENGTH then
+            endingTransitioned = true
+            chainRotationActive = false
+            if spriteExist("endingChain") and not chainBroken then
+                loadGraphic("endingChain", "school_house/menu/break")
+            end
+            switchState("GoodEndState")
+            return
         end
 
         local sinTerm = math.sin(2 * math.pi * t * t * t * t)
@@ -522,13 +557,16 @@ function school_mechanics.onEnd()
 
 	if spriteExist("endingCircle") then
 		setSpriteVisible("endingCircle", true)
-		doTweenY("endingCircleIntro", "endingCircle", 0, 0.9, "bounceout")
+		setSpriteY("endingCircle", windowHeight)
 	end
 
 	if spriteExist("endingChain") then
 		setSpriteVisible("endingChain", true)
-		doTweenY("endingChainIntro", "endingChain", 0, 0.9, "bounceout")
+		setSpriteY("endingChain", windowHeight)
 	end
+
+	endingIntroActive = true
+	endingIntroTime = 0
 
 	playSound("chain", 1, "endingChain")
 
@@ -537,10 +575,12 @@ function school_mechanics.onEnd()
 	chainRotationTime = 0
 	chainRotationActive = true
 	chainBroken = false
+	endingTransitioned = false
 end
 
 function school_mechanics.onSoundFinished(tag)
-	if tag == "endingChain" then
+	if tag == "endingChain" and not endingTransitioned then
+		endingTransitioned = true
 		chainRotationActive = false
 		if spriteExist("endingChain") then
 			if not chainBroken then
