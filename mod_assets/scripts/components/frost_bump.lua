@@ -22,35 +22,17 @@ end
 local function buildPulseSteps()
     pulseStepIntensity = {}
 
-    local index = 1
     for i = 150, 216, 4 do
-	    pulseStepIntensity[index] = i
-	    index = index + 1
+        pulseStepIntensity[i] = 0.67
     end
-    addPulseSteps(pulseStepIntensity, 0.67)
 
-    index = 1
     for i = 216, 480, 4 do
-		local curSection = i % 16
-
-		if curSection == 6 or curSection == 8 then
-			pulseStepIntensity[index] = i
-			index = index + 1
-		end
-
-	    pulseStepIntensity[index] = i
-	    index = index + 1
+        pulseStepIntensity[i] = 0.89
     end
-    addPulseSteps(pulseStepIntensity, 0.89)
 
-    index = 1
     for i = 480, 608, 16 do
-	    pulseStepIntensity[index] = i
-
-
-	    index = index + 1
+        pulseStepIntensity[i] = 0.89
     end
-    addPulseSteps(pulseStepIntensity, 0.89)
 end
 
 local function pulseCamera(stepValue)
