@@ -1995,6 +1995,25 @@ class ModLua {
             }
         });
 
+        // Skip the 5-beat countdown lead-in entirely so the instrumental starts
+        // on the very next frame. Works in two situations:
+        //   - Called from generatedStage() (before performCountdown runs):
+        //     sets Countdown.skipNextCountdown so performCountdown takes its
+        //     fast path and never spawns the FlxTimer.
+        //   - Called mid-countdown: also calls the in-flight Countdown.skipCountdown()
+        //     which cancels the timer and pins the Conductor to startTimestamp.
+        addProtectedLuaCallback("skipCountdown", function() {
+            var curState = cast FlxG.state;
+
+            if(curState is PlayState) {
+                play.Countdown.skipNextCountdown = true;
+                play.Countdown.skipCountdown();
+                return true;
+            }
+
+            return false;
+        });
+
 	        addProtectedLuaCallback("setCameraZoom", function(name:String, zoom:Float) {
 	            var cam:FlxCamera = getCamera(name);
 
@@ -2325,6 +2344,10 @@ class ModLua {
 			closed = true;
 			return closed;
 		});
+
+        #if (USING_LUA && cpp && sys)
+        LuaThreads.attach(this);
+        #end
 
         call("initialized", []);
     }
@@ -3724,6 +3747,10 @@ class ModLua {
     }
 
     public function close():Void {
+        #if (USING_LUA && cpp && sys)
+        LuaThreads.detach(this);
+        #end
+
         #if (USING_LUA && cpp)
         if(lua == null) {
             return;

@@ -3,7 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.input.keyboard.FlxKey;
 
-class EndState extends MusicBeatState {
+abstract class EndState extends MusicBeatState {
 	private var ending:String = "";
 
 	public function new(ending:String) {

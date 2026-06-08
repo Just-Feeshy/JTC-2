@@ -23,10 +23,10 @@ class Mod {
         Register.attachLuaToState(FreeplayState, Paths.lua("jtc_freeplay"));
         Register.attachLuaToState(TitleState, Paths.lua("titleCard"));
         Register.attachLuaToState(PauseSubState, Paths.lua("jtc_pause"));
-        Register.attachLuaToState(ChartingState, Paths.lua("chartingStageLoader"));
-        Register.attachLuaToState(EndState, Paths.lua("EndState"));
-        Register.attachLuaToState(BadEndState, Paths.lua("EndState"));
-        Register.attachLuaToState(GoodEndState, Paths.lua("EndState"));
+        Register.attachLuaToState(ChartingState, Paths.lua("charting_stage_loader"));
+        Register.attachLuaToState(BadEndState, Paths.lua("end_state"));
+        Register.attachLuaToState(GoodEndState, Paths.lua("end_state"));
+        Register.attachLuaToState(CrewState, Paths.lua("crew_member"));
 
 		// Add the custom notes to the game
         Register.implementDialogueToSong("funk-off", DialogueBoxJTC);

@@ -18,6 +18,15 @@ class Countdown
 	public static var soundSuffix:String = "";
 	public static var graphicSuffix:String = "";
 
+	/**
+	 * When set to true (typically from a song script's generatedStage()),
+	 * the next performCountdown() drops the entire 5-beat lead-in: the
+	 * Conductor jumps straight to startTimestamp, onCountdownEnd fires
+	 * immediately, and the song's instrumental starts on the very next
+	 * frame. Single-shot — auto-cleared after each performCountdown.
+	 */
+	public static var skipNextCountdown:Bool = false;
+
 	static var countdownTimer:FlxTimer = null;
 	static var countdownGraphicSprite:FlxSprite = null;
 	static var countdownGraphicTween:FlxTween = null;
@@ -38,6 +47,25 @@ class Countdown
 		if(playState == null)
 		{
 			return false;
+		}
+
+		// Fast path: skipNextCountdown was set (e.g. by a song script
+		// calling skipCountdown() during generatedStage). Skip the
+		// 5-beat lead-in entirely — pin the Conductor to startTimestamp,
+		// fire onCountdownEnd for parity, and call startSong() directly
+		// so the instrumental kicks off on this very frame instead of
+		// waiting for the next updateCountdownConductor() tick.
+		if(skipNextCountdown)
+		{
+			skipNextCountdown = false;
+			Conductor.instance.update(playState.startTimestamp);
+			playState.syncMusicBeatState(Conductor.instance.trackedSongPosition);
+			playState.updateLuaVars();
+			playState.updatePerSectionLuaVars();
+			countdownStep = AFTER;
+			propagateCountdownEvent(AFTER);
+			playState.startSong();
+			return true;
 		}
 
 		playState.isInCountdown = true;

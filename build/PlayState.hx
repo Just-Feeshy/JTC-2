@@ -596,16 +596,12 @@ class PlayState extends MusicBeatState
 
 		curStage = SONG.stage;
 
-		Cache.cacheStage(curStage);
-		stage = cast Type.createInstance(Register.stage, [curStage]);
-		add(stage);
-
-		events = new FeshEventGroup();
-
-		for(i in 0...Register.events.length) {
-			events.add(cast Type.createInstance(Register.events[i], []));
-		}
-
+		// Resolve gfVersion early (it only depends on curStage / SONG.girlfriend)
+		// so we can roll the stage + all three characters into one parallel
+		// PNG-decode batch on the worker pool before any of them are actually
+		// constructed. The serial Cache.cacheStage / Cache.cacheCharacter calls
+		// below stay as a safety net (they no-op against the warm cache) so we
+		// keep backward compatibility with non-sys targets.
 		var gfVersion:String = 'gf';
 
 		if(SONG.girlfriend == null) {
@@ -624,6 +620,29 @@ class PlayState extends MusicBeatState
 				gfVersion = 'gf-car';
 		}else {
 			gfVersion = SONG.girlfriend;
+		}
+
+		// Audio batch is fire-and-forget: it spawns OGG-decode workers and
+		// returns immediately so the slow Inst track decodes alongside the
+		// rest of PlayState.create() instead of blocking it. By the time
+		// startInstrumentTrack() asks for the Sound via Paths.inst() /
+		// Cache.getCachedSound(), the worker has either already cached it
+		// or getCachedSound() will wait the small remainder for it.
+		Cache.parallelPrewarmSongAudio(SONG.song);
+		// Texture batch is still synchronous: subsequent lines in create()
+		// (`new Character(...)`, stage.configStage, etc.) read these
+		// graphics immediately, so we have to be sure they're warm before
+		// continuing.
+		Cache.parallelPrewarmSong(curStage, SONG.player1, SONG.player2, gfVersion);
+
+		Cache.cacheStage(curStage);
+		stage = cast Type.createInstance(Register.stage, [curStage]);
+		add(stage);
+
+		events = new FeshEventGroup();
+
+		for(i in 0...Register.events.length) {
+			events.add(cast Type.createInstance(Register.events[i], []));
 		}
 
 		Cache.cacheCharacter(gfVersion);
@@ -4033,7 +4052,7 @@ class PlayState extends MusicBeatState
 
 				if(noteSprite != null) {
 					if(Std.isOfType(noteSprite, CheeseSliceSprite) && camNOTE != null && camNOTE.camNoteSustain != null) {
-						noteSprite.cameras = [camNOTE.camNoteSustain];
+						noteSprite.cameras = [camNOTE.camNoteSplash];
 					}
 
 					customNoteSprites.add(noteSprite);

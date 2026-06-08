@@ -7,14 +7,26 @@ import flixel.util.FlxColor;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.FlxObject;
+import feshixl.FeshCamera;
 
 class CrewState extends MusicBeatState {
+	private static var fileName:Array<String> = [
+		"TreatOfDaFrog",
+		"SussyDifi",
+		"FeshyFeeshy", // Das Me! :D
+		"VarVar",
+		"MusicManJDST",
+	];
+
     var officalDevTeam:FlxTypedGroup<CreditSprites>;
     var allTweens:Array<FlxTween>;
 
     var curSelected:Int = 0;
 	var curSprite:CreditSprites;
     var selected:Bool = false;
+
+	var crewInfoBG:FlxSprite;
+	var crewInfoCam:FeshCamera;
 
     public function new() {
         super();
@@ -24,6 +36,12 @@ class CrewState extends MusicBeatState {
         persistentUpdate = persistentDraw = true;
 
         allTweens = new Array<FlxTween>();
+
+		crewInfoCam = new FeshCamera();
+		crewInfoCam.bgColor.alpha = 0;
+		crewInfoCam.zoom = 1;
+
+		FlxG.cameras.add(crewInfoCam);
 
         var background:MenuBackground = new MenuBackground(0, 0);
         add(background);
@@ -51,7 +69,19 @@ class CrewState extends MusicBeatState {
         });
 
 		changeDev(0);
+
+		crewInfoBG = new FlxSprite().loadGraphic(Paths.image("crewInfo"));
+		crewInfoBG.alpha = 0;
+		crewInfoBG.cameras = [crewInfoCam];
+		add(crewInfoBG);
+
         super.create();
+
+		#if USING_LUA
+		if(HelperStates.luaExist(Type.getClass(this))) {
+			modifiableCameras.set("crewInfoCam", crewInfoCam);
+		}
+		#end
     }
 
     override function update(elapsed:Float) {
@@ -68,14 +98,21 @@ class CrewState extends MusicBeatState {
 
 
 		    if(controls.ACCEPT) {
-				openLink(curSprite.linkTree);
+				openCrewMenu();
 		    }
 
             if(controls.BACK) {
                 FlxG.switchState(new MainMenuState());
                 selected = true;
             }
-        }
+        }else {
+            if(controls.BACK) {
+				cleanTween();
+				FlxTween.tween(crewInfoBG, {alpha: 0}, 0.25, {ease: FlxEase.quadOut});
+				callLua("backInfo", []);
+				selected = false;
+			}
+		}
     }
 
     function changeDev(change:Int = 0):Void {
@@ -121,47 +158,51 @@ class CrewState extends MusicBeatState {
     }
 
     function makeCoolPeople():Void {
-        var suki:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/ThiccSuki"));
-		suki.linkTree = "https://www.youtube.com/channel/UCMI12jyPsfv8ncm5VjD8h5w";
-        suki.scrollFactor.set(0, 1);
-        suki.ID = 0;
-
-        var frogtreat:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/TreatOfDaFrog"));
+        var frogtreat:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/" + fileName[0]));
 		frogtreat.linkTree = "https://linktr.ee/FrogTreat";
         frogtreat.scrollFactor.set(0, 1);
-        frogtreat.ID = 1;
+        frogtreat.ID = 0;
 
-        var difi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/SussyDifi"));
+        var difi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/" + fileName[1]));
 		difi.linkTree = "https://twitter.com/DiFicuz";
         difi.scrollFactor.set(0, 1);
-        difi.ID = 2;
+        difi.ID = 1;
 
-        var feeshy:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/FeshyFeeshy")); //Dat's Me! :D
+        var feeshy:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/" + fileName[2]));
 		feeshy.linkTree = "https://portfolio.just-feeshy.world/";
         feeshy.scrollFactor.set(0, 1);
-        feeshy.ID = 3;
-        officalDevTeam.add(feeshy);
+        feeshy.ID = 2;
 
-        var varsavi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/VarVar"));
+        var varsavi:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/" + fileName[3]));
 		varsavi.linkTree = "https://mariawasak.wixsite.com/mariawasak";
         varsavi.scrollFactor.set(0, 1);
-        varsavi.ID = 4;
+        varsavi.ID = 3;
+
+        var flx:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/" + fileName[4]));
+		flx.linkTree = "https://twitter.com/JDSTtwt";
+        flx.scrollFactor.set(0, 1);
+        flx.ID = 4;
+
+        officalDevTeam.add(feeshy);
         officalDevTeam.add(varsavi);
-
-        var jdst:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/MusicManJDST"));
-		jdst.linkTree = "https://twitter.com/JDSTtwt";
-        jdst.scrollFactor.set(0, 1);
-        jdst.ID = 5;
-        officalDevTeam.add(jdst);
-
+        officalDevTeam.add(flx);
         officalDevTeam.add(frogtreat);
         officalDevTeam.add(difi);
-        officalDevTeam.add(suki);
     }
 
 	function addOfficalDev(dev:CreditSprites):Void {
 		dev.ID |= officalDevTeam.length << 16;
 		officalDevTeam.add(dev);
+	}
+
+	function openCrewMenu():Void {
+		selected = true;
+
+        allTweens.push(FlxTween.tween(crewInfoBG, {alpha: 1}, 0.25, {ease: FlxEase.quadOut}));
+
+		#if USING_LUA
+		callLua("openCrewMenu", [curSelected, fileName[curSelected]]);
+		#end
 	}
 
 	function openLink(link:String):Void {

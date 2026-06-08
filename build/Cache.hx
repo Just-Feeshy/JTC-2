@@ -10,6 +10,15 @@ import openfl.utils.Assets as OpenFlAssets;
 import openfl.utils.ByteArray;
 import ModInitialize;
 
+#if sys
+import sys.FileSystem;
+import sys.thread.Thread;
+import sys.thread.Mutex;
+import sys.thread.Deque;
+#end
+
+import haxe.Json;
+
 using StringTools;
 
 // I was at this for hours, let's see how Claude pulls this off.
@@ -28,6 +37,16 @@ class Cache
 	static var permanentCachedSounds:Map<String, Sound> = new Map<String, Sound>();
 	static var currentCachedSounds:Map<String, Sound> = new Map<String, Sound>();
 	static var previousCachedSounds:Map<String, Sound> = new Map<String, Sound>();
+
+	#if sys
+	// Sound keys whose decode has been kicked off on a worker thread but
+	// haven't landed in currentCachedSounds yet. getCachedSound() polls this
+	// (with a small timeout) so that if the main thread asks for the sound
+	// before the worker finishes, it waits for the worker rather than racing
+	// it and double-decoding the same file on main.
+	static var pendingSounds:Map<String, Bool> = new Map<String, Bool>();
+	static var soundPendingMutex:Mutex = new Mutex();
+	#end
 
 	static var purgeFilter:Array<String> = ["/week", "/characters", "/charSelect", "/results", "/stages"];
 
@@ -160,6 +179,227 @@ class Cache
 		graphic.persist = true;
 		currentCachedTextures.set(key, graphic);
 		forceRender(graphic);
+	}
+
+	/**
+	 * Cache a batch of textures by PNG-decoding them in parallel on a worker
+	 * pool. The expensive part — reading the file off disk and decoding the
+	 * PNG into a BitmapData — runs on background threads; the GPU upload
+	 * (FlxGraphic.fromBitmapData) stays on the main thread because the GL
+	 * context lives there.
+	 *
+	 * Blocks until every job in the batch has been uploaded so callers can
+	 * treat it as a drop-in replacement for a loop of cacheTexture() calls.
+	 */
+	public static function parallelCacheTextures(keys:Array<String>):Void
+	{
+		if (keys == null || keys.length == 0)
+			return;
+
+		#if sys
+		var toLoad:Array<String> = [];
+
+		for (key in keys)
+		{
+			if (key == null || key == "")
+				continue;
+
+			if (currentCachedTextures.exists(key) || permanentCachedTextures.exists(key))
+				continue;
+
+			if (previousCachedTextures.exists(key))
+			{
+				var graphic:FlxGraphic = previousCachedTextures.get(key);
+				previousCachedTextures.remove(key);
+				if (graphic != null)
+					currentCachedTextures.set(key, graphic);
+				continue;
+			}
+
+			// Filter out anything we'd need OpenFL embedded-asset machinery for;
+			// that path uses the GL context lazily and isn't safe off-main. Pure
+			// disk-backed mod assets are fine to decode on a worker.
+			if (OpenFlAssets.exists(key, AssetType.IMAGE) && !FileSystem.exists(key))
+				continue;
+
+			if (!toLoad.contains(key))
+				toLoad.push(key);
+		}
+
+		if (toLoad.length == 0)
+		{
+			// Anything that needs the embedded-asset path still has to go
+			// through the serial cacheTexture() to be safe.
+			for (key in keys) cacheTexture(key);
+			return;
+		}
+
+		var workerCount:Int = parallelCacheWorkerCount(toLoad.length);
+		var jobQueue:Deque<String> = new Deque<String>();
+		var resultQueue:Deque<ParallelCacheResult> = new Deque<ParallelCacheResult>();
+		var workerDoneQueue:Deque<Bool> = new Deque<Bool>();
+
+		for (key in toLoad) jobQueue.add(key);
+		for (_ in 0...workerCount) jobQueue.add(null); // poison pills
+
+		for (_ in 0...workerCount)
+		{
+			Thread.create(function() {
+				while (true)
+				{
+					var key:String = jobQueue.pop(true);
+					if (key == null) break;
+
+					var bmp:BitmapData = null;
+					try
+					{
+						if (FileSystem.exists(key))
+							bmp = BitmapData.fromFile(key);
+					}
+					catch (e:Dynamic)
+					{
+						bmp = null;
+					}
+
+					resultQueue.add({key: key, bitmap: bmp});
+				}
+
+				workerDoneQueue.add(true);
+			});
+		}
+
+		// Main thread: pull decoded bitmaps as they come in and finish the
+		// GPU upload. We interleave with the workers (rather than waiting for
+		// everyone first) so the GL upload latency overlaps with the still-
+		// decoding workers.
+		var processed:Int = 0;
+		while (processed < toLoad.length)
+		{
+			var result:ParallelCacheResult = resultQueue.pop(true);
+			processed++;
+
+			if (result.bitmap == null)
+			{
+				FlxG.log.warn('Failed to parallel-cache graphic: ${result.key}');
+				continue;
+			}
+
+			var graphic:FlxGraphic = FlxGraphic.fromBitmapData(result.bitmap, false, result.key);
+
+			if (graphic == null)
+			{
+				FlxG.log.warn('Failed to wrap parallel bitmap for ${result.key}');
+				continue;
+			}
+
+			graphic.persist = true;
+			currentCachedTextures.set(result.key, graphic);
+			forceRender(graphic);
+		}
+
+		// Drain worker-done markers so we don't leave half-joined threads.
+		for (_ in 0...workerCount) workerDoneQueue.pop(true);
+
+		// Anything that was filtered out as needing the embedded-asset path
+		// goes through the regular serial cache so the caller still gets
+		// everything they asked for.
+		for (key in keys)
+		{
+			if (key == null || key == "") continue;
+			if (currentCachedTextures.exists(key) || permanentCachedTextures.exists(key)) continue;
+			cacheTexture(key);
+		}
+		#else
+		for (key in keys) cacheTexture(key);
+		#end
+	}
+
+	/**
+	 * Resolve the on-disk texture keys a song needs in one shot — stage
+	 * background plus every PNG referenced in each character JSON's `file`
+	 * field — and parallel-cache them. Call this once at the top of
+	 * PlayState.create() so the four serial Cache.cacheCharacter / cacheStage
+	 * calls later in create() all hit a warm cache.
+	 */
+	public static function parallelPrewarmSong(stagePath:String, player1:String, player2:String, gfVersion:String):Void
+	{
+		var keys:Array<String> = [];
+
+		appendStageTextureKeys(keys, stagePath);
+		appendCharacterTextureKeys(keys, player1);
+		appendCharacterTextureKeys(keys, player2);
+		appendCharacterTextureKeys(keys, gfVersion);
+
+		parallelCacheTextures(keys);
+	}
+
+	static function appendStageTextureKeys(into:Array<String>, stagePath:String):Void
+	{
+		if (stagePath == null || stagePath == "") return;
+
+		var key:String = Paths.getPath('images/stages/$stagePath.png', AssetType.IMAGE, null);
+		if (key != null && key != "" && !into.contains(key)) into.push(key);
+	}
+
+	static function appendCharacterTextureKeys(into:Array<String>, characterPath:String):Void
+	{
+		if (characterPath == null || characterPath == "") return;
+
+		var infoPath:String = Paths.getPreloadPath('characters/$characterPath.json');
+
+		if (!Paths.assetExists(infoPath, AssetType.TEXT))
+			infoPath = Paths.getPath('characters/$characterPath.json', AssetType.TEXT, "shared");
+
+		if (Paths.assetExists(infoPath, AssetType.TEXT))
+		{
+			var raw:String = Paths.readText(infoPath);
+			if (raw != null && raw != "")
+			{
+				try
+				{
+					var info:Dynamic = Json.parse(raw);
+
+					if (info != null && info.file != null)
+					{
+						var fileList:String = info.file;
+
+						for (file in fileList.split(","))
+						{
+							var trimmed:String = file.trim();
+							if (trimmed == "") continue;
+
+							var extensionIndex:Int = trimmed.lastIndexOf(".");
+							var basePath:String = extensionIndex >= 0 ? trimmed.substr(0, extensionIndex) : trimmed;
+							var key:String = Paths.getPath('images/$basePath.png', AssetType.IMAGE, null);
+
+							if (key != null && key != "" && !into.contains(key)) into.push(key);
+						}
+
+						return;
+					}
+				}
+				catch (e:Dynamic) {}
+			}
+		}
+
+		// Same fallback as Cache.cacheCharacter when there's no JSON: assume
+		// the character is a single PNG at images/characters/<name>.png.
+		var fallback:String = Paths.getPath('images/characters/$characterPath.png', AssetType.IMAGE, null);
+		if (fallback != null && fallback != "" && !into.contains(fallback)) into.push(fallback);
+	}
+
+	static inline function parallelCacheWorkerCount(jobCount:Int):Int
+	{
+		#if sys
+		// Match the worker count to actual work so we don't pay thread
+		// creation overhead for a 1-or-2-asset song. Cap at 4 to leave
+		// headroom for the main + audio + (optional) Discord threads.
+		var cap:Int = #if android 2 #else 4 #end;
+		if (jobCount < cap) return jobCount;
+		return cap;
+		#else
+		return 1;
+		#end
 	}
 
 	/**
@@ -366,6 +606,141 @@ class Cache
 		currentCachedSounds.set(key, sound);
 	}
 
+	/**
+	 * Fire-and-forget version of parallel sound caching. Spawns worker
+	 * threads to OGG/MP3-decode each key, marks them as pending, and
+	 * returns immediately so the main thread can keep going with whatever
+	 * else it needs to do. When something later asks for one of these
+	 * sounds via getCachedSound(), that call transparently waits for the
+	 * worker if the decode is still in flight.
+	 *
+	 * Use this for prewarms that should run *alongside* main-thread setup
+	 * work (PlayState.create, etc.). If you need the keys to be ready by
+	 * the time the call returns, use the (now-deprecated) parallelCacheSounds.
+	 */
+	public static function beginAsyncCacheSounds(keys:Array<String>):Void
+	{
+		if (keys == null || keys.length == 0) return;
+
+		#if sys
+		var toLoad:Array<String> = [];
+
+		soundPendingMutex.acquire();
+		for (key in keys)
+		{
+			if (key == null || key == "") continue;
+			if (currentCachedSounds.exists(key) || permanentCachedSounds.exists(key)) continue;
+
+			if (previousCachedSounds.exists(key))
+			{
+				var sound:Sound = previousCachedSounds.get(key);
+				previousCachedSounds.remove(key);
+				if (sound != null) currentCachedSounds.set(key, sound);
+				continue;
+			}
+
+			// Embedded-asset paths must still go through OpenFL on main.
+			if (OpenFlAssets.exists(key, AssetType.SOUND) && !FileSystem.exists(key)) continue;
+			if (OpenFlAssets.exists(key, AssetType.MUSIC) && !FileSystem.exists(key)) continue;
+
+			if (pendingSounds.exists(key) || toLoad.contains(key)) continue;
+			pendingSounds.set(key, true);
+			toLoad.push(key);
+		}
+		soundPendingMutex.release();
+
+		if (toLoad.length == 0) return;
+
+		var workerCount:Int = parallelCacheWorkerCount(toLoad.length);
+		var jobQueue:Deque<String> = new Deque<String>();
+
+		for (key in toLoad) jobQueue.add(key);
+		for (_ in 0...workerCount) jobQueue.add(null);
+
+		for (_ in 0...workerCount)
+		{
+			Thread.create(function() {
+				while (true)
+				{
+					var key:String = jobQueue.pop(true);
+					if (key == null) break;
+
+					var snd:Sound = null;
+					try
+					{
+						if (FileSystem.exists(key)) snd = Sound.fromFile(key);
+					}
+					catch (e:Dynamic) {}
+
+					soundPendingMutex.acquire();
+					if (snd != null) currentCachedSounds.set(key, snd);
+					pendingSounds.remove(key);
+					soundPendingMutex.release();
+				}
+			});
+		}
+		#end
+	}
+
+	/**
+	 * Block until every pending sound from beginAsyncCacheSounds finishes
+	 * (or the timeout elapses). Useful as a sync point before code that
+	 * absolutely must have all decoded audio available.
+	 */
+	public static function awaitPendingSounds(maxWaitMs:Int = 2000):Void
+	{
+		#if sys
+		var deadline:Float = haxe.Timer.stamp() + maxWaitMs / 1000;
+
+		while (haxe.Timer.stamp() < deadline)
+		{
+			soundPendingMutex.acquire();
+			var anyPending:Bool = Lambda.count(pendingSounds) > 0;
+			soundPendingMutex.release();
+
+			if (!anyPending) return;
+			Sys.sleep(0.002);
+		}
+		#end
+	}
+
+	/**
+	 * Resolve the audio tracks the song will need at startSong() time —
+	 * instrumental plus whichever vocal layout (split or single) the song
+	 * uses — and kick off their decode on the worker pool *without
+	 * blocking*. This is meant to run early in PlayState.create() so the
+	 * OGG decode overlaps with the rest of create's main-thread setup
+	 * (character init, HUD, chart parse, etc.); by the time
+	 * startInstrumentTrack() actually pulls the Sound out via Paths.inst()
+	 * the worker has either already cached it or getCachedSound() will
+	 * wait the small remainder for it.
+	 */
+	public static function parallelPrewarmSongAudio(song:String):Void
+	{
+		if (song == null || song == "") return;
+
+		var keys:Array<String> = [];
+		appendSongSoundKey(keys, song, "Inst");
+
+		if (Paths.songSoundExists(song, "1_Voices") && Paths.songSoundExists(song, "2_Voices"))
+		{
+			appendSongSoundKey(keys, song, "1_Voices");
+			appendSongSoundKey(keys, song, "2_Voices");
+		}
+		else if (Paths.songSoundExists(song, "Voices"))
+		{
+			appendSongSoundKey(keys, song, "Voices");
+		}
+
+		beginAsyncCacheSounds(keys);
+	}
+
+	static function appendSongSoundKey(into:Array<String>, song:String, soundFile:String):Void
+	{
+		var key:String = Paths.getSongSoundPath(song, soundFile);
+		if (key != null && key != "" && !into.contains(key)) into.push(key);
+	}
+
 	public static function getCachedSound(path:String):Sound
 	{
 		if (path == null || path == "")
@@ -377,6 +752,37 @@ class Cache
 			return currentCachedSounds.get(path);
 		if (previousCachedSounds.exists(path))
 			return previousCachedSounds.get(path);
+
+		#if sys
+		// If a beginAsyncCacheSounds() worker is currently decoding this
+		// key, block briefly waiting for it rather than letting the caller
+		// race-and-redo the decode on the main thread. The cap stops a
+		// stuck worker from hanging gameplay; on timeout we return null and
+		// the caller falls back to its normal load path.
+		soundPendingMutex.acquire();
+		var isPending:Bool = pendingSounds.exists(path);
+		soundPendingMutex.release();
+
+		if (isPending)
+		{
+			var deadline:Float = haxe.Timer.stamp() + 2.0;
+
+			while (haxe.Timer.stamp() < deadline)
+			{
+				Sys.sleep(0.002);
+
+				soundPendingMutex.acquire();
+				var stillPending:Bool = pendingSounds.exists(path);
+				soundPendingMutex.release();
+
+				if (!stillPending)
+				{
+					if (currentCachedSounds.exists(path)) return currentCachedSounds.get(path);
+					return null;
+				}
+			}
+		}
+		#end
 
 		return null;
 	}
@@ -741,3 +1147,10 @@ class Cache
 		return graphic;
 	}
 }
+
+#if sys
+private typedef ParallelCacheResult = {
+	var key:String;
+	var bitmap:BitmapData;
+};
+#end
