@@ -4,6 +4,12 @@ local school_shader = require("mod_assets/scripts/components/school_shader")
 local school_mechanics = {}
 local opponentStandTransitionActive = false
 local totalMissedCheese = 0
+local chainRotationActive = false
+local chainRotationTime = 0
+local chainBroken = false
+local CHAIN_PIVOT_X = -0.415
+local CHAIN_PIVOT_Y = -0.415
+local CHAIN_BREAK_TIME = 2.0
 
 local function activateOpponentAltMode()
 	setOpponentAltAnim("-alt")
@@ -359,6 +365,48 @@ function school_mechanics.onUpdate(elapsed)
     cursed_queue.onUpdate(elapsed)
     school_shader.onUpdate(elapsed)
 
+    if chainRotationActive and spriteExist("endingChain") then
+        local soundT = -1
+        if getSoundTime ~= nil then
+            soundT = getSoundTime("endingChain")
+        end
+
+        local t
+        if soundT >= 0 then
+            t = soundT
+        else
+            chainRotationTime = chainRotationTime + elapsed
+            t = chainRotationTime
+        end
+
+        if not chainBroken and t >= CHAIN_BREAK_TIME then
+            chainBroken = true
+            loadGraphic("endingChain", "school_house/menu/break")
+            setSpritePosition("endingChain", 0, 0)
+        end
+
+        local sinTerm = math.sin(2 * math.pi * t * t)
+        local angleRad
+        if chainBroken then
+            local denom = t * t - 15
+            if math.abs(denom) < 0.01 then
+                denom = (denom < 0) and -0.01 or 0.01
+            end
+            angleRad = (sinTerm / 4) / denom
+        else
+            angleRad = sinTerm / 4
+            local ox = CHAIN_PIVOT_X * windowWidth
+            local oy = CHAIN_PIVOT_Y * windowHeight
+            local cos_a = math.cos(angleRad)
+            local sin_a = math.sin(angleRad)
+            local rx = -ox + ox * cos_a - oy * sin_a
+            local ry = -oy + ox * sin_a + oy * cos_a
+            setSpritePosition("endingChain", rx, ry)
+        end
+
+        setSpriteAngle("endingChain", math.deg(angleRad))
+    end
+
     if opponentStandTransitionActive then
 
 		if sprAnimFinished("dad") then
@@ -475,12 +523,23 @@ function school_mechanics.onEnd()
 	doTweenY("endingCircleIntro", "endingCircle", 0, 0.9, "cubeout")
 	doTweenY("endingChainIntro", "endingChain", 0, 0.9, "cubeout")
 	playSound("chain", 1, "endingChain")
+
+	school_shader.startDialogueBlur(0.75, 0.5)
+
+	chainRotationTime = 0
+	chainRotationActive = true
+	chainBroken = false
 end
 
 function school_mechanics.onSoundFinished(tag)
 	if tag == "endingChain" then
+		chainRotationActive = false
 		if spriteExist("endingChain") then
-			loadGraphic("endingChain", "school_house/menu/break")
+			setSpriteAngle("endingChain", 0)
+			setSpritePosition("endingChain", 0, 0)
+			if not chainBroken then
+				loadGraphic("endingChain", "school_house/menu/break")
+			end
 		end
 		switchState("GoodEndState")
 	end

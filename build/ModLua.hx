@@ -1967,6 +1967,24 @@ class ModLua {
             return true;
         });
 
+        addProtectedLuaCallback("getSoundTime", function(tag:String) {
+            if(tag == null || luaSounds == null) {
+                return -1.0;
+            }
+
+            tag = tag.replace('.', '');
+            if(!luaSounds.exists(tag)) {
+                return -1.0;
+            }
+
+            var luaSound:FlxSound = luaSounds.get(tag);
+            if(luaSound == null) {
+                return -1.0;
+            }
+
+            return luaSound.time / 1000.0;
+        });
+
         addProtectedLuaCallback("setCountdownPresentation", function(showSprites:Bool = true, playSounds:Bool = true) {
             var curState = cast FlxG.state;
 

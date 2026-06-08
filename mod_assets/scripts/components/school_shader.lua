@@ -110,12 +110,15 @@ function school_shader.setIntensity(intensity)
 	school_shader.enable(intensity, 0)
 end
 
-function school_shader.startDialogueBlur(duration)
+function school_shader.startDialogueBlur(duration, intensity)
 	if duration == nil or duration <= 0 then
 		duration = 0.6
 	end
+	if intensity == nil then
+		intensity = 1
+	end
 	dialogueBlurFrom = dialogueBlur
-	dialogueBlurTo = 1
+	dialogueBlurTo = math.max(0, math.min(1, intensity))
 	dialogueBlurElapsed = 0
 	dialogueBlurDuration = duration
 	ensureShader()
