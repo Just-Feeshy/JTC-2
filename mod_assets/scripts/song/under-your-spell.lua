@@ -38,7 +38,7 @@ end
 
 function onDialoguePreShow()
     school_mechanics.hideHud()
-    school_shader.startDialogueBlur(0.6)
+    school_shader.startDialogueBlur(0.0)
 end
 
 function onDialogueFinished()

@@ -385,26 +385,18 @@ function school_mechanics.onUpdate(elapsed)
             setSpritePosition("endingChain", 0, 0)
         end
 
-        local sinTerm = math.sin(2 * math.pi * t * t)
-        local angleRad
-        if chainBroken then
-            local denom = t * t - 15
-            if math.abs(denom) < 0.01 then
-                denom = (denom < 0) and -0.01 or 0.01
-            end
-            angleRad = (sinTerm / 4) / denom
-        else
-            angleRad = sinTerm / 4
-            local ox = CHAIN_PIVOT_X * windowWidth
-            local oy = CHAIN_PIVOT_Y * windowHeight
+        local sinTerm = math.sin(2 * math.pi * t * t * t * t)
+        if not chainBroken then
+            local angleRad = sinTerm / 4
+            local ox = CHAIN_PIVOT_X
+            local oy = CHAIN_PIVOT_Y
             local cos_a = math.cos(angleRad)
             local sin_a = math.sin(angleRad)
             local rx = -ox + ox * cos_a - oy * sin_a
-            local ry = -oy + ox * sin_a + oy * cos_a
-            setSpritePosition("endingChain", rx, ry)
+            setSpriteX("endingChain", rx)
+	    setSpriteAngle("endingChain", math.deg(angleRad))
         end
 
-        setSpriteAngle("endingChain", math.deg(angleRad))
     end
 
     if opponentStandTransitionActive then
@@ -520,11 +512,27 @@ function school_mechanics.onEnd()
 	end
 
 	buildGoodEndingCircle()
-	doTweenY("endingCircleIntro", "endingCircle", 0, 0.9, "cubeout")
-	doTweenY("endingChainIntro", "endingChain", 0, 0.9, "cubeout")
+
+	if debug then
+	    print("[school_mechanics] onEnd: endingCircle exist=" .. tostring(spriteExist("endingCircle"))
+		    .. " idx=" .. tostring(getSpriteIndexFromState("endingCircle"))
+		    .. " | endingChain exist=" .. tostring(spriteExist("endingChain"))
+		    .. " idx=" .. tostring(getSpriteIndexFromState("endingChain")))
+	end
+
+	if spriteExist("endingCircle") then
+		setSpriteVisible("endingCircle", true)
+		doTweenY("endingCircleIntro", "endingCircle", 0, 0.9, "bounceout")
+	end
+
+	if spriteExist("endingChain") then
+		setSpriteVisible("endingChain", true)
+		doTweenY("endingChainIntro", "endingChain", 0, 0.9, "bounceout")
+	end
+
 	playSound("chain", 1, "endingChain")
 
-	school_shader.startDialogueBlur(0.75, 0.5)
+	school_shader.startDialogueBlur(0.5, 0.75)
 
 	chainRotationTime = 0
 	chainRotationActive = true
@@ -535,8 +543,6 @@ function school_mechanics.onSoundFinished(tag)
 	if tag == "endingChain" then
 		chainRotationActive = false
 		if spriteExist("endingChain") then
-			setSpriteAngle("endingChain", 0)
-			setSpritePosition("endingChain", 0, 0)
 			if not chainBroken then
 				loadGraphic("endingChain", "school_house/menu/break")
 			end
