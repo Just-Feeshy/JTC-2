@@ -17,7 +17,7 @@ class CrewState extends MusicBeatState {
 		"SussyDifi",
 		"FeshyFeeshy", // Das Me! :D
 		"VarVar",
-		"MusicManJDST",
+		"Flx",
 	];
 
     var officalDevTeam:FlxTypedSpriteGroup<CreditSprites>;
