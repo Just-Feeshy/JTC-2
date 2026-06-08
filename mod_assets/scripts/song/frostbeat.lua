@@ -91,7 +91,13 @@ local introBoyfriendFaceOffsetY = 310
 local introBoyfriendFaceZoom = 2.15
 local introWarmupIndex = 0
 local introBeginStep = 18
-local introWarmupTotalSteps = 13
+local introWarmupTotalSteps = 17
+
+local gpuWarmSpriteNames = {
+    "gpuWarm_skaterExtraNotes",
+    "gpuWarm_skatingFlyingDeath",
+    "gpuWarm_skatingFlyingDeathDemon"
+}
 
 local jtcStrumAnims = {
     "singRIGHT",
@@ -245,7 +251,6 @@ local function clearStaticShaderEffect()
         setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
     end
 
-    playSoundAt("pop", 600, 2)
     staticShaderCleared = true
 end
 
@@ -795,6 +800,29 @@ local function ensureIntroWarmupCover()
     addSpriteToState("introWarmupCover")
 end
 
+local function spawnGpuWarmSprite(spriteName, imageName)
+    if spriteExist(spriteName) then
+        return
+    end
+
+    createSprite(spriteName)
+    loadGraphic(spriteName, imageName)
+    setSpritePosition(spriteName, 0, 0)
+    scaleSprite(spriteName, 0.001, 0.001)
+    setSpriteAlpha(spriteName, 0.00001)
+    setSpriteToCamera(spriteName, "camHUD")
+    addSpriteToState(spriteName)
+end
+
+local function clearGpuWarmSprites()
+    for _, spriteName in ipairs(gpuWarmSpriteNames) do
+        if spriteExist(spriteName) then
+            removeSpriteFromState(spriteName)
+            destroySprite(spriteName)
+        end
+    end
+end
+
 local function updateIntroWarmup()
     if introWarmupDone then
         return
@@ -835,6 +863,18 @@ local function updateIntroWarmup()
         if precacheSound ~= nil then
             precacheSound("punch")
         end
+
+        if precacheAtlas ~= nil then
+            precacheAtlas("notes/death/NOTE_assets", "sparrow")
+        end
+    elseif introWarmupIndex == 13 then
+        spawnGpuWarmSprite("gpuWarm_skaterExtraNotes", "skater extra notes")
+    elseif introWarmupIndex == 14 then
+        spawnGpuWarmSprite("gpuWarm_skatingFlyingDeath", "skating and flying DEATH")
+    elseif introWarmupIndex == 15 then
+        spawnGpuWarmSprite("gpuWarm_skatingFlyingDeathDemon", "skating and flying DEATHDEMON")
+    elseif introWarmupIndex == 16 then
+        clearGpuWarmSprites()
     else
         applyIntroOpponentFaceShot()
     end
