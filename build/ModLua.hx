@@ -649,7 +649,18 @@ class ModLua {
             }
 
             if(sprites.exists(name)) {
-                return;
+                var existing:FlxSprite = sprites.get(name);
+
+                if(existing != null && existing.exists && existing.scale != null) {
+                    return;
+                }
+
+                if(existing != null) {
+                    detachSpriteFromStateContainers(existing);
+                    existing.destroy();
+                }
+
+                sprites.remove(name);
             }
 
             var sprite:FlxSprite = new FlxSprite();
@@ -671,7 +682,21 @@ class ModLua {
             }
 
             if(texts.exists(name)) {
-                return;
+                var existing:FlxText = texts.get(name);
+
+                if(existing != null && existing.exists && existing.scale != null) {
+                    return;
+                }
+
+                if(existing != null && FlxG.state != null) {
+                    FlxG.state.remove(existing, true);
+                }
+
+                if(existing != null) {
+                    existing.destroy();
+                }
+
+                texts.remove(name);
             }
 
             var luaText:FlxText = new FlxText(x, y, width, text, size);
@@ -1577,6 +1602,38 @@ class ModLua {
             }
 
             FlxG.state.remove(txt, true);
+        });
+
+        addProtectedLuaCallback("destroyText", function(name:String) {
+            var curState = cast FlxG.state;
+            var txt:FlxText = null;
+
+            if(luaTexts != null && luaTexts.exists(name)) {
+                txt = luaTexts.get(name);
+                luaTexts.remove(name);
+            }
+
+            if(txt == null && curState != null && curState is HelperStates && curState.modifiableTexts != null && curState.modifiableTexts.exists(name)) {
+                txt = curState.modifiableTexts.get(name);
+                curState.modifiableTexts.remove(name);
+            }
+
+            forgetStateOwnedText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+            if(FlxG.state != null) {
+                FlxG.state.remove(txt, true);
+            }
+
+            txt.visible = false;
+            txt.active = false;
+            txt.exists = false;
+            txt.cameras = [];
+            txt.kill();
+            txt.destroy();
         });
 
         addProtectedLuaCallback("doTweenX", function(name:String, vars:String, value:Dynamic, duration:Float, ease:String) {

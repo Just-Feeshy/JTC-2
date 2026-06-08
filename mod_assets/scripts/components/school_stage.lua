@@ -20,22 +20,9 @@ local stageOriginX = 0
 local stageOriginY = 0
 local stageInsertIndex = 0
 
-local schoolSpeakerNames = {
-    "schoolSpeakerLeftA",
-    "schoolSpeakerLeftB",
-    "schoolSpeakerCenterLeft",
-    "schoolSpeakerCenterRight",
-    "schoolSpeakerRightA",
-    "schoolSpeakerRightB"
-}
-
 local schoolSpeakerLayout = {
-    {x = 284, y = 30, angle = -17, flip = true},
-    {x = 390, y = -6, angle = -7, flip = true},
-    {x = 760, y = -20, angle = -2, flip = false},
-    {x = 1148, y = -20, angle = 2, flip = false},
-    {x = 1608, y = -6, angle = 7, flip = false},
-    {x = 1718, y = 30, angle = 17, flip = false}
+    {x = 1360,  y = 110, scale = 0.7, angle = 0,  flip = true},
+    {x = 588,  y = 115, scale = 0.7, angle = 2,  flip = false}
 }
 
 local function placeX(artX)
@@ -142,15 +129,17 @@ end
 local function buildSpeakers()
     local i = 1
 
-    while i <= #schoolSpeakerNames do
-        local name = schoolSpeakerNames[i]
+    while i <= #schoolSpeakerLayout do
         local layout = schoolSpeakerLayout[i]
+        local name = "schoolSpeaker_" .. i
+
+        local speakerScale = stageScale * (layout.scale or 0.28)
 
         createSprite(name)
         compileSpriteSheet(name, "school_house/BG/Speaker bump", "sparrow")
         addAnimationByPrefix(name, "bump", "speaker bump", 24, true)
         playAnim(name, "bump", true)
-        scaleSprite(name, stageScale * 0.28, stageScale * 0.28)
+        scaleSprite(name, speakerScale, speakerScale)
         setSpritePosition(name, placeX(layout.x), placeY(layout.y))
         setSpriteAngle(name, layout.angle)
 
@@ -183,8 +172,9 @@ function school_stage.generatedStage()
     applyGameplayCameraSetup()
 
     addStaticLayer("schoolHouseBG", "school_house/BG/BG", 0, 0, nil, 1.0, true)
+    addStaticLayer("schoolChalk", "school_house/BG/chalk", 0, 0, nil, 1.72, true)
     addStaticLayer("schoolWindowOutline", "school_house/BG/window outline", 757, 328, 1.0, 1.65)
-    addStaticLayer("schoolWindowGlow", "school_house/BG/window blur", 337, 38, 0.48, 2.0)
+    addStaticLayer("schoolWindowGlow", "school_house/BG/window blur", 395, 61, 0.48, 2.0)
     addAnimatedLayer("schoolEyes", "school_house/BG/Wood crack eyes", "idle", "wood crack eyes", 10, 724, 1, 0.82, true, 18)
     addLittleHeanchy()
     buildSpeakers()

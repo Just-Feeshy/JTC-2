@@ -157,6 +157,19 @@ local function ensureHudSpritesAttached()
     else
         addSpriteToState("schoolMeterHUD")
     end
+
+    -- The bar/menu inserts above leave null slots in state.members (the haxe
+    -- removeSpriteFromState uses state.remove without splice). FlxGroup.add
+    -- fills the first null it finds, so addTextToState would put the counter
+    -- text BEHIND the bar. Use insertTextToState past the end to force append.
+    if spriteExist("missCountTxt") then
+        removeTextFromState("missCountTxt")
+        insertTextToState(99999, "missCountTxt")
+    end
+    if spriteExist("scoreCountTxt") then
+        removeTextFromState("scoreCountTxt")
+        insertTextToState(99999, "scoreCountTxt")
+    end
 end
 
 local function buildWeirdMenuHud()
@@ -210,16 +223,43 @@ end
 
 local function buildHudCounters()
 	if createText == nil then
+		print("[school_mechanics] buildHudCounters: createText callback missing")
 		return
+	end
+
+	print("[school_mechanics] buildHudCounters: starting, destroyText=" .. tostring(destroyText ~= nil) .. " removeTextFromState=" .. tostring(removeTextFromState ~= nil))
+
+	if destroyText ~= nil then
+		destroyText("missCountTxt")
+		destroyText("scoreCountTxt")
+	elseif removeTextFromState ~= nil then
+		removeTextFromState("missCountTxt")
+		removeTextFromState("scoreCountTxt")
 	end
 
 	createText("missCountTxt", 0, 0, 0, "0", COUNTER_FONT_SIZE)
 	styleCounterText("missCountTxt")
 	addTextToState("missCountTxt")
+	setSpriteVisible("missCountTxt", true)
+	print("[school_mechanics] missCountTxt created, spriteExist=" .. tostring(spriteExist("missCountTxt"))
+		.. " x=" .. tostring(getSpriteX("missCountTxt"))
+		.. " y=" .. tostring(getSpriteY("missCountTxt"))
+		.. " w=" .. tostring(getSpriteWidth("missCountTxt"))
+		.. " idx=" .. tostring(getSpriteIndexFromState("missCountTxt")))
 
 	createText("scoreCountTxt", 0, 0, 0, "0", COUNTER_FONT_SIZE)
 	styleCounterText("scoreCountTxt")
 	addTextToState("scoreCountTxt")
+	setSpriteVisible("scoreCountTxt", true)
+	print("[school_mechanics] scoreCountTxt created, spriteExist=" .. tostring(spriteExist("scoreCountTxt"))
+		.. " x=" .. tostring(getSpriteX("scoreCountTxt"))
+		.. " y=" .. tostring(getSpriteY("scoreCountTxt"))
+		.. " w=" .. tostring(getSpriteWidth("scoreCountTxt"))
+		.. " idx=" .. tostring(getSpriteIndexFromState("scoreCountTxt")))
+
+	print("[school_mechanics] bar idx=" .. tostring(getSpriteIndexFromState("schoolBarHUD"))
+		.. " weirdMenu idx=" .. tostring(getSpriteIndexFromState("schoolWeirdMenuHUD"))
+		.. " meter idx=" .. tostring(getSpriteIndexFromState("schoolMeterHUD")))
 end
 
 local function updateHudCounters()
@@ -274,6 +314,16 @@ function school_mechanics.onCreate()
     ensureHudSpritesAttached()
     updateMeterAngle(0)
     updateHudCounters()
+
+    print("[school_mechanics] AFTER onCreate: missCountTxt idx=" .. tostring(getSpriteIndexFromState("missCountTxt"))
+        .. " x=" .. tostring(getSpriteX("missCountTxt"))
+        .. " y=" .. tostring(getSpriteY("missCountTxt"))
+        .. " | scoreCountTxt idx=" .. tostring(getSpriteIndexFromState("scoreCountTxt"))
+        .. " x=" .. tostring(getSpriteX("scoreCountTxt"))
+        .. " y=" .. tostring(getSpriteY("scoreCountTxt"))
+        .. " | bar idx=" .. tostring(getSpriteIndexFromState("schoolBarHUD"))
+        .. " | windowW=" .. tostring(windowWidth)
+        .. " windowH=" .. tostring(windowHeight))
 
     school_shader.enable(1.0, 1.5)
 end

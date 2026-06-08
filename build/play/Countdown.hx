@@ -141,6 +141,23 @@ class Countdown
 		}
 
 		var playState:PlayState = PlayState.instance;
+
+		if(countdownGraphicTween != null)
+		{
+			countdownGraphicTween.cancel();
+			countdownGraphicTween = null;
+		}
+
+		if(countdownGraphicSprite != null)
+		{
+			if(playState != null)
+			{
+				playState.remove(countdownGraphicSprite, true);
+			}
+			countdownGraphicSprite.destroy();
+			countdownGraphicSprite = null;
+		}
+
 		if(playState != null)
 		{
 			if(playState.startTimer != null)
