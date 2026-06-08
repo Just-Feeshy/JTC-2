@@ -1383,6 +1383,16 @@ class ModLua {
             spr.cameras = [cam];
         });
 
+        addProtectedLuaCallback("setTextAlign", function(name:String, align) {
+            var txt:FlxText = getText(name);
+
+            if(txt == null) {
+                return;
+            }
+
+			txt.alignment = align;
+        });
+
         addProtectedLuaCallback("setTextToCamera", function(name:String, camera:String) {
             var cam:FlxCamera = getCamera(camera);
             var txt:FlxText = getText(name);

@@ -2469,9 +2469,14 @@ class PlayState extends MusicBeatState
 		}
 
 		var droppedNote:Note = null;
+		var currentSongPos:Float = Conductor.instance.trackedSongPosition;
 
 		// Match Funkin more closely: release the earliest active segment on this lane,
 		// not just whichever note happens to be encountered first in the live list.
+		// Crucial constraint: only consider segments the player is *currently expected to be holding*
+		// (strumTime <= songPos). If the next sustain piece is still in the future, the player just
+		// lifted between taps on the same lane (e.g. Ping Pong's tap + tap-with-sustain pattern) —
+		// that's not a sustain drop, so we must not mark the chain missed here.
 		notes.forEachAlive(function(daNote:Note) {
 			if(daNote.mustPress
 				&& daNote.isSustainNote
@@ -2479,7 +2484,8 @@ class PlayState extends MusicBeatState
 				&& !daNote.sustainChainMissed
 				&& !daNote.wasGoodHit
 				&& daNote.prevNote != null
-				&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)) {
+				&& (daNote.prevNote.wasGoodHit || daNote.prevNote.shouldBeDead)
+				&& daNote.getNoteTime() <= currentSongPos) {
 				if(droppedNote == null || daNote.getNoteTime() < droppedNote.getNoteTime()) {
 					droppedNote = daNote;
 				}
@@ -2792,7 +2798,12 @@ class PlayState extends MusicBeatState
 					sustainChainsByHead.set(swagNote, headChain);
 				}
 
-				if (floorSus > 0) for (susNote in 0...floorSus + 1) {
+				// Align the sustain piece chain to the trail's visual end. Pieces sit at
+		// strumTime + stepLengthMs * (susNote + 1), so floorSus iterations end exactly at
+		// strumTime + sustainLength (the trail's nominal end). The previous `floorSus + 1`
+		// produced one extra piece a full step past the trail, which left the player strum
+		// stuck in confirm-hold after the trail was visually destroyed.
+		if (floorSus > 0) for (susNote in 0...floorSus) {
 					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
 					if(!oldNote.isSustainNote && oldNote.trail != null)

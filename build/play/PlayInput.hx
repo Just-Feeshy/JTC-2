@@ -88,8 +88,12 @@ class PlayInput
 		var controlHoldArray = botMode ? getBotControlHoldArray(songTime) : getControlHoldArray();
 
 		processInputQueue(controlHoldArray);
-		refreshHeldStrums(controlHoldArray);
+		// Tick sustain pieces FIRST so the chain's active/inactive state is up-to-date when the
+		// strum animation decides whether to keep playing confirm-hold or revert. Doing it the other
+		// way around leaves the player in confirm-hold for one frame after the final piece is hit
+		// — small in isolation, visible when the trail vanishes the same frame the chain completes.
 		processHeldNotes(controlHoldArray, songTime);
+		refreshHeldStrums(controlHoldArray);
 		playState.updateHoldCoverSprites(true, controlHoldArray);
 		playState.updateHoldCoverSprites(false);
 

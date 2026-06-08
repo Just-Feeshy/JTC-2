@@ -1,1591 +1,1591 @@
 {
-    "soundCatalog": [],
-    "version": "2.0.0",
-    "assetCatalog": [
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/Under ur spoon box.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/Under ur spoon box.xml",
-            "name": "uys_box"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/SexyJTC.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/SexyJTC.xml",
-            "name": "JTC Sexy 1"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/SexyJTC2.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/SexyJTC2.xml",
-            "name": "JTC Sexy 2"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/SexyBFnGF.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/SexyBFnGF.xml",
-            "name": "BF GF"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/SexyBFnGF2.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/SexyBFnGF2.xml",
-            "name": "BF GF 2"
-        },
-        {
-            "spritePath": null,
-            "xmlPath": null,
-            "name": "BF GF 3"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/SexyPICO.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/SexyPICO.xml",
-            "name": "Pico1"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/Duck the duck.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/Duck the duck.xml",
-            "name": "Duck"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/Teacher.png",
-            "xmlPath": "mod_assets/images/school_house/dialogue/Teacher.xml",
-            "name": "Teacher 1"
-        },
-        {
-            "xmlPath": "mod_assets/images/school_house/dialogue/SexyJTC3.xml",
-            "spritePath": "mod_assets/images/school_house/dialogue/SexyJTC3.png",
-            "name": "JTC Sexy 3"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/TeacherAngry.png",
-            "name": "Teacher 2",
-            "xmlPath": "mod_assets/images/school_house/dialogue/TeacherAngry.xml"
-        },
-        {
-            "spritePath": "mod_assets/images/school_house/dialogue/SexyPICO2.png",
-            "name": "Pico 2",
-            "xmlPath": "mod_assets/images/school_house/dialogue/SexyPICO2.xml"
-        }
-    ],
-    "scenes": [
-        {
-            "leftPortrait": {
-                "x": 285,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "looped": false,
-                        "name": "gasp",
-                        "offset": []
-                    }
-                ],
-                "assetName": "JTC Sexy 1",
-                "assetID": 1
-            },
-            "shakeCamera": false,
-            "soundIndex": 0,
-            "textY": 170,
-            "shakeAmplitude": 0,
-            "text": [
-                "left portrait",
-                "...gasp ...gasp"
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -16777216,
-            "talkingAnimation": null,
-            "font": "mod_assets/fonts/cheese.otf",
-            "rightPortrait": {
-                "x": 720,
-                "y": 60,
-                "size": 0.8,
-                "assetID": 1,
-                "animations": []
-            },
-            "speed": 1
-        },
-        {
-            "leftPortrait": {
-                "x": 285,
-                "size": 0.55,
-                "y": 60,
-                "assetID": 1,
-                "assetName": "JTC Sexy 1",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "offset": [],
-                        "looped": false,
-                        "name": "gasp"
-                    }
-                ]
-            },
-            "soundIndex": 0,
-            "textY": 170,
-            "text": [
-                "left portrait",
-                "...guys.. please help."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ]
-            },
-            "textColor": -16777216,
-            "talkingAnimation": null,
-            "speed": 1,
-            "rightPortrait": {
-                "x": 720,
-                "size": 0.8,
-                "y": 60,
-                "animations": [],
-                "assetID": 1
-            },
-            "font": "mod_assets/fonts/cheese.otf"
-        },
-        {
-            "leftPortrait": {
-                "x": 285,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "name": "gasp",
-                        "offset": [],
-                        "looped": false
-                    }
-                ],
-                "assetName": "JTC Sexy 1",
-                "assetID": 1
-            },
-            "soundIndex": 0,
-            "textY": 170,
-            "text": [
-                "left portrait",
-                "...these chains....."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -16777216,
-            "talkingAnimation": null,
-            "font": "mod_assets/fonts/cheese.otf",
-            "rightPortrait": {
-                "x": 720,
-                "y": 60,
-                "size": 0.8,
-                "assetID": 1,
-                "animations": []
-            },
-            "speed": 1
-        },
-        {
-            "leftPortrait": {
-                "x": 285,
-                "size": 0.55,
-                "y": 60,
-                "assetID": 2,
-                "assetName": "JTC Sexy 2",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "looped": false,
-                        "name": "gasp",
-                        "offset": []
-                    }
-                ]
-            },
-            "soundIndex": 0,
-            "textY": 170,
-            "text": [
-                "left portrait",
-                "...are so uncool."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "textColor": -16777216,
-            "talkingAnimation": null,
-            "speed": 1,
-            "rightPortrait": {
-                "x": 720,
-                "size": 0.8,
-                "y": 60,
-                "animations": [],
-                "assetID": 1
-            },
-            "font": "mod_assets/fonts/cheese.otf"
-        },
-        {
-            "leftPortrait": {
-                "x": 285,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "offset": [],
-                        "looped": false,
-                        "name": "gasp"
-                    }
-                ],
-                "assetName": "JTC Sexy 2",
-                "assetID": 2
-            },
-            "soundIndex": 0,
-            "textY": 195,
-            "text": [
-                "right portrait",
-                "..."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -16777216,
-            "talkingAnimation": null,
-            "font": "mod_assets/fonts/SuperGirlfriend.ttf",
-            "rightPortrait": {
-                "x": 520,
-                "y": 140,
-                "size": 0.55,
-                "assetName": "BF GF",
-                "assetID": 3,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "speed": 0.1
-        },
-        {
-            "leftPortrait": {
-                "x": 285,
-                "size": 0.55,
-                "y": 60,
-                "assetID": 2,
-                "assetName": "JTC Sexy 2",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "name": "gasp",
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "soundIndex": 0,
-            "textY": 195,
-            "text": [
-                "right portrait",
-                "???"
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "textColor": -16777216,
-            "talkingAnimation": null,
-            "speed": 0.7,
-            "rightPortrait": {
-                "x": 520,
-                "size": 0.55,
-                "y": 140,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetID": 3,
-                "assetName": "BF GF"
-            },
-            "font": "mod_assets/fonts/SuperGirlfriend.ttf"
-        },
-        {
-            "leftPortrait": {
-                "x": 285,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "looped": false,
-                        "name": "gasp",
-                        "offset": []
-                    }
-                ],
-                "assetName": "JTC Sexy 2",
-                "assetID": 2
-            },
-            "soundIndex": 0,
-            "textY": 195,
-            "text": [
-                "right portrait",
-                "!!!"
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -16777216,
-            "talkingAnimation": null,
-            "font": "mod_assets/fonts/SuperGirlfriend.ttf",
-            "rightPortrait": {
-                "x": 520,
-                "y": 140,
-                "size": 0.55,
-                "assetName": "BF GF 2",
-                "assetID": 4,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "speed": 1
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "size": 0.55,
-                "y": 100,
-                "assetID": 6,
-                "assetName": "Pico1",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "offset": [],
-                        "looped": false,
-                        "name": "gasp"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "soundIndex": 0,
-            "textY": 196,
-            "text": [
-                "left portrait",
-                "What in the BDSM is going on here."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ]
-            },
-            "textColor": -1222912,
-            "talkingAnimation": null,
-            "speed": 1,
-            "rightPortrait": {
-                "x": 520,
-                "size": 0.55,
-                "y": 140,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetID": 4,
-                "assetName": "BF GF 2"
-            },
-            "font": "NewgroundsFont-Regular.otf"
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "y": 100,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "name": "gasp",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetName": "Pico1",
-                "assetID": 6
-            },
-            "soundIndex": 0,
-            "textY": 220,
-            "text": [
-                "right portrait",
-                "Quack (Did someone say BDSM :D)"
-            ],
-            "textSize": 48,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -5632,
-            "talkingAnimation": null,
-            "font": "Rubber-Duck.ttf",
-            "rightPortrait": {
-                "x": 420,
-                "y": 240,
-                "size": 0.55,
-                "assetName": "Duck",
-                "assetID": 7,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ]
-            },
-            "speed": 1
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "size": 0.55,
-                "y": 60,
-                "assetID": 8,
-                "assetName": "Teacher 1",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "looped": false,
-                        "name": "gasp",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "soundIndex": 0,
-            "textY": 196,
-            "text": [
-                "left portrait",
-                "Alright class, settle down! Settle Down!"
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "textColor": -10813361,
-            "talkingAnimation": null,
-            "speed": 1,
-            "rightPortrait": {
-                "x": 420,
-                "size": 0.55,
-                "y": 240,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ],
-                "assetID": 7,
-                "assetName": "Duck"
-            },
-            "font": "PhantomMuff.ttf"
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "y": 100,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "offset": [],
-                        "looped": false,
-                        "name": "gasp"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetName": "Pico1",
-                "assetID": 6
-            },
-            "soundIndex": 0,
-            "textY": 196,
-            "text": [
-                "left portrait",
-                ". . ."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -1222912,
-            "talkingAnimation": null,
-            "font": "NewgroundsFont-Regular.otf",
-            "rightPortrait": {
-                "x": 420,
-                "y": 240,
-                "size": 0.55,
-                "assetName": "Duck",
-                "assetID": 7,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "speed": 0.1
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "offset": [],
-                        "looped": false,
-                        "name": "gasp"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetName": "Teacher 1",
-                "assetID": 8
-            },
-            "soundIndex": 0,
-            "textY": 196,
-            "text": [
-                "left portrait",
-                "Now class."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -10813361,
-            "talkingAnimation": null,
-            "font": "PhantomMuff.ttf",
-            "rightPortrait": {
-                "x": 420,
-                "y": 240,
-                "size": 0.55,
-                "assetName": "Duck",
-                "assetID": 7,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "speed": 1
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "size": 0.55,
-                "y": 60,
-                "assetID": 8,
-                "assetName": "Teacher 1",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "name": "gasp",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "soundIndex": 0,
-            "textY": 196,
-            "text": [
-                "left portrait",
-                "Has anyone ever eaten an..."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "textColor": -10813361,
-            "talkingAnimation": null,
-            "speed": 1,
-            "rightPortrait": {
-                "x": 420,
-                "size": 0.55,
-                "y": 240,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetID": 7,
-                "assetName": "Duck"
-            },
-            "font": "PhantomMuff.ttf"
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "looped": false,
-                        "name": "gasp",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetName": "Teacher 1",
-                "assetID": 8
-            },
-            "soundIndex": 0,
-            "textY": 196,
-            "text": [
-                "left portrait",
-                "apple?"
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -65472,
-            "talkingAnimation": null,
-            "font": "PhantomMuff.ttf",
-            "rightPortrait": {
-                "x": 420,
-                "y": 240,
-                "size": 0.55,
-                "assetName": "Duck",
-                "assetID": 7,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "speed": 0.2
-        },
-        {
-            "leftPortrait": {
-                "x": 286,
-                "size": 0.55,
-                "y": 60,
-                "assetID": 9,
-                "assetName": "JTC Sexy 3",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "offset": [],
-                        "looped": false,
-                        "name": "gasp"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC3",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "soundIndex": 0,
-            "textY": 170,
-            "text": [
-                "left portrait",
-                "NO! FUCK YOU AND YOUR APPLES!"
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ]
-            },
-            "textColor": -65536,
-            "talkingAnimation": null,
-            "speed": 1,
-            "rightPortrait": {
-                "x": 420,
-                "size": 0.55,
-                "y": 240,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetID": 7,
-                "assetName": "Duck"
-            },
-            "font": "cheese.otf"
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "name": "gasp",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC3",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetName": "Teacher 1",
-                "assetID": 8
-            },
-            "soundIndex": 0,
-            "textY": 196,
-            "text": [
-                "left portrait",
-                "Your job.."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -65472,
-            "talkingAnimation": null,
-            "font": "PhantomMuff.ttf",
-            "rightPortrait": {
-                "x": 420,
-                "y": 240,
-                "size": 0.55,
-                "assetName": "Duck",
-                "assetID": 7,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ]
-            },
-            "speed": 0.3
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "size": 0.55,
-                "y": 60,
-                "assetID": 8,
-                "assetName": "Teacher 1",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "looped": false,
-                        "name": "gasp",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC3",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "prefix": "AngryTeacher",
-                        "name": "appear",
-                        "framerate": 24,
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "shakeCamera": false,
-            "soundIndex": 0,
-            "textY": 196,
-            "shakeAmplitude": 0,
-            "text": [
-                "left portrait",
-                "is to say.."
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "textColor": -65472,
-            "talkingAnimation": null,
-            "speed": 0.6,
-            "rightPortrait": {
-                "x": 420,
-                "size": 0.55,
-                "y": 240,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ],
-                "assetID": 7,
-                "assetName": "Duck"
-            },
-            "font": "PhantomMuff.ttf"
-        },
-        {
-            "leftPortrait": {
-                "x": 685,
-                "y": 60,
-                "size": 0.55,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "offset": [],
-                        "looped": false,
-                        "name": "gasp"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC3",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "AngryTeacher",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ],
-                "assetName": "Teacher 2",
-                "assetID": 10
-            },
-            "shakeCamera": true,
-            "soundIndex": 0,
-            "textY": 170,
-            "shakeAmplitude": 0.1,
-            "text": [
-                "left portrait",
-                "YES MA'AM-!!!"
-            ],
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "y": 140,
-                "size": 0.9,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetName": "uys_box",
-                "assetID": 0
-            },
-            "textColor": -65472,
-            "talkingAnimation": null,
-            "font": "cheese.otf",
-            "rightPortrait": {
-                "x": 420,
-                "y": 240,
-                "size": 0.55,
-                "assetName": "Duck",
-                "assetID": 7,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "looped": false,
-                        "name": "appear",
-                        "offset": []
-                    }
-                ]
-            },
-            "speed": 1.2
-        },
-        {
-            "leftPortrait": {
-                "x": 585,
-                "size": 0.55,
-                "y": 110,
-                "assetID": 11,
-                "assetName": "Pico 2",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC",
-                        "name": "gasp",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Pico",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_Teacher",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC3",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "AngryTeacher",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "prefix": "Sexy_PICO2",
-                        "name": "appear",
-                        "framerate": 24,
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "shakeCamera": false,
-            "soundIndex": 0,
-            "textY": 196,
-            "shakeAmplitude": 0.1,
-            "text": [
-                "left portrait",
-                "Bring it on-"
-            ],
-            "talkingAnimation": null,
-            "textColor": -1222912,
-            "textSize": 32,
-            "speechBubble": {
-                "x": 108.1,
-                "size": 0.9,
-                "y": 140,
-                "assetID": 0,
-                "assetName": "uys_box",
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "jtcDialogueBox-Spooky",
-                        "name": "appear",
-                        "offset": [],
-                        "looped": false
-                    }
-                ]
-            },
-            "speed": 1.2,
-            "rightPortrait": {
-                "x": 420,
-                "size": 0.55,
-                "y": 240,
-                "animations": [
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_JTC2",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "SexyBFnGF",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    },
-                    {
-                        "framerate": 24,
-                        "prefix": "Sexy_duck",
-                        "offset": [],
-                        "looped": false,
-                        "name": "appear"
-                    }
-                ],
-                "assetID": 7,
-                "assetName": "Duck"
-            },
-            "font": "NewgroundsFont-Regular.otf"
-        }
-    ]
+	"version": "2.0.0",
+	"soundCatalog": [],
+	"scenes": [
+		{
+			"leftPortrait": {
+				"x": 285,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 1,
+				"assetName": "JTC Sexy 1",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"offset": [],
+						"looped": false,
+						"name": "gasp"
+					}
+				]
+			},
+			"shakeCamera": false,
+			"soundIndex": 0,
+			"textY": 170,
+			"shakeAmplitude": 0,
+			"text": [
+				"left portrait",
+				"...gasp ...gasp"
+			],
+			"talkingAnimation": null,
+			"textColor": -16777216,
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"speed": 1,
+			"rightPortrait": {
+				"x": 720,
+				"size": 0.8,
+				"y": 60,
+				"animations": [],
+				"assetID": 1
+			},
+			"font": "mod_assets/fonts/cheese.otf"
+		},
+		{
+			"leftPortrait": {
+				"x": 285,
+				"y": 60,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"name": "gasp",
+						"offset": [],
+						"looped": false
+					}
+				],
+				"assetName": "JTC Sexy 1",
+				"assetID": 1
+			},
+			"soundIndex": 0,
+			"textY": 170,
+			"text": [
+				"left portrait",
+				"...guys.. please help."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textColor": -16777216,
+			"talkingAnimation": null,
+			"font": "mod_assets/fonts/cheese.otf",
+			"rightPortrait": {
+				"x": 720,
+				"y": 60,
+				"size": 0.8,
+				"assetID": 1,
+				"animations": []
+			},
+			"speed": 1
+		},
+		{
+			"leftPortrait": {
+				"x": 285,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 1,
+				"assetName": "JTC Sexy 1",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"looped": false,
+						"name": "gasp",
+						"offset": []
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 170,
+			"text": [
+				"left portrait",
+				"...these chains....."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				]
+			},
+			"textColor": -16777216,
+			"talkingAnimation": null,
+			"speed": 1,
+			"rightPortrait": {
+				"x": 720,
+				"size": 0.8,
+				"y": 60,
+				"animations": [],
+				"assetID": 1
+			},
+			"font": "mod_assets/fonts/cheese.otf"
+		},
+		{
+			"leftPortrait": {
+				"x": 285,
+				"y": 60,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"offset": [],
+						"looped": false,
+						"name": "gasp"
+					}
+				],
+				"assetName": "JTC Sexy 2",
+				"assetID": 2
+			},
+			"soundIndex": 0,
+			"textY": 170,
+			"text": [
+				"left portrait",
+				"...are so uncool."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textColor": -16777216,
+			"talkingAnimation": null,
+			"font": "mod_assets/fonts/cheese.otf",
+			"rightPortrait": {
+				"x": 720,
+				"y": 60,
+				"size": 0.8,
+				"assetID": 1,
+				"animations": []
+			},
+			"speed": 1
+		},
+		{
+			"leftPortrait": {
+				"x": 285,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 2,
+				"assetName": "JTC Sexy 2",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"name": "gasp",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 195,
+			"text": [
+				"right portrait",
+				"..."
+			],
+			"textSize": 64,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"textColor": -16777216,
+			"talkingAnimation": null,
+			"speed": 0.1,
+			"rightPortrait": {
+				"x": 520,
+				"size": 0.55,
+				"y": 140,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetID": 3,
+				"assetName": "BF GF"
+			},
+			"font": "mod_assets/fonts/SuperGirlfriend.ttf"
+		},
+		{
+			"leftPortrait": {
+				"x": 285,
+				"y": 60,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"looped": false,
+						"name": "gasp",
+						"offset": []
+					}
+				],
+				"assetName": "JTC Sexy 2",
+				"assetID": 2
+			},
+			"soundIndex": 0,
+			"textY": 215,
+			"text": [
+				"right portrait",
+				"???"
+			],
+			"textSize": 64,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textColor": -16777216,
+			"talkingAnimation": null,
+			"font": "mod_assets/fonts/SuperGirlfriend.ttf",
+			"rightPortrait": {
+				"x": 520,
+				"y": 140,
+				"size": 0.55,
+				"assetName": "BF GF",
+				"assetID": 3,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"speed": 0.7
+		},
+		{
+			"leftPortrait": {
+				"x": 285,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 2,
+				"assetName": "JTC Sexy 2",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"offset": [],
+						"looped": false,
+						"name": "gasp"
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 215,
+			"text": [
+				"right portrait",
+				"!!!"
+			],
+			"textSize": 64,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"textColor": -16777216,
+			"talkingAnimation": null,
+			"speed": 1,
+			"rightPortrait": {
+				"x": 520,
+				"size": 0.55,
+				"y": 140,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetID": 4,
+				"assetName": "BF GF 2"
+			},
+			"font": "mod_assets/fonts/SuperGirlfriend.ttf"
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"y": 100,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"name": "gasp",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetName": "Pico1",
+				"assetID": 6
+			},
+			"soundIndex": 0,
+			"textY": 196,
+			"text": [
+				"left portrait",
+				"What in the BDSM is going on here."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textColor": -1222912,
+			"talkingAnimation": null,
+			"font": "NewgroundsFont-Regular.otf",
+			"rightPortrait": {
+				"x": 520,
+				"y": 140,
+				"size": 0.55,
+				"assetName": "BF GF 2",
+				"assetID": 4,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"speed": 1
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"size": 0.55,
+				"y": 100,
+				"assetID": 6,
+				"assetName": "Pico1",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"looped": false,
+						"name": "gasp",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 220,
+			"text": [
+				"right portrait",
+				"Quack (Did someone say BDSM :D)"
+			],
+			"textSize": 48,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				]
+			},
+			"textColor": -5632,
+			"talkingAnimation": null,
+			"speed": 1,
+			"rightPortrait": {
+				"x": 420,
+				"size": 0.55,
+				"y": 240,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				],
+				"assetID": 7,
+				"assetName": "Duck"
+			},
+			"font": "Rubber-Duck.ttf"
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"y": 60,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"offset": [],
+						"looped": false,
+						"name": "gasp"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetName": "Teacher 1",
+				"assetID": 8
+			},
+			"soundIndex": 0,
+			"textY": 196,
+			"text": [
+				"left portrait",
+				"Alright class, settle down! Settle Down!"
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textColor": -10813361,
+			"talkingAnimation": null,
+			"font": "PhantomMuff.ttf",
+			"rightPortrait": {
+				"x": 420,
+				"y": 240,
+				"size": 0.55,
+				"assetName": "Duck",
+				"assetID": 7,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				]
+			},
+			"speed": 1
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"size": 0.55,
+				"y": 100,
+				"assetID": 6,
+				"assetName": "Pico1",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"name": "gasp",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 196,
+			"text": [
+				"left portrait",
+				". . ."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"textColor": -1222912,
+			"talkingAnimation": null,
+			"speed": 0.1,
+			"rightPortrait": {
+				"x": 420,
+				"size": 0.55,
+				"y": 240,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetID": 7,
+				"assetName": "Duck"
+			},
+			"font": "NewgroundsFont-Regular.otf"
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 8,
+				"assetName": "Teacher 1",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"name": "gasp",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 196,
+			"text": [
+				"left portrait",
+				"Now class."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"textColor": -10813361,
+			"talkingAnimation": null,
+			"speed": 1,
+			"rightPortrait": {
+				"x": 420,
+				"size": 0.55,
+				"y": 240,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetID": 7,
+				"assetName": "Duck"
+			},
+			"font": "PhantomMuff.ttf"
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"y": 60,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"looped": false,
+						"name": "gasp",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetName": "Teacher 1",
+				"assetID": 8
+			},
+			"soundIndex": 0,
+			"textY": 196,
+			"text": [
+				"left portrait",
+				"Has anyone ever eaten an..."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textColor": -10813361,
+			"talkingAnimation": null,
+			"font": "PhantomMuff.ttf",
+			"rightPortrait": {
+				"x": 420,
+				"y": 240,
+				"size": 0.55,
+				"assetName": "Duck",
+				"assetID": 7,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"speed": 1
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 8,
+				"assetName": "Teacher 1",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"offset": [],
+						"looped": false,
+						"name": "gasp"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 196,
+			"text": [
+				"left portrait",
+				"apple?"
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"textColor": -65472,
+			"talkingAnimation": null,
+			"speed": 0.2,
+			"rightPortrait": {
+				"x": 420,
+				"size": 0.55,
+				"y": 240,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetID": 7,
+				"assetName": "Duck"
+			},
+			"font": "PhantomMuff.ttf"
+		},
+		{
+			"leftPortrait": {
+				"x": 286,
+				"y": 60,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"name": "gasp",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC3",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetName": "JTC Sexy 3",
+				"assetID": 9
+			},
+			"soundIndex": 0,
+			"textY": 170,
+			"text": [
+				"left portrait",
+				"NO! FUCK YOU AND YOUR APPLES!"
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textColor": -65536,
+			"talkingAnimation": null,
+			"font": "cheese.otf",
+			"rightPortrait": {
+				"x": 420,
+				"y": 240,
+				"size": 0.55,
+				"assetName": "Duck",
+				"assetID": 7,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"speed": 1
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 8,
+				"assetName": "Teacher 1",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"looped": false,
+						"name": "gasp",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC3",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"soundIndex": 0,
+			"textY": 196,
+			"text": [
+				"left portrait",
+				"Your job.."
+			],
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				]
+			},
+			"textColor": -65472,
+			"talkingAnimation": null,
+			"speed": 0.3,
+			"rightPortrait": {
+				"x": 420,
+				"size": 0.55,
+				"y": 240,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				],
+				"assetID": 7,
+				"assetName": "Duck"
+			},
+			"font": "PhantomMuff.ttf"
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"y": 60,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"offset": [],
+						"looped": false,
+						"name": "gasp"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC3",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "AngryTeacher",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetName": "Teacher 1",
+				"assetID": 8
+			},
+			"shakeCamera": false,
+			"soundIndex": 0,
+			"textY": 196,
+			"shakeAmplitude": 0,
+			"text": [
+				"left portrait",
+				"is to say.."
+			],
+			"talkingAnimation": null,
+			"textColor": -65472,
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"font": "PhantomMuff.ttf",
+			"rightPortrait": {
+				"x": 420,
+				"y": 240,
+				"size": 0.55,
+				"assetName": "Duck",
+				"assetID": 7,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				]
+			},
+			"speed": 0.6
+		},
+		{
+			"leftPortrait": {
+				"x": 685,
+				"size": 0.55,
+				"y": 60,
+				"assetID": 10,
+				"assetName": "Teacher 2",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"name": "gasp",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC3",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "AngryTeacher",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				]
+			},
+			"shakeCamera": true,
+			"soundIndex": 0,
+			"textY": 170,
+			"shakeAmplitude": 0.1,
+			"text": [
+				"left portrait",
+				"YES MA'AM-!!!"
+			],
+			"talkingAnimation": null,
+			"textColor": -65472,
+			"textSize": 32,
+			"speechBubble": {
+				"x": 108.1,
+				"size": 0.9,
+				"y": 140,
+				"assetID": 0,
+				"assetName": "uys_box",
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"speed": 1.2,
+			"rightPortrait": {
+				"x": 420,
+				"size": 0.55,
+				"y": 240,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"offset": [],
+						"looped": false,
+						"name": "appear"
+					}
+				],
+				"assetID": 7,
+				"assetName": "Duck"
+			},
+			"font": "cheese.otf"
+		},
+		{
+			"leftPortrait": {
+				"x": 585,
+				"y": 110,
+				"size": 0.55,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC",
+						"looped": false,
+						"name": "gasp",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Pico",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_Teacher",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC3",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "AngryTeacher",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_PICO2",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetName": "Pico 2",
+				"assetID": 11
+			},
+			"shakeCamera": false,
+			"soundIndex": 0,
+			"textY": 196,
+			"shakeAmplitude": 0.1,
+			"text": [
+				"left portrait",
+				"Bring it on-"
+			],
+			"speechBubble": {
+				"x": 108.1,
+				"y": 140,
+				"size": 0.9,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "jtcDialogueBox-Spooky",
+						"looped": false,
+						"name": "appear",
+						"offset": []
+					}
+				],
+				"assetName": "uys_box",
+				"assetID": 0
+			},
+			"textSize": 32,
+			"talkingAnimation": null,
+			"textColor": -1222912,
+			"font": "NewgroundsFont-Regular.otf",
+			"rightPortrait": {
+				"x": 420,
+				"y": 240,
+				"size": 0.55,
+				"assetName": "Duck",
+				"assetID": 7,
+				"animations": [
+					{
+						"framerate": 24,
+						"prefix": "Sexy_JTC2",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "SexyBFnGF",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					},
+					{
+						"framerate": 24,
+						"prefix": "Sexy_duck",
+						"name": "appear",
+						"offset": [],
+						"looped": false
+					}
+				]
+			},
+			"speed": 1.2
+		}
+	],
+	"assetCatalog": [
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/Under ur spoon box.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/Under ur spoon box.png",
+			"name": "uys_box"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/SexyJTC.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/SexyJTC.png",
+			"name": "JTC Sexy 1"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/SexyJTC2.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/SexyJTC2.png",
+			"name": "JTC Sexy 2"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/SexyBFnGF.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/SexyBFnGF.png",
+			"name": "BF GF"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/SexyBFnGF2.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/SexyBFnGF2.png",
+			"name": "BF GF 2"
+		},
+		{
+			"xmlPath": null,
+			"spritePath": null,
+			"name": "BF GF 3"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/SexyPICO.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/SexyPICO.png",
+			"name": "Pico1"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/Duck the duck.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/Duck the duck.png",
+			"name": "Duck"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/Teacher.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/Teacher.png",
+			"name": "Teacher 1"
+		},
+		{
+			"spritePath": "mod_assets/images/school_house/dialogue/SexyJTC3.png",
+			"xmlPath": "mod_assets/images/school_house/dialogue/SexyJTC3.xml",
+			"name": "JTC Sexy 3"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/TeacherAngry.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/TeacherAngry.png",
+			"name": "Teacher 2"
+		},
+		{
+			"xmlPath": "mod_assets/images/school_house/dialogue/SexyPICO2.xml",
+			"spritePath": "mod_assets/images/school_house/dialogue/SexyPICO2.png",
+			"name": "Pico 2"
+		}
+	]
 }

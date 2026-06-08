@@ -1,14 +1,19 @@
+local roles = {
+	"FrogTreat - Director & Lead Artist & Lead Animator",
+	"Dificuz - Artist & Animator & Charter",
+	"JustFeeshy - Lead Programmer",
+	"Varsavi - Musician",
+	"FLX - Freeplay Menu Programmer"
+}
 
 function onCreate()
-	createText("role", 0, 0, windowWidth * 0.5, "Lead Programmer", 48)
-
-	setTextPosition("role", windowWidth - getTextWidth("role"), 0)
-	setsetTextToCamera("role", "crewInfoCam")
+	createText("role", 0, 12, windowWidth, roles[1], 32)
+	setTextAlign("role", "center")
+    setTextFont("role", "cheese.otf")
+    setTextBorder("role", "OUTLINE", 2, "0xFF000000")
 	addTextToState("role")
 end
 
-function openCrewMenu(curSelected, fileName)
-end
-
-function backInfo()
+function changeDev(curSelected)
+	setText("role", roles[curSelected + 1])
 end

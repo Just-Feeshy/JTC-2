@@ -2,7 +2,7 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -10,6 +10,8 @@ import flixel.FlxObject;
 import feshixl.FeshCamera;
 
 class CrewState extends MusicBeatState {
+	private static var byHowMuch = 40;
+
 	private static var fileName:Array<String> = [
 		"TreatOfDaFrog",
 		"SussyDifi",
@@ -18,15 +20,12 @@ class CrewState extends MusicBeatState {
 		"MusicManJDST",
 	];
 
-    var officalDevTeam:FlxTypedGroup<CreditSprites>;
+    var officalDevTeam:FlxTypedSpriteGroup<CreditSprites>;
     var allTweens:Array<FlxTween>;
 
     var curSelected:Int = 0;
 	var curSprite:CreditSprites;
     var selected:Bool = false;
-
-	var crewInfoBG:FlxSprite;
-	var crewInfoCam:FeshCamera;
 
     public function new() {
         super();
@@ -37,12 +36,6 @@ class CrewState extends MusicBeatState {
 
         allTweens = new Array<FlxTween>();
 
-		crewInfoCam = new FeshCamera();
-		crewInfoCam.bgColor.alpha = 0;
-		crewInfoCam.zoom = 1;
-
-		FlxG.cameras.add(crewInfoCam);
-
         var background:MenuBackground = new MenuBackground(0, 0);
         add(background);
 
@@ -51,12 +44,13 @@ class CrewState extends MusicBeatState {
         backgroundOverlay.scrollFactor.set();
         add(backgroundOverlay);
 
-        officalDevTeam = new FlxTypedGroup<CreditSprites>();
+        officalDevTeam = new FlxTypedSpriteGroup<CreditSprites>(0, 50);
         add(officalDevTeam);
 
         makeCoolPeople();
 
         var devTeamLogo:FlxSprite = new FlxSprite().loadGraphic(Paths.image("devTeamLogo"));
+		devTeamLogo.y = byHowMuch;
         devTeamLogo.scrollFactor.set(0, 1);
         add(devTeamLogo);
 
@@ -64,24 +58,13 @@ class CrewState extends MusicBeatState {
             if(dev.ID != curSelected) {
                 dev.color = FlxColor.fromRGBFloat(0.1, 0.1, 0.1);
             }else {
-                dev.y = -10;
+                dev.y = -10 + byHowMuch;
             }
         });
 
 		changeDev(0);
 
-		crewInfoBG = new FlxSprite().loadGraphic(Paths.image("crewInfo"));
-		crewInfoBG.alpha = 0;
-		crewInfoBG.cameras = [crewInfoCam];
-		add(crewInfoBG);
-
         super.create();
-
-		#if USING_LUA
-		if(HelperStates.luaExist(Type.getClass(this))) {
-			modifiableCameras.set("crewInfoCam", crewInfoCam);
-		}
-		#end
     }
 
     override function update(elapsed:Float) {
@@ -98,21 +81,14 @@ class CrewState extends MusicBeatState {
 
 
 		    if(controls.ACCEPT) {
-				openCrewMenu();
+				openLink(curSprite.linkTree);
 		    }
 
             if(controls.BACK) {
                 FlxG.switchState(new MainMenuState());
                 selected = true;
             }
-        }else {
-            if(controls.BACK) {
-				cleanTween();
-				FlxTween.tween(crewInfoBG, {alpha: 0}, 0.25, {ease: FlxEase.quadOut});
-				callLua("backInfo", []);
-				selected = false;
-			}
-		}
+        }
     }
 
     function changeDev(change:Int = 0):Void {
@@ -130,13 +106,17 @@ class CrewState extends MusicBeatState {
         officalDevTeam.forEachAlive(function(dev:CreditSprites) {
             if(dev.ID & 0xFFFF == curSelected) {
                 cleanTween();
-                allTweens.push(FlxTween.tween(dev, {redFloat: 1, blueFloat: 1, greenFloat: 1, y: -10}, 0.5, {ease: FlxEase.quadOut}));
+                allTweens.push(FlxTween.tween(dev, {redFloat: 1, blueFloat: 1, greenFloat: 1, y: -10 + byHowMuch}, 0.5, {ease: FlxEase.quadOut}));
 				curSprite = dev;
             }else {
                 dev.color = FlxColor.fromRGBFloat(0.1, 0.1, 0.1);
-                dev.y = 0;
+                dev.y = byHowMuch;
             }
         });
+
+		#if USING_LUA
+		callLua("changeDev", [curSelected]);
+		#end
     }
 
     function cleanTween():Void {
@@ -193,16 +173,6 @@ class CrewState extends MusicBeatState {
 	function addOfficalDev(dev:CreditSprites):Void {
 		dev.ID |= officalDevTeam.length << 16;
 		officalDevTeam.add(dev);
-	}
-
-	function openCrewMenu():Void {
-		selected = true;
-
-        allTweens.push(FlxTween.tween(crewInfoBG, {alpha: 1}, 0.25, {ease: FlxEase.quadOut}));
-
-		#if USING_LUA
-		callLua("openCrewMenu", [curSelected, fileName[curSelected]]);
-		#end
 	}
 
 	function openLink(link:String):Void {
