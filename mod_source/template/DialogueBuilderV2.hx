@@ -188,19 +188,7 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
         if (catalogEntry != null && tryLoadFromCatalog(spr, catalogEntry)) return;
 
         var key = resolveAssetPath(sd);
-        if (key == null && catalogEntry != null) key = deriveAssetKey(catalogEntry.spritePath);
         if (key != null) spr.frames = Paths.getSparrowAtlas(key);
-    }
-
-    static function deriveAssetKey(spritePath:String):String {
-        if (spritePath == null || spritePath == "") return null;
-        var p = spritePath.replace("\\", "/");
-        var dot = p.lastIndexOf(".");
-        if (dot > 0) p = p.substring(0, dot);
-        for (pre in ["mod_assets/images/", "funkin_assets/images/", "images/"]) {
-            if (p.startsWith(pre)) return p.substring(pre.length);
-        }
-        return p;
     }
 
     function tryLoadFromCatalog(spr:FeshSprite, entry:DialogueAssetEntry):Bool {
