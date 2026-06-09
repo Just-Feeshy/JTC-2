@@ -259,7 +259,7 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
         var s = sceneData(dialogueScene);
         shadowText.setPosition(displayText.x + 2, displayText.y + 2);
         shadowText.size = s.textSize;
-        shadowText.font = resolveFontPath(s.font);
+        shadowText.font = displayText.font;
     }
 
     function implementAnimPlay(s:DialogueSlot):Void {

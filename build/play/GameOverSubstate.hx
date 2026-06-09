@@ -320,6 +320,7 @@ class GameOverSubstate extends MusicBeatSubstate
             trace('[GameOver] firstDeath finished, starting music and deathLoop');
             startDeathMusic(1.0, false);
             boyfriend.playAnimation('deathLoop' + animationSuffix);
+            if (boyfriend.animation.curAnim != null) boyfriend.animation.curAnim.looped = true;
           }
         }
       }
@@ -407,6 +408,7 @@ class GameOverSubstate extends MusicBeatSubstate
     // Start music at lower volume
     startDeathMusic(0.2, false);
     boyfriend.playAnimation('deathLoop' + animationSuffix);
+    if (boyfriend.animation.curAnim != null) boyfriend.animation.curAnim.looped = true;
     deathQuoteSound = FunkinSound.playOnce(deathQuote, function()
     {
       // Once the quote ends, fade in the game over music.

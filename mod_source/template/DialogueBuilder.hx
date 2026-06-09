@@ -128,11 +128,11 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         if (sceneData(dialogueScene).text[0] == "left portrait") {
             rightPortrait.visible = false;
             leftPortrait.visible = true;
-            speechBubble.flipX = true;
+            speechBubble.flipX = false;
         } else {
             rightPortrait.visible = true;
             leftPortrait.visible = false;
-            speechBubble.flipX = false;
+            speechBubble.flipX = true;
         }
 
         if (shadowText != null) add(shadowText);
@@ -208,7 +208,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         var s = sceneData(dialogueScene);
         shadowText.setPosition(displayText.x + 2, displayText.y + 2);
         shadowText.size = s.textSize;
-        shadowText.font = s.font;
+        shadowText.font = displayText.font;
     }
 
     function implementAnimPlay(s:DialogueSlot):Void {

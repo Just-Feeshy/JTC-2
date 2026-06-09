@@ -360,6 +360,11 @@ class Character extends feshixl.FeshSprite {
 
 		repairInvalidAnimationState();
 
+		if(isDead) {
+			super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER));
+			return;
+		}
+
 		var currentAnimation:String = getAnimName();
 
 		if(currentAnimation != "") {
