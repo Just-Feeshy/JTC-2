@@ -2263,14 +2263,28 @@ class PlayState extends MusicBeatState
 	private function laneHasActiveSustainChain(lane:Int, mustPress:Bool):Bool
 	{
 		inline function matches(note:Note):Bool {
-			return note != null
-				&& note.isSustainNote
-				&& note.noteData == lane
-				&& note.mustPress == mustPress
-				&& !note.sustainChainMissed
-				&& !note.shouldBeDead
-				&& !isSustainChainMissed(note)
-				&& isSustainChainStarted(note);
+			if(note == null
+				|| !note.isSustainNote
+				|| note.noteData != lane
+				|| note.mustPress != mustPress
+				|| note.sustainChainMissed
+				|| isSustainChainMissed(note)
+				|| !isSustainChainStarted(note)) {
+				return false;
+			}
+
+			if(!note.shouldBeDead) {
+				return true;
+			}
+
+			// Funkin parity: a sustain piece registers as hit anywhere inside the
+			// player's early window, which immediately flips shouldBeDead. For the
+			// final piece in a chain there's no next segment to keep the chain
+			// active, so confirm-hold would otherwise drop a frame or two before
+			// the sustain visually ends. Mirrors Funkin's "stay in holdConfirm
+			// while sustainLength > 0" behavior by keeping the chain active until
+			// songpos actually reaches the piece's strum time.
+			return note.wasGoodHit && note.getNoteTime() > Conductor.instance.trackedSongPosition;
 		}
 
 		for(note in notes.members) {

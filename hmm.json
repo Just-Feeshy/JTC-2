@@ -37,7 +37,8 @@
     },
     {
       "name": "hscript",
-      "type": "haxelib"
+      "type": "haxelib",
+      "version": "2.7.0"
     },
 	{
       "name": "hxdiscord_rpc",
