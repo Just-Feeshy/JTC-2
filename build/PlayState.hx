@@ -2485,12 +2485,10 @@ class PlayState extends MusicBeatState
 		var droppedNote:Note = null;
 		var currentSongPos:Float = Conductor.instance.trackedSongPosition;
 
-		// Match Funkin more closely: release the earliest active segment on this lane,
-		// not just whichever note happens to be encountered first in the live list.
-		// Crucial constraint: only consider segments the player is *currently expected to be holding*
-		// (strumTime <= songPos). If the next sustain piece is still in the future, the player just
-		// lifted between taps on the same lane (e.g. Ping Pong's tap + tap-with-sustain pattern) —
-		// that's not a sustain drop, so we must not mark the chain missed here.
+		// Penalty candidate: only segments the player is currently expected to be holding
+		// (strumTime <= songPos). If the next sustain piece is still in the future, the player
+		// just lifted between taps on the same lane (e.g. Ping Pong's tap + tap-with-sustain
+		// pattern) — that's not a drop and shouldn't cost health/score.
 		notes.forEachAlive(function(daNote:Note) {
 			if(daNote.mustPress
 				&& daNote.isSustainNote
@@ -2506,43 +2504,72 @@ class PlayState extends MusicBeatState
 			}
 		});
 
-		if(droppedNote == null) {
-			return;
+		var headForCleanup:Note = (droppedNote != null)
+			? findSustainHeadNote(droppedNote)
+			: findActiveSustainChainHeadOnLane(lane);
+
+		if(droppedNote != null) {
+			handlePlayerSustainDrop(droppedNote);
 		}
 
-		// Find the head note of this sustain chain
-		var headNote:Note = findSustainHeadNote(droppedNote);
+		// Always invalidate any in-flight chain on this lane, even when no penalty applied.
+		// Without this, a release inside the inter-piece gap leaves the chain "active" — on
+		// re-press the strum jumps back to confirm-hold and the hold cover restarts from frame 0.
+		invalidateSustainChainOnLane(lane, headForCleanup);
+	}
 
-		// Handle the drop penalty (this also marks the chain as missed)
-		handlePlayerSustainDrop(droppedNote);
+	private function findActiveSustainChainHeadOnLane(lane:Int):Note
+	{
+		var head:Note = null;
 
-		// Immediately remove ALL sustain segments connected to this head note (Funkin-style)
+		inline function consider(note:Note):Void {
+			if(head != null
+				|| note == null
+				|| !note.isSustainNote
+				|| !note.mustPress
+				|| note.noteData != lane
+				|| note.sustainChainMissed
+				|| !isSustainChainStarted(note)) {
+				return;
+			}
+			var candidate:Note = findSustainHeadNote(note);
+			if(candidate != null && candidate.wasGoodHit) head = candidate;
+		}
+
+		notes.forEachAlive(function(daNote:Note) consider(daNote));
+		if(head == null) for(daNote in unspawnNotes) consider(daNote);
+
+		return head;
+	}
+
+	private function invalidateSustainChainOnLane(lane:Int, headNote:Note):Void
+	{
+		if(headNote == null) return;
+
 		var notesToRemove:Array<Note> = [];
-
 		notes.forEachAlive(function(daNote:Note) {
 			if(daNote.isSustainNote && daNote.noteData == lane && belongsToSustainChain(daNote, headNote)) {
+				if(!daNote.wasGoodHit) daNote.sustainChainMissed = true;
 				daNote.visible = false;
 				daNote.alpha = 0;
 				notesToRemove.push(daNote);
 			}
 		});
+		for(note in notesToRemove) removeNote(note);
 
-		for(note in notesToRemove) {
-			removeNote(note);
-		}
-
-		// Also remove from unspawned notes
 		var unspawnedToRemove:Array<Note> = [];
 		for(daNote in unspawnNotes) {
 			if(daNote != null && daNote.isSustainNote && daNote.noteData == lane && belongsToSustainChain(daNote, headNote)) {
+				if(!daNote.wasGoodHit) daNote.sustainChainMissed = true;
 				unspawnedToRemove.push(daNote);
 			}
 		}
-
 		for(note in unspawnedToRemove) {
 			unspawnNotes.remove(note);
 			note.destroy();
 		}
+
+		stopHoldCoverForLane(lane, true);
 	}
 
 	/**
