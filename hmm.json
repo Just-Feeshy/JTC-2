@@ -48,6 +48,20 @@
       "name": "hxvlc",
       "type": "haxelib",
       "version": "2.2.4"
+    },
+    {
+      "name": "haxeui-core",
+      "type": "git",
+      "dir": null,
+      "ref": "47ee9f5fa02d422e186e844f87e68220cabfcc5b",
+      "url": "https://github.com/haxeui/haxeui-core"
+    },
+    {
+      "name": "haxeui-flixel",
+      "type": "git",
+      "dir": null,
+      "ref": "100f2c96beab619cfe72c567a058c41c71e3e998",
+      "url": "https://github.com/haxeui/haxeui-flixel"
     }
   ]
 }

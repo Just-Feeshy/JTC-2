@@ -40,8 +40,8 @@
 	<classpath name="build" />
 	<classpath path="mod_source" />
     <classpath path="linc_luajit" unless="web" />
-	<classpath path="../Funkin/.haxelib/haxeui-core/git" />
-	<classpath path="../Funkin/.haxelib/haxeui-flixel/git" />
+	<classpath path="./.haxelib/haxeui-core/git" />
+	<classpath path="./.haxelib/haxeui-flixel/git" />
 
 	<!-- Engine Customization -->
 	<define name="USING_LUA" />
@@ -117,7 +117,7 @@
 	<assets path='mod_assets/scripts' rename='mod_assets/scripts' embed='true' if="web" />
 	<assets path='mod_assets' embed='false' unless="web" />
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
-	<assets path="../Funkin/.haxelib/haxeui-flixel/git/haxe/ui/backend/flixel/_module/styles" rename="haxeui-flixel/styles" embed="true" />
+	<assets path="./.haxelib/haxeui-flixel/git/haxe/ui/backend/flixel/_module/styles" rename="haxeui-flixel/styles" embed="true" />
 
 	<assets path="mod_assets/songs"    library="songs"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.ogg" if="web"/>
 	<assets path="mod_assets/songs"    library="songs"    exclude=".*|cvs|thumbs.db|desktop.ini|*.hash|*.md|*.mp3" unless="web"/>
