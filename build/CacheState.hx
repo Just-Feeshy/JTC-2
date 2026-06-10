@@ -31,6 +31,7 @@ class CacheState extends HelperStates {
 	var preloadQueue:Array<Void->Void> = [];
 	var preloadQueueIndex:Int = 0;
 	var pendingStateSwitch:Bool = false;
+	var librariesReady:Bool = false;
 
 	public function new(target:FlxState, stopMusic:Bool):Void {
 		super("void", "void");
@@ -46,18 +47,34 @@ class CacheState extends HelperStates {
 		add(loadingScene);
 
 		if(Std.isOfType(target, PlayState)) {
-			buildPreloadQueue();
-			if(preloadQueue.length <= 0) {
-				finishPreloadAndSwitch();
-			}
+			// Gate the preload queue on the libraries the song actually needs.
+			// On desktop these are all preload="true" so this fires synchronously;
+			// on web it actually awaits lime's async loadLibrary.
+			Cache.ensureLibrariesLoaded(collectRequiredLibraries(), function() {
+				librariesReady = true;
+				buildPreloadQueue();
+				if(preloadQueue.length <= 0) {
+					finishPreloadAndSwitch();
+				}
+			});
 		}else {
 			pendingStateSwitch = true;
 		}
 	}
 
+	function collectRequiredLibraries():Array<String> {
+		var result:Array<String> = ["shared", "songs"];
+
+		var weekLib:String = "week" + PlayState.storyWeek;
+		if(result.indexOf(weekLib) == -1) result.push(weekLib);
+
+		return result;
+	}
+
 	/**
 	 * Pre-caches song assets (audio, characters, stage) before entering PlayState.
-	 * Similar to Funkin's LoadingState.loadPlayState approach.
+	 * Audio decode is kicked onto the worker pool up-front via the async API so
+	 * its OGG decode time overlaps with the queue's main-thread texture work.
 	 */
 	function buildPreloadQueue():Void {
 		if(PlayState.SONG == null)
@@ -67,32 +84,28 @@ class CacheState extends HelperStates {
 
 		preloadQueue = [];
 
+		// Fan the song audio out to the worker pool right now. By the time
+		// PlayState's startInstrumentTrack pulls these via Paths.inst(),
+		// the workers have either landed them in the cache or the join in
+		// getCachedSound() waits the small remainder.
+		var asyncSoundKeys:Array<String> = [];
+
 		var instPath:String = Paths.getSongSoundPath(song, "Inst");
-		if(instPath != null && instPath != "") {
-			preloadQueue.push(function() {
-				Cache.cacheSound(instPath);
-			});
-		}
+		if(instPath != null && instPath != "") asyncSoundKeys.push(instPath);
 
 		for(soundFile in getSongVoiceFiles(song)) {
 			var voicePath:String = Paths.getSongSoundPath(song, soundFile);
-			if(voicePath == null || voicePath == "") {
-				continue;
-			}
-
-			preloadQueue.push(function() {
-				Cache.cacheSound(voicePath);
-			});
+			if(voicePath != null && voicePath != "") asyncSoundKeys.push(voicePath);
 		}
 
 		if(SaveData.getData(SaveType.MISS_SOUND_VOLUME) > 0) {
 			for(missKey in ["missnote1", "missnote2", "missnote3"]) {
 				var soundPath:String = Paths.getPath('sounds/$missKey.${Paths.SOUND_EXT}', AssetType.SOUND, "shared");
-				preloadQueue.push(function() {
-					Cache.cacheSound(soundPath);
-				});
+				if(soundPath != null && soundPath != "") asyncSoundKeys.push(soundPath);
 			}
 		}
+
+		Cache.beginAsyncCacheSounds(asyncSoundKeys);
 
 		preloadQueue.push(function() {
 			Cache.cacheAsset("iconGrid");

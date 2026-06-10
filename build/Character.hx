@@ -853,10 +853,23 @@ class Character extends feshixl.FeshSprite {
 		finalizedY = y;
 	}
 
-	public static function loadInfo(character:String):ConfigCharacters {
-		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
+	private static var infoCache:Map<String, ConfigCharacters> = new Map<String, ConfigCharacters>();
 
-		return parser.fromJson(Paths.readText(Paths.getPreloadPath('$character.json')), '${character.split('/')[1]}.json');
+	public static function loadInfo(character:String):ConfigCharacters {
+		if (infoCache.exists(character))
+			return infoCache.get(character);
+
+		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
+		var result:ConfigCharacters = parser.fromJson(Paths.readText(Paths.getPreloadPath('$character.json')), '${character.split('/')[1]}.json');
+
+		if (result != null)
+			infoCache.set(character, result);
+
+		return result;
+	}
+
+	public static function clearInfoCache():Void {
+		infoCache = new Map<String, ConfigCharacters>();
 	}
 
 	public function refresh(character:String, camPos:FlxPoint) {

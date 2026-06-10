@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
+import lime.app.Future;
 import openfl.display.BitmapData;
 import openfl.media.Sound;
 import openfl.utils.AssetType;
@@ -14,15 +15,16 @@ import ModInitialize;
 import sys.FileSystem;
 #end
 
-import haxe.Json;
-
 using StringTools;
-
-// I was at this for hours, let's see how Claude pulls this off.
 
 /**
  * Handles caching of textures and sounds for the game.
  * Based on FunkinMemory from Friday Night Funkin'.
+ *
+ * The "parallel" APIs use lime.app.Future with useThreads=true so OGG / PNG
+ * decode actually runs on the lime worker pool. The GL upload step for
+ * textures (FlxGraphic.fromBitmapData + forceRender) always happens on the
+ * main thread because the GL context lives there.
  */
 @:access(flixel.FlxG)
 class Cache
@@ -35,21 +37,37 @@ class Cache
 	static var currentCachedSounds:Map<String, Sound> = new Map<String, Sound>();
 	static var previousCachedSounds:Map<String, Sound> = new Map<String, Sound>();
 
-	#if sys
 	// Sound keys whose decode has been kicked off on a worker thread but
-	// haven't landed in currentCachedSounds yet. getCachedSound() polls this
-	// (with a small timeout) so that if the main thread asks for the sound
-	// before the worker finishes, it waits for the worker rather than racing
-	// it and double-decoding the same file on main.
-	#end
+	// haven't landed in currentCachedSounds yet. getCachedSound() / cacheSound()
+	// wait on these so that if the main thread asks for the sound before the
+	// worker finishes, it joins the in-flight decode instead of racing it.
+	static var pendingSoundFutures:Map<String, Future<Sound>> = new Map<String, Future<Sound>>();
+
+	static var threadPoolConfigured:Bool = false;
 
 	static var purgeFilter:Array<String> = ["/week", "/characters", "/charSelect", "/results", "/stages"];
+
+	static function ensureThreadPool():Void
+	{
+		if (threadPoolConfigured) return;
+		threadPoolConfigured = true;
+		// lime defaults to minThreads=0, maxThreads=1 which collapses parallel
+		// Futures into a serial queue. Open it up so multiple OGG / PNG
+		// decodes can actually run side-by-side.
+		#if (lime_threads && !html5)
+		lime.app.FutureWork.minThreads = 2;
+		lime.app.FutureWork.maxThreads = 4;
+		#end
+	}
 
 	/**
 	 * Caches textures that are always required.
 	 */
 	public static function initialCache():Void
 	{
+		ensureThreadPool();
+
+		var uiTextureKeys:Array<String> = [];
 		var allImages:Array<String> = OpenFlAssets.list(AssetType.IMAGE);
 
 		for (file in allImages)
@@ -58,11 +76,21 @@ class Cache
 				continue;
 
 			var normalizedFile = file.replace(" ", "");
-
-			if (normalizedFile.contains("shared") || OpenFlAssets.exists('shared:$normalizedFile', AssetType.IMAGE))
+			// Fast path: a key whose library prefix already names "shared" needs no
+			// fix-up; same for keys that are already library-qualified ("foo:...").
+			// Only run the (expensive) Assets.exists probe when we genuinely don't
+			// know whether the shared library claims this asset.
+			if (!normalizedFile.contains("shared") && normalizedFile.indexOf(":") < 0)
+			{
+				if (OpenFlAssets.exists('shared:$normalizedFile', AssetType.IMAGE))
+					normalizedFile = 'shared:$normalizedFile';
+			}
+			else if (normalizedFile.indexOf(":") < 0)
+			{
 				normalizedFile = 'shared:$normalizedFile';
+			}
 
-			permanentCacheTexture(normalizedFile);
+			uiTextureKeys.push(normalizedFile);
 		}
 
 		for (texture in [
@@ -77,10 +105,13 @@ class Cache
 			Paths.getPath("images/fonts/freeplay-clear.png", AssetType.IMAGE, null)
 		])
 		{
-			if (texture != null && texture != "")
-				permanentCacheTexture(texture);
+			if (texture != null && texture != "" && !uiTextureKeys.contains(texture))
+				uiTextureKeys.push(texture);
 		}
 
+		permanentParallelCacheTextures(uiTextureKeys);
+
+		var soundKeys:Array<String> = [];
 		var allSounds:Array<String> = OpenFlAssets.list(AssetType.SOUND);
 
 		for (file in allSounds)
@@ -89,11 +120,17 @@ class Cache
 				continue;
 
 			var normalizedFile = file.replace(" ", "");
-
-			if (normalizedFile.contains("shared") || OpenFlAssets.exists('shared:$normalizedFile', AssetType.SOUND))
+			if (!normalizedFile.contains("shared") && normalizedFile.indexOf(":") < 0)
+			{
+				if (OpenFlAssets.exists('shared:$normalizedFile', AssetType.SOUND))
+					normalizedFile = 'shared:$normalizedFile';
+			}
+			else if (normalizedFile.indexOf(":") < 0)
+			{
 				normalizedFile = 'shared:$normalizedFile';
+			}
 
-			permanentCacheSound(normalizedFile);
+			soundKeys.push(normalizedFile);
 		}
 
 		for (sound in [
@@ -110,9 +147,11 @@ class Cache
 			Paths.getPath('sounds/missnote3.${Paths.SOUND_EXT}', AssetType.SOUND, "shared")
 		])
 		{
-			if (sound != null)
-				permanentCacheSound(sound);
+			if (sound != null && !soundKeys.contains(sound))
+				soundKeys.push(sound);
 		}
+
+		permanentParallelCacheSounds(soundKeys);
 	}
 
 	/**
@@ -130,6 +169,79 @@ class Cache
 		if (callGarbageCollector)
 			MemoryUtil.collect(true);
 		#end
+	}
+
+	///// LIBRARIES /////
+
+	/**
+	 * Ensure each of the given asset libraries is loaded, then fire onReady.
+	 * Mirrors Funkin's LoadingState.checkLibrary pattern: libraries that
+	 * are already resident fire instantly; ones that aren't go through
+	 * lime's async Assets.loadLibrary and join the barrier.
+	 *
+	 * On desktop targets the project ships every library with preload="true",
+	 * so this almost always fast-paths to an immediate onReady().
+	 */
+	public static function ensureLibrariesLoaded(libraries:Array<String>, onReady:Void->Void):Void
+	{
+		if (onReady == null) return;
+		if (libraries == null || libraries.length == 0)
+		{
+			onReady();
+			return;
+		}
+
+		var unique:Array<String> = [];
+		for (lib in libraries)
+		{
+			if (lib == null || lib == "") continue;
+			if (unique.indexOf(lib) == -1) unique.push(lib);
+		}
+
+		if (unique.length == 0)
+		{
+			onReady();
+			return;
+		}
+
+		var remaining:Int = unique.length;
+		var fired:Bool = false;
+		var step = function():Void
+		{
+			remaining--;
+			if (remaining <= 0 && !fired)
+			{
+				fired = true;
+				onReady();
+			}
+		};
+
+		for (lib in unique)
+		{
+			if (lime.utils.Assets.getLibrary(lib) != null)
+			{
+				step();
+				continue;
+			}
+
+			@:privateAccess
+			var paths = lime.utils.Assets.libraryPaths;
+			if (paths == null || !paths.exists(lib))
+			{
+				// No such library declared in the manifest — treat as ready
+				// rather than hang the barrier forever.
+				step();
+				continue;
+			}
+
+			lime.utils.Assets.loadLibrary(lib).onComplete(function(_):Void
+			{
+				step();
+			}).onError(function(_):Void
+			{
+				step();
+			});
+		}
 	}
 
 	///// TEXTURES /////
@@ -188,10 +300,100 @@ class Cache
 	 */
 	public static function parallelCacheTextures(keys:Array<String>):Void
 	{
+		parallelCacheTexturesInternal(keys, false);
+	}
+
+	static function permanentParallelCacheTextures(keys:Array<String>):Void
+	{
+		parallelCacheTexturesInternal(keys, true);
+	}
+
+	static function parallelCacheTexturesInternal(keys:Array<String>, permanent:Bool):Void
+	{
 		if (keys == null || keys.length == 0)
 			return;
 
-		for (key in keys) cacheTexture(key);
+		ensureThreadPool();
+
+		var workKeys:Array<String> = [];
+		var workFutures:Array<Future<BitmapData>> = [];
+
+		for (key in keys)
+		{
+			if (key == null || key == "") continue;
+
+			// Already in a hot map: nothing to do (or just promote from previous).
+			if (permanent ? permanentCachedTextures.exists(key) : currentCachedTextures.exists(key))
+				continue;
+
+			if (!permanent && previousCachedTextures.exists(key))
+			{
+				var graphic:FlxGraphic = previousCachedTextures.get(key);
+				previousCachedTextures.remove(key);
+				if (graphic != null) currentCachedTextures.set(key, graphic);
+				continue;
+			}
+
+			workKeys.push(key);
+			workFutures.push(new Future<BitmapData>(function() return decodeBitmapForKey(key), true));
+		}
+
+		if (workKeys.length == 0) return;
+
+		for (i in 0...workKeys.length)
+		{
+			var key:String = workKeys[i];
+			var bitmap:BitmapData = workFutures[i].result();
+			uploadTextureBitmap(key, bitmap, permanent);
+		}
+	}
+
+	static function decodeBitmapForKey(key:String):BitmapData
+	{
+		if (key == null || key == "") return null;
+
+		// OpenFL's Assets.getBitmapData ultimately uses the lime image decoder.
+		// It also touches its internal asset cache map, which can race with the
+		// main thread; we accept the same risk Funkin's FunkinMemory async
+		// prewarms accept. Sys file fallback is fully thread-safe.
+		try
+		{
+			if (OpenFlAssets.exists(key, AssetType.IMAGE))
+				return OpenFlAssets.getBitmapData(key, false);
+		}
+		catch (e:Dynamic) {}
+
+		#if sys
+		try
+		{
+			if (FileSystem.exists(key))
+				return BitmapData.fromFile(key);
+		}
+		catch (e:Dynamic) {}
+		#end
+
+		return null;
+	}
+
+	static function uploadTextureBitmap(key:String, bitmap:BitmapData, permanent:Bool):Void
+	{
+		if (bitmap == null)
+		{
+			FlxG.log.warn('Failed to cache graphic: $key');
+			return;
+		}
+
+		var graphic:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, key);
+		if (graphic == null)
+		{
+			FlxG.log.warn('Failed to cache graphic: $key');
+			return;
+		}
+
+		graphic.persist = true;
+		currentCachedTextures.set(key, graphic);
+		if (permanent) permanentCachedTextures.set(key, graphic);
+		forceRender(graphic);
 	}
 
 	/**
@@ -225,41 +427,28 @@ class Cache
 	{
 		if (characterPath == null || characterPath == "") return;
 
-		var infoPath:String = Paths.getPreloadPath('characters/$characterPath.json');
-
-		if (!Paths.assetExists(infoPath, AssetType.TEXT))
-			infoPath = Paths.getPath('characters/$characterPath.json', AssetType.TEXT, "shared");
-
-		if (Paths.assetExists(infoPath, AssetType.TEXT))
+		var info:ConfigCharacters = null;
+		try
 		{
-			var raw:String = Paths.readText(infoPath);
-			if (raw != null && raw != "")
+			info = Character.loadInfo('characters/$characterPath');
+		}
+		catch (e:Dynamic) {}
+
+		if (info != null && info.file != null && info.file.trim() != "")
+		{
+			for (file in info.file.split(","))
 			{
-				try
-				{
-					var info:Dynamic = Json.parse(raw);
+				var trimmed:String = file.trim();
+				if (trimmed == "") continue;
 
-					if (info != null && info.file != null)
-					{
-						var fileList:String = info.file;
+				var extensionIndex:Int = trimmed.lastIndexOf(".");
+				var basePath:String = extensionIndex >= 0 ? trimmed.substr(0, extensionIndex) : trimmed;
+				var key:String = Paths.getPath('images/$basePath.png', AssetType.IMAGE, null);
 
-						for (file in fileList.split(","))
-						{
-							var trimmed:String = file.trim();
-							if (trimmed == "") continue;
-
-							var extensionIndex:Int = trimmed.lastIndexOf(".");
-							var basePath:String = extensionIndex >= 0 ? trimmed.substr(0, extensionIndex) : trimmed;
-							var key:String = Paths.getPath('images/$basePath.png', AssetType.IMAGE, null);
-
-							if (key != null && key != "" && !into.contains(key)) into.push(key);
-						}
-
-						return;
-					}
-				}
-				catch (e:Dynamic) {}
+				if (key != null && key != "" && !into.contains(key)) into.push(key);
 			}
+
+			return;
 		}
 
 		// Same fallback as Cache.cacheCharacter when there's no JSON: assume
@@ -443,7 +632,6 @@ class Cache
 
 		if (previousCachedSounds.exists(key))
 		{
-			// Move the sound from the previous cache to the current cache.
 			var sound:Sound = previousCachedSounds.get(key);
 			previousCachedSounds.remove(key);
 			if (sound != null)
@@ -451,44 +639,63 @@ class Cache
 			return;
 		}
 
-		var sound:Sound = null;
-		if (OpenFlAssets.exists(key, AssetType.SOUND) || OpenFlAssets.exists(key, AssetType.MUSIC))
+		// If a worker is already decoding this key, join its result rather than
+		// kicking off a second decode of the same file on the main thread.
+		if (pendingSoundFutures.exists(key))
 		{
-			sound = OpenFlAssets.getSound(key, true);
+			var snd:Sound = pendingSoundFutures.get(key).result();
+			pendingSoundFutures.remove(key);
+			if (snd != null && !currentCachedSounds.exists(key))
+				currentCachedSounds.set(key, snd);
+			return;
 		}
-		#if sys
-		else if (sys.FileSystem.exists(key))
-		{
-			sound = Sound.fromFile(key);
-		}
-		#end
 
+		var sound:Sound = decodeSoundForKey(key);
 		if (sound == null)
 			return;
 
 		currentCachedSounds.set(key, sound);
 	}
 
+	static function decodeSoundForKey(key:String):Sound
+	{
+		if (key == null || key == "") return null;
+
+		try
+		{
+			if (OpenFlAssets.exists(key, AssetType.SOUND) || OpenFlAssets.exists(key, AssetType.MUSIC))
+				return OpenFlAssets.getSound(key, true);
+		}
+		catch (e:Dynamic) {}
+
+		#if sys
+		try
+		{
+			if (FileSystem.exists(key))
+				return Sound.fromFile(key);
+		}
+		catch (e:Dynamic) {}
+		#end
+
+		return null;
+	}
+
 	/**
-	 * Fire-and-forget version of parallel sound caching. Spawns worker
-	 * threads to OGG/MP3-decode each key, marks them as pending, and
-	 * returns immediately so the main thread can keep going with whatever
-	 * else it needs to do. When something later asks for one of these
-	 * sounds via getCachedSound(), that call transparently waits for the
-	 * worker if the decode is still in flight.
-	 *
-	 * Use this for prewarms that should run *alongside* main-thread setup
-	 * work (PlayState.create, etc.). If you need the keys to be ready by
-	 * the time the call returns, use the (now-deprecated) parallelCacheSounds.
+	 * Fire-and-forget parallel sound caching. Spawns a worker-thread Future
+	 * per key, returns immediately. getCachedSound() / cacheSound() join the
+	 * pending Future if asked before the worker finishes.
 	 */
 	public static function beginAsyncCacheSounds(keys:Array<String>):Void
 	{
 		if (keys == null || keys.length == 0) return;
 
+		ensureThreadPool();
+
 		for (key in keys)
 		{
 			if (key == null || key == "") continue;
 			if (currentCachedSounds.exists(key) || permanentCachedSounds.exists(key)) continue;
+			if (pendingSoundFutures.exists(key)) continue;
 
 			if (previousCachedSounds.exists(key))
 			{
@@ -498,19 +705,70 @@ class Cache
 				continue;
 			}
 
-			cacheSound(key);
+			var pending:Future<Sound> = new Future<Sound>(function() return decodeSoundForKey(key), true);
+			pendingSoundFutures.set(key, pending);
+			pending.onComplete(function(snd:Sound):Void
+			{
+				// onComplete fires on the main thread, so it's safe to touch
+				// the cache maps from here.
+				if (snd != null && !currentCachedSounds.exists(key))
+					currentCachedSounds.set(key, snd);
+				if (pendingSoundFutures.get(key) == pending)
+					pendingSoundFutures.remove(key);
+			});
 		}
 	}
 
 	/**
 	 * Block until every pending sound from beginAsyncCacheSounds finishes
-	 * (or the timeout elapses). Useful as a sync point before code that
-	 * absolutely must have all decoded audio available.
+	 * (or the per-key timeout elapses). Use as a sync point before code that
+	 * needs all decoded audio available.
 	 */
 	public static function awaitPendingSounds(maxWaitMs:Int = 2000):Void
 	{
-		// Synchronous shim: beginAsyncCacheSounds now decodes inline, so there
-		// is never anything pending by the time this returns.
+		if (pendingSoundFutures.iterator().hasNext() == false) return;
+
+		var snapshot:Array<String> = [for (k in pendingSoundFutures.keys()) k];
+
+		for (key in snapshot)
+		{
+			var pending:Future<Sound> = pendingSoundFutures.get(key);
+			if (pending == null) continue;
+
+			var snd:Sound = pending.result(maxWaitMs);
+			pendingSoundFutures.remove(key);
+			if (snd != null && !currentCachedSounds.exists(key))
+				currentCachedSounds.set(key, snd);
+		}
+	}
+
+	static function permanentParallelCacheSounds(keys:Array<String>):Void
+	{
+		if (keys == null || keys.length == 0) return;
+
+		ensureThreadPool();
+
+		var workKeys:Array<String> = [];
+		var workFutures:Array<Future<Sound>> = [];
+
+		for (key in keys)
+		{
+			if (key == null || key == "") continue;
+			if (permanentCachedSounds.exists(key)) continue;
+
+			workKeys.push(key);
+			workFutures.push(new Future<Sound>(function() return decodeSoundForKey(key), true));
+		}
+
+		for (i in 0...workKeys.length)
+		{
+			var key:String = workKeys[i];
+			var snd:Sound = workFutures[i].result();
+			if (snd == null) continue;
+
+			permanentCachedSounds.set(key, snd);
+			currentCachedSounds.set(key, snd);
+		}
 	}
 
 	/**
@@ -561,6 +819,19 @@ class Cache
 			return currentCachedSounds.get(path);
 		if (previousCachedSounds.exists(path))
 			return previousCachedSounds.get(path);
+
+		// Worker-decoded but not yet landed in a cache map: block on it so the
+		// caller gets a Sound instead of null. result() returns immediately if
+		// the Future is already done.
+		if (pendingSoundFutures.exists(path))
+		{
+			var pending:Future<Sound> = pendingSoundFutures.get(path);
+			var snd:Sound = pending.result();
+			pendingSoundFutures.remove(path);
+			if (snd != null && !currentCachedSounds.exists(path))
+				currentCachedSounds.set(path, snd);
+			return snd;
+		}
 
 		return null;
 	}
