@@ -6,6 +6,7 @@ local frost_bump = require("mod_assets/scripts/components/frost_bump")
 local frost_modchart = {}
 
 local staticShaderInitialized = false
+local staticShaderInitFailed = false
 local staticShaderActive = false
 local staticShaderTime = 0
 local staticShaderCleared = false
@@ -281,16 +282,36 @@ local function shaderTransitionUpdate()
 	end
 end
 
+local function initStaticShader()
+    if staticShaderInitialized then
+        return true
+    end
+
+    if staticShaderInitFailed or initLuaShader == nil then
+        return false
+    end
+
+    -- pcall guards against engine-side errors (e.g. ModLua reporting
+    -- "luaShaderSources is null") that would otherwise propagate up and
+    -- abort the current Lua frame. On failure we latch the failed flag
+    -- so we don't retry every frame from onUpdate.
+    local ok, result = pcall(initLuaShader, STATIC_SHADER_NAME, "shaders")
+
+    if ok and result == true then
+        staticShaderInitialized = true
+    else
+        staticShaderInitFailed = true
+    end
+
+    return staticShaderInitialized
+end
+
 local function ensureStaticShader()
     if staticShaderActive then
         return true
     end
 
-    if not staticShaderInitialized and initLuaShader ~= nil then
-        staticShaderInitialized = initLuaShader(STATIC_SHADER_NAME, "shaders") == true
-    end
-
-    if not staticShaderInitialized or setCameraShader == nil then
+    if not initStaticShader() or setCameraShader == nil then
         return false
     end
 
@@ -441,6 +462,7 @@ local function resetShaderRuntimeState()
     baseHudZoom = getCameraZoom("camHUD") or 1
     baseNoteZoom = getCameraZoom("camNOTE") or 1
     staticShaderInitialized = false
+    staticShaderInitFailed = false
     staticShaderActive = false
     staticShaderCleared = false
     staticShaderSoundPlayed = false
@@ -457,6 +479,11 @@ local function init()
     resetPhaseTwoRuntimeState()
     resetPunchRuntimeState()
     resetShaderRuntimeState()
+    -- Compile the static shader up front while ModLua is freshly executed
+    -- and known healthy. Doing this lazily inside onUpdate (line ~1138)
+    -- meant a single failed initLuaShader would respawn the error every
+    -- frame, and produced a gameplay hitch when the shader window opened.
+    initStaticShader()
     resetCharactersToPhaseOneBaseline()
 	createJumpscare()
 	frost_bump.reset()
