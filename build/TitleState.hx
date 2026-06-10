@@ -144,6 +144,8 @@ class TitleState extends BootState {
 		ngSpr.screenCenter(X);
 		ngSpr.antialiasing = true;
 
+		FlxG.mouse.visible = false;
+
 		FlxTween.tween(credTextShit, {y: credTextShit.y + 20}, 2.9, {ease: FlxEase.quadInOut, type: PINGPONG});
 
 		#if USING_LUA
