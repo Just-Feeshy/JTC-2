@@ -636,7 +636,7 @@ class CharacterCreatorState extends UIState {
             info.secondaryOffset[1] = overlayOffY;
         }
 
-        reloadCharacter(currentCharacterName);
+        reloadCharacter(currentCharacterName, updateOnly);
         selectDropDownItem(animationDropDown, animName);
         refreshAnimationFields(animName);
         selectDropDownItem(combineTargetAnimDropDown, animName);
@@ -930,10 +930,12 @@ class CharacterCreatorState extends UIState {
         refreshAnimationFields(animName);
     }
 
-    private function reloadCharacter(characterName:String):Void {
+    private function reloadCharacter(characterName:String, ?preserveShadow:Bool = false):Void {
         currentCharacterName = characterName;
         normalizeCharacterInfo(currentConfig());
-        clearShadowCharacter();
+        if(!preserveShadow) {
+            clearShadowCharacter();
+        }
 
         if(character != null) {
             characterStorage.remove(character, true);

@@ -6,6 +6,7 @@ import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
+import flixel.util.FlxDestroyUtil;
 import flixel.animation.FlxBaseAnimation;
 import flixel.animation.FlxAnimation;
 import flixel.graphics.FlxGraphic;
@@ -428,6 +429,15 @@ class Character extends feshixl.FeshSprite {
 	}
 
 	override function destroy() {
+		if(compositeGraphics != null) {
+			for(graphic in compositeGraphics) {
+				if(graphic == null) continue;
+				graphic.bitmap = FlxDestroyUtil.dispose(graphic.bitmap);
+				graphic.destroy();
+			}
+			compositeGraphics = null;
+		}
+
 		if(Std.isOfType(frames, CombinedAtlasFrames)) {
 			cast(frames, CombinedAtlasFrames).destroy();
 		}
@@ -579,6 +589,8 @@ class Character extends feshixl.FeshSprite {
 		}
 	}
 
+	private var compositeGraphics:Array<FlxGraphic> = [];
+
 	private function findExactPrefixIndices(prefix:String):Array<Int> {
 		var result:Array<Int> = [];
 		if(frames == null || frames.frames == null || prefix == null || prefix == "") return result;
@@ -668,6 +680,7 @@ class Character extends feshixl.FeshSprite {
 
 			var graphic:FlxGraphic = FlxGraphic.fromBitmapData(composite, false, null, false);
 			graphic.destroyOnNoUse = false;
+			compositeGraphics.push(graphic);
 
 			var newFrame:FlxFrame = graphic.imageFrame.frame;
 			newFrame.name = "__combined_" + animKey + "_" + StringTools.lpad(Std.string(i), "0", 4);
