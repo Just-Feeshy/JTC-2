@@ -3,7 +3,6 @@ package;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
-import lime.app.Future;
 import openfl.display.BitmapData;
 import openfl.media.Sound;
 import openfl.utils.AssetType;
@@ -19,12 +18,15 @@ using StringTools;
 
 /**
  * Handles caching of textures and sounds for the game.
- * Based on FunkinMemory from Friday Night Funkin'.
+ * Mirrors Funkin's FunkinMemory: every cache operation is synchronous,
+ * no worker pool, no lime.app.Future machinery, no pending-decode joins.
  *
- * The "parallel" APIs use lime.app.Future with useThreads=true so OGG / PNG
- * decode actually runs on the lime worker pool. The GL upload step for
- * textures (FlxGraphic.fromBitmapData + forceRender) always happens on the
- * main thread because the GL context lives there.
+ * The JTC-specific extension methods (cacheCharacter, cacheStage,
+ * cacheAsset, byte-array caching, song-sound cleanup, library barrier)
+ * live alongside the Funkin-style primitives because external callers
+ * (PlayState, Paths, CacheState, ChartingState, PlayLua, mod DialogueBuilders)
+ * depend on them. The "parallel" / "async" entry points are kept as serial
+ * loops so the call sites compile without churn.
  */
 @:access(flixel.FlxG)
 class Cache
@@ -37,37 +39,13 @@ class Cache
 	static var currentCachedSounds:Map<String, Sound> = new Map<String, Sound>();
 	static var previousCachedSounds:Map<String, Sound> = new Map<String, Sound>();
 
-	// Sound keys whose decode has been kicked off on a worker thread but
-	// haven't landed in currentCachedSounds yet. getCachedSound() / cacheSound()
-	// wait on these so that if the main thread asks for the sound before the
-	// worker finishes, it joins the in-flight decode instead of racing it.
-	static var pendingSoundFutures:Map<String, Future<Sound>> = new Map<String, Future<Sound>>();
-
-	static var threadPoolConfigured:Bool = false;
-
 	static var purgeFilter:Array<String> = ["/week", "/characters", "/charSelect", "/results", "/stages"];
 
-	static function ensureThreadPool():Void
-	{
-		if (threadPoolConfigured) return;
-		threadPoolConfigured = true;
-		// lime defaults to minThreads=0, maxThreads=1 which collapses parallel
-		// Futures into a serial queue. Open it up so multiple OGG / PNG
-		// decodes can actually run side-by-side.
-		#if (lime_threads && !html5)
-		lime.app.FutureWork.minThreads = 2;
-		lime.app.FutureWork.maxThreads = 4;
-		#end
-	}
-
 	/**
-	 * Caches textures that are always required.
+	 * Caches textures and sounds that are always required.
 	 */
 	public static function initialCache():Void
 	{
-		ensureThreadPool();
-
-		var uiTextureKeys:Array<String> = [];
 		var allImages:Array<String> = OpenFlAssets.list(AssetType.IMAGE);
 
 		for (file in allImages)
@@ -75,25 +53,21 @@ class Cache
 			if (!file.endsWith(".png") || file.contains("chart-editor") || !file.contains("ui/"))
 				continue;
 
-			var normalizedFile = file.replace(" ", "");
-			// Fast path: a key whose library prefix already names "shared" needs no
-			// fix-up; same for keys that are already library-qualified ("foo:...").
-			// Only run the (expensive) Assets.exists probe when we genuinely don't
-			// know whether the shared library claims this asset.
-			if (!normalizedFile.contains("shared") && normalizedFile.indexOf(":") < 0)
+			var normalized:String = file.replace(" ", "");
+			if (!normalized.contains("shared") && normalized.indexOf(":") < 0)
 			{
-				if (OpenFlAssets.exists('shared:$normalizedFile', AssetType.IMAGE))
-					normalizedFile = 'shared:$normalizedFile';
+				if (OpenFlAssets.exists('shared:$normalized', AssetType.IMAGE))
+					normalized = 'shared:$normalized';
 			}
-			else if (normalizedFile.indexOf(":") < 0)
+			else if (normalized.indexOf(":") < 0)
 			{
-				normalizedFile = 'shared:$normalizedFile';
+				normalized = 'shared:$normalized';
 			}
 
-			uiTextureKeys.push(normalizedFile);
+			permanentCacheTexture(normalized);
 		}
 
-		for (texture in [
+		for (key in [
 			Paths.getPath("images/healthBar.png", AssetType.IMAGE, null),
 			Paths.getPath("images/menuDesat.png", AssetType.IMAGE, null),
 			Paths.getPath("images/notes.png", AssetType.IMAGE, "shared"),
@@ -105,35 +79,30 @@ class Cache
 			Paths.getPath("images/fonts/freeplay-clear.png", AssetType.IMAGE, null)
 		])
 		{
-			if (texture != null && texture != "" && !uiTextureKeys.contains(texture))
-				uiTextureKeys.push(texture);
+			if (key != null && key != "") permanentCacheTexture(key);
 		}
 
-		permanentParallelCacheTextures(uiTextureKeys);
-
-		var soundKeys:Array<String> = [];
 		var allSounds:Array<String> = OpenFlAssets.list(AssetType.SOUND);
 
 		for (file in allSounds)
 		{
-			if (!file.endsWith(".ogg") || !file.contains("countdown/"))
-				continue;
+			if (!file.endsWith(".ogg") || !file.contains("countdown/")) continue;
 
-			var normalizedFile = file.replace(" ", "");
-			if (!normalizedFile.contains("shared") && normalizedFile.indexOf(":") < 0)
+			var normalized:String = file.replace(" ", "");
+			if (!normalized.contains("shared") && normalized.indexOf(":") < 0)
 			{
-				if (OpenFlAssets.exists('shared:$normalizedFile', AssetType.SOUND))
-					normalizedFile = 'shared:$normalizedFile';
+				if (OpenFlAssets.exists('shared:$normalized', AssetType.SOUND))
+					normalized = 'shared:$normalized';
 			}
-			else if (normalizedFile.indexOf(":") < 0)
+			else if (normalized.indexOf(":") < 0)
 			{
-				normalizedFile = 'shared:$normalizedFile';
+				normalized = 'shared:$normalized';
 			}
 
-			soundKeys.push(normalizedFile);
+			permanentCacheSound(normalized);
 		}
 
-		for (sound in [
+		for (key in [
 			Paths.getPath('sounds/cancelMenu.${Paths.SOUND_EXT}', AssetType.SOUND, null),
 			Paths.getPath('sounds/confirmMenu.${Paths.SOUND_EXT}', AssetType.SOUND, null),
 			Paths.getPath('sounds/screenshot.${Paths.SOUND_EXT}', AssetType.SOUND, null),
@@ -147,16 +116,12 @@ class Cache
 			Paths.getPath('sounds/missnote3.${Paths.SOUND_EXT}', AssetType.SOUND, "shared")
 		])
 		{
-			if (sound != null && !soundKeys.contains(sound))
-				soundKeys.push(sound);
+			if (key != null) permanentCacheSound(key);
 		}
-
-		permanentParallelCacheSounds(soundKeys);
 	}
 
 	/**
 	 * Clears the current texture and sound caches.
-	 * @param callGarbageCollector Whether to call the system's garbage collector after purging.
 	 */
 	public static inline function purgeCache(callGarbageCollector:Bool = false):Void
 	{
@@ -174,13 +139,10 @@ class Cache
 	///// LIBRARIES /////
 
 	/**
-	 * Ensure each of the given asset libraries is loaded, then fire onReady.
-	 * Mirrors Funkin's LoadingState.checkLibrary pattern: libraries that
-	 * are already resident fire instantly; ones that aren't go through
-	 * lime's async Assets.loadLibrary and join the barrier.
-	 *
-	 * On desktop targets the project ships every library with preload="true",
-	 * so this almost always fast-paths to an immediate onReady().
+	 * Mirrors Funkin's LoadingState.checkLibrary pattern. Desktop libraries are
+	 * preload="true" in the project manifest, so getLibrary returns non-null
+	 * and the barrier fires onReady() synchronously. Web targets still go
+	 * through lime's async loadLibrary.
 	 */
 	public static function ensureLibrariesLoaded(libraries:Array<String>, onReady:Void->Void):Void
 	{
@@ -228,8 +190,7 @@ class Cache
 			var paths = lime.utils.Assets.libraryPaths;
 			if (paths == null || !paths.exists(lib))
 			{
-				// No such library declared in the manifest — treat as ready
-				// rather than hang the barrier forever.
+				// No such library declared — treat as ready rather than hang the barrier.
 				step();
 				continue;
 			}
@@ -248,7 +209,6 @@ class Cache
 
 	/**
 	 * Ensures a texture with the given key is cached.
-	 * @param key The key of the texture to cache.
 	 */
 	public static function cacheTexture(key:String):Void
 	{
@@ -260,7 +220,6 @@ class Cache
 
 		if (previousCachedTextures.exists(key))
 		{
-			// Move the texture from the previous cache to the current cache.
 			var graphic:FlxGraphic = previousCachedTextures.get(key);
 			previousCachedTextures.remove(key);
 			if (graphic != null)
@@ -289,119 +248,21 @@ class Cache
 	}
 
 	/**
-	 * Cache a batch of textures by PNG-decoding them in parallel on a worker
-	 * pool. The expensive part — reading the file off disk and decoding the
-	 * PNG into a BitmapData — runs on background threads; the GPU upload
-	 * (FlxGraphic.fromBitmapData) stays on the main thread because the GL
-	 * context lives there.
-	 *
-	 * Blocks until every job in the batch has been uploaded so callers can
-	 * treat it as a drop-in replacement for a loop of cacheTexture() calls.
+	 * Serial cache of multiple textures. Funkin doesn't have a parallel
+	 * primitive — the name is preserved for API compatibility with existing
+	 * callers, but every key is now decoded + uploaded on the main thread.
 	 */
 	public static function parallelCacheTextures(keys:Array<String>):Void
 	{
-		parallelCacheTexturesInternal(keys, false);
-	}
-
-	static function permanentParallelCacheTextures(keys:Array<String>):Void
-	{
-		parallelCacheTexturesInternal(keys, true);
-	}
-
-	static function parallelCacheTexturesInternal(keys:Array<String>, permanent:Bool):Void
-	{
-		if (keys == null || keys.length == 0)
-			return;
-
-		ensureThreadPool();
-
-		var workKeys:Array<String> = [];
-		var workFutures:Array<Future<BitmapData>> = [];
-
-		for (key in keys)
-		{
-			if (key == null || key == "") continue;
-
-			// Already in a hot map: nothing to do (or just promote from previous).
-			if (permanent ? permanentCachedTextures.exists(key) : currentCachedTextures.exists(key))
-				continue;
-
-			if (!permanent && previousCachedTextures.exists(key))
-			{
-				var graphic:FlxGraphic = previousCachedTextures.get(key);
-				previousCachedTextures.remove(key);
-				if (graphic != null) currentCachedTextures.set(key, graphic);
-				continue;
-			}
-
-			workKeys.push(key);
-			workFutures.push(new Future<BitmapData>(function() return decodeBitmapForKey(key), true));
-		}
-
-		if (workKeys.length == 0) return;
-
-		for (i in 0...workKeys.length)
-		{
-			var key:String = workKeys[i];
-			var bitmap:BitmapData = workFutures[i].result();
-			uploadTextureBitmap(key, bitmap, permanent);
-		}
-	}
-
-	static function decodeBitmapForKey(key:String):BitmapData
-	{
-		if (key == null || key == "") return null;
-
-		// OpenFL's Assets.getBitmapData ultimately uses the lime image decoder.
-		// It also touches its internal asset cache map, which can race with the
-		// main thread; we accept the same risk Funkin's FunkinMemory async
-		// prewarms accept. Sys file fallback is fully thread-safe.
-		try
-		{
-			if (OpenFlAssets.exists(key, AssetType.IMAGE))
-				return OpenFlAssets.getBitmapData(key, false);
-		}
-		catch (e:Dynamic) {}
-
-		#if sys
-		try
-		{
-			if (FileSystem.exists(key))
-				return BitmapData.fromFile(key);
-		}
-		catch (e:Dynamic) {}
-		#end
-
-		return null;
-	}
-
-	static function uploadTextureBitmap(key:String, bitmap:BitmapData, permanent:Bool):Void
-	{
-		if (bitmap == null)
-		{
-			FlxG.log.warn('Failed to cache graphic: $key');
-			return;
-		}
-
-		var graphic:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, key);
-		if (graphic == null)
-		{
-			FlxG.log.warn('Failed to cache graphic: $key');
-			return;
-		}
-
-		graphic.persist = true;
-		currentCachedTextures.set(key, graphic);
-		if (permanent) permanentCachedTextures.set(key, graphic);
-		forceRender(graphic);
+		if (keys == null) return;
+		for (key in keys) cacheTexture(key);
 	}
 
 	/**
-	 * Resolve the on-disk texture keys a song needs in one shot — stage
-	 * background plus every PNG referenced in each character JSON's `file`
-	 * field — and parallel-cache them. Call this once at the top of
-	 * PlayState.create() so the four serial Cache.cacheCharacter / cacheStage
-	 * calls later in create() all hit a warm cache.
+	 * Resolve every texture key the song needs — stage background plus
+	 * each character JSON's `file` field — and cache them serially.
+	 * Mirrors what PlayState.create's serial Cache.cacheStage / cacheCharacter
+	 * calls cover, just batched into one entry point.
 	 */
 	public static function parallelPrewarmSong(stagePath:String, player1:String, player2:String, gfVersion:String):Void
 	{
@@ -412,7 +273,7 @@ class Cache
 		appendCharacterTextureKeys(keys, player2);
 		appendCharacterTextureKeys(keys, gfVersion);
 
-		parallelCacheTextures(keys);
+		for (key in keys) cacheTexture(key);
 	}
 
 	static function appendStageTextureKeys(into:Array<String>, stagePath:String):Void
@@ -451,15 +312,13 @@ class Cache
 			return;
 		}
 
-		// Same fallback as Cache.cacheCharacter when there's no JSON: assume
-		// the character is a single PNG at images/characters/<name>.png.
+		// No JSON: assume a single PNG at images/characters/<name>.png.
 		var fallback:String = Paths.getPath('images/characters/$characterPath.png', AssetType.IMAGE, null);
 		if (fallback != null && fallback != "" && !into.contains(fallback)) into.push(fallback);
 	}
 
 	/**
 	 * Permanently caches a texture with the given key.
-	 * @param key The key of the texture to cache.
 	 */
 	static function permanentCacheTexture(key:String):Void
 	{
@@ -502,9 +361,6 @@ class Cache
 		return null;
 	}
 
-	/**
-	 * Prepares the cache for purging unused textures.
-	 */
 	public static inline function preparePurgeTextureCache():Void
 	{
 		previousCachedTextures = currentCachedTextures;
@@ -517,9 +373,6 @@ class Cache
 		}
 	}
 
-	/**
-	 * Purges unused textures from the cache.
-	 */
 	public static function purgeTextureCache():Void
 	{
 		for (graphicKey in previousCachedTextures.keys())
@@ -579,7 +432,6 @@ class Cache
 
 	/**
 	 * Forces the GPU to load and upload a FlxGraphic.
-	 * @param graphic The graphic to force render.
 	 */
 	private static function forceRender(graphic:FlxGraphic):Void
 	{
@@ -592,24 +444,18 @@ class Cache
 			var _:Int = bmp.bitmap.width; // Trigger
 		}
 
-		// Draws sprite and actually caches it.
 		var sprite = new FlxSprite();
 		sprite.loadGraphic(graphic);
-		sprite.draw(); // Draw sprite and load it into game's memory.
+		sprite.draw();
 
 		if (graphic.bitmap != null && FlxG.stage != null && FlxG.stage.context3D != null)
 		{
-			graphic.bitmap.getTexture(FlxG.stage.context3D); // Just in case that didn't work...
+			graphic.bitmap.getTexture(FlxG.stage.context3D);
 		}
 
 		sprite.destroy();
 	}
 
-	/**
-	 * Determine whether the texture with the given key is cached.
-	 * @param key The key of the texture to check.
-	 * @return Whether the texture is cached.
-	 */
 	public static function isTextureCached(key:String):Bool
 	{
 		return FlxG.bitmap.get(key) != null
@@ -618,10 +464,6 @@ class Cache
 
 	///// SOUND //////
 
-	/**
-	 * Caches a sound with the given key.
-	 * @param key The key of the sound to cache.
-	 */
 	public static function cacheSound(key:String):Void
 	{
 		if (key == null || key == "")
@@ -636,17 +478,6 @@ class Cache
 			previousCachedSounds.remove(key);
 			if (sound != null)
 				currentCachedSounds.set(key, sound);
-			return;
-		}
-
-		// If a worker is already decoding this key, join its result rather than
-		// kicking off a second decode of the same file on the main thread.
-		if (pendingSoundFutures.exists(key))
-		{
-			var snd:Sound = pendingSoundFutures.get(key).result();
-			pendingSoundFutures.remove(key);
-			if (snd != null && !currentCachedSounds.exists(key))
-				currentCachedSounds.set(key, snd);
 			return;
 		}
 
@@ -681,106 +512,23 @@ class Cache
 	}
 
 	/**
-	 * Fire-and-forget parallel sound caching. Spawns a worker-thread Future
-	 * per key, returns immediately. getCachedSound() / cacheSound() join the
-	 * pending Future if asked before the worker finishes.
+	 * Serial cache of multiple sounds. Funkin doesn't have a parallel sound
+	 * primitive — the name is preserved for API compatibility.
 	 */
 	public static function beginAsyncCacheSounds(keys:Array<String>):Void
 	{
-		if (keys == null || keys.length == 0) return;
-
-		ensureThreadPool();
-
-		for (key in keys)
-		{
-			if (key == null || key == "") continue;
-			if (currentCachedSounds.exists(key) || permanentCachedSounds.exists(key)) continue;
-			if (pendingSoundFutures.exists(key)) continue;
-
-			if (previousCachedSounds.exists(key))
-			{
-				var sound:Sound = previousCachedSounds.get(key);
-				previousCachedSounds.remove(key);
-				if (sound != null) currentCachedSounds.set(key, sound);
-				continue;
-			}
-
-			var pending:Future<Sound> = new Future<Sound>(function() return decodeSoundForKey(key), true);
-			pendingSoundFutures.set(key, pending);
-			pending.onComplete(function(snd:Sound):Void
-			{
-				// onComplete fires on the main thread, so it's safe to touch
-				// the cache maps from here.
-				if (snd != null && !currentCachedSounds.exists(key))
-					currentCachedSounds.set(key, snd);
-				if (pendingSoundFutures.get(key) == pending)
-					pendingSoundFutures.remove(key);
-			});
-		}
+		if (keys == null) return;
+		for (key in keys) cacheSound(key);
 	}
 
 	/**
-	 * Block until every pending sound from beginAsyncCacheSounds finishes
-	 * (or the per-key timeout elapses). Use as a sync point before code that
-	 * needs all decoded audio available.
+	 * No-op. All sound caching is synchronous now, so by the time any caller
+	 * reaches this point every prior cache request has already completed.
 	 */
-	public static function awaitPendingSounds(maxWaitMs:Int = 2000):Void
-	{
-		if (pendingSoundFutures.iterator().hasNext() == false) return;
-
-		var snapshot:Array<String> = [for (k in pendingSoundFutures.keys()) k];
-
-		for (key in snapshot)
-		{
-			var pending:Future<Sound> = pendingSoundFutures.get(key);
-			if (pending == null) continue;
-
-			var snd:Sound = pending.result(maxWaitMs);
-			pendingSoundFutures.remove(key);
-			if (snd != null && !currentCachedSounds.exists(key))
-				currentCachedSounds.set(key, snd);
-		}
-	}
-
-	static function permanentParallelCacheSounds(keys:Array<String>):Void
-	{
-		if (keys == null || keys.length == 0) return;
-
-		ensureThreadPool();
-
-		var workKeys:Array<String> = [];
-		var workFutures:Array<Future<Sound>> = [];
-
-		for (key in keys)
-		{
-			if (key == null || key == "") continue;
-			if (permanentCachedSounds.exists(key)) continue;
-
-			workKeys.push(key);
-			workFutures.push(new Future<Sound>(function() return decodeSoundForKey(key), true));
-		}
-
-		for (i in 0...workKeys.length)
-		{
-			var key:String = workKeys[i];
-			var snd:Sound = workFutures[i].result();
-			if (snd == null) continue;
-
-			permanentCachedSounds.set(key, snd);
-			currentCachedSounds.set(key, snd);
-		}
-	}
+	public static function awaitPendingSounds(maxWaitMs:Int = 2000):Void {}
 
 	/**
-	 * Resolve the audio tracks the song will need at startSong() time —
-	 * instrumental plus whichever vocal layout (split or single) the song
-	 * uses — and kick off their decode on the worker pool *without
-	 * blocking*. This is meant to run early in PlayState.create() so the
-	 * OGG decode overlaps with the rest of create's main-thread setup
-	 * (character init, HUD, chart parse, etc.); by the time
-	 * startInstrumentTrack() actually pulls the Sound out via Paths.inst()
-	 * the worker has either already cached it or getCachedSound() will
-	 * wait the small remainder for it.
+	 * Cache the instrumental + vocals for a song.
 	 */
 	public static function parallelPrewarmSongAudio(song:String):Void
 	{
@@ -799,7 +547,7 @@ class Cache
 			appendSongSoundKey(keys, song, "Voices");
 		}
 
-		beginAsyncCacheSounds(keys);
+		for (key in keys) cacheSound(key);
 	}
 
 	static function appendSongSoundKey(into:Array<String>, song:String, soundFile:String):Void
@@ -820,29 +568,15 @@ class Cache
 		if (previousCachedSounds.exists(path))
 			return previousCachedSounds.get(path);
 
-		// Worker-decoded but not yet landed in a cache map: block on it so the
-		// caller gets a Sound instead of null. result() returns immediately if
-		// the Future is already done.
-		if (pendingSoundFutures.exists(path))
-		{
-			var pending:Future<Sound> = pendingSoundFutures.get(path);
-			var snd:Sound = pending.result();
-			pendingSoundFutures.remove(path);
-			if (snd != null && !currentCachedSounds.exists(path))
-				currentCachedSounds.set(path, snd);
-			return snd;
-		}
-
 		return null;
 	}
 
 	/**
 	 * Permanently caches a sound with the given key.
-	 * @param key The key of the sound to cache.
 	 */
 	static function permanentCacheSound(key:String):Void
 	{
-		if (permanentCachedSounds.exists(key))
+		if (key == null || permanentCachedSounds.exists(key))
 			return;
 
 		if (!OpenFlAssets.exists(key, AssetType.SOUND) && !OpenFlAssets.exists(key, AssetType.MUSIC))
@@ -856,9 +590,6 @@ class Cache
 		currentCachedSounds.set(key, sound);
 	}
 
-	/**
-	 * Prepares the cache for purging unused sounds.
-	 */
 	public static function preparePurgeSoundCache():Void
 	{
 		previousCachedSounds = currentCachedSounds;
@@ -871,9 +602,6 @@ class Cache
 		}
 	}
 
-	/**
-	 * Purges unused sounds from the cache.
-	 */
 	public static inline function purgeSoundCache():Void
 	{
 		for (key in previousCachedSounds.keys())
@@ -898,18 +626,12 @@ class Cache
 
 	///// MISC /////
 
-	/**
-	 * Prepares both caches for purging.
-	 */
 	public static function preparePurgeCache():Void
 	{
 		preparePurgeTextureCache();
 		preparePurgeSoundCache();
 	}
 
-	/**
-	 * Clears all non-permanent assets from memory.
-	 */
 	public static function clear():Void
 	{
 		preparePurgeCache();
@@ -922,17 +644,36 @@ class Cache
 		MemoryUtil.compact();
 	}
 
-	/**
-	 * Clears all Freeplay assets from memory.
-	 */
 	public static inline function clearFreeplay():Void
+	{
+		clearByContains("freeplay");
+		preparePurgeSoundCache();
+		purgeSoundCache();
+	}
+
+	public static inline function clearCharacters():Void
+	{
+		clearByContains("characters");
+	}
+
+	public static inline function clearStages():Void
+	{
+		clearByContains("stages");
+	}
+
+	public static inline function clearStickers():Void
+	{
+		clearByContains("stickers");
+	}
+
+	static function clearByContains(substr:String):Void
 	{
 		var keysToRemove:Array<String> = [];
 
 		@:privateAccess
 		for (key in FlxG.bitmap._cache.keys())
 		{
-			if (!key.contains("freeplay"))
+			if (!key.contains(substr))
 				continue;
 			if (permanentCachedTextures.exists(key) || key.contains("fonts"))
 				continue;
@@ -944,83 +685,6 @@ class Cache
 		for (key in keysToRemove)
 		{
 			trace('[CACHE] Cleaning asset $key');
-			var obj:FlxGraphic = FlxG.bitmap.get(key);
-			if (obj != null)
-			{
-				obj.persist = false;
-				obj.destroy();
-			}
-			FlxG.bitmap.removeKey(key);
-			if (currentCachedTextures.exists(key))
-				currentCachedTextures.remove(key);
-			if (previousCachedTextures.exists(key))
-				previousCachedTextures.remove(key);
-			OpenFlAssets.cache.clear(key);
-		}
-
-		preparePurgeSoundCache();
-		purgeSoundCache();
-	}
-
-	/**
-	 * Clears all character-related assets from memory.
-	 */
-	public static inline function clearCharacters():Void
-	{
-		var keysToRemove:Array<String> = [];
-
-		@:privateAccess
-		for (key in FlxG.bitmap._cache.keys())
-		{
-			if (!key.contains("characters"))
-				continue;
-			if (permanentCachedTextures.exists(key) || key.contains("fonts"))
-				continue;
-
-			keysToRemove.push(key);
-		}
-
-		@:privateAccess
-		for (key in keysToRemove)
-		{
-			trace('[CACHE] Cleaning character asset $key');
-			var obj:FlxGraphic = FlxG.bitmap.get(key);
-			if (obj != null)
-			{
-				obj.persist = false;
-				obj.destroy();
-			}
-			FlxG.bitmap.removeKey(key);
-			if (currentCachedTextures.exists(key))
-				currentCachedTextures.remove(key);
-			if (previousCachedTextures.exists(key))
-				previousCachedTextures.remove(key);
-			OpenFlAssets.cache.clear(key);
-		}
-	}
-
-	/**
-	 * Clears all stage-related assets from memory.
-	 */
-	public static inline function clearStages():Void
-	{
-		var keysToRemove:Array<String> = [];
-
-		@:privateAccess
-		for (key in FlxG.bitmap._cache.keys())
-		{
-			if (!key.contains("stages"))
-				continue;
-			if (permanentCachedTextures.exists(key) || key.contains("fonts"))
-				continue;
-
-			keysToRemove.push(key);
-		}
-
-		@:privateAccess
-		for (key in keysToRemove)
-		{
-			trace('[CACHE] Cleaning stage asset $key');
 			var obj:FlxGraphic = FlxG.bitmap.get(key);
 			if (obj != null)
 			{
@@ -1091,22 +755,24 @@ class Cache
 
 	public static function releaseSongCacheImages(song:String):Void {}
 
-	// Legacy API support
+	///// LEGACY API /////
+
 	public static function cacheCharacter(characterPath:String):Void
 	{
 		if (characterPath == null || characterPath == "")
 			return;
 
 		var characterInfo:ConfigCharacters = null;
-
-		try {
+		try
+		{
 			characterInfo = Character.loadInfo('characters/$characterPath');
-		} catch (e) {}
+		}
+		catch (e) {}
 
-		if(characterInfo != null && characterInfo.file != null && characterInfo.file.trim() != "") {
-			var fileList:String = characterInfo.file;
-
-			for(file in fileList.split(",")) {
+		if (characterInfo != null && characterInfo.file != null && characterInfo.file.trim() != "")
+		{
+			for (file in characterInfo.file.split(","))
+			{
 				var trimmedFile:String = file.trim();
 				var extensionIndex:Int = trimmedFile.lastIndexOf(".");
 				var basePath:String = extensionIndex >= 0 ? trimmedFile.substr(0, extensionIndex) : trimmedFile;

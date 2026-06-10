@@ -44,7 +44,14 @@ class DeathNote extends CustomNoteTemplate {
     }
 
     function getCombinedFrames():FlxFramesCollection {
-        if(combinedFrames == null) {
+        // combinedFrames is static and survives across song restarts. If
+        // Cache.purgeTextureCache or a state teardown destroyed the underlying
+        // FlxGraphic between attempts, the cached collection points at a
+        // disposed bitmap and the death note renders blank ("DeathNote
+        // doesn't appear" reports). Rebuild whenever we detect that.
+        if(combinedFrames == null
+            || combinedFrames.parent == null
+            || combinedFrames.parent.bitmap == null) {
             combinedFrames = FlxAnimationUtil.combineAtlas([
                 Paths.getNoteAtlas('regular/NOTE_assets'),
                 Paths.getNoteAtlas('death/NOTE_assets')

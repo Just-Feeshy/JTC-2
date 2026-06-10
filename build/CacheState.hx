@@ -73,8 +73,9 @@ class CacheState extends HelperStates {
 
 	/**
 	 * Pre-caches song assets (audio, characters, stage) before entering PlayState.
-	 * Audio decode is kicked onto the worker pool up-front via the async API so
-	 * its OGG decode time overlaps with the queue's main-thread texture work.
+	 * Every asset is its own queue entry so the loading bar advances per-asset —
+	 * mirrors Funkin's MultiCallback approach where each preload is a discrete
+	 * step rather than one up-front async fan-out.
 	 */
 	function buildPreloadQueue():Void {
 		if(PlayState.SONG == null)
@@ -84,28 +85,26 @@ class CacheState extends HelperStates {
 
 		preloadQueue = [];
 
-		// Fan the song audio out to the worker pool right now. By the time
-		// PlayState's startInstrumentTrack pulls these via Paths.inst(),
-		// the workers have either landed them in the cache or the join in
-		// getCachedSound() waits the small remainder.
-		var asyncSoundKeys:Array<String> = [];
-
 		var instPath:String = Paths.getSongSoundPath(song, "Inst");
-		if(instPath != null && instPath != "") asyncSoundKeys.push(instPath);
+		if(instPath != null && instPath != "") {
+			preloadQueue.push(function() { Cache.cacheSound(instPath); });
+		}
 
 		for(soundFile in getSongVoiceFiles(song)) {
 			var voicePath:String = Paths.getSongSoundPath(song, soundFile);
-			if(voicePath != null && voicePath != "") asyncSoundKeys.push(voicePath);
+			if(voicePath != null && voicePath != "") {
+				preloadQueue.push(function() { Cache.cacheSound(voicePath); });
+			}
 		}
 
 		if(SaveData.getData(SaveType.MISS_SOUND_VOLUME) > 0) {
 			for(missKey in ["missnote1", "missnote2", "missnote3"]) {
 				var soundPath:String = Paths.getPath('sounds/$missKey.${Paths.SOUND_EXT}', AssetType.SOUND, "shared");
-				if(soundPath != null && soundPath != "") asyncSoundKeys.push(soundPath);
+				if(soundPath != null && soundPath != "") {
+					preloadQueue.push(function() { Cache.cacheSound(soundPath); });
+				}
 			}
 		}
-
-		Cache.beginAsyncCacheSounds(asyncSoundKeys);
 
 		preloadQueue.push(function() {
 			Cache.cacheAsset("iconGrid");

@@ -242,10 +242,6 @@ class HelperStates extends FlxState {
 	}
 
 	override function update(elapsed:Float):Void {
-		#if (USING_LUA && cpp && sys)
-		LuaThreads.tick();
-		#end
-
 		if(isOfType(this, PlayState)) {
 			var playState:PlayState = cast this;
 			playState.updateLuaVars();

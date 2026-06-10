@@ -2355,10 +2355,6 @@ class ModLua {
 			return closed;
 		});
 
-        #if (USING_LUA && cpp && sys)
-        LuaThreads.attach(this);
-        #end
-
         call("initialized", []);
     }
 
@@ -3757,10 +3753,6 @@ class ModLua {
     }
 
     public function close():Void {
-        #if (USING_LUA && cpp && sys)
-        LuaThreads.detach(this);
-        #end
-
         #if (USING_LUA && cpp)
         if(lua == null) {
             return;

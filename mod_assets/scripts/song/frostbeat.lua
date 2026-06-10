@@ -22,44 +22,8 @@ local daddyTrans = false
 local secondBaseX = 890
 local secondBaseY = 130
 local secondHiddenAlpha = 0.00001
-local phaseTwoDadCarCacheStep = 548
-local phaseTwoDadCarLoadStep = 556
-local phaseTwoDadCarWarmStep = 564
-local phaseTwoDadCarPrimeStep = 572
-local phaseTwoSecondCacheStep = 580
-local phaseTwoSecondCreateStep = 588
-local phaseTwoSecondWarmStep = 596
-local phaseTwoSecondPrimeStep = 604
 local originalDadCharacter = "joul"
 local originalBoyfriendCharacter = "flying BF sings"
-local secondWarmAnimations = {
-    "idle",
-    "idleExtra",
-    "singDOWN",
-    "singRIGHT",
-    "singLEFT",
-    "singUP",
-    "singDOWN miss",
-    "singRIGHT miss",
-    "singLEFT miss",
-    "singUP miss",
-    "punched"
-}
-
-local dadCarWarmAnimations = {
-    "idle",
-    "singDOWN",
-    "singRIGHT",
-    "singLEFT",
-    "singUP",
-    "punch"
-}
-
-local deathWarmAnimations = {
-	"firstDeath",
-	"deathLoop",
-	"deathConfirm"
-}
 
 local phaseTwoDadDeltaX = -120
 local phaseTwoDadDeltaY = 10
@@ -105,99 +69,126 @@ local introBoyfriendFaceOffsetY = 310
 local introBoyfriendFaceZoom = 2.15
 local introWarmupIndex = 0
 local introBeginStep = 18
-local introWarmupTotalSteps = 16
+local introWarmupTotalSteps = 5
 
-local gpuWarmSpriteNames = {
-    "gpuWarm_skaterExtraNotes",
-    "gpuWarm_skatingFlyingDeath"
-}
+-- Mirror vanilla Funkin's precache pattern: pay the asset-load cost once
+-- in generatedStage(), synchronously, before the song actually starts. No
+-- worker pool, no per-step staging — just the standard precache* API.
+local function precacheFrostbeatAssets()
+    if precacheImage ~= nil then
+        precacheImage("daddy_fist")
+        precacheImage("daddy_fisted")
+        precacheImage("skater extra notes")
+        precacheImage("skating and flying DEATH")
+    end
 
--- Frostbeat hands every heavy asset off to the LuaThreads worker pool the
--- instant the song starts. With a 4-worker pool each entry decodes on its
--- own thread, so the intro warmup doesn't have to walk them serially — by
--- the time the countdown finishes, the PNGs are already decoded and the
--- main thread only pays the (cheap) GPU upload step.
-local prewarmScheduled = {}
-local asyncGpuWarmAId = "frost_async_gpuWarmA"
-local asyncGpuWarmBId = "frost_async_gpuWarmB"
+    if precacheSound ~= nil then
+        precacheSound("punch")
+        precacheSound("slenderdad")
+    end
 
--- Every entry is queued together at step 0; the worker pool handles ordering.
--- The two GPU warm textures are split into separate image jobs (rather than
--- one combined batch) so two workers can decode them concurrently instead of
--- one worker doing both.
-local prewarmSchedule = {
-    -- Phase 1 (HUD punch icons, death-note atlas, punch sfx).
-    { kind = "image",     id = "frost_async_daddyFist",    path = "daddy_fist" },
-    { kind = "image",     id = "frost_async_daddyFisted",  path = "daddy_fisted" },
-    { kind = "sound",     id = "frost_async_punchSound",   path = "punch" },
-    { kind = "atlas",     id = "frost_async_deathNote",    path = "notes/death/NOTE_assets", atlasType = "sparrow" },
-    -- GPU warm textures, split across two workers.
-    { kind = "image",     id = asyncGpuWarmAId,            path = "skater extra notes" },
-    { kind = "image",     id = asyncGpuWarmBId,            path = "skating and flying DEATH" },
-    -- Phase 2 transition + final GF swap. Submitted up-front too — workers
-    -- handle the ordering and the JSON-read step is short enough that the
-    -- BF character bitmaps just join the queue.
-    { kind = "character", id = "frost_async_dadCar",       name = "dad-car" },
-    { kind = "character", id = "frost_async_second",       name = "frostbeat-second" },
-    { kind = "character", id = "frost_async_flyingBFGF",   name = "flying BF sings gf" }
-}
+    if precacheAtlas ~= nil then
+        -- DeathNote.getCombinedFrames merges these two atlases together.
+        -- Precache *both* so users who never play any other song that loads
+        -- the regular note atlas still get a working combined atlas here.
+        precacheAtlas("notes/regular/NOTE_assets", "sparrow")
+        precacheAtlas("notes/death/NOTE_assets", "sparrow")
+        --
+        -- inside the constructor.
+        precacheAtlas("flying notes BF SINGS", "sparrow")
+        precacheAtlas("flying notes GF SINGS", "sparrow")
+        precacheAtlas("skating and flying DEATH", "sparrow")
+        precacheAtlas("skating and flying DEATHDEMON", "sparrow")
+    end
 
-local function hasLuaThreads()
-    return luaThreadPreloadImage ~= nil
-end
+    if precacheCharacter ~= nil then
+        precacheCharacter("dad-car")
+        precacheCharacter("frostbeat-second")
+        precacheCharacter("flying BF sings gf")
+    end
 
-local function submitPrewarmEntry(entry)
-    if entry.kind == "image" then
-        luaThreadPreloadImage(entry.id, entry.path)
-    elseif entry.kind == "sound" then
-        luaThreadPreloadSound(entry.id, entry.path)
-    elseif entry.kind == "atlas" then
-        luaThreadPreloadAtlas(entry.id, entry.path, entry.atlasType or "sparrow")
-    elseif entry.kind == "character" then
-        luaThreadPreloadCharacter(entry.id, entry.name)
+    if addCharacterToList ~= nil then
+        addCharacterToList("dad-car", "dad")
+        addCharacterToList("flying BF sings gf", "boyfriend")
     end
 end
 
--- Fire all prewarms into the worker pool in one shot so every worker thread
--- has something to chew on immediately. The pool itself handles concurrency
--- (decoded bitmaps are uploaded to the GPU on the main thread as the workers
--- finish them), so submitting here is just enqueue cost — no decode happens
--- on the main thread.
-local function startFrostbeatPrewarms()
-    if not hasLuaThreads() then return end
+-- precache* puts the bitmap in FlxG.bitmap but the actual GL texture upload
+-- stays deferred until the first draw. On slower GPUs that first-draw upload
+-- can stall or, in the death-note's case, render before the upload finishes
+-- ("DeathNote asset doesn't appear" reports). Spawning a 0.001-scale,
+-- 0.00001-alpha sprite for each texture forces the upload to happen inside
+-- the intro warmup window, where the player can't see the hitch.
+--
+-- "skater extra notes" is critical: frostbeat-second's character JSON
+-- (file = "skater_assets.xml, skater extra notes.xml") puts the
+-- "skater dance punchd" frames in the second atlas. The idle animation only
+-- uploads skater_assets, so the first death-note punch would otherwise pay
+-- the upload cost for skater extra notes mid-gameplay.
+-- "skating and flying DEATH" is the boyfriend death character atlas; same
+-- story — it's only touched by instaKillPlayer and would hitch on first use.
+local frostbeatWarmSpriteNames = {
+    "frostWarm_daddyFist",
+    "frostWarm_daddyFisted",
+    "frostWarm_deathRegular",
+    "frostWarm_deathNote",
+    "frostWarm_skaterExtraNotes",
+    "frostWarm_skatingFlyingDeath"
+}
 
-    -- Pump up parallelism before the first job goes in. The setter is a
-    -- no-op once any worker has booted, so calling it on a song restart is
-    -- safe (and harmless if the engine default was already higher).
-    if luaThreadSetMaxWorkers ~= nil then
-        luaThreadSetMaxWorkers(4)
+local function spawnFrostbeatWarmSprite(spriteName, imageName)
+    if spriteExist(spriteName) then
+        return
     end
 
-    for _, entry in ipairs(prewarmSchedule) do
-        if not prewarmScheduled[entry.id] then
-            prewarmScheduled[entry.id] = true
-            submitPrewarmEntry(entry)
+    createSprite(spriteName)
+    loadGraphic(spriteName, imageName)
+    setSpritePosition(spriteName, 0, 0)
+    scaleSprite(spriteName, 0.001, 0.001)
+    setSpriteAlpha(spriteName, 0.00001)
+    setSpriteToCamera(spriteName, "camHUD")
+    addSpriteToState(spriteName)
+end
+
+local function clearFrostbeatWarmSprites()
+    for _, spriteName in ipairs(frostbeatWarmSpriteNames) do
+        if spriteExist(spriteName) then
+            removeSpriteFromState(spriteName)
+            destroySprite(spriteName)
         end
     end
 end
 
--- Force-submit a single scheduled prewarm now, in case startFrostbeatPrewarms
--- somehow hasn't run yet (e.g. an event jumps us into phase two before
--- generatedStage finishes). The workers may already be done with it; the
--- LuaThreads side treats a re-submit of a finished job as a no-op.
-local function ensurePrewarmSubmitted(id)
-    if not hasLuaThreads() then return false end
-    if prewarmScheduled[id] then return true end
+local frostbeatPunchPathWarmed = false
 
-    for _, entry in ipairs(prewarmSchedule) do
-        if entry.id == id then
-            prewarmScheduled[entry.id] = true
-            submitPrewarmEntry(entry)
-            return true
-        end
+-- The first death-note punch fires four first-time GPU/audio operations in
+-- one frame: dad-car's "punch" anim, second's "punched" anim, the daddy_fist
+-- → daddy_fisted texture swap on the punch icon, and the first decode of the
+-- punch sound by OpenFL's audio backend. Pay each cost once up front so the
+-- real punch event is pure warm-cache playback.
+local function warmFrostbeatPunchPath()
+    if frostbeatPunchPathWarmed then
+        return
     end
 
-    return false
+    -- dad-car is registered via addCharacterToList in precacheFrostbeatAssets,
+    -- so primeLoadedCharacterAnimations can drive its sprite even before
+    -- the phase-two character swap actually puts it on stage.
+    if primeLoadedCharacterAnimations ~= nil then
+        primeLoadedCharacterAnimations("dad-car", "dad", {"punch"})
+    end
+
+    if primeCharacterAnimations ~= nil and spriteExist("second") then
+        primeCharacterAnimations("second", {"punched"})
+    end
+
+    -- Silent play forces OpenFL to bind the Sound to a mixer channel; the
+    -- first audible play later then skips that one-time allocation.
+    if playSound ~= nil then
+        playSound("punch", 0)
+    end
+
+    frostbeatPunchPathWarmed = true
 end
 
 local jtcStrumAnims = {
@@ -234,16 +225,6 @@ local introNoteRevealDone = false
 local introBaseCameraDone = false
 local introClearDone = false
 local secondActive = false
-local phaseTwoDadCarCached = false
-local phaseTwoDadCarLoaded = false
-local phaseTwoDadCarWarmed = false
-local phaseTwoDadCarPrimed = false
-local phaseTwoSecondCached = false
-local phaseTwoSecondCreated = false
-local phaseTwoSecondWarmed = false
-local phaseTwoSecondPrimed = false
-local phaseTwoAssetsPrepared = false
-local flyingGfPrepared = false
 local boyfriendGFSwitched = false
 local phaseTwoFlyingCameraActive = false
 local phaseTwoFlyingCameraStartFocusX = nil
@@ -344,13 +325,19 @@ local function clearStaticShaderEffect()
         return
     end
 
-	if spriteExist("jumpscare") then
-            setSpriteAlpha("jumpscare", 0)
-            removeSpriteFromState("jumpscare")
-	end
+    if spriteExist("jumpscare") then
+        setSpriteAlpha("jumpscare", 0)
+        removeSpriteFromState("jumpscare")
+    end
 
     if staticShaderActive then
         setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
+        if clearCameraShaders ~= nil then
+            clearCameraShaders(STATIC_SHADER_CAMERA)
+        elseif removeCameraShader ~= nil then
+            removeCameraShader(STATIC_SHADER_CAMERA)
+        end
+        staticShaderActive = false
     end
 
     staticShaderCleared = true
@@ -405,6 +392,7 @@ local function resetIntroRuntimeState()
     currentIntroCarX = baseFrostbiteCarX
     currentIntroCarY = baseFrostbiteCarY
     introClearTween = nil
+    introWarmupIndex = 0
     introWarmupDone = false
     introCoverRemoved = false
     introGirlfriendShotDone = false
@@ -418,16 +406,6 @@ local function resetPhaseTwoRuntimeState()
     daddyIsHere = false
     daddyTrans = false
     secondActive = false
-    phaseTwoDadCarCached = false
-    phaseTwoDadCarLoaded = false
-    phaseTwoDadCarWarmed = false
-    phaseTwoDadCarPrimed = false
-    phaseTwoSecondCached = false
-    phaseTwoSecondCreated = false
-    phaseTwoSecondWarmed = false
-    phaseTwoSecondPrimed = false
-    phaseTwoAssetsPrepared = false
-    flyingGfPrepared = false
     boyfriendGFSwitched = false
     phaseTwoFlyingCameraActive = false
     phaseTwoFlyingCameraStartFocusX = nil
@@ -448,16 +426,6 @@ local function resetPunchRuntimeState()
     punchIconNames = {}
 end
 
--- On song restart, PlayState.revertCharacterChanges swaps dad-car back to
--- joul (and flying BF sings 2 back to flying BF sings) via
--- syncLoadedCharacterTransform, which copies the phase-two character's
--- last position into the reverted character. Because that position already
--- has phaseTwoDad/BoyfriendDelta applied, the reverted dad/bf end up
--- pre-shifted — and applyPhaseTwoFunkroadLayout would then add the delta
--- again on the next phase-two entry, accumulating across retries. Force
--- the originals back to their pristine spawn positions here so the
--- delta math stays correct (and so phase one of a retry doesn't visibly
--- start out shifted either).
 local function resetCharactersToPhaseOneBaseline()
     if spriteExist("dad") then
         setSpritePosition("dad", phaseOneDadBaseX, phaseOneDadBaseY)
@@ -481,12 +449,10 @@ end
 local function init()
     frost_modchart = {}
     baseFunkroadCameraFocusLerp = 0.09
-    -- Wipe the per-song "already submitted" set so a retry re-schedules its
-    -- own prewarm jobs. The LuaThreads side accepts re-submits of finished
-    -- jobs as a no-op (its main-thread cache check skips already-uploaded
-    -- bitmaps), so resetting here is safe even if assets are still hot from
-    -- the previous attempt.
-    prewarmScheduled = {}
+    -- On retry, clear leftover warm sprites from the previous attempt and
+    -- reset the punch-path-warmed flag so generatedStage re-warms them.
+    clearFrostbeatWarmSprites()
+    frostbeatPunchPathWarmed = false
     resetIntroRuntimeState()
     resetPhaseTwoRuntimeState()
     resetPunchRuntimeState()
@@ -563,7 +529,6 @@ local function enterPhaseTwo()
 
     preparePhaseTwoAssets()
     callEvent("character change", "dad-car", "dad")
-    callEvent("character change", "flying BF sings 2", "boyfriend")
     if removeLoadedCharacter ~= nil then
         removeLoadedCharacter(originalDadCharacter, "dad")
     end
@@ -855,29 +820,6 @@ local function ensureIntroWarmupCover()
     addSpriteToState("introWarmupCover")
 end
 
-local function spawnGpuWarmSprite(spriteName, imageName)
-    if spriteExist(spriteName) then
-        return
-    end
-
-    createSprite(spriteName)
-    loadGraphic(spriteName, imageName)
-    setSpritePosition(spriteName, 0, 0)
-    scaleSprite(spriteName, 0.001, 0.001)
-    setSpriteAlpha(spriteName, 0.00001)
-    setSpriteToCamera(spriteName, "camHUD")
-    addSpriteToState(spriteName)
-end
-
-local function clearGpuWarmSprites()
-    for _, spriteName in ipairs(gpuWarmSpriteNames) do
-        if spriteExist(spriteName) then
-            removeSpriteFromState(spriteName)
-            destroySprite(spriteName)
-        end
-    end
-end
-
 local function updateIntroWarmup()
     if introWarmupDone then
         return
@@ -894,63 +836,17 @@ local function updateIntroWarmup()
     elseif introWarmupIndex == 3 then
         applyIntroOpponentFaceShot()
     elseif introWarmupIndex == 4 then
-        updatePhaseTwoPreparation(phaseTwoDadCarCacheStep)
-    elseif introWarmupIndex == 5 then
-        updatePhaseTwoPreparation(phaseTwoDadCarLoadStep)
-    elseif introWarmupIndex == 6 then
-        updatePhaseTwoPreparation(phaseTwoDadCarWarmStep)
-    elseif introWarmupIndex == 7 then
-        updatePhaseTwoPreparation(phaseTwoDadCarPrimeStep)
-    elseif introWarmupIndex == 8 then
-        updatePhaseTwoPreparation(phaseTwoSecondCacheStep)
-    elseif introWarmupIndex == 9 then
-        updatePhaseTwoPreparation(phaseTwoSecondCreateStep)
-    elseif introWarmupIndex == 10 then
-        updatePhaseTwoPreparation(phaseTwoSecondWarmStep)
-    elseif introWarmupIndex == 11 then
-        updatePhaseTwoPreparation(phaseTwoSecondPrimeStep)
-    elseif introWarmupIndex == 12 then
-        -- If the LuaThreads workers already cached these we skip the blocking
-        -- main-thread loads; the precache* family is only a fallback for
-        -- engine builds without the threaded API.
-        if hasLuaThreads() and luaThreadIsDone("frost_async_daddyFist")
-            and luaThreadIsDone("frost_async_daddyFisted")
-            and luaThreadIsDone("frost_async_punchSound")
-            and luaThreadIsDone("frost_async_deathNote") then
-            -- nothing to do; bitmaps already live in FlxG.bitmap
-        else
-            if precacheImage ~= nil then
-                precacheImage("daddy_fist")
-                precacheImage("daddy_fisted")
-            end
-
-            if precacheSound ~= nil then
-                precacheSound("punch")
-            end
-
-            if precacheAtlas ~= nil then
-                precacheAtlas("notes/death/NOTE_assets", "sparrow")
-            end
-        end
-    elseif introWarmupIndex == 13 then
-        -- LuaThreads' image workers already decoded + uploaded each warm
-        -- texture; finishGPUCommands() at the bottom of this function then
-        -- forces the GL pipeline to actually realise the upload. Skip the
-        -- invisible-sprite trick entirely when the worker reports done.
-        if not (hasLuaThreads() and luaThreadIsDone(asyncGpuWarmAId)) then
-            spawnGpuWarmSprite("gpuWarm_skaterExtraNotes", "skater extra notes")
-        end
-    elseif introWarmupIndex == 14 then
-        if not (hasLuaThreads() and luaThreadIsDone(asyncGpuWarmBId)) then
-            spawnGpuWarmSprite("gpuWarm_skatingFlyingDeath", "skating and flying DEATH")
-        end
-    elseif introWarmupIndex == 15 then
-        clearGpuWarmSprites()
+        -- By now the warm sprites have been in the scene for several frames,
+        -- so their textures have been GPU-uploaded. Remove them so they
+        -- aren't drawn for the rest of the song.
+        clearFrostbeatWarmSprites()
     else
         applyIntroOpponentFaceShot()
     end
 
-    finishGPUCommands()
+    if finishGPUCommands ~= nil then
+        finishGPUCommands()
+    end
 
     introWarmupIndex = introWarmupIndex + 1
 
@@ -1054,83 +950,13 @@ local function resetSecondSprite()
     holdTimer = 0
 end
 
-updatePhaseTwoPreparation = function(stepValue)
-    if stepValue == nil then
-        return
-    end
-
-    if not phaseTwoDadCarCached and stepValue >= phaseTwoDadCarCacheStep then
-        precacheCharacter("dad-car")
-        phaseTwoDadCarCached = true
-    end
-
-    if not phaseTwoDadCarLoaded and stepValue >= phaseTwoDadCarLoadStep then
-        addCharacterToList("dad-car", "dad")
-        phaseTwoDadCarLoaded = true
-    end
-
-    if not phaseTwoDadCarWarmed and stepValue >= phaseTwoDadCarWarmStep then
-        if warmLoadedCharacterAnimations ~= nil then
-            warmLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
-        end
-        phaseTwoDadCarWarmed = true
-    end
-
-    if not phaseTwoDadCarPrimed and stepValue >= phaseTwoDadCarPrimeStep then
-        if primeLoadedCharacterAnimations ~= nil then
-            primeLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
-        end
-        phaseTwoDadCarPrimed = true
-    end
-
-    if not phaseTwoSecondCached and stepValue >= phaseTwoSecondCacheStep then
-        precacheCharacter("frostbeat-second")
-        phaseTwoSecondCached = true
-    end
-
-    if not phaseTwoSecondCreated and stepValue >= phaseTwoSecondCreateStep then
-        setupSecondSprite()
-        resetSecondSprite()
-        phaseTwoSecondCreated = true
-    end
-
-    if not phaseTwoSecondWarmed and stepValue >= phaseTwoSecondWarmStep then
-        if warmCharacterAnimations ~= nil and spriteExist("second") then
-            warmCharacterAnimations("second", secondWarmAnimations)
-        end
-        phaseTwoSecondWarmed = true
-    end
-
-    if not phaseTwoSecondPrimed and stepValue >= phaseTwoSecondPrimeStep then
-        if primeCharacterAnimations ~= nil and spriteExist("second") then
-            primeCharacterAnimations("second", secondWarmAnimations)
-        end
-        phaseTwoSecondPrimed = true
-    end
-
-    phaseTwoAssetsPrepared = phaseTwoDadCarPrimed and phaseTwoSecondPrimed
-end
-
-preparePhaseTwoAssets = function()
-    -- Last-chance submit: if the player jumped past the schedule gate (e.g.
-    -- step-skip while debugging, or a slow worker pool), make sure these
-    -- phase-two characters are at least queued before the blocking
-    -- precacheCharacter() inside updatePhaseTwoPreparation runs.
-    ensurePrewarmSubmitted("frost_async_dadCar")
-    ensurePrewarmSubmitted("frost_async_second")
-    updatePhaseTwoPreparation(phaseTwoSecondPrimeStep)
-end
-
-prepareFlyingGfCharacter = function()
-    if flyingGfPrepared then
-        return
-    end
-
-    ensurePrewarmSubmitted("frost_async_flyingBFGF")
-    precacheCharacter("flying BF sings gf")
-    addCharacterToList("flying BF sings gf", "boyfriend")
-    flyingGfPrepared = true
-end
+-- All phase-two assets are precached + addCharacterToList'd up front in
+-- precacheFrostbeatAssets(), and the "second" sprite is created in
+-- generatedStage(). These remain as no-ops because event scripts and the
+-- forward declarations above still reference them by name.
+updatePhaseTwoPreparation = function(_) end
+preparePhaseTwoAssets = function() end
+prepareFlyingGfCharacter = function() end
 
 local function refreshFrostbeatRuntimeState()
     frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
@@ -1147,12 +973,8 @@ local function refreshFrostbeatRuntimeState()
 end
 
 function generatedStage()
-    -- Fire every prewarm into the worker pool right now so the four worker
-    -- threads start decoding character/HUD/atlas PNGs in parallel while the
-    -- main thread continues setting up the stage, countdown and intro
-    -- warmup. By the time the song actually needs any of these assets the
-    -- pool has already uploaded them to the GPU.
-    startFrostbeatPrewarms()
+    -- Mirror Funkin: pay the asset-load cost synchronously at song start.
+    precacheFrostbeatAssets()
     init()
     applyPhaseOneHud()
     if clearCameraShaders ~= nil then
@@ -1164,12 +986,6 @@ function generatedStage()
 	setGameOverBlueBallSuffix("-cheese")
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
-    -- The 5-beat countdown is invisible and silent already, but the timer
-    -- still gates the conductor for ~2s before startSong() can fire. Since
-    -- the intro warmup (camera shots + prewarms) happens in onUpdate from
-    -- frame 0 regardless, there's nothing for the countdown to wait for —
-    -- skip it so the song's instrumental starts on the very first frame
-    -- after generatedStage.
     if skipCountdown ~= nil then
         skipCountdown()
     end
@@ -1180,12 +996,38 @@ function generatedStage()
     ensureIntroWarmupCover()
 
     ensureFrostbiteCar()
+    -- "second" is the phase-two skater-boi opponent. Create it hidden up
+    -- front so phase 2 entry (step 630) is just an alpha/visibility flip.
+    setupSecondSprite()
+    resetSecondSprite()
     applyIntroOpponentFaceShot()
 
     setupPunchHealth(3)
     refreshFrostbeatRuntimeState()
-    ensureStaticShader()
-    prepareFlyingGfCharacter()
+
+    -- Force GPU upload of textures whose first draw would otherwise stall
+    -- gameplay: the death-note atlases (visible mid-song, reported as
+    -- "DeathNote doesn't appear" on slower GPUs) and the punch HUD icons.
+    -- The warm sprites stay alive through the intro warmup cycle and get
+    -- cleaned up by updateIntroWarmup once the upload has completed.
+    spawnFrostbeatWarmSprite("frostWarm_daddyFist", "daddy_fist")
+    spawnFrostbeatWarmSprite("frostWarm_daddyFisted", "daddy_fisted")
+    spawnFrostbeatWarmSprite("frostWarm_deathRegular", "notes/regular/NOTE_assets")
+    spawnFrostbeatWarmSprite("frostWarm_deathNote", "notes/death/NOTE_assets")
+    -- The "skater dance punchd" frames live in skater extra notes.xml, NOT
+    -- in skater_assets.xml. Idle animation never touches the extra atlas, so
+    -- without this warm sprite the first death-note punch pays the GPU
+    -- upload cost mid-gameplay. Same for "skating and flying DEATH" which is
+    -- only used by the death/insta-kill flow.
+    spawnFrostbeatWarmSprite("frostWarm_skaterExtraNotes", "skater extra notes")
+    spawnFrostbeatWarmSprite("frostWarm_skatingFlyingDeath", "skating and flying DEATH")
+
+    -- Prime everything the first death-note punch will trigger.
+    warmFrostbeatPunchPath()
+
+    if finishGPUCommands ~= nil then
+        finishGPUCommands()
+    end
 end
 
 function onStepHit()
@@ -1210,8 +1052,6 @@ function onStepHit()
     if curStep >= 630 then
         enterPhaseTwo()
     end
-
-    updatePhaseTwoPreparation(curStep)
 
     if curStep >= 630 and not jtcVocalsSwitchedToPlayer then
         removeSongTrack("jtcVocals")
@@ -1274,10 +1114,6 @@ function noteMiss(noteData, tag)
 end
 
 function onUpdate(elapsed)
-    -- Safety net: if generatedStage somehow didn't run (e.g. mid-song
-    -- script reload, restart edge cases) make sure the prewarms still
-    -- get submitted. Once they've been queued this is a no-op.
-    startFrostbeatPrewarms()
     updateIntroWarmup()
 
     if not startedCountdown then
@@ -1294,19 +1130,18 @@ function onUpdate(elapsed)
         end
     end
 
-    updatePhaseTwoPreparation(curStepFloat)
-
+    -- Only attach + drive the static shader inside its visible window. Outside
+    -- the window it stays detached so the GPU isn't running fullscreen noise
+    -- math over the HUD for the entire song — the suspected cause of the
+    -- whole-song lag on weaker GPUs.
     if curStepFloat ~= nil and curStepFloat >= shaderTrans[1] and curStepFloat < shaderTrans[2] then
         startStaticShaderEffect()
-    end
 
-    -- Update shader time animation
-    if ensureStaticShader() then
-        staticShaderTime = staticShaderTime + elapsed
-        setShaderFloat(STATIC_SHADER_CAMERA, "time", staticShaderTime)
-    end
-
-    if curStepFloat ~= nil and curStepFloat >= shaderTrans[2] then
+        if ensureStaticShader() then
+            staticShaderTime = staticShaderTime + elapsed
+            setShaderFloat(STATIC_SHADER_CAMERA, "time", staticShaderTime)
+        end
+    elseif curStepFloat ~= nil and curStepFloat >= shaderTrans[2] then
         clearStaticShaderEffect()
     end
 
@@ -1344,7 +1179,10 @@ function onUpdate(elapsed)
     jtc_camera.onUpdate(elapsed)
 	frost_bump.onUpdate()
     updateIntroClearTween(elapsed)
-    updatePhaseTwoFlyingCamera()
+
+	if not inGameOver then
+		updatePhaseTwoFlyingCamera()
+	end
 
     if startsWith(curAnimName, "sing") then
         holdTimer = holdTimer + elapsed
