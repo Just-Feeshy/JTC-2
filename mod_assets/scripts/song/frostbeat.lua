@@ -1161,6 +1161,7 @@ function generatedStage()
         removeCameraShader(STATIC_SHADER_CAMERA)
     end
 
+	setGameOverBlueBallSuffix("-cheese")
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     -- The 5-beat countdown is invisible and silent already, but the timer

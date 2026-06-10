@@ -12,9 +12,6 @@ import ModInitialize;
 
 #if sys
 import sys.FileSystem;
-import sys.thread.Thread;
-import sys.thread.Mutex;
-import sys.thread.Deque;
 #end
 
 import haxe.Json;
@@ -44,8 +41,6 @@ class Cache
 	// (with a small timeout) so that if the main thread asks for the sound
 	// before the worker finishes, it waits for the worker rather than racing
 	// it and double-decoding the same file on main.
-	static var pendingSounds:Map<String, Bool> = new Map<String, Bool>();
-	static var soundPendingMutex:Mutex = new Mutex();
 	#end
 
 	static var purgeFilter:Array<String> = ["/week", "/characters", "/charSelect", "/results", "/stages"];
@@ -196,122 +191,7 @@ class Cache
 		if (keys == null || keys.length == 0)
 			return;
 
-		#if sys
-		var toLoad:Array<String> = [];
-
-		for (key in keys)
-		{
-			if (key == null || key == "")
-				continue;
-
-			if (currentCachedTextures.exists(key) || permanentCachedTextures.exists(key))
-				continue;
-
-			if (previousCachedTextures.exists(key))
-			{
-				var graphic:FlxGraphic = previousCachedTextures.get(key);
-				previousCachedTextures.remove(key);
-				if (graphic != null)
-					currentCachedTextures.set(key, graphic);
-				continue;
-			}
-
-			// Filter out anything we'd need OpenFL embedded-asset machinery for;
-			// that path uses the GL context lazily and isn't safe off-main. Pure
-			// disk-backed mod assets are fine to decode on a worker.
-			if (OpenFlAssets.exists(key, AssetType.IMAGE) && !FileSystem.exists(key))
-				continue;
-
-			if (!toLoad.contains(key))
-				toLoad.push(key);
-		}
-
-		if (toLoad.length == 0)
-		{
-			// Anything that needs the embedded-asset path still has to go
-			// through the serial cacheTexture() to be safe.
-			for (key in keys) cacheTexture(key);
-			return;
-		}
-
-		var workerCount:Int = parallelCacheWorkerCount(toLoad.length);
-		var jobQueue:Deque<String> = new Deque<String>();
-		var resultQueue:Deque<ParallelCacheResult> = new Deque<ParallelCacheResult>();
-		var workerDoneQueue:Deque<Bool> = new Deque<Bool>();
-
-		for (key in toLoad) jobQueue.add(key);
-		for (_ in 0...workerCount) jobQueue.add(null); // poison pills
-
-		for (_ in 0...workerCount)
-		{
-			Thread.create(function() {
-				while (true)
-				{
-					var key:String = jobQueue.pop(true);
-					if (key == null) break;
-
-					var bmp:BitmapData = null;
-					try
-					{
-						if (FileSystem.exists(key))
-							bmp = BitmapData.fromFile(key);
-					}
-					catch (e:Dynamic)
-					{
-						bmp = null;
-					}
-
-					resultQueue.add({key: key, bitmap: bmp});
-				}
-
-				workerDoneQueue.add(true);
-			});
-		}
-
-		// Main thread: pull decoded bitmaps as they come in and finish the
-		// GPU upload. We interleave with the workers (rather than waiting for
-		// everyone first) so the GL upload latency overlaps with the still-
-		// decoding workers.
-		var processed:Int = 0;
-		while (processed < toLoad.length)
-		{
-			var result:ParallelCacheResult = resultQueue.pop(true);
-			processed++;
-
-			if (result.bitmap == null)
-			{
-				FlxG.log.warn('Failed to parallel-cache graphic: ${result.key}');
-				continue;
-			}
-
-			var graphic:FlxGraphic = FlxGraphic.fromBitmapData(result.bitmap, false, result.key);
-
-			if (graphic == null)
-			{
-				FlxG.log.warn('Failed to wrap parallel bitmap for ${result.key}');
-				continue;
-			}
-
-			graphic.persist = true;
-			currentCachedTextures.set(result.key, graphic);
-			forceRender(graphic);
-		}
-
-		// Drain worker-done markers so we don't leave half-joined threads.
-		for (_ in 0...workerCount) workerDoneQueue.pop(true);
-
-		// Anything that was filtered out as needing the embedded-asset path
-		// goes through the regular serial cache so the caller still gets
-		// everything they asked for.
-		for (key in keys)
-		{
-			if (key == null || key == "") continue;
-			if (currentCachedTextures.exists(key) || permanentCachedTextures.exists(key)) continue;
-			cacheTexture(key);
-		}
-		#else
 		for (key in keys) cacheTexture(key);
-		#end
 	}
 
 	/**
@@ -388,20 +268,6 @@ class Cache
 		if (fallback != null && fallback != "" && !into.contains(fallback)) into.push(fallback);
 	}
 
-	static inline function parallelCacheWorkerCount(jobCount:Int):Int
-	{
-		#if sys
-		// Match the worker count to actual work so we don't pay thread
-		// creation overhead for a 1-or-2-asset song. Cap at 4 to leave
-		// headroom for the main + audio + (optional) Discord threads.
-		var cap:Int = #if android 2 #else 4 #end;
-		if (jobCount < cap) return jobCount;
-		return cap;
-		#else
-		return 1;
-		#end
-	}
-
 	/**
 	 * Permanently caches a texture with the given key.
 	 * @param key The key of the texture to cache.
@@ -431,8 +297,8 @@ class Cache
 		trace('[CACHE] Cached graphic $key');
 		graphic.persist = true;
 		permanentCachedTextures.set(key, graphic);
+		currentCachedTextures.set(key, graphic);
 		forceRender(graphic);
-		currentCachedTextures = permanentCachedTextures.copy();
 	}
 
 	public static function getCachedGraphic(path:String):FlxGraphic
@@ -452,17 +318,14 @@ class Cache
 	 */
 	public static inline function preparePurgeTextureCache():Void
 	{
-		previousCachedTextures = currentCachedTextures.copy();
+		previousCachedTextures = currentCachedTextures;
+		currentCachedTextures = permanentCachedTextures.copy();
 
 		for (graphicKey in previousCachedTextures.keys())
 		{
 			if (permanentCachedTextures.exists(graphicKey))
-			{
 				previousCachedTextures.remove(graphicKey);
-			}
 		}
-
-		currentCachedTextures = permanentCachedTextures.copy();
 	}
 
 	/**
@@ -622,10 +485,6 @@ class Cache
 	{
 		if (keys == null || keys.length == 0) return;
 
-		#if sys
-		var toLoad:Array<String> = [];
-
-		soundPendingMutex.acquire();
 		for (key in keys)
 		{
 			if (key == null || key == "") continue;
@@ -639,47 +498,8 @@ class Cache
 				continue;
 			}
 
-			// Embedded-asset paths must still go through OpenFL on main.
-			if (OpenFlAssets.exists(key, AssetType.SOUND) && !FileSystem.exists(key)) continue;
-			if (OpenFlAssets.exists(key, AssetType.MUSIC) && !FileSystem.exists(key)) continue;
-
-			if (pendingSounds.exists(key) || toLoad.contains(key)) continue;
-			pendingSounds.set(key, true);
-			toLoad.push(key);
+			cacheSound(key);
 		}
-		soundPendingMutex.release();
-
-		if (toLoad.length == 0) return;
-
-		var workerCount:Int = parallelCacheWorkerCount(toLoad.length);
-		var jobQueue:Deque<String> = new Deque<String>();
-
-		for (key in toLoad) jobQueue.add(key);
-		for (_ in 0...workerCount) jobQueue.add(null);
-
-		for (_ in 0...workerCount)
-		{
-			Thread.create(function() {
-				while (true)
-				{
-					var key:String = jobQueue.pop(true);
-					if (key == null) break;
-
-					var snd:Sound = null;
-					try
-					{
-						if (FileSystem.exists(key)) snd = Sound.fromFile(key);
-					}
-					catch (e:Dynamic) {}
-
-					soundPendingMutex.acquire();
-					if (snd != null) currentCachedSounds.set(key, snd);
-					pendingSounds.remove(key);
-					soundPendingMutex.release();
-				}
-			});
-		}
-		#end
 	}
 
 	/**
@@ -689,19 +509,8 @@ class Cache
 	 */
 	public static function awaitPendingSounds(maxWaitMs:Int = 2000):Void
 	{
-		#if sys
-		var deadline:Float = haxe.Timer.stamp() + maxWaitMs / 1000;
-
-		while (haxe.Timer.stamp() < deadline)
-		{
-			soundPendingMutex.acquire();
-			var anyPending:Bool = Lambda.count(pendingSounds) > 0;
-			soundPendingMutex.release();
-
-			if (!anyPending) return;
-			Sys.sleep(0.002);
-		}
-		#end
+		// Synchronous shim: beginAsyncCacheSounds now decodes inline, so there
+		// is never anything pending by the time this returns.
 	}
 
 	/**
@@ -753,37 +562,6 @@ class Cache
 		if (previousCachedSounds.exists(path))
 			return previousCachedSounds.get(path);
 
-		#if sys
-		// If a beginAsyncCacheSounds() worker is currently decoding this
-		// key, block briefly waiting for it rather than letting the caller
-		// race-and-redo the decode on the main thread. The cap stops a
-		// stuck worker from hanging gameplay; on timeout we return null and
-		// the caller falls back to its normal load path.
-		soundPendingMutex.acquire();
-		var isPending:Bool = pendingSounds.exists(path);
-		soundPendingMutex.release();
-
-		if (isPending)
-		{
-			var deadline:Float = haxe.Timer.stamp() + 2.0;
-
-			while (haxe.Timer.stamp() < deadline)
-			{
-				Sys.sleep(0.002);
-
-				soundPendingMutex.acquire();
-				var stillPending:Bool = pendingSounds.exists(path);
-				soundPendingMutex.release();
-
-				if (!stillPending)
-				{
-					if (currentCachedSounds.exists(path)) return currentCachedSounds.get(path);
-					return null;
-				}
-			}
-		}
-		#end
-
 		return null;
 	}
 
@@ -812,17 +590,14 @@ class Cache
 	 */
 	public static function preparePurgeSoundCache():Void
 	{
-		previousCachedSounds = currentCachedSounds.copy();
+		previousCachedSounds = currentCachedSounds;
+		currentCachedSounds = permanentCachedSounds.copy();
 
 		for (key in previousCachedSounds.keys())
 		{
 			if (permanentCachedSounds.exists(key))
-			{
 				previousCachedSounds.remove(key);
-			}
 		}
-
-		currentCachedSounds = permanentCachedSounds.copy();
 	}
 
 	/**
@@ -1147,10 +922,3 @@ class Cache
 		return graphic;
 	}
 }
-
-#if sys
-private typedef ParallelCacheResult = {
-	var key:String;
-	var bitmap:BitmapData;
-};
-#end

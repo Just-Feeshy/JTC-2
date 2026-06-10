@@ -1,32 +1,50 @@
 {
 	"animations": {
 		"deathLoop": {
+			"secondaryBehind": true,
+			"secondaryPrefix": "deathLoopDad",
 			"prefix": "deathLoop",
 			"name": "deathLoop",
 			"framerate": 24,
+			"secondaryOffset": [
+				-47,
+				84
+			],
 			"offset": [
-				94,
-				-97
+				-127,
+				-91
 			],
 			"looped": false
 		},
 		"deathConfirm": {
+			"secondaryBehind": true,
+			"secondaryPrefix": "deathConfirmDad",
 			"prefix": "deathConfirm",
 			"name": "deathConfirm",
 			"framerate": 24,
+			"secondaryOffset": [
+				-46,
+				87
+			],
 			"offset": [
-				94,
-				-92
+				-127,
+				-87
 			],
 			"looped": false
 		},
 		"firstDeath": {
+			"secondaryBehind": true,
+			"secondaryPrefix": "firstDeathDad",
 			"prefix": "firstDeath",
 			"name": "firstDeath",
 			"framerate": 24,
+			"secondaryOffset": [
+				-369,
+				-250
+			],
 			"offset": [
-				980,
-				280
+				760,
+				200
 			],
 			"looped": false
 		},
@@ -130,7 +148,7 @@
 		"camPosX": 0
 	},
 	"playAnim": "",
-	"file": "flying notes BF SINGS.xml, flying notes GF SINGS.xml, skating and flying DEATHDEMON.xml",
+	"file": "flying notes BF SINGS.xml, flying notes GF SINGS.xml, skating and flying DEATH.xml, skating and flying DEATHDEMON.xml",
 	"icon": [
 		31,
 		32,

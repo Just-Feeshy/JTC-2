@@ -13,7 +13,6 @@ using StringTools;
 
 #if sys
 import sys.FileSystem;
-import sys.thread.Thread;
 #end
 
 class LoadingScene extends FlxSpriteGroup {
@@ -143,26 +142,24 @@ class LoadingScene extends FlxSpriteGroup {
             return;
         }
 
-        Thread.create(() -> {
-            var songAudioEntries:Array<Array<String>> = collectBootSongAudioEntries(collectBootSongDirectories());
-            var totalEntries:Int = songAudioEntries.length;
-            var cachedEntries:Int = 0;
+        var songAudioEntries:Array<Array<String>> = collectBootSongAudioEntries(collectBootSongDirectories());
+        var totalEntries:Int = songAudioEntries.length;
+        var cachedEntries:Int = 0;
 
-            if(totalEntries <= 0) {
-                bootSongCachesReady = true;
-                setCacheValue(1, false);
-                return;
-            }
-
-            for(songAudio in songAudioEntries) {
-                cacheSongAudio(songAudio[0], songAudio[1]);
-                cachedEntries++;
-                setCacheValue(cachedEntries / totalEntries);
-            }
-
+        if(totalEntries <= 0) {
             bootSongCachesReady = true;
             setCacheValue(1, false);
-        });
+            return;
+        }
+
+        for(songAudio in songAudioEntries) {
+            cacheSongAudio(songAudio[0], songAudio[1]);
+            cachedEntries++;
+            setCacheValue(cachedEntries / totalEntries);
+        }
+
+        bootSongCachesReady = true;
+        setCacheValue(1, false);
     }
 
     public static function startBackgroundCache():Void {
@@ -173,20 +170,18 @@ class LoadingScene extends FlxSpriteGroup {
             return;
         }
 
-        Thread.create(() -> {
-            var songAudioEntries:Array<Array<String>> = collectBootSongAudioEntries(collectBootSongDirectories());
+        var songAudioEntries:Array<Array<String>> = collectBootSongAudioEntries(collectBootSongDirectories());
 
-            if(songAudioEntries.length <= 0) {
-                bootSongCachesReady = true;
-                return;
-            }
-
-            for(songAudio in songAudioEntries) {
-                cacheSongAudio(songAudio[0], songAudio[1]);
-            }
-
+        if(songAudioEntries.length <= 0) {
             bootSongCachesReady = true;
-        });
+            return;
+        }
+
+        for(songAudio in songAudioEntries) {
+            cacheSongAudio(songAudio[0], songAudio[1]);
+        }
+
+        bootSongCachesReady = true;
     }
     #end
 
