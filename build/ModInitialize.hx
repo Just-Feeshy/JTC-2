@@ -100,6 +100,9 @@ typedef AnimationInfo = {
     var framerate:Int;
     var looped:Bool;
     var offset:Array<Int>;
+    @:optional var secondaryPrefix:String;
+    @:optional var secondaryOffset:Array<Int>;
+    @:optional var secondaryBehind:Bool;
 }
 
 typedef DiscordRPC = {

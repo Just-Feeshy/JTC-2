@@ -208,6 +208,61 @@
                     </scrollview>
                 </vbox>
 
+                <vbox text="Extra" width="100%" height="100%">
+                    <scrollview width="100%" height="100%" contentWidth="100%">
+                        <vbox width="100%" style="padding: 10px; spacing: 8px;">
+                            <label width="100%" text="Combine Atlases" />
+                            <label width="100%" text="Override an existing animation by layering a second atlas prefix on top of it. The two frames are baked into one bitmap per frame." />
+
+                            <spacer height="6" />
+                            <label width="100%" text="Target Animation (gets overridden)" />
+                            <hbox width="100%">
+                                <label width="32%" text="Animation" verticalAlign="center" />
+                                <dropdown id="combineTargetAnimDropDown" width="68%" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Base Off X" verticalAlign="center" />
+                                <number-stepper id="combineBaseOffsetX" width="68%" step="1" min="-9999" max="9999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Base Off Y" verticalAlign="center" />
+                                <number-stepper id="combineBaseOffsetY" width="68%" step="1" min="-9999" max="9999" pos="0" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Overlay Atlas Prefix" />
+                            <hbox width="100%">
+                                <label width="32%" text="XML File" verticalAlign="center" />
+                                <dropdown id="combineOverlayXmlDropDown" width="68%" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Prefix" verticalAlign="center" />
+                                <dropdown id="combineOverlayPrefixDropDown" width="68%" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Overlay X" verticalAlign="center" />
+                                <number-stepper id="combineOverlayOffsetX" width="68%" step="1" min="-9999" max="9999" pos="0" />
+                            </hbox>
+                            <hbox width="100%">
+                                <label width="32%" text="Overlay Y" verticalAlign="center" />
+                                <number-stepper id="combineOverlayOffsetY" width="68%" step="1" min="-9999" max="9999" pos="0" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <hbox width="100%" style="spacing: 6px;">
+                                <button id="combineAnimationsButton" width="50%" text="Combine" />
+                                <button id="updateCombineButton" width="50%" text="Update Offsets" />
+                            </hbox>
+                            <hbox width="100%" style="spacing: 6px;">
+                                <button id="flipCombineZButton" width="50%" text="Flip Z-Index" />
+                                <button id="clearCombineButton" width="50%" text="Remove Overlay" />
+                            </hbox>
+                            <label id="combineZOrderLabel" width="100%" text="Overlay drawn on top" />
+                            <label id="combineStatusLabel" width="100%" text="" />
+                        </vbox>
+                    </scrollview>
+                </vbox>
+
                 <vbox text="Export" width="100%" height="100%">
                     <vbox width="100%" height="100%" style="padding: 10px; spacing: 8px;">
                         <label width="100%" text="Export the current character data." />

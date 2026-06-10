@@ -138,7 +138,6 @@ local prewarmSchedule = {
     -- handle the ordering and the JSON-read step is short enough that the
     -- BF character bitmaps just join the queue.
     { kind = "character", id = "frost_async_dadCar",       name = "dad-car" },
-    { kind = "character", id = "frost_async_flyingBF2",    name = "flying BF sings 2" },
     { kind = "character", id = "frost_async_second",       name = "frostbeat-second" },
     { kind = "character", id = "frost_async_flyingBFGF",   name = "flying BF sings gf" }
 }
@@ -213,6 +212,7 @@ local shaderTrans = { --In steps
 	656,
 	629
 }
+
 local STATIC_SHADER_NAME = "static_shader"
 local STATIC_SHADER_CAMERA = "camHUD"
 
@@ -1061,19 +1061,16 @@ updatePhaseTwoPreparation = function(stepValue)
 
     if not phaseTwoDadCarCached and stepValue >= phaseTwoDadCarCacheStep then
         precacheCharacter("dad-car")
-        precacheCharacter("flying BF sings 2")
         phaseTwoDadCarCached = true
     end
 
     if not phaseTwoDadCarLoaded and stepValue >= phaseTwoDadCarLoadStep then
         addCharacterToList("dad-car", "dad")
-        addCharacterToList("flying BF sings 2", "boyfriend")
         phaseTwoDadCarLoaded = true
     end
 
     if not phaseTwoDadCarWarmed and stepValue >= phaseTwoDadCarWarmStep then
         if warmLoadedCharacterAnimations ~= nil then
-            warmLoadedCharacterAnimations("flying BF sings 2", "boyfriend", deathWarmAnimations)
             warmLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
         end
         phaseTwoDadCarWarmed = true
@@ -1081,7 +1078,6 @@ updatePhaseTwoPreparation = function(stepValue)
 
     if not phaseTwoDadCarPrimed and stepValue >= phaseTwoDadCarPrimeStep then
         if primeLoadedCharacterAnimations ~= nil then
-            primeLoadedCharacterAnimations("flying BF sings 2", "boyfriend", deathWarmAnimations)
             primeLoadedCharacterAnimations("dad-car", "dad", dadCarWarmAnimations)
         end
         phaseTwoDadCarPrimed = true
@@ -1121,7 +1117,6 @@ preparePhaseTwoAssets = function()
     -- phase-two characters are at least queued before the blocking
     -- precacheCharacter() inside updatePhaseTwoPreparation runs.
     ensurePrewarmSubmitted("frost_async_dadCar")
-    ensurePrewarmSubmitted("frost_async_flyingBF2")
     ensurePrewarmSubmitted("frost_async_second")
     updatePhaseTwoPreparation(phaseTwoSecondPrimeStep)
 end

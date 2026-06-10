@@ -159,7 +159,7 @@ class CrewState extends MusicBeatState {
         varsavi.ID = 3;
 
         var flx:CreditSprites = cast new CreditSprites().loadGraphic(Paths.image("credits/menu/" + fileName[4]));
-		flx.linkTree = "https://twitter.com/JDSTtwt";
+		flx.linkTree = "https://erdene.dev/";
         flx.scrollFactor.set(0, 1);
         flx.ID = 4;
 

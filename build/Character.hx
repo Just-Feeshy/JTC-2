@@ -8,6 +8,7 @@ import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
 import flixel.animation.FlxBaseAnimation;
 import flixel.animation.FlxAnimation;
+import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFilterFrames;
@@ -99,9 +100,10 @@ class Character extends feshixl.FeshSprite {
 				setIndexis(curCharacter);
 
 				for(anim in _info.animations.keys()) {
+					var animInfo = _info.animations.get(anim);
 					animations.push(anim);
-					animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
-					addOffset(anim, _info.animations.get(anim).offset[0], _info.animations.get(anim).offset[1]);
+					addAnimationFromInfo(anim, animInfo);
+					addOffset(anim, animInfo.offset[0], animInfo.offset[1]);
 
 					if(anim.endsWith("player") && isPlayer) {
 						hasBePlayer = "player";
@@ -573,8 +575,108 @@ class Character extends feshixl.FeshSprite {
 		setIndexis(curCharacter);
 
 		for(anim in _info.animations.keys()) {
-			animation.addByPrefix(anim, _info.animations.get(anim).prefix, _info.animations.get(anim).framerate, _info.animations.get(anim).looped);
+			addAnimationFromInfo(anim, _info.animations.get(anim));
 		}
+	}
+
+	private function findExactPrefixIndices(prefix:String):Array<Int> {
+		var result:Array<Int> = [];
+		if(frames == null || frames.frames == null || prefix == null || prefix == "") return result;
+
+		var matched:Array<{idx:Int, suffix:Int}> = [];
+		for(i in 0...frames.frames.length) {
+			var name:String = frames.frames[i].name;
+			if(name == null || !StringTools.startsWith(name, prefix)) continue;
+
+			var remainder:String = name.substr(prefix.length);
+			if(remainder.length == 0) continue;
+
+			var allDigits:Bool = true;
+			for(j in 0...remainder.length) {
+				var code:Null<Int> = remainder.charCodeAt(j);
+				if(code == null || code < 48 || code > 57) {
+					allDigits = false;
+					break;
+				}
+			}
+			if(!allDigits) continue;
+
+			matched.push({idx: i, suffix: Std.parseInt(remainder)});
+		}
+
+		matched.sort(function(a, b) return a.suffix - b.suffix);
+		for(m in matched) result.push(m.idx);
+		return result;
+	}
+
+	private function addAnimationFromInfo(animName:String, animInfo:AnimationInfo):Void {
+		if(animInfo.secondaryPrefix != null && animInfo.secondaryPrefix != "") {
+			var offsetX:Int = 0;
+			var offsetY:Int = 0;
+			if(animInfo.secondaryOffset != null && animInfo.secondaryOffset.length >= 2) {
+				offsetX = animInfo.secondaryOffset[0];
+				offsetY = animInfo.secondaryOffset[1];
+			}
+			var secondaryBehind:Bool = animInfo.secondaryBehind == true;
+			var composedIndices:Array<Int> = generateCompositeFrameIndices(animName, animInfo.prefix, animInfo.secondaryPrefix, offsetX, offsetY, secondaryBehind);
+			if(composedIndices.length > 0) {
+				animation.add(animName, composedIndices, animInfo.framerate, animInfo.looped);
+				return;
+			}
+		}
+		animation.addByPrefix(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+	}
+
+	private function generateCompositeFrameIndices(animKey:String, basePrefix:String, secondaryPrefix:String, offsetX:Int, offsetY:Int, secondaryBehind:Bool = false):Array<Int> {
+		if(frames == null || frames.frames == null) return [];
+
+		var baseIndices:Array<Int> = findExactPrefixIndices(basePrefix);
+		var secIndices:Array<Int> = findExactPrefixIndices(secondaryPrefix);
+
+		var pairs:Int = Std.int(Math.min(baseIndices.length, secIndices.length));
+		if(pairs == 0) return [];
+
+		var newIndices:Array<Int> = [];
+
+		for(i in 0...pairs) {
+			var baseFrame:FlxFrame = frames.frames[baseIndices[i]];
+			var secFrame:FlxFrame = frames.frames[secIndices[i]];
+			if(baseFrame == null || secFrame == null) continue;
+
+			var baseW:Int = Std.int(baseFrame.sourceSize.x);
+			var baseH:Int = Std.int(baseFrame.sourceSize.y);
+			var secW:Int = Std.int(secFrame.sourceSize.x);
+			var secH:Int = Std.int(secFrame.sourceSize.y);
+
+			var baseDrawX:Int = offsetX < 0 ? -offsetX : 0;
+			var baseDrawY:Int = offsetY < 0 ? -offsetY : 0;
+			var secDrawX:Int = offsetX < 0 ? 0 : offsetX;
+			var secDrawY:Int = offsetY < 0 ? 0 : offsetY;
+
+			var canvasW:Int = Std.int(Math.max(baseDrawX + baseW, secDrawX + secW));
+			var canvasH:Int = Std.int(Math.max(baseDrawY + baseH, secDrawY + secH));
+			if(canvasW <= 0 || canvasH <= 0) continue;
+
+			var composite:openfl.display.BitmapData = new openfl.display.BitmapData(canvasW, canvasH, true, 0x00000000);
+			if(secondaryBehind) {
+				secFrame.paint(composite, new openfl.geom.Point(secDrawX, secDrawY), true);
+				baseFrame.paint(composite, new openfl.geom.Point(baseDrawX, baseDrawY), true);
+			} else {
+				baseFrame.paint(composite, new openfl.geom.Point(baseDrawX, baseDrawY), true);
+				secFrame.paint(composite, new openfl.geom.Point(secDrawX, secDrawY), true);
+			}
+
+			var graphic:FlxGraphic = FlxGraphic.fromBitmapData(composite, false, null, false);
+			graphic.destroyOnNoUse = false;
+
+			var newFrame:FlxFrame = graphic.imageFrame.frame;
+			newFrame.name = "__combined_" + animKey + "_" + StringTools.lpad(Std.string(i), "0", 4);
+
+			frames.pushFrame(newFrame);
+			newIndices.push(frames.frames.length - 1);
+		}
+
+		return newIndices;
 	}
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {

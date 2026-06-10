@@ -137,6 +137,22 @@ class CharacterCreatorState extends UIState {
     var checkPlayable:CheckBox;
     var canBePixel:CheckBox;
 
+    var combineTargetAnimDropDown:DropDown;
+    var combineBaseOffsetX:NumberStepper;
+    var combineBaseOffsetY:NumberStepper;
+    var combineOverlayXmlDropDown:DropDown;
+    var combineOverlayPrefixDropDown:DropDown;
+    var combineOverlayOffsetX:NumberStepper;
+    var combineOverlayOffsetY:NumberStepper;
+    var combineAnimationsButton:Button;
+    var updateCombineButton:Button;
+    var clearCombineButton:Button;
+    var flipCombineZButton:Button;
+    var combineZOrderLabel:Label;
+    var combineStatusLabel:Label;
+
+    private var xmlPrefixCache:Map<String, Array<String>> = new Map();
+
     var saveCharacterButton:Button;
     var saveColorsButton:Button;
 
@@ -343,6 +359,7 @@ class CharacterCreatorState extends UIState {
 
         bindDisplayHandlers();
         bindAnimationHandlers();
+        bindCombineHandlers();
         bindExportHandlers();
     }
 
@@ -443,9 +460,239 @@ class CharacterCreatorState extends UIState {
         canBePixel.onChange = function(_) currentConfig().pixel = canBePixel.selected;
     }
 
+    private function bindCombineHandlers():Void {
+        combineTargetAnimDropDown.onChange = function(_) {
+            if(syncingUi) return;
+            refreshCombineFieldsFromTarget();
+        };
+        combineOverlayXmlDropDown.onChange = function(_) {
+            if(syncingUi) return;
+            rebuildOverlayPrefixDropDown();
+        };
+        combineAnimationsButton.onClick = function(_) applyCombineToTarget(false);
+        updateCombineButton.onClick = function(_) applyCombineToTarget(true);
+        clearCombineButton.onClick = function(_) removeOverlayFromTarget();
+        flipCombineZButton.onClick = function(_) flipCombineZOrder();
+    }
+
     private function bindExportHandlers():Void {
         saveCharacterButton.onClick = function(_) saveFile(CHARACTER);
         saveColorsButton.onClick = function(_) saveFile(COLOR_MAPPING);
+    }
+
+    private function rebuildCombineDropDowns():Void {
+        syncingUi = true;
+
+        var files:Array<String> = parseXmlFileList(currentConfig().file);
+        if(files.length == 0) files = [""];
+        populateDropDown(combineOverlayXmlDropDown, files);
+
+        var animNames:Array<String> = [];
+        for(key in currentConfig().animations.keys()) animNames.push(key);
+        if(animNames.length == 0) animNames = [""];
+        populateDropDown(combineTargetAnimDropDown, animNames);
+
+        syncingUi = false;
+
+        rebuildOverlayPrefixDropDown();
+        refreshCombineFieldsFromTarget();
+    }
+
+    private function rebuildOverlayPrefixDropDown():Void {
+        var selectedXml:String = getDropDownValue(combineOverlayXmlDropDown, "");
+        var prefixes:Array<String> = selectedXml != "" ? loadXmlPrefixes(selectedXml) : [];
+        if(prefixes.length == 0) prefixes = [""];
+
+        syncingUi = true;
+        populateDropDown(combineOverlayPrefixDropDown, prefixes);
+        syncingUi = false;
+    }
+
+    private function refreshCombineFieldsFromTarget():Void {
+        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
+        var info = animName != "" ? currentConfig().animations.get(animName) : null;
+
+        syncingUi = true;
+        if(info != null) {
+            combineBaseOffsetX.pos = info.offset[0];
+            combineBaseOffsetY.pos = info.offset[1];
+            if(info.secondaryPrefix != null && info.secondaryPrefix != "") {
+                selectDropDownItem(combineOverlayPrefixDropDown, info.secondaryPrefix);
+                if(info.secondaryOffset != null && info.secondaryOffset.length >= 2) {
+                    combineOverlayOffsetX.pos = info.secondaryOffset[0];
+                    combineOverlayOffsetY.pos = info.secondaryOffset[1];
+                } else {
+                    combineOverlayOffsetX.pos = 0;
+                    combineOverlayOffsetY.pos = 0;
+                }
+                combineZOrderLabel.text = info.secondaryBehind == true
+                    ? "Overlay drawn behind base"
+                    : "Overlay drawn on top";
+            } else {
+                combineOverlayOffsetX.pos = 0;
+                combineOverlayOffsetY.pos = 0;
+                combineZOrderLabel.text = "No overlay attached";
+            }
+        } else {
+            combineBaseOffsetX.pos = 0;
+            combineBaseOffsetY.pos = 0;
+            combineOverlayOffsetX.pos = 0;
+            combineOverlayOffsetY.pos = 0;
+            combineZOrderLabel.text = "";
+        }
+        syncingUi = false;
+    }
+
+    private function parseXmlFileList(raw:String):Array<String> {
+        var out:Array<String> = [];
+        if(raw == null) return out;
+        for(piece in raw.split(",")) {
+            var trimmed:String = piece.trim();
+            if(trimmed.length > 0) out.push(trimmed);
+        }
+        return out;
+    }
+
+    private function loadXmlPrefixes(xmlFile:String):Array<String> {
+        if(xmlPrefixCache.exists(xmlFile)) {
+            return xmlPrefixCache.get(xmlFile);
+        }
+
+        var prefixes:Array<String> = [];
+        var seen:Map<String, Bool> = new Map();
+
+        var basePath:String = xmlFile;
+        var dotIndex:Int = xmlFile.lastIndexOf(".");
+        if(dotIndex >= 0) basePath = xmlFile.substr(0, dotIndex);
+
+        var dataPath:String = Paths.getPath('images/' + basePath + '.xml', TEXT, "shared");
+        if(!Paths.assetExists(dataPath, TEXT)) {
+            xmlPrefixCache.set(xmlFile, prefixes);
+            return prefixes;
+        }
+
+        var raw:String = Paths.readText(dataPath);
+        if(raw == null || raw.length == 0) {
+            xmlPrefixCache.set(xmlFile, prefixes);
+            return prefixes;
+        }
+
+        var nameRegex:EReg = ~/name="([^"]+)"/g;
+        var pos:Int = 0;
+        while(nameRegex.matchSub(raw, pos)) {
+            var matched:String = nameRegex.matched(1);
+            var matchPos = nameRegex.matchedPos();
+            pos = matchPos.pos + matchPos.len;
+
+            var trimEnd:Int = matched.length;
+            while(trimEnd > 0) {
+                var c:Null<Int> = matched.charCodeAt(trimEnd - 1);
+                if(c == null || c < 48 || c > 57) break;
+                trimEnd--;
+            }
+            var prefix:String = StringTools.rtrim(matched.substr(0, trimEnd));
+            if(prefix.length > 0 && !seen.exists(prefix)) {
+                seen.set(prefix, true);
+                prefixes.push(prefix);
+            }
+        }
+
+        xmlPrefixCache.set(xmlFile, prefixes);
+        return prefixes;
+    }
+
+    private function applyCombineToTarget(updateOnly:Bool):Void {
+        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
+        if(animName == "" || !currentConfig().animations.exists(animName)) {
+            combineStatusLabel.text = "Pick a target animation.";
+            return;
+        }
+
+        var info = currentConfig().animations.get(animName);
+
+        if(updateOnly && (info.secondaryPrefix == null || info.secondaryPrefix == "")) {
+            combineStatusLabel.text = "No overlay attached yet. Use Combine first.";
+            return;
+        }
+
+        if(!updateOnly) {
+            var overlayPrefix:String = getDropDownValue(combineOverlayPrefixDropDown, "");
+            if(overlayPrefix == "") {
+                combineStatusLabel.text = "Pick an overlay prefix.";
+                return;
+            }
+            info.secondaryPrefix = overlayPrefix;
+        }
+
+        info.offset[0] = Std.int(combineBaseOffsetX.pos);
+        info.offset[1] = Std.int(combineBaseOffsetY.pos);
+
+        var overlayOffX:Int = Std.int(combineOverlayOffsetX.pos);
+        var overlayOffY:Int = Std.int(combineOverlayOffsetY.pos);
+        if(info.secondaryOffset == null || info.secondaryOffset.length < 2) {
+            info.secondaryOffset = [overlayOffX, overlayOffY];
+        } else {
+            info.secondaryOffset[0] = overlayOffX;
+            info.secondaryOffset[1] = overlayOffY;
+        }
+
+        reloadCharacter(currentCharacterName);
+        selectDropDownItem(animationDropDown, animName);
+        refreshAnimationFields(animName);
+        selectDropDownItem(combineTargetAnimDropDown, animName);
+        refreshCombineFieldsFromTarget();
+        combineStatusLabel.text = updateOnly
+            ? "Updated '" + animName + "'."
+            : "Combined overlay into '" + animName + "'.";
+    }
+
+    private function flipCombineZOrder():Void {
+        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
+        if(animName == "" || !currentConfig().animations.exists(animName)) {
+            combineStatusLabel.text = "Pick a target animation.";
+            return;
+        }
+
+        var info = currentConfig().animations.get(animName);
+        if(info.secondaryPrefix == null || info.secondaryPrefix == "") {
+            combineStatusLabel.text = "No overlay attached yet. Use Combine first.";
+            return;
+        }
+
+        info.secondaryBehind = !(info.secondaryBehind == true);
+
+        reloadCharacter(currentCharacterName);
+        selectDropDownItem(animationDropDown, animName);
+        refreshAnimationFields(animName);
+        selectDropDownItem(combineTargetAnimDropDown, animName);
+        refreshCombineFieldsFromTarget();
+        combineStatusLabel.text = info.secondaryBehind
+            ? "Overlay moved behind base."
+            : "Overlay moved in front of base.";
+    }
+
+    private function removeOverlayFromTarget():Void {
+        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
+        if(animName == "" || !currentConfig().animations.exists(animName)) {
+            combineStatusLabel.text = "Pick a target animation.";
+            return;
+        }
+
+        var info = currentConfig().animations.get(animName);
+        if(info.secondaryPrefix == null || info.secondaryPrefix == "") {
+            combineStatusLabel.text = "Nothing to remove.";
+            return;
+        }
+
+        info.secondaryPrefix = null;
+        info.secondaryOffset = null;
+
+        reloadCharacter(currentCharacterName);
+        selectDropDownItem(animationDropDown, animName);
+        refreshAnimationFields(animName);
+        selectDropDownItem(combineTargetAnimDropDown, animName);
+        refreshCombineFieldsFromTarget();
+        combineStatusLabel.text = "Removed overlay from '" + animName + "'.";
     }
 
     private function createNewCharacter():Void {
@@ -715,6 +962,7 @@ class CharacterCreatorState extends UIState {
         refreshDisplayFields();
         rebuildAnimationDropDown(character.animation.curAnim != null ? character.animation.curAnim.name : null);
         refreshAnimationFields();
+        rebuildCombineDropDowns();
     }
 
     private function refreshDisplayFields():Void {

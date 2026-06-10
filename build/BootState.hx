@@ -44,6 +44,9 @@ class BootState extends MusicBeatState {
     }
 
     override function create():Void {
+        FlxG.fixedTimestep = false;
+		FunkinCursor.hide();
+
         SaveData.globalFPS = new FPS(10, 3, 0xFFFFFF);
         SaveData.globalMEM = new Memory(10, 28, 0xFFFFFF);
         SaveData.globalFPS.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("PhantomMuff.ttf")).fontName, 18, 0xFFFFFF);
@@ -88,9 +91,6 @@ class BootState extends MusicBeatState {
         #end
 
         super.create();
-
-        FlxG.fixedTimestep = false;
-		FunkinCursor.hide();
     }
 
     /**
