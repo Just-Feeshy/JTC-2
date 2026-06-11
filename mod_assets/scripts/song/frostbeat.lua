@@ -535,6 +535,16 @@ local function applyPhaseTwoFunkroadLayout()
     end
 end
 
+local function destroyManagedSprite(spriteName)
+    if not spriteExist(spriteName) then
+        return
+    end
+
+    removeSpriteFromStage(spriteName)
+    removeSpriteFromState(spriteName)
+    destroySprite(spriteName)
+end
+
 local function enterPhaseTwo()
     if daddyIsHere then
         return
@@ -924,16 +934,6 @@ local function refreshFrostbiteCarAnimation()
     if stepValue < 607 then
         playAnimRaw("frostbiteCAR", "drive", true)
     end
-end
-
-local function destroyManagedSprite(spriteName)
-    if not spriteExist(spriteName) then
-        return
-    end
-
-    removeSpriteFromStage(spriteName)
-    removeSpriteFromState(spriteName)
-    destroySprite(spriteName)
 end
 
 local function ensureFrostbiteCar()
