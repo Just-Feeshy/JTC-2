@@ -39,7 +39,7 @@ class PoisonNote extends CustomNoteTemplate {
         return "poison/poisonEffect";
     }
 
-    override function getNoteOffsetX(isSustain:Bool):Float {
+    override function getNoteOffsetX(isSustain:Bool, isDownscroll:Bool):Float {
         if(isSustain) {
             return FlxG.random.float(-Note.swagWidth / 3, Note.swagWidth / 3);
         }
@@ -186,7 +186,7 @@ class ReversePoisonNote extends ReverseNote {
         return "poison/poisonEffect";
     }
 
-    override function getNoteOffsetX(isSustain:Bool):Float {
+    override function getNoteOffsetX(isSustain:Bool, isDownscroll:Bool):Float {
         if(isSustain) {
             return FlxG.random.float(-Note.swagWidth / 3, Note.swagWidth / 3);
         }

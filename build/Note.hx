@@ -139,11 +139,11 @@ class Note extends feshixl.FeshMinSprite {
 			}
 
 			if(downscrollNote) {
-				noteOffset.x = -hasCustomAddon.getNoteOffsetX(isSustainNote);
-				noteOffset.y = -hasCustomAddon.getNoteOffsetY(isSustainNote);
+				noteOffset.x = -hasCustomAddon.getNoteOffsetX(isSustainNote, downscrollNote);
+				noteOffset.y = -hasCustomAddon.getNoteOffsetY(isSustainNote, downscrollNote);
 			}else {
-				noteOffset.x = hasCustomAddon.getNoteOffsetX(isSustainNote);
-				noteOffset.y = hasCustomAddon.getNoteOffsetY(isSustainNote);
+				noteOffset.x = hasCustomAddon.getNoteOffsetX(isSustainNote, downscrollNote);
+				noteOffset.y = hasCustomAddon.getNoteOffsetY(isSustainNote, downscrollNote);
 			}
 		}
 

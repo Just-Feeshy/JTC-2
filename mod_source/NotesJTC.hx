@@ -142,7 +142,7 @@ class DeathNote extends CustomNoteTemplate {
  */
 class CheeseFifthNote extends CustomNoteTemplate {
 	public static var fifthKeySize:Float = 1.0;
-	public static var fifthKeyOffsetX:Float = -18;
+	public static var fifthKeyOffsetX:Float = 18;
 
     override function getCustomAssetPath():String {
         return "fifth/JTC_SPECIAL_NOTE_assets";
@@ -157,8 +157,8 @@ class CheeseFifthNote extends CustomNoteTemplate {
         return true;
     }
 
-    override function getNoteOffsetX(isSustain:Bool):Float {
-        return fifthKeyOffsetX;
+    override function getNoteOffsetX(isSustain:Bool, isDownscroll:Bool):Float {
+        return isDownscroll ? fifthKeyOffsetX : -fifthKeyOffsetX;
     }
 
     override function canUnmuteVoiceAudio():Bool {

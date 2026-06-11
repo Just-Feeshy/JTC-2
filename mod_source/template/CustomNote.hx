@@ -24,8 +24,8 @@ interface ICustomNote {
     function setXPosition(note:Note, strums:Array<Strum>, x:Float):Float; //Set custom x value for this regular note.
     function setSustainXPosition(note:Note, strums:Array<Strum>, x:Float):Float; //Set custom x value for this long note.
     function setVisibility(note:Note, staticArrowVisible:Bool):Bool; //Set this note visible.
-    function getNoteOffsetX(isSustain:Bool):Float; //Set the x offset of this note. (This method doesn't loop.)
-    function getNoteOffsetY(isSustain:Bool):Float; //Set the y offset of this note. (This method doesn't loop.)
+    function getNoteOffsetX(isSustain:Bool, isDownscroll:Bool):Float; //Set the x offset of this note. (This method doesn't loop.)
+    function getNoteOffsetY(isSustain:Bool, isDownscroll:Bool):Float; //Set the y offset of this note. (This method doesn't loop.)
     function getTrailGroup():FlxTypedGroup<FlxSprite>; //Add a custom trail to this note.
     function hasOppositeScroll():Bool; //If this note goes on the scroll intended to be in.
     function cantHaveHold():Bool; //If this note should have holds or not.
@@ -112,11 +112,11 @@ class CustomNoteTemplate implements ICustomNote {
         return staticArrowVisible;
     }
 
-    public function getNoteOffsetX(isSustain:Bool):Float {
+    public function getNoteOffsetX(isSustain:Bool, isDownscroll:Bool):Float {
         return 0;
     }
 
-    public function getNoteOffsetY(isSustain:Bool):Float {
+    public function getNoteOffsetY(isSustain:Bool, isDownscroll:Bool):Float {
         return 0;
     }
 
