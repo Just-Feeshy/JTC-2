@@ -142,7 +142,7 @@ class DeathNote extends CustomNoteTemplate {
  */
 class CheeseFifthNote extends CustomNoteTemplate {
 	public static var fifthKeySize:Float = 1.0;
-	public static var fifthKeyOffsetX:Float = -18;
+	public static var fifthKeyOffsetX:Float = 0;
 
     override function getCustomAssetPath():String {
         return "fifth/JTC_SPECIAL_NOTE_assets";
@@ -177,10 +177,6 @@ class CheeseFifthNote extends CustomNoteTemplate {
 
 class CheeseNote extends CustomNoteTemplate {
     private var sourceWasPlayerSide:Bool = false;
-
-	override function getNoteOffsetX(isSustain:Bool):Float {
-		return -18;
-	}
 
     override function useCustomPrefix(animation:FlxAnimationController):Bool {
         animation.addByPrefix('greenScroll', 'CHEESEup', 24);

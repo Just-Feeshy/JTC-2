@@ -3340,12 +3340,18 @@ class PlayState extends MusicBeatState
 			}
 
 			if (trail.hitNote && !trail.missedNote) {
+				// Funkin-style anchoring: shrink the trail to the remaining sustain so its
+				// bottom edge stays glued to the receptor regardless of any scroll-speed
+				// rounding mismatch between trail.scrollSpeed and head.howSpeed.
+				var remainingVisual:Float = visualFullLength - Math.max(0, visualDelta);
+				if (remainingVisual < 0) remainingVisual = 0;
+				trail.sustainLength = remainingVisual;
+
 				if (trail.flipY) {
-					trail.y = strum.y + anchor + trailCaculate - trail.height + trail.yOffset;
+					trail.y = strum.y + anchor - trail.height + trail.yOffset;
 				} else {
-					trail.y = strum.y + anchor + trailCaculate + trail.yOffset;
+					trail.y = strum.y + anchor + trail.yOffset;
 				}
-				trail.updateClipping(songPos, Math.max(0, visualDelta), visualFullLength);
 
 				if (songPos >= trailEndTime) {
 					if (trail.mustPress) {
@@ -3369,12 +3375,16 @@ class PlayState extends MusicBeatState
 				} else {
 					trail.y = strum.y + anchor + trailCaculate + trail.yOffset;
 				}
+				// Refresh vertices against the current visualFullLength so a mid-song scroll
+				// speed change doesn't leave clipHeight stale relative to graphicHeight.
+				trail.updateClipping(songPos, 0, visualFullLength);
 			} else {
 				if (trail.flipY) {
 					trail.y = strum.y + anchor + trailCaculate - trail.height + trail.yOffset;
 				} else {
 					trail.y = strum.y + anchor + trailCaculate + trail.yOffset;
 				}
+				trail.updateClipping(songPos, 0, visualFullLength);
 			}
 		});
 
