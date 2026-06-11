@@ -9,7 +9,7 @@
 			"secondaryOffset": null,
 			"offset": [
 				0,
-				5
+				8
 			],
 			"looped": false
 		},
@@ -78,19 +78,6 @@
 			],
 			"looped": false
 		},
-		"hey": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
-			"prefix": "BF HEY!!",
-			"name": null,
-			"framerate": 24,
-			"secondaryOffset": null,
-			"offset": [
-				0,
-				4
-			],
-			"looped": false
-		},
 		"idle": {
 			"secondaryBehind": null,
 			"secondaryPrefix": null,
@@ -104,16 +91,16 @@
 			],
 			"looped": false
 		},
-		"firstDeath": {
+		"hey": {
 			"secondaryBehind": null,
 			"secondaryPrefix": null,
-			"prefix": "BF dies",
+			"prefix": "BF HEY!!",
 			"name": null,
 			"framerate": 24,
 			"secondaryOffset": null,
 			"offset": [
 				0,
-				9
+				4
 			],
 			"looped": false
 		},
@@ -127,6 +114,19 @@
 			"offset": [
 				0,
 				49
+			],
+			"looped": false
+		},
+		"firstDeath": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "BF dies",
+			"name": null,
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				0,
+				9
 			],
 			"looped": false
 		},
