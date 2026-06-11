@@ -646,40 +646,40 @@ local function recoverPunchCharge()
 end
 
 local function getIntroOpponentFaceFocus()
-    local opponentX = getSpriteX("opponent")
-    local opponentY = getSpriteY("opponent")
-    local opponentWidth = getSpriteWidth("opponent")
-    local opponentHeight = getSpriteHeight("opponent")
+    local opponentX = getSpriteX("opponent") or 0
+    local opponentY = getSpriteY("opponent") or 0
+    local opponentWidth = getSpriteWidth("opponent") or 0
+    local opponentHeight = getSpriteHeight("opponent") or 0
 
     return opponentX + (opponentWidth * introOpponentFaceAnchorX) + introOpponentFaceOffsetX,
         opponentY + (opponentHeight * introOpponentFaceAnchorY) + introOpponentFaceOffsetY
 end
 
 local function getIntroBoyfriendFaceFocus()
-    local boyfriendX = getSpriteX("boyfriend")
-    local boyfriendY = getSpriteY("boyfriend")
-    local boyfriendWidth = getSpriteWidth("boyfriend")
-    local boyfriendHeight = getSpriteHeight("boyfriend")
+    local boyfriendX = getSpriteX("boyfriend") or 0
+    local boyfriendY = getSpriteY("boyfriend") or 0
+    local boyfriendWidth = getSpriteWidth("boyfriend") or 0
+    local boyfriendHeight = getSpriteHeight("boyfriend") or 0
 
     return boyfriendX + (boyfriendWidth * introBoyfriendFaceAnchorX) + introBoyfriendFaceOffsetX,
         boyfriendY + (boyfriendHeight * introBoyfriendFaceAnchorY) + introBoyfriendFaceOffsetY
 end
 
 local function getIntroGirlfriendFaceFocus()
-    local girlfriendX = getSpriteX("boyfriend")
-    local girlfriendY = getSpriteY("boyfriend")
-    local girlfriendWidth = getSpriteWidth("boyfriend")
-    local girlfriendHeight = getSpriteHeight("boyfriend")
+    local girlfriendX = getSpriteX("boyfriend") or 0
+    local girlfriendY = getSpriteY("boyfriend") or 0
+    local girlfriendWidth = getSpriteWidth("boyfriend") or 0
+    local girlfriendHeight = getSpriteHeight("boyfriend") or 0
 
     return girlfriendX + (girlfriendWidth * introGirlfriendFaceAnchorX) + introGirlfriendFaceOffsetX,
         girlfriendY + (girlfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
 end
 
 local function getPhaseTwoFlyingGfFocus()
-    local boyfriendX = getSpriteX("boyfriend")
-    local boyfriendY = getSpriteY("boyfriend")
-    local boyfriendWidth = getSpriteWidth("boyfriend")
-    local boyfriendHeight = getSpriteHeight("boyfriend")
+    local boyfriendX = getSpriteX("boyfriend") or 0
+    local boyfriendY = getSpriteY("boyfriend") or 0
+    local boyfriendWidth = getSpriteWidth("boyfriend") or 0
+    local boyfriendHeight = getSpriteHeight("boyfriend") or 0
 
     return boyfriendX + (boyfriendWidth * introGirlfriendFaceAnchorX) + introGirlfriendFaceOffsetX,
         boyfriendY + (boyfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
@@ -930,7 +930,9 @@ local function destroyManagedSprite(spriteName)
 end
 
 local function ensureFrostbiteCar()
-	local smallestIndex = math.min(getSpriteIndexFromStage("boyfriend"), getSpriteIndexFromStage("dad"))
+	local bfStageIndex = getSpriteIndexFromStage("boyfriend") or 0
+	local dadStageIndex = getSpriteIndexFromStage("dad") or 0
+	local smallestIndex = math.min(bfStageIndex, dadStageIndex)
 
     destroyManagedSprite("frostbiteCAR")
     createSprite("frostbiteCAR")
@@ -1127,75 +1129,92 @@ function onUpdate(elapsed)
         return
     end
 
-    if curStepFloat ~= nil and curStepFloat >= 630 then
-        enterPhaseTwo()
+    local stepFloat = curStepFloat
+    local step = curStep
 
-        if not jtcVocalsSwitchedToPlayer then
-            removeSongTrack("jtcVocals")
-            addSongTrack("jtcVocals", "JTC_Voices", "player", 1)
-            jtcVocalsSwitchedToPlayer = true
-        end
+    -- Guard with daddyIsHere so this block is skipped for the rest of the
+    -- song once phase two is active — not called every frame as a no-op.
+    if not daddyIsHere and stepFloat ~= nil and stepFloat >= 630 then
+        enterPhaseTwo()
+    end
+
+    if not jtcVocalsSwitchedToPlayer and stepFloat ~= nil and stepFloat >= 630 then
+        removeSongTrack("jtcVocals")
+        addSongTrack("jtcVocals", "JTC_Voices", "player", 1)
+        jtcVocalsSwitchedToPlayer = true
     end
 
     -- Only attach + drive the static shader inside its visible window. Outside
     -- the window it stays detached so the GPU isn't running fullscreen noise
     -- math over the HUD for the entire song — the suspected cause of the
     -- whole-song lag on weaker GPUs.
-    if curStepFloat ~= nil and curStepFloat >= shaderTrans[1] and curStepFloat < shaderTrans[2] then
-        startStaticShaderEffect()
+    -- startStaticShaderEffect() is called once on entry (when shader is not yet
+    -- active) rather than every frame; calling it each frame was redundantly
+    -- zeroing the opacity uniform and re-invoking ensureStaticShader() on every
+    -- tick, fighting the transition logic in shaderTransitionUpdate().
+    if stepFloat ~= nil and stepFloat >= shaderTrans[1] and stepFloat < shaderTrans[2] then
+        if not staticShaderActive then
+            startStaticShaderEffect()
+        end
 
         if ensureStaticShader() then
             staticShaderTime = staticShaderTime + elapsed
             setShaderFloat(STATIC_SHADER_CAMERA, "time", staticShaderTime)
         end
-    elseif curStepFloat ~= nil and curStepFloat >= shaderTrans[2] then
+    elseif stepFloat ~= nil and stepFloat >= shaderTrans[2] then
         clearStaticShaderEffect()
     end
 
-    if not introCoverRemoved and curStep ~= nil and curStep >= introBeginStep and spriteExist("introWarmupCover") then
+    if not introCoverRemoved and step ~= nil and step >= introBeginStep and spriteExist("introWarmupCover") then
         removeSpriteFromState("introWarmupCover")
         destroySprite("introWarmupCover")
         introCoverRemoved = true
     end
 
-    if not introGirlfriendShotDone and curStep ~= nil and curStep >= 26 then
+    if not introGirlfriendShotDone and step ~= nil and step >= 26 then
         applyIntroGirfriendFaceShot()
         introGirlfriendShotDone = true
     end
 
-    if not introBoyfriendShotDone and curStep ~= nil and curStep >= 34 then
+    if not introBoyfriendShotDone and step ~= nil and step >= 34 then
         applyIntroBoyfriendFaceShot()
         introBoyfriendShotDone = true
     end
 
-    if not introNoteRevealDone and curStep ~= nil and curStep >= introNoteRevealStartStep then
+    if not introNoteRevealDone and step ~= nil and step >= introNoteRevealStartStep then
         applyIntroNoteReveal()
         introNoteRevealDone = true
     end
 
-    if not introBaseCameraDone and curStep ~= nil and curStep >= introBaseCameraStep then
+    if not introBaseCameraDone and step ~= nil and step >= introBaseCameraStep then
         applyIntroBaseCameraShot()
         introBaseCameraDone = true
     end
 
-    if not introClearDone and curStep ~= nil and curStep >= introClearStep then
+    if not introClearDone and step ~= nil and step >= introClearStep then
         clearIntroCameraShot()
         introClearDone = true
     end
 
     jtc_camera.onUpdate(elapsed)
-	frost_bump.onUpdate()
+    frost_bump.onUpdate()
     updateIntroClearTween(elapsed)
 
-	if not inGameOver then
-		updatePhaseTwoFlyingCamera()
-	end
+    if not inGameOver then
+        updatePhaseTwoFlyingCamera()
+    end
 
-    if startsWith(curAnimName, "sing") then
+    -- Precompute once; used twice below to avoid duplicate string ops.
+    local animIsSing = curAnimName:sub(1, 4) == "sing"
+
+    if animIsSing then
         holdTimer = holdTimer + elapsed
     end
 
-    if spriteExist("second") and jtcVocalsMutedForPunch and pendingVoiceUnmuteAllowed and curAnimName == "punched" and sprAnimFinished("second") then
+    -- Cache spriteExist("second") so the engine call runs at most once per frame.
+    local secondExists = spriteExist("second")
+
+    if secondExists and jtcVocalsMutedForPunch and pendingVoiceUnmuteAllowed and curAnimName == "punched" and sprAnimFinished("second") then
         if setSongTrackBaseVolume ~= nil then
             if hasSongTrack ~= nil and hasSongTrack("jtcVocals") then
                 setSongTrackBaseVolume("jtcVocals", 1)
@@ -1209,26 +1228,29 @@ function onUpdate(elapsed)
         holdTimer = 0
     end
 
-    if spriteExist("second") and not stunned and not startsWith(curAnimName, "sing") and sprAnimFinished("second") then
-        if curStep < 906 then
+    if secondExists and not stunned and not animIsSing and sprAnimFinished("second") then
+        if step == nil or step < 906 then
             playSecondAnimation("idle")
         else
             playSecondAnimation("idleExtra")
-		end
+        end
     end
 
-    if sprAnimFinished("frostbiteCAR") and daddyTrans then
-        stopAnim("frostbiteCAR")
-        playAnimRaw("frostbiteCAR", "transition")
-        setSpritePosition("frostbiteCAR", 241, 81)
-        daddyTrans = false
+    -- frostbiteCAR is removed in enterPhaseTwo(); skip the checks afterwards
+    -- so sprAnimFinished is not called twice per frame on a nonexistent sprite.
+    if not daddyIsHere then
+        local carAnimDone = sprAnimFinished("frostbiteCAR")
+        if carAnimDone and daddyTrans then
+            stopAnim("frostbiteCAR")
+            playAnimRaw("frostbiteCAR", "transition")
+            setSpritePosition("frostbiteCAR", 241, 81)
+            daddyTrans = false
+        elseif carAnimDone and step ~= nil and step < 607 then
+            playAnimRaw("frostbiteCAR", "drive")
+        end
     end
 
-    if sprAnimFinished("frostbiteCAR") and curStep < 607 then
-        playAnimRaw("frostbiteCAR", "drive")
-    end
-
-	shaderTransitionUpdate()
+    shaderTransitionUpdate()
 end
 
 function onDestroy()
@@ -1257,8 +1279,6 @@ function setupPunchHealth(amount)
         local iconY = getMidpointY("healthBarBG") - 50
 
         createSprite("punchIcon" .. i)
-        loadGraphic("punchIcon" .. i, "daddy_fist")
-        loadGraphic("punchIcon" .. i, "daddy_fisted")
         loadGraphic("punchIcon" .. i, "daddy_fist")
         setSpriteToCamera("punchIcon" .. i, "camHUD")
         scaleSprite("punchIcon" .. i, 0.7, 0.7)
