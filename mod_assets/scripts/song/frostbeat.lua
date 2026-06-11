@@ -30,12 +30,6 @@ local phaseTwoDadDeltaX = -120
 local phaseTwoDadDeltaY = 10
 local phaseTwoBoyfriendDeltaX = 240
 local phaseTwoBoyfriendDeltaY = 10
--- Pristine phase-one spawn positions for dad (skater-boi) and boyfriend
--- (flying BF sings). Derived from PlayState.create's constructor positions
--- (dad at 100,100; bf at 770,100) plus each character JSON's position
--- offset (skater-boi: -192,-96; flying BF sings: 12,-264), with the
--- chart's player1X/Y and player2X/Y all zero for frostbeat. See
--- resetCharactersToPhaseOneBaseline for why we restore these.
 local phaseOneDadBaseX = -132
 local phaseOneDadBaseY = 4
 local phaseOneBoyfriendBaseX = 782
@@ -114,20 +108,6 @@ local function precacheFrostbeatAssets()
     end
 end
 
--- precache* puts the bitmap in FlxG.bitmap but the actual GL texture upload
--- stays deferred until the first draw. On slower GPUs that first-draw upload
--- can stall or, in the death-note's case, render before the upload finishes
--- ("DeathNote asset doesn't appear" reports). Spawning a 0.001-scale,
--- 0.00001-alpha sprite for each texture forces the upload to happen inside
--- the intro warmup window, where the player can't see the hitch.
---
--- "skater extra notes" is critical: frostbeat-second's character JSON
--- (file = "skater_assets.xml, skater extra notes.xml") puts the
--- "skater dance punchd" frames in the second atlas. The idle animation only
--- uploads skater_assets, so the first death-note punch would otherwise pay
--- the upload cost for skater extra notes mid-gameplay.
--- "skating and flying DEATH" is the boyfriend death character atlas; same
--- story — it's only touched by instaKillPlayer and would hitch on first use.
 local frostbeatWarmSpriteNames = {
     "frostWarm_daddyFist",
     "frostWarm_daddyFisted",

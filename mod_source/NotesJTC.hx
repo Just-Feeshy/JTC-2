@@ -178,6 +178,10 @@ class CheeseFifthNote extends CustomNoteTemplate {
 class CheeseNote extends CustomNoteTemplate {
     private var sourceWasPlayerSide:Bool = false;
 
+	override function getNoteOffsetX(isSustain:Bool):Float {
+		return -18;
+	}
+
     override function useCustomPrefix(animation:FlxAnimationController):Bool {
         animation.addByPrefix('greenScroll', 'CHEESEup', 24);
         animation.addByPrefix('redScroll', 'CHEESEright', 24);
