@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="DD_assets.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="DD dance DOWN0000" x="20" y="20" width="884" height="1082" frameX="0" frameY="-16" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0001" x="924" y="20" width="884" height="1082" frameX="0" frameY="-16" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0002" x="1828" y="20" width="879" height="1098" frameX="0" frameY="0" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0003" x="2727" y="20" width="879" height="1098" frameX="0" frameY="0" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0004" x="3626" y="20" width="877" height="1080" frameX="0" frameY="-18" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0005" x="4523" y="20" width="877" height="1080" frameX="0" frameY="-18" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0006" x="5420" y="20" width="877" height="1088" frameX="0" frameY="-10" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0007" x="6317" y="20" width="877" height="1088" frameX="0" frameY="-10" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance DOWN0008" x="7214" y="20" width="877" height="1092" frameX="0" frameY="-6" frameWidth="884" frameHeight="1098"/>
+	<SubTexture name="DD dance IDLE0000" x="20" y="1138" width="888" height="1111" frameX="0" frameY="-19" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0001" x="928" y="1138" width="888" height="1111" frameX="0" frameY="-19" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0002" x="1836" y="1138" width="887" height="1104" frameX="0" frameY="-26" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0003" x="2743" y="1138" width="887" height="1104" frameX="0" frameY="-26" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0004" x="3650" y="1138" width="885" height="1121" frameX="0" frameY="-9" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0005" x="4555" y="1138" width="885" height="1121" frameX="0" frameY="-9" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0006" x="5460" y="1138" width="885" height="1130" frameX="0" frameY="0" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0007" x="6365" y="1138" width="885" height="1130" frameX="0" frameY="0" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0008" x="7270" y="1138" width="885" height="1119" frameX="0" frameY="-11" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0009" x="20" y="2288" width="885" height="1119" frameX="0" frameY="-11" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance IDLE0010" x="925" y="2288" width="885" height="1126" frameX="0" frameY="-4" frameWidth="888" frameHeight="1130"/>
+	<SubTexture name="DD dance left0000" x="1830" y="2288" width="886" height="1103" frameX="0" frameY="-15" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0001" x="2736" y="2288" width="886" height="1103" frameX="0" frameY="-15" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0002" x="3642" y="2288" width="881" height="1114" frameX="0" frameY="-4" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0003" x="4543" y="2288" width="881" height="1114" frameX="0" frameY="-4" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0004" x="5444" y="2288" width="879" height="1105" frameX="0" frameY="-13" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0005" x="6343" y="2288" width="879" height="1105" frameX="0" frameY="-13" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0006" x="7242" y="2288" width="879" height="1113" frameX="0" frameY="-5" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0007" x="20" y="3434" width="879" height="1113" frameX="0" frameY="-5" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance left0008" x="919" y="3434" width="879" height="1118" frameX="0" frameY="0" frameWidth="886" frameHeight="1118"/>
+	<SubTexture name="DD dance punch0000" x="1818" y="3434" width="882" height="1098" frameX="-734" frameY="-65" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0001" x="2720" y="3434" width="882" height="1098" frameX="-734" frameY="-65" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0002" x="3622" y="3434" width="1293" height="1109" frameX="-734" frameY="-54" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0003" x="4935" y="3434" width="1293" height="1109" frameX="-734" frameY="-54" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0004" x="6248" y="3434" width="1288" height="1098" frameX="-734" frameY="-65" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0005" x="20" y="4572" width="1288" height="1098" frameX="-734" frameY="-65" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0006" x="1328" y="4572" width="1148" height="1078" frameX="-734" frameY="-85" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0007" x="2496" y="4572" width="1083" height="1078" frameX="-734" frameY="-85" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0008" x="3599" y="4572" width="1061" height="1069" frameX="-734" frameY="-94" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0009" x="4680" y="4572" width="1061" height="1069" frameX="-734" frameY="-94" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0010" x="5761" y="4572" width="1061" height="1075" frameX="-734" frameY="-88" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance punch0011" x="6842" y="4572" width="1061" height="1075" frameX="-734" frameY="-88" frameWidth="2027" frameHeight="1163"/>
+	<SubTexture name="DD dance right0000" x="20" y="5690" width="888" height="1122" frameX="0" frameY="-2" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0001" x="928" y="5690" width="888" height="1122" frameX="0" frameY="-2" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0002" x="1836" y="5690" width="874" height="1124" frameX="0" frameY="0" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0003" x="2730" y="5690" width="874" height="1124" frameX="0" frameY="0" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0004" x="3624" y="5690" width="877" height="1110" frameX="0" frameY="-14" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0005" x="4521" y="5690" width="877" height="1110" frameX="0" frameY="-14" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0006" x="5418" y="5690" width="877" height="1118" frameX="0" frameY="-6" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0007" x="6315" y="5690" width="877" height="1118" frameX="0" frameY="-6" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance right0008" x="7212" y="5690" width="877" height="1122" frameX="0" frameY="-2" frameWidth="888" frameHeight="1124"/>
+	<SubTexture name="DD dance up0000" x="20" y="6834" width="865" height="1163" frameX="0" frameY="-1" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0001" x="905" y="6834" width="865" height="1163" frameX="0" frameY="-1" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0002" x="1790" y="6834" width="869" height="1164" frameX="0" frameY="0" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0003" x="2679" y="6834" width="869" height="1164" frameX="0" frameY="0" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0004" x="3568" y="6834" width="872" height="1151" frameX="0" frameY="-13" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0005" x="4460" y="6834" width="872" height="1151" frameX="0" frameY="-13" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0006" x="5352" y="6834" width="872" height="1157" frameX="0" frameY="-7" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0007" x="6244" y="6834" width="872" height="1157" frameX="0" frameY="-7" frameWidth="872" frameHeight="1164"/>
+	<SubTexture name="DD dance up0008" x="7136" y="6834" width="872" height="1159" frameX="0" frameY="-5" frameWidth="872" frameHeight="1164"/>
+</TextureAtlas>

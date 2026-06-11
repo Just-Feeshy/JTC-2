@@ -1,0 +1,186 @@
+{
+	"animations": {
+		"deathLoop": {
+			"secondaryBehind": true,
+			"secondaryPrefix": "deathLoopDad",
+			"prefix": "deathLoop",
+			"name": "deathLoop",
+			"framerate": 24,
+			"secondaryOffset": [
+				-47,
+				84
+			],
+			"offset": [
+				-127,
+				-91
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying dance DOWN",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				21,
+				-11
+			],
+			"looped": false
+		},
+		"singRIGHTmiss": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying miss RIGHT",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				11,
+				-23
+			],
+			"looped": false
+		},
+		"singUP": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying dance UP",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				-4,
+				5
+			],
+			"looped": false
+		},
+		"singLEFTmiss": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying miss LEFT",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				-27,
+				-15
+			],
+			"looped": false
+		},
+		"deathConfirm": {
+			"secondaryBehind": true,
+			"secondaryPrefix": "deathConfirmDad",
+			"prefix": "deathConfirm",
+			"name": "deathConfirm",
+			"framerate": 24,
+			"secondaryOffset": [
+				-46,
+				87
+			],
+			"offset": [
+				-127,
+				-87
+			],
+			"looped": false
+		},
+		"firstDeath": {
+			"secondaryBehind": true,
+			"secondaryPrefix": "firstDeathDad",
+			"prefix": "firstDeath",
+			"name": "firstDeath",
+			"framerate": 24,
+			"secondaryOffset": [
+				-369,
+				-250
+			],
+			"offset": [
+				760,
+				200
+			],
+			"looped": false
+		},
+		"idle": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying dance IDLE",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singDOWNmiss": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying miss DOWN",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				-6,
+				-18
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying dance RIGHT",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				-21,
+				14
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying dance LEFT",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				10,
+				53
+			],
+			"looped": false
+		},
+		"singUPmiss": {
+			"secondaryBehind": null,
+			"secondaryPrefix": null,
+			"prefix": "flying miss UP",
+			"name": "",
+			"framerate": 24,
+			"secondaryOffset": null,
+			"offset": [
+				-10,
+				-27
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": true,
+	"pixel": false,
+	"position": {
+		"x": 12,
+		"camPosY": 150,
+		"y": -264,
+		"camPosX": 190
+	},
+	"clippingAdjustment": {},
+	"playAnim": "",
+	"file": "flying notes BF SINGS.xml, skating and flying DEATH.xml, skating and flying DEATHDEMON.xml",
+	"icon": [
+		31,
+		32,
+		31
+	],
+	"iconFile": "iconGrid"
+}

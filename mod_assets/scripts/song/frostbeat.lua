@@ -91,20 +91,24 @@ local function precacheFrostbeatAssets()
         --
         -- inside the constructor.
         precacheAtlas("flying notes BF SINGS", "sparrow")
-        precacheAtlas("flying notes GF SINGS", "sparrow")
         precacheAtlas("skating and flying DEATH", "sparrow")
         precacheAtlas("skating and flying DEATHDEMON", "sparrow")
+        -- "flying notes GF SINGS" is deferred: it is only needed when the
+        -- flying BF sings gf character swaps in at step 906. Loading it here
+        -- burns 256 MB of VRAM for the entire song on every device. It is
+        -- instead loaded at step 700 (see onStepHit), giving ~17 seconds of
+        -- buffer before the swap while keeping VRAM lower during Phase 1.
     end
 
     if precacheCharacter ~= nil then
         precacheCharacter("dad-car")
         precacheCharacter("frostbeat-second")
-        precacheCharacter("flying BF sings gf")
+        -- "flying BF sings gf" deferred alongside flying notes GF SINGS (step 700)
     end
 
     if addCharacterToList ~= nil then
         addCharacterToList("dad-car", "dad")
-        addCharacterToList("flying BF sings gf", "boyfriend")
+        -- "flying BF sings gf" deferred alongside flying notes GF SINGS (step 700)
     end
 end
 
@@ -218,6 +222,7 @@ local pendingVoiceUnmuteAllowed = true
 local punchCount = 0
 local punchIconNames = {}
 local INTENSITY_MULTIPLIER = 1.5
+local gfCharacterPreloaded = false
 local phaseTwoFlyingCameraStartStep = 906
 local phaseTwoFlyingCameraPeakStep = 1136
 local phaseTwoFlyingCameraEndStep = 1028
@@ -451,6 +456,7 @@ end
 local function init()
     frost_modchart = {}
     baseFunkroadCameraFocusLerp = 0.09
+    gfCharacterPreloaded = false
     -- On retry, clear leftover warm sprites from the previous attempt and
     -- reset the punch-path-warmed flag so generatedStage re-warms them.
     clearFrostbeatWarmSprites()
@@ -540,8 +546,9 @@ local function enterPhaseTwo()
         removeLoadedCharacter(originalDadCharacter, "dad")
     end
     setSpriteY("dad", 90)
-    setSpriteVisible("frostbiteCAR", false)
-    removeSpriteFromState("frostbiteCAR")
+    -- Fully destroy the car sprite so the engine can release daddycar.png
+    -- (~256 MB VRAM) rather than merely hiding it for the rest of the song.
+    destroyManagedSprite("frostbiteCAR")
     setFrostbeatGameplayZoom(1.0, false, false)
     baseGameZoom = 1.0
     daddyIsHere = true
@@ -1070,6 +1077,24 @@ function onStepHit()
 
     if curStep > 906 then
         secondActive = false
+    end
+
+    -- Deferred load: flying notes GF SINGS (~256 MB) and its character are
+    -- only needed at step 906. Loading them here at step 700 gives ~17 seconds
+    -- of buffer before the swap while keeping VRAM 256 MB lower during Phase 1
+    -- and early Phase 2. If precacheCharacter is synchronous this may cause a
+    -- brief hitch at step 700, which is preferable to a VRAM crash throughout.
+    if not gfCharacterPreloaded and curStep >= 700 then
+        if precacheAtlas ~= nil then
+            precacheAtlas("flying notes GF SINGS", "sparrow")
+        end
+        if precacheCharacter ~= nil then
+            precacheCharacter("flying BF sings gf")
+        end
+        if addCharacterToList ~= nil then
+            addCharacterToList("flying BF sings gf", "boyfriend")
+        end
+        gfCharacterPreloaded = true
     end
 
 end
