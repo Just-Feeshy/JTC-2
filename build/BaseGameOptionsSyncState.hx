@@ -129,7 +129,9 @@ class BaseGameOptionsSyncState extends MusicBeatState {
         }
 
         new FlxTimer().start(0.8, function(_:FlxTimer) {
-            if(returnCatalog != null) {
+            if(returnCatalog == "mainmenu") {
+                FlxG.switchState(new MainMenuState(true));
+            } else if(returnCatalog != null) {
                 FlxG.switchState(new OptionsMenuState(returnCatalog));
             } else {
                 FlxG.switchState(new TitleState());

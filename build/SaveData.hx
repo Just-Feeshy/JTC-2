@@ -74,6 +74,11 @@ class SaveData {
         FlxG.save.bind(PROJECT_SAVE_NAME, PROJECT_SAVE_COMPANY);
     }
 
+    static public function isNewSave():Bool {
+        if (FlxG.save == null || FlxG.save.data == null) return false;
+        return FlxG.save.data.helpme == null;
+    }
+
     static public function shouldShowBaseGameSyncPrompt():Bool {
         if(FlxG.save == null || FlxG.save.data == null) {
             return false;

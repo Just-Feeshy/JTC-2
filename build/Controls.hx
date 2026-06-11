@@ -785,7 +785,7 @@ class Controls extends FlxActionSet
 		inline bindKeys(Control.SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
 
 		{
-			var uiKeys:Array<Array<FlxKey>> = SaveData.getData(CUSTOM_UI_KEYBINDS);
+			var uiKeys:Array<Array<FlxKey>> = cast SaveData.getData(CUSTOM_UI_KEYBINDS);
 			inline bindKeys(Control.CHAR_SELECT, uiKeys.length > 8 ? uiKeys[8] : [FlxKey.TAB]);
 		}
 		#end

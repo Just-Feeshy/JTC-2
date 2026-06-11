@@ -246,7 +246,10 @@ class TitleState extends BootState {
 
 				new FlxTimer().start(2, function(tmr:FlxTimer)
 				{
-					FlxG.switchState(new MainMenuState(true));
+					if (SaveData.isNewSave())
+						FlxG.switchState(new BaseGameOptionsSyncState("mainmenu"));
+					else
+						FlxG.switchState(new MainMenuState(true));
 				});
 			}
 		}
