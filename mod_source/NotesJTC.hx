@@ -142,7 +142,7 @@ class DeathNote extends CustomNoteTemplate {
  */
 class CheeseFifthNote extends CustomNoteTemplate {
 	public static var fifthKeySize:Float = 1.0;
-	public static var fifthKeyOffsetX:Float = 0;
+	public static var fifthKeyOffsetX:Float = -18;
 
     override function getCustomAssetPath():String {
         return "fifth/JTC_SPECIAL_NOTE_assets";

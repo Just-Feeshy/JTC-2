@@ -215,7 +215,7 @@
 	<icon path="art/mod/icon16.png" size='16'/>
 	<icon path="art/mod/icon32.png" size='32'/>
 	<icon path="art/mod/icon64.png" size='64'/>
-	<icon path="art/mod/iconOG.png" />
+	<icon path="art/mod/iconOG.png" size='256'/>
 
 
 	<!-- <haxedef name="SKIP_TO_PLAYSTATE" if="debug" /> -->
