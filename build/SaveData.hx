@@ -401,9 +401,7 @@ class SaveData {
 
                 return FlxG.save.data.customKeys;
             case CUSTOM_UI_KEYBINDS:
-                if(FlxG.save.data.customUIKeys == null) {
-                    FlxG.save.data.customUIKeys = new Array<Array<FlxKey>>();
-
+                if(FlxG.save.data.customUIKeys == null || FlxG.save.data.customUIKeys.length < 9) {
                     FlxG.save.data.customUIKeys = [
                         [FlxKey.A, FlxKey.LEFT], //LEFT
                         [FlxKey.S, FlxKey.DOWN], //DOWN
@@ -412,7 +410,8 @@ class SaveData {
                         [FlxKey.SPACE], //ACCEPT
                         [FlxKey.ENTER],  //ACCEPT
                         [FlxKey.BACKSPACE], //ESCAPE
-                        [FlxKey.ESCAPE] //ESCAPE
+                        [FlxKey.ESCAPE], //ESCAPE
+                        [FlxKey.TAB] //CHAR SELECT
                     ];
                 }
 
@@ -674,6 +673,7 @@ class SaveData {
         var pauseKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "PAUSE"));
         var volumeUpKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "VOLUME_UP"));
         var volumeDownKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "VOLUME_DOWN"));
+        var charSelectKeys = normalizeImportedKeyArray(Reflect.field(keyboardData, "CHAR_SELECT"));
 
         var importedCustomUIKeys:Array<Array<FlxKey>> = cast getData(SaveType.CUSTOM_UI_KEYBINDS);
         importedCustomUIKeys = cloneKeyMatrix(importedCustomUIKeys);
@@ -699,6 +699,10 @@ class SaveData {
             } else if(pauseKeys != null && pauseKeys.length > 0) {
                 importedCustomUIKeys[7] = [pauseKeys[0]];
             }
+        }
+
+        if(charSelectKeys != null && charSelectKeys.length > 0) {
+            importedCustomUIKeys[8] = [charSelectKeys[0]];
         }
 
         importedData.set("customUIKeys", importedCustomUIKeys);
@@ -1032,8 +1036,6 @@ class SaveData {
     inline static public function createNewBinds(data:SaveType):Void {
         switch(data) {
             case CUSTOM_UI_KEYBINDS:
-                FlxG.save.data.customUIKeys = new Array<Array<FlxKey>>();
-
                 FlxG.save.data.customUIKeys = [
                     [FlxKey.A, FlxKey.LEFT], //LEFT
                     [FlxKey.S, FlxKey.DOWN], //DOWN
@@ -1042,7 +1044,8 @@ class SaveData {
                     [FlxKey.SPACE], //ACCEPT
                     [FlxKey.ENTER],  //ACCEPT
                     [FlxKey.BACKSPACE], //ESCAPE
-                    [FlxKey.ESCAPE] //ESCAPE
+                    [FlxKey.ESCAPE], //ESCAPE
+                    [FlxKey.TAB] //CHAR SELECT
                 ];
             case CUSTOM_KEYBINDS:
                 FlxG.save.data.customKeys = new Array<Array<FlxKey>>();
@@ -1055,8 +1058,6 @@ class SaveData {
                     [FlxKey.SPACE] //SPACE
                 ];
             default:
-                FlxG.save.data.customUIKeys = new Array<Array<FlxKey>>();
-
                 FlxG.save.data.customUIKeys = [
                     [FlxKey.A, FlxKey.LEFT], //LEFT
                     [FlxKey.S, FlxKey.DOWN], //DOWN
@@ -1065,7 +1066,8 @@ class SaveData {
                     [FlxKey.SPACE], //ACCEPT
                     [FlxKey.ENTER],  //ACCEPT
                     [FlxKey.BACKSPACE], //ESCAPE
-                    [FlxKey.ESCAPE] //ESCAPE
+                    [FlxKey.ESCAPE], //ESCAPE
+                    [FlxKey.TAB] //CHAR SELECT
                 ];
 
                 FlxG.save.data.customKeys = new Array<Array<FlxKey>>();
