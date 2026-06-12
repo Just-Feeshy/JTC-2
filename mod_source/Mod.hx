@@ -21,7 +21,6 @@ class Mod {
         Register.attachLuaToState(MainMenuState, Paths.lua("jtc_menu"));
         Register.attachLuaToState(StoryMenuState, Paths.lua("jtc_storymenu"));
         Register.attachLuaToState(FreeplayState, Paths.lua("jtc_freeplay"));
-        Register.attachLuaToState(FreeplayCharSelectState, Paths.lua("jtc_freeplay_char_select"));
         Register.attachLuaToState(TitleState, Paths.lua("titleCard"));
         Register.attachLuaToState(PauseSubState, Paths.lua("jtc_pause"));
         Register.attachLuaToState(ChartingState, Paths.lua("charting_stage_loader"));
