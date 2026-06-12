@@ -49,6 +49,7 @@ enum abstract Action(String) to String from String
 	var PAUSE = "pause";
 	var RESET = "reset";
 	var CHEAT = "cheat";
+	var CHAR_SELECT = "char-select";
 }
 #else
 @:enum
@@ -89,6 +90,7 @@ abstract Action(String) to String from String
 	var PAUSE = "pause";
 	var RESET = "reset";
 	var CHEAT = "cheat";
+	var CHAR_SELECT = "char-select";
 }
 #end
 
@@ -120,6 +122,7 @@ enum Control
 	BACK;
 	PAUSE;
 	CHEAT;
+	CHAR_SELECT;
 }
 
 enum KeyboardScheme
@@ -171,6 +174,7 @@ class Controls extends FlxActionSet
 	var _pause = new FlxActionDigital(Action.PAUSE);
 	var _reset = new FlxActionDigital(Action.RESET);
 	var _cheat = new FlxActionDigital(Action.CHEAT);
+	var _char_select = new FlxActionDigital(Action.CHAR_SELECT);
 
 	#if (haxe >= "4.0.0")
 	var byName:Map<String, FlxActionDigital> = [];
@@ -356,6 +360,11 @@ class Controls extends FlxActionSet
 	inline function get_CHEAT()
 		return _cheat.check();
 
+	public var CHAR_SELECT(get, never):Bool;
+
+	inline function get_CHAR_SELECT()
+		return _char_select.check();
+
 	#if (haxe >= "4.0.0")
 	public function new(name, scheme = None)
 	{
@@ -396,6 +405,7 @@ class Controls extends FlxActionSet
 		add(_pause);
 		add(_reset);
 		add(_cheat);
+		add(_char_select);
 
 		for (action in digitalActions)
 			byName[action.name] = action;
@@ -443,6 +453,7 @@ class Controls extends FlxActionSet
 		add(_pause);
 		add(_reset);
 		add(_cheat);
+		add(_char_select);
 
 		for (action in digitalActions)
 			byName[action.name] = action;
@@ -496,6 +507,7 @@ class Controls extends FlxActionSet
 			case PAUSE: _pause;
 			case RESET: _reset;
 			case CHEAT: _cheat;
+			case CHAR_SELECT: _char_select;
 		}
 	}
 
@@ -565,6 +577,8 @@ class Controls extends FlxActionSet
 				func(_reset, JUST_PRESSED);
 			case CHEAT:
 				func(_cheat, JUST_PRESSED);
+			case CHAR_SELECT:
+				func(_char_select, JUST_PRESSED);
 		}
 	}
 

@@ -743,11 +743,23 @@ class OptionsMenuState extends MusicBeatState {
 
 								option.description = "Preview and export Rim Shadow / Color Adjust event payloads.";
 								setting(option, "", option.ID);
+							}),
+							new Options(0, 40, "Animation Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 4;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									FlxG.switchState(new DebugBoundingState());
+
+								option.description = "Funkin-style animation & offset editor.";
+								setting(option, "", option.ID);
 							})
 							#if FEATURE_STAGE_EDITOR
 							,
-							new Options(0, 40, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 4;
+							new Options(0, 50, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 5;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
