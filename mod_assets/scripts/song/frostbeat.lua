@@ -1154,6 +1154,16 @@ function onUpdate(elapsed)
         return
     end
 
+    -- During game over the song is frozen at whatever step death occurred.
+    -- If death happened inside the static shader window (steps 608–656) the
+    -- shader would otherwise keep running every frame, which is the cause of
+    -- the 3-10 fps reports on weaker GPUs. Clear it once and skip the rest of
+    -- the per-frame update — none of it matters while the death screen is up.
+    if inGameOver then
+        clearStaticShaderEffect()
+        return
+    end
+
     local stepFloat = curStepFloat
     local step = curStep
 
@@ -1225,9 +1235,7 @@ function onUpdate(elapsed)
     frost_bump.onUpdate()
     updateIntroClearTween(elapsed)
 
-    if not inGameOver then
-        updatePhaseTwoFlyingCamera()
-    end
+    updatePhaseTwoFlyingCamera()
 
     -- Precompute once; used twice below to avoid duplicate string ops.
     local animIsSing = curAnimName:sub(1, 4) == "sing"

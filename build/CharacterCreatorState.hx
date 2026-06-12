@@ -25,10 +25,12 @@ import haxe.ui.components.DropDown;
 import haxe.ui.components.Label;
 import haxe.ui.components.NumberStepper;
 import haxe.ui.components.TextField;
+import haxe.ui.containers.TabView;
 import haxe.ui.core.Screen;
 import haxe.ui.focus.FocusManager;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
+import openfl.geom.Rectangle;
 import openfl.net.FileReference;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFLAssets;
@@ -46,6 +48,14 @@ enum FileType {
 }
 
 typedef PreloadJSON = Map<String, Array<Array<Float>>>;
+
+typedef AtlasFrame = {
+    name:String,
+    x:Int,
+    y:Int,
+    width:Int,
+    height:Int
+}
 
 @:build(haxe.ui.ComponentBuilder.build("assets/preload/data/character-creator.xml"))
 class CharacterCreatorState extends UIState {
@@ -136,6 +146,16 @@ class CharacterCreatorState extends UIState {
     var applyClippingButton:Button;
     var checkPlayable:CheckBox;
     var canBePixel:CheckBox;
+    var atlasModeDropDown:DropDown;
+
+    private static inline var MODE_SPARROW:String = "sparrow";
+    private static inline var MODE_PACKER:String = "packer";
+    private static inline var MODE_ANIMATE:String = "animate";
+
+    private static var ATLAS_MODE_LABELS:Array<{id:String, text:String}> = [
+        {id: MODE_SPARROW, text: "SPRITESHEET"},
+        {id: MODE_ANIMATE, text: "ANIMATIONS"}
+    ];
 
     var combineTargetAnimDropDown:DropDown;
     var combineBaseOffsetX:NumberStepper;
@@ -155,6 +175,17 @@ class CharacterCreatorState extends UIState {
 
     var saveCharacterButton:Button;
     var saveColorsButton:Button;
+
+    var mainTabView:TabView;
+    var atlasFileDropDown:DropDown;
+    var atlasPrefixDropDown:DropDown;
+    var atlasInfoLabel:Label;
+
+    private var atlasGroup:FlxTypedGroup<FlxSprite>;
+    private var atlasViewSprite:FlxSprite;
+    private var atlasViewOverlay:FlxSprite;
+    private var isAtlasTabActive:Bool = false;
+    private static inline var ATLAS_TAB_INDEX:Int = 3;
 
     var allowInput(get, never):Bool;
 
@@ -280,6 +311,9 @@ class CharacterCreatorState extends UIState {
         characterStorage = new FlxTypedGroup<CreatorCharacter>();
         add(characterStorage);
 
+        atlasGroup = new FlxTypedGroup<FlxSprite>();
+        add(atlasGroup);
+
         character = new CreatorCharacter(440, 100, currentCharacterName, true);
         character.updateFinalized(FlixelCompat.getScreenCenter(character, X), 100);
         character.cameras = [camGame];
@@ -356,11 +390,13 @@ class CharacterCreatorState extends UIState {
         statusLabel.text = "";
 
         populateDropDown(characterSelectorDropDown, characterJSONs);
+        ensureAtlasModeDropDown();
 
         bindDisplayHandlers();
         bindAnimationHandlers();
         bindCombineHandlers();
         bindExportHandlers();
+        bindAtlasHandlers();
     }
 
     private function bindDisplayHandlers():Void {
@@ -458,6 +494,27 @@ class CharacterCreatorState extends UIState {
 
         checkPlayable.onChange = function(_) currentConfig().isPlayer = checkPlayable.selected;
         canBePixel.onChange = function(_) currentConfig().pixel = canBePixel.selected;
+
+        atlasModeDropDown.onChange = function(_) {
+            if(syncingUi) return;
+            var newMode:String = getDropDownValue(atlasModeDropDown, MODE_SPARROW);
+            if(newMode == "") newMode = MODE_SPARROW;
+            var oldMode:String = currentAtlasMode();
+            if(newMode == oldMode) return;
+
+            currentConfig().atlasMode = newMode;
+            currentConfig().isAnimateAtlas = (newMode == MODE_ANIMATE);
+            currentConfig().file = renameFileFieldForMode(currentConfig().file, newMode);
+            xmlPrefixCache = new Map();
+
+            syncingUi = true;
+            fileNameInput.text = currentConfig().file;
+            syncingUi = false;
+
+            reloadCharacter(currentCharacterName);
+            if(isAtlasTabActive) rebuildAtlasView();
+            updateFileValidation();
+        };
     }
 
     private function bindCombineHandlers():Void {
@@ -553,6 +610,130 @@ class CharacterCreatorState extends UIState {
         return out;
     }
 
+    private function currentAtlasFiles():Array<String> {
+        var raw:Array<String> = parseXmlFileList(currentConfig().file);
+        if(currentAtlasMode() != MODE_ANIMATE) return raw;
+
+        var out:Array<String> = [];
+        for(folder in raw) {
+            var clean:String = folder;
+            var dot:Int = clean.lastIndexOf(".");
+            if(dot >= 0) clean = clean.substr(0, dot);
+
+            var foundAny:Bool = false;
+            var i:Int = 1;
+            while(i <= 32) {
+                var key:String = clean + "/spritemap" + i;
+                var png:String = Paths.getPath('images/' + key + '.png', IMAGE, "shared");
+                if(!Paths.assetExists(png, IMAGE)) break;
+                out.push(key);
+                foundAny = true;
+                i++;
+            }
+
+            if(!foundAny) {
+                var altKey:String = clean + "/spritemap";
+                var altPng:String = Paths.getPath('images/' + altKey + '.png', IMAGE, "shared");
+                if(Paths.assetExists(altPng, IMAGE)) {
+                    out.push(altKey);
+                    foundAny = true;
+                }
+            }
+
+            if(!foundAny && clean.length > 0) out.push(clean);
+        }
+        return out;
+    }
+
+    private function siblingFolderOf(basePath:String):String {
+        var slash:Int = basePath.lastIndexOf("/");
+        if(slash < 0) return "";
+        return basePath.substr(0, slash);
+    }
+
+    private function loadAnimationSymbols(folder:String):Array<String> {
+        if(folder == null || folder == "") return [];
+        return AnimateAtlasLoader.listSymbolNames(folder);
+    }
+
+    private function loadSymbolSpriteMap(folder:String):Map<String, Array<String>> {
+        var out:Map<String, Array<String>> = new Map();
+        if(folder == null || folder == "") return out;
+
+        var animationPath:String = Paths.getPath('images/' + folder + '/Animation.json', TEXT, "shared");
+        if(!Paths.assetExists(animationPath, TEXT)) return out;
+
+        var raw:String = Paths.readText(animationPath);
+        if(raw == null || raw.length == 0) return out;
+
+        var data:Dynamic = null;
+        try { data = haxe.Json.parse(raw); } catch(e:Dynamic) { return out; }
+        if(data == null) return out;
+
+        var dictionary:Dynamic = Reflect.field(data, "SD");
+        if(dictionary == null) dictionary = Reflect.field(data, "SYMBOL_DICTIONARY");
+        if(dictionary == null) return out;
+
+        var symbols:Dynamic = Reflect.field(dictionary, "S");
+        if(symbols == null) symbols = Reflect.field(dictionary, "Symbols");
+        if(symbols == null || !Std.isOfType(symbols, Array)) return out;
+
+        var arr:Array<Dynamic> = cast symbols;
+        for(symbol in arr) {
+            var symbolName:String = stringFieldDyn(symbol, ["SN", "SYMBOL_name"]);
+            if(symbolName == null || symbolName == "") continue;
+
+            var sprites:Array<String> = [];
+            var seen:Map<String, Bool> = new Map();
+            collectSymbolSprites(symbol, sprites, seen);
+            out.set(symbolName, sprites);
+        }
+        return out;
+    }
+
+    private function collectSymbolSprites(symbolNode:Dynamic, out:Array<String>, seen:Map<String, Bool>):Void {
+        var timeline:Dynamic = Reflect.field(symbolNode, "TL");
+        if(timeline == null) timeline = Reflect.field(symbolNode, "TIMELINE");
+        if(timeline == null) return;
+
+        var layers:Dynamic = Reflect.field(timeline, "L");
+        if(layers == null) layers = Reflect.field(timeline, "LAYERS");
+        if(layers == null || !Std.isOfType(layers, Array)) return;
+
+        for(layer in (cast layers : Array<Dynamic>)) {
+            var fr:Dynamic = Reflect.field(layer, "FR");
+            if(fr == null) fr = Reflect.field(layer, "Frames");
+            if(fr == null || !Std.isOfType(fr, Array)) continue;
+
+            for(frame in (cast fr : Array<Dynamic>)) {
+                var elements:Dynamic = Reflect.field(frame, "E");
+                if(elements == null) elements = Reflect.field(frame, "elements");
+                if(elements == null || !Std.isOfType(elements, Array)) continue;
+
+                for(elem in (cast elements : Array<Dynamic>)) {
+                    var asi:Dynamic = Reflect.field(elem, "ASI");
+                    if(asi == null) asi = Reflect.field(elem, "ATLAS_SPRITE_instance");
+                    if(asi != null) {
+                        var name:String = stringFieldDyn(asi, ["N", "name"]);
+                        if(name != null && name != "" && !seen.exists(name)) {
+                            seen.set(name, true);
+                            out.push(name);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function stringFieldDyn(obj:Dynamic, keys:Array<String>):String {
+        if(obj == null) return null;
+        for(k in keys) {
+            var v:Dynamic = Reflect.field(obj, k);
+            if(v != null) return Std.string(v);
+        }
+        return null;
+    }
+
     private function loadXmlPrefixes(xmlFile:String):Array<String> {
         if(xmlPrefixCache.exists(xmlFile)) {
             return xmlPrefixCache.get(xmlFile);
@@ -567,6 +748,17 @@ class CharacterCreatorState extends UIState {
 
         var dataPath:String = Paths.getPath('images/' + basePath + '.xml', TEXT, "shared");
         if(!Paths.assetExists(dataPath, TEXT)) {
+            var animationFolder:String = siblingFolderOf(basePath);
+            if(animationFolder == "") animationFolder = basePath;
+            var animationPath:String = Paths.getPath('images/' + animationFolder + '/Animation.json', TEXT, "shared");
+            if(Paths.assetExists(animationPath, TEXT)) {
+                for(symbol in loadAnimationSymbols(animationFolder)) {
+                    if(!seen.exists(symbol)) {
+                        seen.set(symbol, true);
+                        prefixes.push(symbol);
+                    }
+                }
+            }
             xmlPrefixCache.set(xmlFile, prefixes);
             return prefixes;
         }
@@ -965,6 +1157,15 @@ class CharacterCreatorState extends UIState {
         rebuildAnimationDropDown(character.animation.curAnim != null ? character.animation.curAnim.name : null);
         refreshAnimationFields();
         rebuildCombineDropDowns();
+
+        if(isAtlasTabActive) {
+            var files = currentAtlasFiles();
+            if(files.length == 0) files = [""];
+            syncingUi = true;
+            populateDropDown(atlasFileDropDown, files);
+            syncingUi = false;
+            rebuildAtlasView();
+        }
     }
 
     private function refreshDisplayFields():Void {
@@ -985,6 +1186,8 @@ class CharacterCreatorState extends UIState {
         happyIconStepper.pos = currentConfig().icon[2];
         checkPlayable.selected = currentConfig().isPlayer;
         canBePixel.selected = currentConfig().pixel;
+        ensureAtlasModeDropDown();
+        selectDropDownItem(atlasModeDropDown, currentAtlasMode());
 
         syncingUi = false;
 
@@ -1199,7 +1402,9 @@ class CharacterCreatorState extends UIState {
             isPlayer: false,
             pixel: false,
             iconFile: "iconGrid",
-            clippingAdjustment: []
+            clippingAdjustment: [],
+            isAnimateAtlas: false,
+            atlasMode: MODE_SPARROW
         };
     }
 
@@ -1248,8 +1453,120 @@ class CharacterCreatorState extends UIState {
 
     private function updateFileValidation():Void {
         var value:String = fileNameInput.text.trim();
-        var exists:Bool = value.length > 0 && Paths.assetExists(Paths.getPreloadPath("images/" + value), IMAGE);
-        fileValidationLabel.text = exists ? "Asset found" : "Asset missing";
+        if(value.length == 0) {
+            fileValidationLabel.text = "Asset missing";
+            return;
+        }
+
+        var mode:String = currentAtlasMode();
+        var report:String = "";
+
+        for(entry in value.split(",")) {
+            var trimmed:String = entry.trim();
+            if(trimmed.length == 0) continue;
+            if(report.length > 0) report += " | ";
+            report += validateAtlasEntry(trimmed, mode);
+        }
+
+        fileValidationLabel.text = report.length > 0 ? report : "Asset missing";
+    }
+
+    private function validateAtlasEntry(entry:String, mode:String):String {
+        var clean:String = entry;
+        var dot:Int = clean.lastIndexOf(".");
+        if(dot >= 0) clean = clean.substr(0, dot);
+
+        if(mode == MODE_ANIMATE) {
+            var animationPath:String = Paths.getPath('images/${clean}/Animation.json', TEXT, "shared");
+            var hasAnimation:Bool = Paths.assetExists(animationPath, TEXT);
+
+            var spritemapIdx:Int = 1;
+            var spritemapsFound:Int = 0;
+            while(spritemapIdx <= 32) {
+                var pngPath:String = Paths.getPath('images/${clean}/spritemap${spritemapIdx}.png', IMAGE, "shared");
+                var jsonPath:String = Paths.getPath('images/${clean}/spritemap${spritemapIdx}.json', TEXT, "shared");
+                if(!Paths.assetExists(pngPath, IMAGE) || !Paths.assetExists(jsonPath, TEXT)) break;
+                spritemapsFound++;
+                spritemapIdx++;
+            }
+
+            if(spritemapsFound == 0) {
+                var altPng:String = Paths.getPath('images/${clean}/spritemap.png', IMAGE, "shared");
+                var altJson:String = Paths.getPath('images/${clean}/spritemap.json', TEXT, "shared");
+                if(Paths.assetExists(altPng, IMAGE) && Paths.assetExists(altJson, TEXT)) spritemapsFound = 1;
+            }
+
+            if(hasAnimation && spritemapsFound > 0) {
+                return clean + ": found (" + spritemapsFound + " spritemap" + (spritemapsFound == 1 ? "" : "s") + ")";
+            }
+            var missing:Array<String> = [];
+            if(!hasAnimation) missing.push("Animation.json");
+            if(spritemapsFound == 0) missing.push("spritemap1.png/json");
+            return clean + ": missing " + missing.join(", ");
+        }
+
+        if(mode == MODE_PACKER) {
+            var pngPath:String = Paths.getPath('images/${clean}.png', IMAGE, "shared");
+            var txtPath:String = Paths.getPath('images/${clean}.txt', TEXT, "shared");
+            var jsonPath:String = Paths.getPath('images/${clean}.json', TEXT, "shared");
+            var hasPng:Bool = Paths.assetExists(pngPath, IMAGE);
+            var hasData:Bool = Paths.assetExists(txtPath, TEXT) || Paths.assetExists(jsonPath, TEXT);
+            if(hasPng && hasData) return clean + ": found";
+            var missing:Array<String> = [];
+            if(!hasPng) missing.push(".png");
+            if(!hasData) missing.push(".txt/.json");
+            return clean + ": missing " + missing.join(", ");
+        }
+
+        var pngPath:String = Paths.getPath('images/${clean}.png', IMAGE, "shared");
+        var xmlPath:String = Paths.getPath('images/${clean}.xml', TEXT, "shared");
+        var hasPng:Bool = Paths.assetExists(pngPath, IMAGE);
+        var hasXml:Bool = Paths.assetExists(xmlPath, TEXT);
+        if(hasPng && hasXml) return clean + ": found";
+        var missing:Array<String> = [];
+        if(!hasPng) missing.push(".png");
+        if(!hasXml) missing.push(".xml");
+        return clean + ": missing " + missing.join(", ");
+    }
+
+    private function renameFileFieldForMode(raw:String, mode:String):String {
+        if(raw == null) return "";
+        var parts:Array<String> = raw.split(",");
+        var out:Array<String> = [];
+        for(piece in parts) {
+            var trimmed:String = piece.trim();
+            if(trimmed.length == 0) continue;
+            var dot:Int = trimmed.lastIndexOf(".");
+            var hasSlash:Bool = trimmed.indexOf("/") >= 0;
+            if(mode == MODE_ANIMATE) {
+                if(dot >= 0) trimmed = trimmed.substr(0, dot);
+            } else if(mode == MODE_PACKER) {
+                if(dot >= 0) trimmed = trimmed.substr(0, dot);
+                if(!hasSlash) trimmed = trimmed + ".json";
+            } else {
+                if(dot >= 0) trimmed = trimmed.substr(0, dot);
+                if(!hasSlash) trimmed = trimmed + ".xml";
+            }
+            out.push(trimmed);
+        }
+        return out.join(",");
+    }
+
+    private function currentAtlasMode():String {
+        var mode:String = currentConfig().atlasMode;
+        if(mode != null && mode != "") return mode;
+        if(currentConfig().isAnimateAtlas == true) return MODE_ANIMATE;
+        return MODE_SPARROW;
+    }
+
+    private function ensureAtlasModeDropDown():Void {
+        if(atlasModeDropDown == null) return;
+        if(atlasModeDropDown.dataSource.size == ATLAS_MODE_LABELS.length) return;
+        var prev:Bool = syncingUi;
+        syncingUi = true;
+        atlasModeDropDown.dataSource.clear();
+        for(entry in ATLAS_MODE_LABELS) atlasModeDropDown.dataSource.add({id: entry.id, text: entry.text});
+        syncingUi = prev;
     }
 
     private function updateIconValidation():Void {
@@ -1386,6 +1703,353 @@ class CharacterCreatorState extends UIState {
         iconP1 = FlxDestroyUtil.destroy(iconP1);
         iconP2 = FlxDestroyUtil.destroy(iconP2);
         super.destroy();
+    }
+
+    private function bindAtlasHandlers():Void {
+        mainTabView.onChange = function(_) {
+            if(mainTabView.pageIndex == ATLAS_TAB_INDEX) {
+                showAtlasView();
+            } else if(isAtlasTabActive) {
+                hideAtlasView();
+            }
+        };
+
+        atlasFileDropDown.onChange = function(_) {
+            if(syncingUi || !isAtlasTabActive) return;
+            rebuildAtlasView();
+        };
+
+        atlasPrefixDropDown.onChange = function(_) {
+            if(syncingUi || !isAtlasTabActive) return;
+            refreshAtlasOverlay();
+        };
+    }
+
+    private function showAtlasView():Void {
+        if(isAtlasTabActive) return;
+        isAtlasTabActive = true;
+        characterStorage.visible = false;
+        if(shadowEntity != null) shadowEntity.visible = false;
+
+        var files = currentAtlasFiles();
+        if(files.length == 0) files = [""];
+        syncingUi = true;
+        populateDropDown(atlasFileDropDown, files);
+        syncingUi = false;
+
+        rebuildAtlasView();
+    }
+
+    private function hideAtlasView():Void {
+        if(!isAtlasTabActive) return;
+        isAtlasTabActive = false;
+        destroyAtlasView();
+        characterStorage.visible = true;
+        if(shadowEntity != null) shadowEntity.visible = true;
+        camFollow.setPosition(camPos.x, camPos.y);
+        camGame.focusOn(camFollow.getPosition());
+    }
+
+    private function destroyAtlasView():Void {
+        atlasGroup.clear();
+        atlasViewSprite = null;
+        atlasViewOverlay = null;
+    }
+
+    private function rebuildAtlasView():Void {
+        destroyAtlasView();
+        atlasInfoLabel.text = "";
+
+        var files = currentAtlasFiles();
+        if(files.length == 0) {
+            atlasInfoLabel.text = "No atlas file configured.";
+            return;
+        }
+
+        var fileIdx = atlasFileDropDown.selectedIndex;
+        if(fileIdx < 0 || fileIdx >= files.length) fileIdx = 0;
+        var xmlFile = files[fileIdx];
+
+        var basePath = xmlFile;
+        var dotIndex = xmlFile.lastIndexOf(".");
+        if(dotIndex >= 0) basePath = xmlFile.substr(0, dotIndex);
+
+        var imagePath:String = Paths.getPath('images/${basePath}.png', IMAGE, "shared");
+        if(!Paths.assetExists(imagePath, IMAGE)) {
+            atlasInfoLabel.text = "Image not found: " + basePath;
+            return;
+        }
+
+        var frames = loadXmlFrames(xmlFile);
+
+        atlasViewSprite = new FlxSprite();
+        atlasViewSprite.loadGraphic(Paths.image(basePath));
+        atlasViewSprite.antialiasing = false;
+
+        var atlasW = atlasViewSprite.frameWidth;
+        var atlasH = atlasViewSprite.frameHeight;
+        var uiPanelWidth = 540;
+        var maxW = (FlxG.width - uiPanelWidth) * 0.9;
+        var maxH = FlxG.height * 0.9;
+        var displayScale = Math.min(maxW / atlasW, maxH / atlasH);
+        if(displayScale > 1.0) displayScale = 1.0;
+
+        atlasViewSprite.scale.set(displayScale, displayScale);
+        atlasViewSprite.updateHitbox();
+        var availW = FlxG.width - uiPanelWidth;
+        atlasViewSprite.x = availW / 2 - atlasViewSprite.width / 2;
+        atlasViewSprite.y = FlxG.height / 2 - atlasViewSprite.height / 2;
+        atlasViewSprite.cameras = [camGame];
+        atlasGroup.add(atlasViewSprite);
+
+        var dispW = Std.int(Math.max(1, atlasW * displayScale));
+        var dispH = Std.int(Math.max(1, atlasH * displayScale));
+        atlasViewOverlay = new FlxSprite(atlasViewSprite.x, atlasViewSprite.y);
+        atlasViewOverlay.makeGraphic(dispW, dispH, FlxColor.TRANSPARENT, true);
+        atlasViewOverlay.cameras = [camGame];
+        atlasGroup.add(atlasViewOverlay);
+
+        var selectedPrefix = getDropDownValue(atlasPrefixDropDown, "");
+        var drawnCount = drawAtlasFrameRects(frames, selectedPrefix, atlasW, displayScale);
+
+        atlasInfoLabel.text = '${atlasW}x${atlasH} | ${drawnCount}/${frames.length} frames';
+
+        rebuildAtlasPrefixDropDown(frames);
+
+        camFollow.setPosition(atlasViewSprite.x + atlasViewSprite.width / 2, atlasViewSprite.y + atlasViewSprite.height / 2);
+        camGame.zoom = 1.0;
+        camGame.focusOn(camFollow.getPosition());
+    }
+
+    private function refreshAtlasOverlay():Void {
+        if(atlasViewOverlay == null || atlasViewSprite == null) return;
+
+        var files = currentAtlasFiles();
+        if(files.length == 0) return;
+        var fileIdx = atlasFileDropDown.selectedIndex;
+        if(fileIdx < 0 || fileIdx >= files.length) fileIdx = 0;
+
+        var frames = loadXmlFrames(files[fileIdx]);
+        var dispW = atlasViewOverlay.frameWidth;
+        var dispH = atlasViewOverlay.frameHeight;
+        var atlasW = atlasViewSprite.frameWidth;
+        var displayScale = dispW / atlasW;
+        var selectedPrefix = getDropDownValue(atlasPrefixDropDown, "");
+
+        var bd = atlasViewOverlay.pixels;
+        bd.lock();
+        bd.fillRect(new Rectangle(0, 0, dispW, dispH), 0x00000000);
+        bd.unlock();
+
+        var drawnCount = drawAtlasFrameRects(frames, selectedPrefix, atlasW, displayScale);
+        atlasInfoLabel.text = '${atlasW}x${atlasViewSprite.frameHeight} | ${drawnCount}/${frames.length} frames';
+    }
+
+    private function drawAtlasFrameRects(frames:Array<AtlasFrame>, prefix:String, atlasW:Int, displayScale:Float):Int {
+        if(atlasViewOverlay == null || frames.length == 0) return 0;
+
+        var bd = atlasViewOverlay.pixels;
+        var dispW = atlasViewOverlay.frameWidth;
+        var dispH = atlasViewOverlay.frameHeight;
+        var lineColor:UInt = 0xFF44FFAA;
+        var count = 0;
+
+        var allowedSet:Map<String, Bool> = null;
+        if(prefix != "" && currentAtlasMode() == MODE_ANIMATE) {
+            var folder:String = currentAnimationFolder();
+            if(folder != "") {
+                var symbolMap:Map<String, Array<String>> = loadSymbolSpriteMap(folder);
+                if(symbolMap.exists(prefix)) {
+                    allowedSet = new Map();
+                    for(spriteName in symbolMap.get(prefix)) allowedSet.set(spriteName, true);
+                }
+            }
+        }
+
+        bd.lock();
+        for(frame in frames) {
+            if(prefix != "") {
+                if(allowedSet != null) {
+                    if(!allowedSet.exists(frame.name)) continue;
+                } else if(!frame.name.startsWith(prefix)) {
+                    continue;
+                }
+            }
+
+            var rx = Std.int(frame.x * displayScale);
+            var ry = Std.int(frame.y * displayScale);
+            var rw = Math.max(2, Std.int(frame.width * displayScale));
+            var rh = Math.max(2, Std.int(frame.height * displayScale));
+
+            if(rx >= dispW || ry >= dispH) continue;
+            var rRight = Std.int(Math.min(rx + rw, dispW));
+            var rBottom = Std.int(Math.min(ry + rh, dispH));
+            rw = rRight - rx;
+            rh = rBottom - ry;
+            if(rw < 1 || rh < 1) continue;
+
+            bd.fillRect(new Rectangle(rx, ry, rw, 1), lineColor);
+            bd.fillRect(new Rectangle(rx, rBottom - 1, rw, 1), lineColor);
+            bd.fillRect(new Rectangle(rx, ry, 1, rh), lineColor);
+            bd.fillRect(new Rectangle(rRight - 1, ry, 1, rh), lineColor);
+            count++;
+        }
+        bd.unlock();
+        atlasViewOverlay.dirty = true;
+
+        return count;
+    }
+
+    private function currentAnimationFolder():String {
+        if(currentAtlasMode() != MODE_ANIMATE) return "";
+        var files:Array<String> = currentAtlasFiles();
+        if(files.length == 0) return "";
+        var fileIdx:Int = atlasFileDropDown.selectedIndex;
+        if(fileIdx < 0 || fileIdx >= files.length) fileIdx = 0;
+        var basePath:String = files[fileIdx];
+        var dot:Int = basePath.lastIndexOf(".");
+        if(dot >= 0) basePath = basePath.substr(0, dot);
+        var folder:String = siblingFolderOf(basePath);
+        return folder != "" ? folder : basePath;
+    }
+
+    private function rebuildAtlasPrefixDropDown(frames:Array<AtlasFrame>):Void {
+        var currentPrefix = getDropDownValue(atlasPrefixDropDown, "");
+
+        var items:Array<String> = [""];
+        var seen:Map<String, Bool> = new Map();
+
+        if(currentAtlasMode() == MODE_ANIMATE) {
+            var folder:String = currentAnimationFolder();
+            if(folder != "") {
+                for(symbol in loadAnimationSymbols(folder)) {
+                    if(symbol.length > 0 && !seen.exists(symbol)) {
+                        seen.set(symbol, true);
+                        items.push(symbol);
+                    }
+                }
+            }
+        }
+
+        for(frame in frames) {
+            var name = frame.name;
+            var trimEnd = name.length;
+            while(trimEnd > 0) {
+                var c = name.charCodeAt(trimEnd - 1);
+                if(c == null || c < 48 || c > 57) break;
+                trimEnd--;
+            }
+            var prefix = StringTools.rtrim(name.substr(0, trimEnd));
+            if(prefix.length > 0 && !seen.exists(prefix)) {
+                seen.set(prefix, true);
+                items.push(prefix);
+            }
+        }
+
+        syncingUi = true;
+        populateDropDown(atlasPrefixDropDown, items);
+        if(currentPrefix != "") selectDropDownItem(atlasPrefixDropDown, currentPrefix);
+        syncingUi = false;
+    }
+
+    private function loadXmlFrames(xmlFile:String):Array<AtlasFrame> {
+        var frames:Array<AtlasFrame> = [];
+        var basePath = xmlFile;
+        var dotIndex = xmlFile.lastIndexOf(".");
+        if(dotIndex >= 0) basePath = xmlFile.substr(0, dotIndex);
+
+        var dataPath = Paths.getPath('images/' + basePath + '.xml', TEXT, "shared");
+        if(!Paths.assetExists(dataPath, TEXT)) {
+            var spritemapPath:String = Paths.getPath('images/' + basePath + '.json', TEXT, "shared");
+            if(Paths.assetExists(spritemapPath, TEXT)) {
+                return parseSpritemapFrames(Paths.readText(spritemapPath));
+            }
+            return frames;
+        }
+
+        var raw = Paths.readText(dataPath);
+        if(raw == null || raw.length == 0) return frames;
+
+        var tagReg = ~/<SubTexture\s[^\/]*\/>/g;
+        var nameReg = ~/name="([^"]*)"/;
+        var xReg = ~/\bx="(\d+)"/;
+        var yReg = ~/\by="(\d+)"/;
+        var wReg = ~/width="(\d+)"/;
+        var hReg = ~/height="(\d+)"/;
+
+        var pos = 0;
+        while(tagReg.matchSub(raw, pos)) {
+            var mp = tagReg.matchedPos();
+            pos = mp.pos + mp.len;
+            var tag = tagReg.matched(0);
+
+            if(!nameReg.match(tag) || !xReg.match(tag) || !yReg.match(tag) || !wReg.match(tag) || !hReg.match(tag)) continue;
+
+            frames.push({
+                name: nameReg.matched(1),
+                x: Std.parseInt(xReg.matched(1)),
+                y: Std.parseInt(yReg.matched(1)),
+                width: Std.parseInt(wReg.matched(1)),
+                height: Std.parseInt(hReg.matched(1))
+            });
+        }
+
+        return frames;
+    }
+
+    private function parseSpritemapFrames(raw:String):Array<AtlasFrame> {
+        var frames:Array<AtlasFrame> = [];
+        if(raw == null || raw.length == 0) return frames;
+
+        var data:Dynamic = null;
+        try { data = Json.parse(raw); } catch(e:Dynamic) { return frames; }
+        if(data == null) return frames;
+
+        var atlasNode:Dynamic = Reflect.field(data, "ATLAS");
+        if(atlasNode == null) atlasNode = Reflect.field(data, "atlas");
+        if(atlasNode == null) return frames;
+
+        var spritesArr:Dynamic = Reflect.field(atlasNode, "SPRITES");
+        if(spritesArr == null) spritesArr = Reflect.field(atlasNode, "sprites");
+        if(spritesArr == null || !Std.isOfType(spritesArr, Array)) return frames;
+
+        for(entry in (cast spritesArr : Array<Dynamic>)) {
+            var spr:Dynamic = Reflect.field(entry, "SPRITE");
+            if(spr == null) spr = Reflect.field(entry, "sprite");
+            if(spr == null) spr = entry;
+            if(spr == null) continue;
+
+            var name:String = stringFieldDyn(spr, ["name", "N"]);
+            if(name == null || name == "") continue;
+
+            var x:Float = dynNum(Reflect.field(spr, "x"));
+            var y:Float = dynNum(Reflect.field(spr, "y"));
+            var wv:Dynamic = Reflect.field(spr, "w");
+            if(wv == null) wv = Reflect.field(spr, "width");
+            var hv:Dynamic = Reflect.field(spr, "h");
+            if(hv == null) hv = Reflect.field(spr, "height");
+            var w:Float = dynNum(wv);
+            var h:Float = dynNum(hv);
+
+            if(w <= 0 || h <= 0) continue;
+
+            frames.push({
+                name: name,
+                x: Std.int(x),
+                y: Std.int(y),
+                width: Std.int(w),
+                height: Std.int(h)
+            });
+        }
+        return frames;
+    }
+
+    private static function dynNum(v:Dynamic):Float {
+        if(v == null) return 0;
+        if(Std.isOfType(v, Float)) return cast v;
+        if(Std.isOfType(v, Int)) return cast(v, Int);
+        var f:Float = Std.parseFloat(Std.string(v));
+        return Math.isNaN(f) ? 0 : f;
     }
 
     function setColorOptions(getColor:Int):Void {

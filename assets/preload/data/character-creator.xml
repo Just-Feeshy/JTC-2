@@ -8,7 +8,7 @@
             <spacer height="100%" />
         </vbox>
         <vbox width="540" height="100%">
-            <tabview width="100%" height="100%">
+            <tabview id="mainTabView" width="100%" height="100%">
                 <vbox text="Display" width="100%" height="100%">
                     <scrollview width="100%" height="100%" contentWidth="100%">
                         <vbox width="100%" style="padding: 10px; spacing: 8px;">
@@ -19,6 +19,10 @@
                                 <button id="updateFileButton" width="25%" text="Update" />
                             </hbox>
                             <label id="fileValidationLabel" width="100%" text="" />
+                            <hbox width="100%">
+                                <label width="32%" text="Atlas Mode" verticalAlign="center" />
+                                <dropdown id="atlasModeDropDown" width="68%" />
+                            </hbox>
                             <hbox width="100%">
                                 <label width="32%" text="Icon PNG" verticalAlign="center" />
                                 <textfield id="iconFileNameInput" width="43%" />
@@ -259,6 +263,35 @@
                             </hbox>
                             <label id="combineZOrderLabel" width="100%" text="Overlay drawn on top" />
                             <label id="combineStatusLabel" width="100%" text="" />
+                        </vbox>
+                    </scrollview>
+                </vbox>
+
+                <vbox text="Atlas" width="100%" height="100%">
+                    <scrollview width="100%" height="100%" contentWidth="100%">
+                        <vbox width="100%" style="padding: 10px; spacing: 8px;">
+                            <label width="100%" text="Texture Atlas Viewer" />
+                            <label width="100%" text="Displays the atlas with frame outlines (SPRITESHEET or ANIMATIONS)." />
+
+                            <spacer height="6" />
+                            <label width="100%" text="Atlas File" />
+                            <hbox width="100%">
+                                <label width="32%" text="File" verticalAlign="center" />
+                                <dropdown id="atlasFileDropDown" width="68%" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label width="100%" text="Frame Filter" />
+                            <hbox width="100%">
+                                <label width="32%" text="Prefix" verticalAlign="center" />
+                                <dropdown id="atlasPrefixDropDown" width="68%" />
+                            </hbox>
+
+                            <spacer height="6" />
+                            <label id="atlasInfoLabel" width="100%" text="" />
+                            <spacer height="6" />
+                            <label width="100%" text="Scroll / Q E - Zoom" />
+                            <label width="100%" text="Arrow Keys - Pan" />
                         </vbox>
                     </scrollview>
                 </vbox>

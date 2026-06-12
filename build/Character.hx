@@ -96,7 +96,7 @@ class Character extends feshixl.FeshSprite {
 				else
 					_info = hardInfo;
 
-				frames = loadCharacterFrames(_info.file);
+				frames = loadCharacterFrames(_info.file, resolveAtlasMode(_info));
 
 				setIndexis(curCharacter);
 
@@ -140,7 +140,7 @@ class Character extends feshixl.FeshSprite {
 			flipX = !flipX;
 	}
 
-	static function loadCharacterFrames(fileList:String):FlxFramesCollection {
+	static function loadCharacterFrames(fileList:String, atlasMode:String = "sparrow"):FlxFramesCollection {
 		var files:Array<String> = [];
 
 		if(fileList != null) {
@@ -151,6 +151,42 @@ class Character extends feshixl.FeshSprite {
 					files.push(trimmedFile);
 				}
 			}
+		}
+
+		if(atlasMode == "animate") {
+			if(files.length == 0) return null;
+
+			if(files.length == 1) {
+				return AnimateAtlasLoader.loadFromFolder(stripExtension(files[0]));
+			}
+
+			var frameCollections:Array<FlxFramesCollection> = [];
+			for(file in files) {
+				var fc:FlxFramesCollection = AnimateAtlasLoader.loadFromFolder(stripExtension(file));
+				if(fc != null) frameCollections.push(fc);
+			}
+
+			if(frameCollections.length == 0) return null;
+			if(frameCollections.length == 1) return frameCollections[0];
+			return FlxAnimationUtil.combineAtlas(frameCollections);
+		}
+
+		if(atlasMode == "packer") {
+			if(files.length == 0) return null;
+
+			if(files.length == 1) {
+				return Paths.getPackerAtlas(stripExtension(files[0]), "shared", true);
+			}
+
+			var frameCollections:Array<FlxFramesCollection> = [];
+			for(file in files) {
+				var fc:FlxFramesCollection = Paths.getPackerAtlas(stripExtension(file), "shared", true);
+				if(fc != null) frameCollections.push(fc);
+			}
+
+			if(frameCollections.length == 0) return null;
+			if(frameCollections.length == 1) return frameCollections[0];
+			return FlxAnimationUtil.combineAtlas(frameCollections);
 		}
 
 		if(files.length <= 1) {
@@ -164,6 +200,20 @@ class Character extends feshixl.FeshSprite {
 		}
 
 		return FlxAnimationUtil.combineAtlas(frameCollections);
+	}
+
+	public static function resolveAtlasMode(info:ConfigCharacters):String {
+		if(info == null) return "sparrow";
+		if(info.atlasMode != null && info.atlasMode != "") return info.atlasMode;
+		if(info.isAnimateAtlas == true) return "animate";
+		return "sparrow";
+	}
+
+	static function stripExtension(file:String):String {
+		if(file == null) return "";
+		var dot:Int = file.lastIndexOf(".");
+		if(dot < 0) return file;
+		return file.substr(0, dot);
 	}
 
 	public function isAnimationFinished():Bool {
@@ -934,7 +984,9 @@ class Character extends feshixl.FeshSprite {
 				pixel: false,
 
 				iconFile: "iconGrid",
-				clippingAdjustment: []
+				clippingAdjustment: [],
+				isAnimateAtlas: false,
+				atlasMode: "sparrow"
 			};
 		}else {
 			return DefaultHandler.setupUpdateInfo(_info);
