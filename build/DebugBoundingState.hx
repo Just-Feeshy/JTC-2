@@ -203,6 +203,9 @@ class DebugBoundingState extends FlxState
 	function updateOnionSkin():Void
 	{
 		if (swagChar == null) return;
+		// Onion skin copies the sprite's bitmap; Animate-atlas characters have no
+		// flat graphic, so skip it for them.
+		if (Std.isOfType(swagChar, AnimateAtlasCharacter)) return;
 		if (swagChar.hasAnimation("idle")) swagChar.playAnimation("idle", true);
 
 		onionSkinChar.loadGraphicFromSprite(swagChar);
@@ -235,10 +238,12 @@ class DebugBoundingState extends FlxState
 		txtOffsetShit.y = FlxG.height - 20 - txtOffsetShit.height;
 		offsetView.add(txtOffsetShit);
 
+		// Unlike Funkin's editor (which excludes Animate-atlas characters), we keep
+		// them: AnimateAtlasCharacter renders fine here, the spritesheet view just
+		// won't have a flat sheet to outline.
 		var characters:Array<String> = listCharacterIds();
 		characters = characters.filter(function(charId:String) {
-			var char:ConfigCharacters = Character.loadInfo('characters/$charId');
-			return char != null && char.isAnimateAtlas != true;
+			return Character.loadInfo('characters/$charId') != null;
 		});
 		characters.sort(SortUtil.alphabetically);
 
@@ -522,11 +527,14 @@ class DebugBoundingState extends FlxState
 			swagChar.destroy();
 		}
 
-		swagChar = new Character(100, 100, char);
+		// Use the factory so Animate-atlas characters come back as AnimateAtlasCharacter.
+		swagChar = Character.build(100, 100, char);
 		swagChar.debugMode = true;
 		offsetView.add(swagChar);
 
-		if (swagChar == null || swagChar.frames == null)
+		var isAtlas:Bool = Std.isOfType(swagChar, AnimateAtlasCharacter);
+
+		if (swagChar == null || (!isAtlas && swagChar.frames == null))
 		{
 			trace('ERROR: Failed to load character ${char}!');
 			return;
@@ -535,14 +543,39 @@ class DebugBoundingState extends FlxState
 		onionSkinChar.x = swagChar.x;
 		onionSkinChar.y = swagChar.y;
 
-		swagOutlines.makeGraphic(swagChar.graphic.width, swagChar.graphic.height, FlxColor.TRANSPARENT);
-		generateOutlines(swagChar.frames.frames);
-		bf.loadGraphic(swagChar.graphic);
+		// Update the SPRITESHEET view to show the selected character's sheet.
+		// Funkin does `bf.pixels = swagChar.pixels` here, but it filters atlas
+		// characters out. For atlas characters the sheet lives on the FlxAtlasSprite's
+		// `frames`/`graphic` (the Animate spritemap), so pull it from there instead.
+		var sheetFrames:flixel.graphics.frames.FlxFramesCollection = swagChar.frames;
+		var sheetGraphic:flixel.graphics.FlxGraphic = swagChar.graphic;
+
+		if (isAtlas)
+		{
+			var atlasSprite:FlxAtlasSprite = cast(swagChar, AnimateAtlasCharacter).mainSprite;
+			if (atlasSprite != null && atlasSprite.frames != null)
+			{
+				sheetFrames = atlasSprite.frames;
+				// FlxAnimate's combined collection has a null `parent` (it can span
+				// multiple spritemaps); the graphic lives on each frame's `parent`.
+				if (sheetFrames.frames != null && sheetFrames.frames.length > 0)
+				{
+					sheetGraphic = sheetFrames.frames[0].parent;
+				}
+			}
+		}
+
+		if (sheetFrames != null && sheetGraphic != null)
+		{
+			bf.loadGraphic(sheetGraphic);
+			swagOutlines.makeGraphic(sheetGraphic.width, sheetGraphic.height, FlxColor.TRANSPARENT);
+			generateOutlines(sheetFrames.frames);
+		}
 
 		clearInfo();
 		addInfo('$char.json', "");
-		addInfo('Width', bf.width);
-		addInfo('Height', bf.height);
+		addInfo('Width', swagChar.width);
+		addInfo('Height', swagChar.height);
 
 		characterAnimNames = [];
 

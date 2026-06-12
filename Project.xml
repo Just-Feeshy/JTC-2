@@ -144,6 +144,9 @@
 	<haxelib name="flixel-addons" version="4.0.0" />
 	<haxelib name="hscript" />
 
+	<!-- Adobe Animate texture atlas rendering (Funkin-style atlas characters) -->
+	<haxelib name="flxanimate" />
+
 	<!-- Custom Libraries -->
 	<haxelib name="json2object" version="3.11.0" />
 

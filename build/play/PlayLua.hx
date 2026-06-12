@@ -411,7 +411,7 @@ class PlayLua
 			if(playState.modifiableCharacters.exists(name))
 				return;
 
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer);
+			var characterSprite:Character = Character.build(x, y, characterName, isPlayer);
 			characterSprite.refresh(characterName, playState.camPos);
 			characterSprite.active = true;
 
@@ -422,7 +422,7 @@ class PlayLua
 			if(playState.modifiableCharacters.exists(name))
 				return false;
 
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer);
+			var characterSprite:Character = Character.build(x, y, characterName, isPlayer);
 			characterSprite.refresh(characterName, playState.camPos);
 			characterSprite.active = true;
 
@@ -434,7 +434,7 @@ class PlayLua
 			if(playState.modifiableCharacters.exists(name))
 				return;
 
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer, null, false);
+			var characterSprite:Character = Character.build(x, y, characterName, isPlayer, null, false);
 			characterSprite.refresh(characterName, playState.camPos);
 			characterSprite.active = true;
 

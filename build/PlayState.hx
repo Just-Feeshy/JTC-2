@@ -646,7 +646,7 @@ class PlayState extends MusicBeatState
 		}
 
 		Cache.cacheCharacter(gfVersion);
-		gf = new Character(400, 130, gfVersion);
+		gf = Character.build(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
 		
 		if(!stage.hasGirlfriend()) {
@@ -655,7 +655,7 @@ class PlayState extends MusicBeatState
 		}
 
 		Cache.cacheCharacter(SONG.player2);
-		dad = new Character(100, 100, SONG.player2);
+		dad = Character.build(100, 100, SONG.player2);
 		originalPlayer1 = SONG.player1;
 		originalPlayer2 = SONG.player2;
 		originalGirlfriend = gf != null ? gf.curCharacter : "";
@@ -4672,7 +4672,7 @@ class PlayState extends MusicBeatState
 					var sourceDad:Character = dad;
 					var baseX:Float = sourceDad != null ? sourceDad.x - sourceDad._info.position.get("x") : 100;
 					var baseY:Float = sourceDad != null ? sourceDad.y - sourceDad._info.position.get("y") : 100;
-					var newDad:Character = new Character(baseX, baseY, newCharacter);
+					var newDad:Character = Character.build(baseX, baseY, newCharacter);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newDad.refresh(newCharacter, newCamPos);
 					newCamPos.put();
@@ -4694,7 +4694,7 @@ class PlayState extends MusicBeatState
 					var sourceGf:Character = gf;
 					var baseX:Float = sourceGf != null ? sourceGf.x - sourceGf._info.position.get("x") : 400;
 					var baseY:Float = sourceGf != null ? sourceGf.y - sourceGf._info.position.get("y") : 130;
-					var newGf:Character = new Character(baseX, baseY, newCharacter);
+					var newGf:Character = Character.build(baseX, baseY, newCharacter);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newGf.refresh(newCharacter, newCamPos);
 					newCamPos.put();

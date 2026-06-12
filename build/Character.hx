@@ -96,36 +96,45 @@ class Character extends feshixl.FeshSprite {
 				else
 					_info = hardInfo;
 
-				frames = loadCharacterFrames(_info.file, resolveAtlasMode(_info));
+				// Adobe Animate atlas characters (Funkin-style) render through a
+				// FlxAtlasSprite child; AnimateAtlasCharacter overrides these hooks.
+				if(isAnimateAtlasRenderer()) {
+					buildAnimateAtlas();
 
-				setIndexis(curCharacter);
+					finalizedWidth = width;
+					finalizedHeight = height;
+				} else {
+					frames = loadCharacterFrames(_info.file, resolveAtlasMode(_info));
 
-				for(anim in _info.animations.keys()) {
-					var animInfo = _info.animations.get(anim);
-					animations.push(anim);
-					addAnimationFromInfo(anim, animInfo);
-					addOffset(anim, animInfo.offset[0], animInfo.offset[1]);
+					setIndexis(curCharacter);
 
-					if(anim.endsWith("player") && isPlayer) {
-						hasBePlayer = "player";
+					for(anim in _info.animations.keys()) {
+						var animInfo = _info.animations.get(anim);
+						animations.push(anim);
+						addAnimationFromInfo(anim, animInfo);
+						addOffset(anim, animInfo.offset[0], animInfo.offset[1]);
+
+						if(anim.endsWith("player") && isPlayer) {
+							hasBePlayer = "player";
+						}
 					}
+
+					finalizedWidth = width;
+					finalizedHeight = height;
+
+					if(_info.pixel) {
+						setGraphicSize(Std.int(width * PlayState.daPixelZoom));
+						updateHitbox();
+					}
+
+					if(FlxG.save.data.showAntialiasing)
+						antialiasing = !_info.pixel;
+					else
+						antialiasing = false;
+
+					playAnim(_info.playAnim);
+					flipX = _info.isPlayer;
 				}
-
-				finalizedWidth = width;
-				finalizedHeight = height;
-
-				if(_info.pixel) {
-					setGraphicSize(Std.int(width * PlayState.daPixelZoom));
-					updateHitbox();
-				}
-
-				if(FlxG.save.data.showAntialiasing)
-					antialiasing = !_info.pixel;
-				else
-					antialiasing = false;
-
-				playAnim(_info.playAnim);
-				flipX = _info.isPlayer;
 		}
 
 		if(curCharacter == "dad") {
@@ -207,6 +216,42 @@ class Character extends feshixl.FeshSprite {
 		if(info.atlasMode != null && info.atlasMode != "") return info.atlasMode;
 		if(info.isAnimateAtlas == true) return "animate";
 		return "sparrow";
+	}
+
+	/**
+	 * Whether this character renders through a live Adobe Animate atlas
+	 * (flxanimate). Plain `Character` never does; `AnimateAtlasCharacter`
+	 * overrides this to `true`. Mirrors Funkin's `CharacterRenderType.AnimateAtlas`.
+	 */
+	function isAnimateAtlasRenderer():Bool {
+		return false;
+	}
+
+	/**
+	 * Hook for atlas characters to build their FlxAtlasSprite. No-op on the base
+	 * class. Called from `new()` during construction (so subclasses must set their
+	 * own fields here, not via field initializers, which run after `super()`).
+	 */
+	function buildAnimateAtlas():Void {}
+
+	/**
+	 * Factory mirroring Funkin's `CharacterDataParser.fetchCharacter`: inspects the
+	 * character config and returns an `AnimateAtlasCharacter` for Animate-atlas
+	 * characters, or a plain `Character` otherwise.
+	 */
+	public static function build(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters,
+			frameOffsetApply:Bool = true):Character {
+		var info:ConfigCharacters = hardInfo;
+
+		if(info == null && character != null && character != "none") {
+			info = loadInfo('characters/${character}');
+		}
+
+		if(info != null && resolveAtlasMode(info) == "animate") {
+			return new AnimateAtlasCharacter(x, y, character, isPlayer, info, frameOffsetApply);
+		}
+
+		return new Character(x, y, character, isPlayer, hardInfo, frameOffsetApply);
 	}
 
 	static function stripExtension(file:String):String {
