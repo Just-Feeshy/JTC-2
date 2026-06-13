@@ -696,20 +696,8 @@ class OptionsMenuState extends MusicBeatState {
 					{
 						catagory: this.catalog,
 						options: [
-							new Options(0, 0, "Spritesheet Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+							new Options(0, 0, "Dialogue Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
 								option.ID = 0;
-
-								if(option.optionIcon.animation.curAnim.name != "other")
-									option.optionIcon.animation.play("other");
-
-								if(pressed)
-									FlxG.switchState(new SpriteSheetCreator());
-
-								option.description = "Spritesheet Creator.";
-								setting(option, "", option.ID);
-							}),
-							new Options(0, 10, "Dialogue Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 1;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -720,8 +708,8 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Dialogue Creator.";
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 20, "Character Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 2;
+							new Options(0, 10, "Character Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 1;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -732,8 +720,8 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Character Creator.";
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 30, "Shader Event Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 3;
+							new Options(0, 20, "Shader Event Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 2;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -744,8 +732,8 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Preview and export Rim Shadow / Color Adjust event payloads.";
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 40, "Animation Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 4;
+							new Options(0, 30, "Animation Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 3;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -758,8 +746,8 @@ class OptionsMenuState extends MusicBeatState {
 							})
 							#if FEATURE_STAGE_EDITOR
 							,
-							new Options(0, 50, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 5;
+							new Options(0, 40, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 4;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");

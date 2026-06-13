@@ -12,7 +12,6 @@ import flixel.graphics.FlxGraphic;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
-import flixel.system.debug.Icon;
 import flixel.ui.FlxBar;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
@@ -373,7 +372,10 @@ class CharacterCreatorState extends UIState {
         cacheIconAnimation(iconP1, true);
         cacheIconAnimation(iconP2, false);
 
-        var camCursorGraphic:FlxGraphic = FlxGraphic.fromBitmapData(Icon.cross);
+        var crossBmp:openfl.display.BitmapData = new openfl.display.BitmapData(16, 16, true, 0x00000000);
+        crossBmp.fillRect(new openfl.geom.Rectangle(7, 0, 2, 16), 0xFFFFFFFF);
+        crossBmp.fillRect(new openfl.geom.Rectangle(0, 7, 16, 2), 0xFFFFFFFF);
+        var camCursorGraphic:FlxGraphic = FlxGraphic.fromBitmapData(crossBmp);
         camCursor = new FlxSprite().loadGraphic(camCursorGraphic);
         camCursor.setGraphicSize(40, 40);
         camCursor.updateHitbox();

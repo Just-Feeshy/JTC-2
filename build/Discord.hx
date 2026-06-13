@@ -39,8 +39,8 @@ class DiscordClient
 		}
 
 		initialized = false;
-		Discord.ClearPresence();
-		Discord.Shutdown();
+		Discord.clearPresence();
+		Discord.shutdown();
 		callbackThread = null;
 		#end
 	}
@@ -60,12 +60,12 @@ class DiscordClient
 			return;
 		}
 
-		handlers = new hxdiscord_rpc.Types.DiscordEventHandlers();
+		handlers = hxdiscord_rpc.Types.DiscordEventHandlers.create();
 		handlers.ready = cpp.Function.fromStaticFunction(onReady);
 		handlers.disconnected = cpp.Function.fromStaticFunction(onDisconnected);
 		handlers.errored = cpp.Function.fromStaticFunction(onError);
 
-		Discord.Initialize(clientId, cpp.RawPointer.addressOf(handlers), false, null);
+		Discord.Initialize(clientId, cpp.RawPointer.addressOf(handlers), 0, "");
 
 		initialized = true;
 		callbackThread = Thread.create(runCallbacks);
@@ -84,7 +84,7 @@ class DiscordClient
 		var largeImageKey:Null<String> = params.largeImageKey;
 		var smallImageKey:Null<String> = params.smallImageKey;
 
-		var presence = new hxdiscord_rpc.Types.DiscordRichPresence();
+		var presence = hxdiscord_rpc.Types.DiscordRichPresence.create();
 		presence.type = hxdiscord_rpc.Types.DiscordActivityType.DiscordActivityType_Playing;
 		presence.state = state != null ? cast state : null;
 		presence.details = details != null ? cast details : null;
@@ -92,7 +92,7 @@ class DiscordClient
 		presence.largeImageKey = largeImageKey != null ? cast largeImageKey : null;
 		presence.smallImageKey = smallImageKey != null ? cast smallImageKey : null;
 
-		Discord.UpdatePresence(cpp.RawConstPointer.addressOf(presence));
+		Discord.updatePresence(presence);
 		#end
 	}
 
@@ -126,10 +126,10 @@ class DiscordClient
 		while(initialized)
 		{
 			#if DISCORD_DISABLE_IO_THREAD
-			Discord.UpdateConnection();
+			Discord.updateConnection();
 			#end
 
-			Discord.RunCallbacks();
+			Discord.runCallbacks();
 			Sys.sleep(2);
 		}
 	}

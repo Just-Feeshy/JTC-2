@@ -7,7 +7,6 @@ import flixel.FlxSubState;
 import flixel.FlxSprite;
 import flixel.text.FlxText;
 import flixel.graphics.FlxGraphic;
-import flixel.addons.ui.FlxUIState;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;

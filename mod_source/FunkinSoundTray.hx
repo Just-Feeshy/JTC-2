@@ -144,15 +144,9 @@ class FunkinSoundTray extends FlxSoundTray
 		return target + (base - target) * factor;
 	}
 
-	override function showIncrement():Void
+	override function show(up:Bool = false):Void
 	{
-		moveTrayMakeVisible(true);
-		saveVolumePreferences();
-	}
-
-	override function showDecrement():Void
-	{
-		moveTrayMakeVisible(false);
+		moveTrayMakeVisible(up);
 		saveVolumePreferences();
 	}
 

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tabview width="325" height="420">
+    <absolute text="Song" width="100%" height="100%">
+        <textfield id="songTitle" left="10" top="10" width="90"/>
+        <button id="saveButton" text="Save" left="110" top="8" width="70"/>
+        <button id="reloadSong" text="Reload Audio" left="190" top="8" width="120"/>
+        <button id="reloadSongJson" text="Reload JSON" left="190" top="38" width="120"/>
+        <button id="restart" text="Reset" left="110" top="38" width="70"/>
+        <button id="adjustNotes5kButton" text="Adjust Notes 5k" left="110" top="68" width="70"/>
+        <button id="loadAutosaveBtn" text="load autosave" left="190" top="68" width="120"/>
+
+        <number-stepper id="stepperBPM" left="10" top="70" min="1" max="5000" step="1"/>
+        <label text="BPM" left="80" top="73"/>
+        <number-stepper id="stepperSpeed" left="10" top="100" min="0.1" max="10" step="0.1"/>
+        <label id="speedLabel" text="Scroll Speed" left="80" top="103"/>
+
+        <checkbox id="check_voices" text="Voice Track" left="10" top="130"/>
+        <checkbox id="check_fifth" text="5 keys" left="10" top="150"/>
+        <checkbox id="check_mute_inst" text="Mute Instrumental (in editor)" left="10" top="170"/>
+        <checkbox id="check_mute_inst_game" text="Mute Instrumental (in game)" left="10" top="190"/>
+        <checkbox id="metronome_check" text="Metronome" left="10" top="210"/>
+        <checkbox id="check_hit_right" text="OSU Hit Sounds (Right)" left="10" top="230"/>
+        <checkbox id="check_hit_left" text="OSU Hit Sounds (Left)" left="10" top="250"/>
+
+        <label text="Player" left="140" top="280"/>
+        <dropdown id="player1DropDown" left="140" top="295" width="120"/>
+        <label text="Opponent" left="10" top="280"/>
+        <dropdown id="player2DropDown" left="10" top="295" width="120"/>
+    </absolute>
+
+    <absolute text="Section" width="100%" height="100%">
+        <number-stepper id="stepperLength" left="10" top="10" min="0" max="999" step="4"/>
+        <label text="Section Length" left="80" top="13"/>
+        <checkbox id="check_mustHitSection" text="Must Hit Section" left="10" top="35"/>
+        <checkbox id="check_changeBPM" text="Change BPM" left="10" top="60"/>
+        <checkbox id="check_show_extra" text="Show Extra Section" left="150" top="60"/>
+        <number-stepper id="stepperSectionBPM" left="10" top="85" min="0" max="999" step="1"/>
+        <label text="Section BPM" left="80" top="88"/>
+        <button id="copyButton_section" text="Copy Last" left="10" top="130" width="90"/>
+        <number-stepper id="stepperCopy_section" left="110" top="130" min="-999" max="999" step="1"/>
+        <button id="clearSectionButton" text="Clear" left="10" top="155" width="90"/>
+        <button id="swapSection" text="Swap" left="10" top="180" width="90"/>
+    </absolute>
+
+    <absolute text="Video" width="100%" height="100%">
+        <label text="The video you selected must be located in the video folder." left="10" top="10" width="300"/>
+        <button id="getVideo" text="Get Video" left="10" top="35" width="90"/>
+        <button id="watchButton" text="Watch" left="110" top="35" width="90"/>
+        <label id="videoUnableLabel" text="" left="10" top="65" width="300"/>
+    </absolute>
+
+    <absolute text="Note" width="100%" height="100%">
+        <number-stepper id="stepperSusLength" left="10" top="10" min="0" step="1"/>
+        <label text="SUS Note Length" left="80" top="13"/>
+        <checkbox id="check_extra_stuff" text="Use Extra Note Features" left="10" top="40"/>
+        <label text="(This may Disable Regular Chart Features)" left="30" top="55" width="280"/>
+        <number-stepper id="subDivideDummy" left="150" top="80" min="1" max="4" step="1"/>
+        <label id="subLabel" text="Subdivide Placement" left="220" top="83"/>
+        <dropdown id="noteTypeEffect" left="10" top="110" width="120"/>
+        <dropdown id="noteAddonEffect" left="190" top="110" width="120"/>
+        <textfield id="noteTagInput" left="10" top="140" width="120"/>
+        <label id="noteTagText" text="Custom Tag" left="10" top="125"/>
+        <checkbox id="playAnimCheck" text="Play Any Animations" left="10" top="165"/>
+        <label id="writingNotesText" text="" left="20" top="200" width="280"/>
+        <button id="commitChangesButton" text="Save Changes" left="10" top="350" width="120"/>
+    </absolute>
+
+    <absolute text="Map" width="100%" height="100%">
+        <label text="Player 1" left="10" top="10"/>
+        <number-stepper id="plr1X" left="10" top="30" min="-999" max="999" step="1"/>
+        <label text="X" left="80" top="33"/>
+        <number-stepper id="plr1Y" left="10" top="55" min="-999" max="999" step="1"/>
+        <label text="Y" left="80" top="58"/>
+        <label text="Player 2" left="150" top="10"/>
+        <number-stepper id="plr2X" left="150" top="30" min="-999" max="999" step="1"/>
+        <label text="X" left="220" top="33"/>
+        <number-stepper id="plr2Y" left="150" top="55" min="-999" max="999" step="1"/>
+        <label text="Y" left="220" top="58"/>
+        <label text="Girlfriend" left="10" top="95"/>
+        <dropdown id="girlfriendDropDown" left="10" top="110" width="120"/>
+        <label text="Stage" left="150" top="95"/>
+        <dropdown id="stageDropDown" left="150" top="110" width="120"/>
+    </absolute>
+</tabview>

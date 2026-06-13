@@ -183,7 +183,8 @@ class CrewState extends MusicBeatState {
 		#if linux
 		Sys.command('/usr/bin/xdg-open', [link, '&']);
 		#else
-		FlxG.openURL(link);
+		var targetUrl:String = link;
+		FlxG.openURL(targetUrl);
 		#end
 	}
 
