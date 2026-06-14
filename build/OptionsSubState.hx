@@ -277,7 +277,7 @@ class CustomUIKeys extends OptionsSubState {
 						FlxG.save.data.customUIKeys[i + keyIndex][0] = FlxKey.fromStringMap.get(keyString.split(" ")[i]);
 					}
 
-					if(turns < 2) {
+					if(turns < 3) {
 						if(turns == 0) {
 							keyLength = 2;
 							keyIndex = 4;
@@ -292,6 +292,14 @@ class CustomUIKeys extends OptionsSubState {
 
 							keyString = keysToString(SaveData.getData(SaveType.CUSTOM_UI_KEYBINDS), keyIndex, keyLength);
 							howManyKey.text = "Escape Keybinds";
+
+							reloadKeys(keyString);
+						}else if(turns == 2) {
+							keyLength = 1;
+							keyIndex = 8;
+
+							keyString = keysToString(SaveData.getData(SaveType.CUSTOM_UI_KEYBINDS), keyIndex, keyLength);
+							howManyKey.text = "Char Select Keybind";
 
 							reloadKeys(keyString);
 						}

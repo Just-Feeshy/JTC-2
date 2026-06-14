@@ -174,7 +174,7 @@ class Controls extends FlxActionSet
 	var _pause = new FlxActionDigital(Action.PAUSE);
 	var _reset = new FlxActionDigital(Action.RESET);
 	var _cheat = new FlxActionDigital(Action.CHEAT);
-	var _char_select = new FlxActionDigital(Action.CHAR_SELECT);
+	var _charSelect = new FlxActionDigital(Action.CHAR_SELECT);
 
 	#if (haxe >= "4.0.0")
 	var byName:Map<String, FlxActionDigital> = [];
@@ -363,7 +363,7 @@ class Controls extends FlxActionSet
 	public var CHAR_SELECT(get, never):Bool;
 
 	inline function get_CHAR_SELECT()
-		return _char_select.check();
+		return _charSelect.check();
 
 	#if (haxe >= "4.0.0")
 	public function new(name, scheme = None)
@@ -405,7 +405,7 @@ class Controls extends FlxActionSet
 		add(_pause);
 		add(_reset);
 		add(_cheat);
-		add(_char_select);
+		add(_charSelect);
 
 		for (action in digitalActions)
 			byName[action.name] = action;
@@ -453,11 +453,11 @@ class Controls extends FlxActionSet
 		add(_pause);
 		add(_reset);
 		add(_cheat);
-		add(_char_select);
+		add(_charSelect);
 
 		for (action in digitalActions)
 			byName[action.name] = action;
-			
+
 		setKeyboardScheme(scheme, false);
 	}
 	#end
@@ -507,7 +507,7 @@ class Controls extends FlxActionSet
 			case PAUSE: _pause;
 			case RESET: _reset;
 			case CHEAT: _cheat;
-			case CHAR_SELECT: _char_select;
+			case CHAR_SELECT: _charSelect;
 		}
 	}
 
@@ -578,7 +578,7 @@ class Controls extends FlxActionSet
 			case CHEAT:
 				func(_cheat, JUST_PRESSED);
 			case CHAR_SELECT:
-				func(_char_select, JUST_PRESSED);
+				func(_charSelect, JUST_PRESSED);
 		}
 	}
 
@@ -783,6 +783,7 @@ class Controls extends FlxActionSet
 
 		inline bindKeys(Control.GAME_SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
 		inline bindKeys(Control.SPACE, SaveData.getData(CUSTOM_KEYBINDS)[4]);
+
 		{
 			var uiKeys:Array<Array<FlxKey>> = cast SaveData.getData(CUSTOM_UI_KEYBINDS);
 			inline bindKeys(Control.CHAR_SELECT, uiKeys.length > 8 ? uiKeys[8] : [FlxKey.TAB]);

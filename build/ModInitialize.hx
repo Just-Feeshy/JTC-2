@@ -41,8 +41,6 @@ typedef ConfigCharacters = {
 
     var iconFile:String;
     var clippingAdjustment:Map<String, Array<Int>>;
-    @:optional var isAnimateAtlas:Bool;
-    @:optional var atlasMode:String;
 }
 
 typedef SongUtils = {
