@@ -67,6 +67,10 @@ class FreeplayState extends MusicBeatState
 	var giveTick:Float = 0;
 	private var iconArray:Array<HealthIcon> = [];
 
+	// Whether to build the default per-song HealthIcons. jtc_freeplay draws its own graffiti UI and
+	// removes the icons, so it signals (via skipDefaultFreeplayIcons) that building them is wasted.
+	var buildIcons:Bool = true;
+
 	private var menuBG:MenuBackground;
 	private var backgroundBlur:Float = 0;
 
@@ -146,35 +150,19 @@ class FreeplayState extends MusicBeatState
 		grpSongs.cameras = [camFreeplay];
 		add(grpSongs);
 
+		// Execute the lua now (idempotent — execute() only runs once, so super.create()'s whenCreate is
+		// a no-op) so we can ask whether it uses the default per-song icons before building them.
+		// jtc_freeplay draws its own graffiti UI and removes the icons, so it returns true here and we
+		// skip the wasted HealthIcon construction (createAnim + icon JSON parse) entirely.
+		#if USING_LUA
+		whenCreate();
+		buildIcons = !(callLua("skipDefaultFreeplayIcons", []) == true);
+		#end
+
+		// Build the per-song rows (Alphabet [+ HealthIcon when buildIcons]). Synchronous so the lua
+		// onCreate (in super.create() below) sees the full row list, exactly as it did before.
 		for (i in 0...songs.length)
-		{
-			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songs[i].songName, true, false);
-			songText.isMenuItem = true;
-			songText.targetY = i;
-
-			if(i != 0)
-				songText.alpha = 0.6;
-
-			grpSongs.add(songText);
-
-			var iconCharacter:String = songs[i].songCharacter;
-
-			var icon:HealthIcon = new HealthIcon(iconCharacter);
-			icon.createAnim(iconCharacter, icon.getIconJSON(iconCharacter));
-			icon.cameras = [camFreeplay];
-			icon.sprTracker = songText;
-
-			// using a FlxGroup is too much fuss!
-			iconArray.push(icon);
-			add(icon);
-
-			#if USING_LUA
-			if(HelperStates.luaExist(Type.getClass(this))) {
-				modifiableSprites.set('freeplayIcon_' + i, icon);
-				hasGraffiti.push(Paths.image('Graffiti/' + songs[i].songName.toLowerCase()) != null);
-			}
-			#end
-		}
+			buildSongRow(i);
 
 		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
 		// scoreText.autoSize = false;
@@ -243,6 +231,45 @@ class FreeplayState extends MusicBeatState
 	public function addSong(songName:String, weekNum:Int, songCharacter:String)
 	{
 		songs.push(new SongMetadata(songName, weekNum, songCharacter));
+	}
+
+	// Build one song row: the Alphabet name plus, when the lua uses them, a tracked HealthIcon.
+	function buildSongRow(i:Int):Void
+	{
+		var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songs[i].songName, true, false);
+		songText.isMenuItem = true;
+		songText.targetY = i;
+
+		if(i != 0)
+			songText.alpha = 0.6;
+
+		grpSongs.add(songText);
+
+		// HealthIcon construction (createAnim + icon JSON parse) is the bulk of the per-row cost.
+		// Only build it when the lua actually uses it (see buildIcons / skipDefaultFreeplayIcons).
+		if(buildIcons)
+		{
+			var iconCharacter:String = songs[i].songCharacter;
+
+			var icon:HealthIcon = new HealthIcon(iconCharacter);
+			icon.createAnim(iconCharacter, icon.getIconJSON(iconCharacter));
+			icon.cameras = [camFreeplay];
+			icon.sprTracker = songText;
+
+			iconArray.push(icon);
+			add(icon);
+
+			#if USING_LUA
+			if(HelperStates.luaExist(Type.getClass(this)))
+				modifiableSprites.set('freeplayIcon_' + i, icon);
+			#end
+		}
+
+		#if USING_LUA
+		// Graffiti existence is independent of the icons and the lua always needs it.
+		if(HelperStates.luaExist(Type.getClass(this)))
+			hasGraffiti.push(Paths.image('Graffiti/' + songs[i].songName.toLowerCase()) != null);
+		#end
 	}
 
 	function resolveSongCharacter(songName:String):String
@@ -450,7 +477,9 @@ class FreeplayState extends MusicBeatState
 			iconArray[i].alpha = 0.6;
 		}
 
-		iconArray[curSelected].alpha = 1;
+		// iconArray is empty when the lua opts out of the default icons (buildIcons == false).
+		if (curSelected >= 0 && curSelected < iconArray.length)
+			iconArray[curSelected].alpha = 1;
 
 		for (item in grpSongs.members)
 		{

@@ -211,7 +211,6 @@ function createFreeplaySector()
     setSpriteToCamera(FREEPLAY_SECTOR_NAME, "cameraFreeplay")
     setSpriteColor(FREEPLAY_SECTOR_NAME, SPRAY_VISUAL_COLOR)
     setSpriteAlpha(FREEPLAY_SECTOR_NAME, 0)
-    addSpriteToState(FREEPLAY_SECTOR_NAME)
 end
 
 function setupGraffiti()
