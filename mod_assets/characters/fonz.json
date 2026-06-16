@@ -1,0 +1,81 @@
+{
+	"animations": {
+		"idle": {
+			"prefix": "Idle",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "Left",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "Down",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "Up",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "Right",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"hey": {
+			"prefix": "V-pose",
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		}
+	},
+	"isPlayer": false,
+	"pixel": false,
+	"position": {
+		"x": 0,
+		"camPosY": 0,
+		"y": 0,
+		"camPosX": 0
+	},
+	"playAnim": "idle",
+	"file": "fonz",
+	"isAnimateAtlas": true,
+	"atlasMode": "animate",
+	"icon": [
+		0,
+		0,
+		0
+	]
+}

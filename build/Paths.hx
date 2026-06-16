@@ -1059,6 +1059,92 @@ class Paths
 		return getSparrowAtlas("notes/" + key, library);
 	}
 
+	/**
+	 * Resolve a single sprite-sheet atlas for `key`, picking the format from the file extension
+	 * (`.json`/`.txt` -> Packer, anything else -> Sparrow). Mirrors the old
+	 * `FeshMinSprite.loadFrameCollection` selection so existing characters keep loading.
+	 */
+	static public function getAtlas(key:String, ?library:String):FlxAtlasFrames {
+		var trimmed:String = key != null ? key.trim() : "";
+		if(trimmed.length == 0)
+			return null;
+
+		var base:String = trimmed;
+		var ext:String = "";
+		var dot:Int = trimmed.lastIndexOf(".");
+
+		if(dot >= 0) {
+			base = trimmed.substr(0, dot);
+			ext = trimmed.substr(dot + 1).toLowerCase();
+		}
+
+		return switch(ext) {
+			case "json", "txt":
+				getPackerAtlas(base, library, true);
+			default:
+				getSparrowAtlas(base, library, true);
+		};
+	}
+
+	/**
+	 * Combine one or more sprite-sheet atlases into a single `FlxAtlasFrames`.
+	 * Port of FNF-PlusEngine's `Paths.getMultiAtlas`; lets a character's `file` be a comma list.
+	 */
+	static public function getMultiAtlas(keys:Array<String>, ?library:String):FlxAtlasFrames {
+		if(keys == null || keys.length == 0)
+			return null;
+
+		var parentFrames:FlxAtlasFrames = getAtlas(keys[0].trim(), library);
+
+		if(keys.length > 1 && parentFrames != null) {
+			var original:FlxAtlasFrames = parentFrames;
+			parentFrames = new FlxAtlasFrames(parentFrames.parent);
+			parentFrames.addAtlas(original, true);
+
+			for(i in 1...keys.length) {
+				var extraFrames:FlxAtlasFrames = getAtlas(keys[i].trim(), library);
+				if(extraFrames != null)
+					parentFrames.addAtlas(extraFrames, true);
+			}
+		}
+
+		return parentFrames;
+	}
+
+	/**
+	 * Whether an Adobe Animate texture atlas exists for the given key.
+	 * An atlas is a folder under `images/` containing `Animation.json` (+ `spritemap*` pages),
+	 * e.g. `mod_assets/images/fonz/`.
+	 */
+	static public function hasAnimateAtlas(key:String):Bool {
+		if(key == null)
+			return false;
+
+		var folder:String = key.split(",")[0].trim();
+		if(folder.length == 0)
+			return false;
+
+		var animationPath:String = getPath('images/$folder/Animation.json', TEXT, null);
+		return assetExists(animationPath, TEXT);
+	}
+
+	#if flxanimate
+	/**
+	 * Load an Adobe Animate texture atlas into the given `FlxAnimate`.
+	 * Resolves the on-disk folder (the one holding `Animation.json`) and lets flxanimate
+	 * read the `spritemap*` pages from it. Mirrors the FunkinSprite atlas path used elsewhere.
+	 */
+	static public function loadAnimateAtlas(spr:flxanimate.FlxAnimate, key:String, ?library:String):Void {
+		if(spr == null || key == null)
+			return;
+
+		var folder:String = key.split(",")[0].trim();
+		// getPath returns the resolved asset path without extension, e.g. `mod_assets/images/fonz`.
+		var directory:String = getPath('images/$folder', IMAGE, library);
+		spr.loadAtlas(directory);
+	}
+	#end
+
 	static public function image(key:String, ?library:String):FlxGraphic {
 		var cachedImage:FlxGraphic = ifImageCached(key, library);
 

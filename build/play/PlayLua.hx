@@ -464,22 +464,9 @@ class PlayLua
 		});
 
 		playState.addCallback("warmCharacterAnimations", function(name:String, animations:Array<Dynamic>) {
+			// Animation pre-warming was removed; kept as a no-op for script compatibility.
 			var character:Character = playState.modifiableCharacters.get(name);
-
-			if(character == null || animations == null) {
-				return false;
-			}
-
-			var animationNames:Array<String> = [];
-
-			for(animation in animations) {
-				if(animation != null) {
-					animationNames.push(Std.string(animation));
-				}
-			}
-
-			character.warmAnimations(animationNames);
-			return true;
+			return character != null && animations != null;
 		});
 
 		playState.addCallback("primeCharacterAnimations", function(name:String, animations:Array<Dynamic>) {
@@ -561,15 +548,7 @@ class PlayLua
 				return false;
 			}
 
-			var animationNames:Array<String> = [];
-
-			for(animation in animations) {
-				if(animation != null) {
-					animationNames.push(Std.string(animation));
-				}
-			}
-
-			character.warmAnimations(animationNames);
+			// Animation pre-warming was removed; kept as a no-op for script compatibility.
 			return true;
 		});
 
@@ -764,8 +743,8 @@ class PlayLua
 				return false;
 			}
 
-			character.setAnimationAlias(sourceAnimation, targetAnimation);
-			return true;
+			// Animation alias system was removed; kept as a no-op for script compatibility.
+			return character != null && sourceAnimation != null && targetAnimation != null;
 		});
 
 		playState.addCallback("setCharacterAnimationSetSuffix", function(name:String, suffix:String) {
@@ -781,8 +760,8 @@ class PlayLua
 				return false;
 			}
 
-			character.setAnimationSetSuffix(suffix);
-			return true;
+			// Animation set-suffix system was removed; kept as a no-op for script compatibility.
+			return character != null;
 		});
 
 		playState.addCallback("clearCharacterAnimationAlias", function(name:String, sourceAnimation:String) {
@@ -798,8 +777,8 @@ class PlayLua
 				return false;
 			}
 
-			character.clearAnimationAlias(sourceAnimation);
-			return true;
+			// Animation alias system was removed; kept as a no-op for script compatibility.
+			return character != null && sourceAnimation != null;
 		});
 
 		playState.addCallback("setCharacterHoldTimer", function(name:String, value:Float) {

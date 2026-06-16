@@ -1,73 +1,87 @@
 package;
 
 import flixel.FlxG;
-import flixel.FlxSprite;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import flixel.math.FlxRect;
-import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
-import flixel.util.FlxDestroyUtil;
-import flixel.animation.FlxBaseAnimation;
-import flixel.animation.FlxAnimation;
-import flixel.graphics.FlxGraphic;
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.graphics.frames.FlxFramesCollection;
-import flixel.graphics.frames.FlxFilterFrames;
-import flixel.graphics.frames.FlxFrame;
-import feshixl.FeshMinSprite;
-import openfl.filters.BitmapFilter;
-import openfl.utils.Assets;
+import flixel.math.FlxPoint;
+import flxanimate.FlxAnimate;
 import json2object.JsonParser;
 
 import ModInitialize;
 
 using StringTools;
 
-class Character extends feshixl.FeshSprite {
+/**
+ * Character port modelled 1:1 on FNF-PlusEngine's `objects/Character.hx`
+ * (loadCharacterFile / Animate-atlas support / danceIdle / draw override),
+ * but reading from the engine's own `ConfigCharacters` typedef instead of FNF's `CharacterFile`.
+ *
+ * NOTE: extends `feshixl.FeshSprite` (the engine base, which IS-A `FlxSprite` and adds the
+ * advanced clip-rect rendering) rather than plain `FlxSprite`, and keeps the engine's default
+ * animation controller (this engine has no `PsychAnimationController`). The JTC public API
+ * (`getAnimName`, `onNoteHit`, `singMultiplier`, ...) is preserved as thin aliases so existing
+ * callers keep compiling.
+ */
+class Character extends feshixl.FeshSprite
+{
+	/**
+	 * In case a character is missing, it will use this on its place
+	**/
+	public static final DEFAULT_CHARACTER:String = 'bf';
+
 	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 1.0;
 	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT"];
-	private var finalizedX:Float;
-	private var finalizedY:Float;
 
 	public var animOffsets:Map<String, Array<Float>>;
 	public var animations:Array<String>;
-	public var animationAliases:Map<String, String>;
-	public var animationSetSuffix:String = "";
-	public var queuedAnimationSetSuffix:String = "";
-	public var queuedAnimationSetSwitchStep:Int = -1;
-	public var queuedAnimationSetSwitchOnNextNoteHit:Bool = false;
 	public var debugMode:Bool = false;
+	public var extraData:Map<String, Dynamic> = new Map<String, Dynamic>();
+
+	public var isPlayer:Bool = false;
+	public var curCharacter:String = DEFAULT_CHARACTER;
+
+	public var holdTimer:Float = 0;
+	public var heyTimer:Float = 0;
 	public var specialAnim:Bool = false;
-
-	public var ogFrames(default, null):FlxFramesCollection;
-
-	public var dancing(default, null):Bool = false;
-	public var singMultiplier:Float = 4;
-	public var singTimeSteps:Float = 4;
-
-	public var curCharacter:String = 'bf';
-
 	public var customAnimation:Bool = false;
 	public var canPlayOtherAnims:Bool = false;
 	public var isDead:Bool = false;
-
-	public var holdTimer:Float = 0;
-
-	public var isPlayer:Bool = false;
 	public var stunned:Bool = false;
+
+	public var singMultiplier:Float = 4; // Multiplier of how long a character holds the sing pose
+	public var singTimeSteps:Float = 4;
+	public var idleSuffix:String = '';
+	public var danceIdle:Bool = false; // Character uses "danceLeft"/"danceRight" instead of "idle"
+	public var skipDance:Bool = false;
 	public var shouldPlayDance:Bool = true;
 	public var hasBePlayer:String = "";
-	public var idleSuffix:String = "";
+
+	public var hasMissAnimations:Bool = false;
+
+	public var missingCharacter:Bool = false;
+	public var missingText:FlxText;
+
+	public var dancing(default, null):Bool = false;
 
 	@:isVar public var _info(get, default):ConfigCharacters;
 
+	// Used by PlayState/editors for repositioning.
+	private var finalizedX:Float;
+	private var finalizedY:Float;
 	public var finalizedWidth(default, null):Float = 0;
 	public var finalizedHeight(default, null):Float = 0;
 
 	public var danceBeatTimer:Int = 1;
 	private var cameraFocusPointCache:FlxPoint = new FlxPoint();
 
-	private var testClip:Map<String, Array<Int>> = ["idle" => [-600, 100]];
+	private var hardInfo:ConfigCharacters;
+
+	// Adobe Animate texture atlas support (like mod_assets/images/fonz).
+	// special thanks ne_eo / FNF-PlusEngine for the references, you're the goat!!
+	public var isAnimateAtlas(default, null):Bool = false;
+	public var atlas:FlxAnimate;
+	var _lastPlayedAnimation:String = "";
 
 	public function new(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters, frameOffsetApply:Bool = true)
 	{
@@ -80,345 +94,221 @@ class Character extends feshixl.FeshSprite {
 
 		animOffsets = new Map<String, Array<Float>>();
 		animations = new Array<String>();
-		animationAliases = new Map<String, String>();
-		curCharacter = character;
 		this.isPlayer = isPlayer;
+		this.hardInfo = hardInfo;
+
+		changeCharacter(character);
+
+		if (curCharacter == "dad")
+			singMultiplier = 6.1;
+
+		singTimeSteps = singMultiplier;
+
+		// flipX is finalised in loadCharacterFile() as (_info.isPlayer != isPlayer), FNF-style.
+		dance();
+	}
+
+	public function changeCharacter(character:String):Void
+	{
+		animations = [];
+		animOffsets = new Map<String, Array<Float>>();
+		curCharacter = character;
 
 		switch (character)
 		{
 			/**
 			add a case if you want to hard code it
 			**/
-		    case "none":
+			case "none":
+				return;
 			default:
-				if(hardInfo == null)
-					_info = cast loadInfo('characters/${curCharacter}');
-				else
+				if (hardInfo != null)
 					_info = hardInfo;
-
-				frames = loadCharacterFrames(_info.file);
-
-				setIndexis(curCharacter);
-
-				for(anim in _info.animations.keys()) {
-					var animInfo = _info.animations.get(anim);
-					animations.push(anim);
-					addAnimationFromInfo(anim, animInfo);
-					addOffset(anim, animInfo.offset[0], animInfo.offset[1]);
-
-					if(anim.endsWith("player") && isPlayer) {
-						hasBePlayer = "player";
-					}
-				}
-
-				finalizedWidth = width;
-				finalizedHeight = height;
-
-				if(_info.pixel) {
-					setGraphicSize(Std.int(width * PlayState.daPixelZoom));
-					updateHitbox();
-				}
-
-				if(FlxG.save.data.showAntialiasing)
-					antialiasing = !_info.pixel;
 				else
-					antialiasing = false;
+					_info = cast loadInfo('characters/${curCharacter}');
 
-				playAnim(_info.playAnim);
-				flipX = _info.isPlayer;
-		}
-
-		if(curCharacter == "dad") {
-			singMultiplier = 6.1;
-		}
-
-		singTimeSteps = singMultiplier;
-
-		dance();
-
-		if (isPlayer)
-			flipX = !flipX;
-	}
-
-	static function loadCharacterFrames(fileList:String):FlxFramesCollection {
-		var files:Array<String> = [];
-
-		if(fileList != null) {
-			for(file in fileList.split(",")) {
-				var trimmedFile:String = file.trim();
-
-				if(trimmedFile.length > 0) {
-					files.push(trimmedFile);
+				if (_info == null || _info.file == null || _info.file == "")
+				{
+					missingCharacter = true;
+					missingText = new FlxText(0, 0, 300, 'ERROR:\n$character', 16);
+					missingText.alignment = CENTER;
 				}
+
+				loadCharacterFile(_info);
+		}
+
+		skipDance = false;
+		hasMissAnimations = hasAnimation('singLEFTmiss') || hasAnimation('singDOWNmiss') || hasAnimation('singUPmiss') || hasAnimation('singRIGHTmiss');
+		recalculateDanceIdle();
+	}
+
+	public function loadCharacterFile(json:ConfigCharacters):Void
+	{
+		isAnimateAtlas = false;
+
+		// Detect an Adobe Animate texture atlas (folder with Animation.json, e.g. mod_assets/images/fonz/).
+		if (json != null && json.file != null && Paths.hasAnimateAtlas(json.file))
+			isAnimateAtlas = true;
+
+		scale.set(1, 1);
+		updateHitbox();
+
+		if (!isAnimateAtlas)
+		{
+			frames = Paths.getMultiAtlas(json.file.split(','), "shared");
+		}
+		else
+		{
+			atlas = new FlxAnimate(x, y);
+			atlas.showPivot = false;
+			try
+			{
+				Paths.loadAnimateAtlas(atlas, json.file);
+			}
+			catch (e:haxe.Exception)
+			{
+				FlxG.log.warn('Could not load atlas ${json.file}: $e');
+				isAnimateAtlas = false;
+				frames = Paths.getMultiAtlas(json.file.split(','), "shared");
 			}
 		}
 
-		if(files.length <= 1) {
-			return FeshMinSprite.loadFrameCollection(files.length == 1 ? files[0] : fileList);
+		// Engine-specific hard-coded index animations (gf/spooky), sparrow only.
+		if (!isAnimateAtlas)
+			setIndexis(curCharacter);
+
+		// animations
+		for (anim in _info.animations.keys())
+		{
+			var animInfo:AnimationInfo = _info.animations.get(anim);
+			animations.push(anim);
+
+			if (!isAnimateAtlas)
+				animation.addByPrefix(anim, animInfo.prefix, animInfo.framerate, animInfo.looped);
+			else
+				atlas.anim.addBySymbol(anim, animInfo.prefix, animInfo.framerate, animInfo.looped);
+
+			if (animInfo.offset != null && animInfo.offset.length > 1)
+				addOffset(anim, animInfo.offset[0], animInfo.offset[1]);
+			else
+				addOffset(anim, 0, 0);
+
+			if (anim.endsWith("player") && isPlayer)
+				hasBePlayer = "player";
 		}
 
-		var frameCollections:Array<FlxFramesCollection> = [];
+		finalizedWidth = width;
+		finalizedHeight = height;
 
-		for(file in files) {
-			frameCollections.push(FeshMinSprite.loadFrameCollection(file));
+		// pixel sizing (sparrow only; atlas width is 0 until first draw)
+		if (_info.pixel && !isAnimateAtlas)
+		{
+			setGraphicSize(Std.int(width * PlayState.daPixelZoom));
+			updateHitbox();
 		}
 
-		return FlxAnimationUtil.combineAtlas(frameCollections);
+		antialiasing = FlxG.save.data.showAntialiasing ? !_info.pixel : false;
+
+		playAnim(_info.playAnim);
+		flipX = (_info.isPlayer != isPlayer);
+
+		// Sync the embedded atlas transform once so the first drawn frame is positioned correctly.
+		if (isAnimateAtlas && atlas != null)
+			copyAtlasValues();
 	}
 
-	public function isAnimationFinished():Bool {
-		if(animation.curAnim == null) {
-			return false;
-		}
+	override function update(elapsed:Float)
+	{
+		if (isAnimateAtlas && atlas != null)
+			atlas.update(elapsed);
 
-		return animation.curAnim.finished;
-	}
-
-	public function hasAnimation(animName:String):Bool {
-		var resolvedAnimName = resolveAnimationName(animName);
-		return animation != null && animation.getByName(resolvedAnimName) != null;
-	}
-
-	public function setAnimationAlias(sourceAnimation:String, targetAnimation:String):Void {
-		if(sourceAnimation == null || targetAnimation == null) {
-			return;
-		}
-
-		animationAliases.set(sourceAnimation, targetAnimation);
-	}
-
-	public function setAnimationSetSuffix(suffix:String):Void {
-		animationSetSuffix = suffix != null ? suffix : "";
-	}
-
-	public function queueAnimationSetSuffixSwitchOnNextNoteHit(step:Int, suffix:String):Void {
-		queuedAnimationSetSwitchStep = step;
-		queuedAnimationSetSuffix = suffix != null ? suffix : "";
-		queuedAnimationSetSwitchOnNextNoteHit = true;
-	}
-
-	public function clearQueuedAnimationSetSuffixSwitch():Void {
-		queuedAnimationSetSuffix = "";
-		queuedAnimationSetSwitchStep = -1;
-		queuedAnimationSetSwitchOnNextNoteHit = false;
-	}
-
-	public function clearAnimationAlias(sourceAnimation:String):Void {
-		if(sourceAnimation == null || animationAliases == null) {
-			return;
-		}
-
-		animationAliases.remove(sourceAnimation);
-	}
-
-	public function warmAnimationFrames(animName:String):Void {
-		var resolvedAnimName:String = resolveAnimationName(animName);
-
-		if(animation == null || frames == null || frames.frames == null) {
-			return;
-		}
-
-		var anim:FlxAnimation = animation.getByName(resolvedAnimName);
-
-		if(anim == null || anim.frames == null) {
-			return;
-		}
-
-		for(frameIndex in anim.frames) {
-			if(frameIndex < 0 || frameIndex >= frames.frames.length) {
-				continue;
-			}
-
-			var frame:FlxFrame = frames.frames[frameIndex];
-
-			if(frame != null) {
-				@:privateAccess frame.cacheFrameMatrix();
-			}
-		}
-	}
-
-	public function warmAnimations(animNames:Array<String>):Void {
-		if(animNames == null) {
-			return;
-		}
-
-		for(animName in animNames) {
-			warmAnimationFrames(animName);
-		}
-	}
-
-	function resolveAnimationName(animName:String):String {
-		if(animName == null) {
-			return animName;
-		}
-
-		var resolvedAnimName = animName;
-
-		if(animationAliases != null) {
-			var aliasName = animationAliases.get(animName);
-
-			if(aliasName != null) {
-				resolvedAnimName = aliasName;
-			}
-		}
-
-		if(animation != null && animationSetSuffix != null && animationSetSuffix != "") {
-			var suffixedAnimName = resolvedAnimName + animationSetSuffix;
-
-			if(animation.getByName(suffixedAnimName) != null) {
-				return suffixedAnimName;
-			}
-		}
-
-		return resolvedAnimName;
-	}
-
-	function applyQueuedAnimationSetSwitchOnNoteHit():Void {
-		if(!queuedAnimationSetSwitchOnNextNoteHit) {
-			return;
-		}
-
-		if(Conductor.instance == null || Conductor.instance.currentStep < queuedAnimationSetSwitchStep) {
-			return;
-		}
-
-		setAnimationSetSuffix(queuedAnimationSetSuffix);
-		clearQueuedAnimationSetSuffixSwitch();
-	}
-
-	public function playAnimation(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
-		playAnim(animName, force, reversed, frame);
-	}
-
-	public function getCurrentAnimation():String {
-		return getAnimName();
-	}
-
-	public function resetCharacter(reapplyDance:Bool = true):Void {
-		visible = true;
-		alpha = 1;
-		color = FlxColor.WHITE;
-		angle = 0;
-		specialAnim = false;
-		customAnimation = false;
-		holdTimer = 0;
-		stunned = false;
-
-		if(reapplyDance) {
-			dance();
-		}
-	}
-
-	public function getDeathCameraOffsets():Array<Float> {
-		return [0, 0];
-	}
-
-	public function getDeathCameraZoom():Float {
-		return 1;
-	}
-
-	public function getDeathQuote():String {
-		return null;
-	}
-
-	public var cameraFocusPoint(get, never):FlxPoint;
-
-	function get_cameraFocusPoint():FlxPoint {
-		cameraFocusPointCache.set(getGraphicMidpoint().x, getGraphicMidpoint().y);
-
-		if(_info != null && _info.position != null) {
-			var camPosX:Dynamic = _info.position.get('camPosX');
-			var camPosY:Dynamic = _info.position.get('camPosY');
-
-			cameraFocusPointCache.x += camPosX != null ? camPosX : 0;
-			cameraFocusPointCache.y += camPosY != null ? camPosY : 0;
-		}
-
-		return cameraFocusPointCache;
-	}
-
-	public function finishAnimation():Void {
-		if(animation.curAnim == null) return;
-		animation.curAnim.finish();
-	}
-
-	function repairInvalidAnimationState():Void {
-		if(animation == null || animation.curAnim == null) {
-			return;
-		}
-
-		if(animation.curAnim.frames != null) {
-			return;
-		}
-
-		animation.play(null);
-
-		playPreferredIdle(true);
-	}
-
-	override function update(elapsed:Float) {
-		if(Std.isOfType(shader, RimShadowShader)) {
+		if (!isAnimateAtlas && Std.isOfType(shader, RimShadowShader))
 			cast(shader, RimShadowShader).updateFrameInfo(frame);
-		}
 
 		repairInvalidAnimationState();
 
-		if(isDead) {
+		if (debugMode || isAnimationNull())
+		{
 			super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER));
 			return;
 		}
 
-		var currentAnimation:String = getAnimName();
+		if (isDead)
+		{
+			super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER));
+			return;
+		}
 
-		if(currentAnimation != "") {
-			if(specialAnim && isAnimationFinished()) {
-				if(!customAnimation) {
+		if (heyTimer > 0)
+		{
+			heyTimer -= elapsed;
+			if (heyTimer <= 0)
+			{
+				var anim:String = getAnimationName();
+				if (specialAnim && (anim == 'hey' || anim == 'cheer'))
+				{
 					specialAnim = false;
 					dance();
-					currentAnimation = getAnimName();
+				}
+				heyTimer = 0;
+			}
+		}
+
+		var currentAnimation:String = getAnimationName();
+
+		if (currentAnimation != "")
+		{
+			if (specialAnim && isAnimationFinished())
+			{
+				if (!customAnimation)
+				{
+					specialAnim = false;
+					dance();
+					currentAnimation = getAnimationName();
 				}
 			}
 
-			if(isAnimationFinished()
+			if (isAnimationFinished()
 				&& !currentAnimation.endsWith(Constants.ANIMATION_HOLD_SUFFIX)
-				&& hasAnimation(currentAnimation + Constants.ANIMATION_HOLD_SUFFIX)) {
+				&& hasAnimation(currentAnimation + Constants.ANIMATION_HOLD_SUFFIX))
+			{
 				playAnim(currentAnimation + Constants.ANIMATION_HOLD_SUFFIX);
-				currentAnimation = getAnimName();
+				currentAnimation = getAnimationName();
 			}
 
-			if(isSinging()) {
+			if (isSinging())
+			{
 				holdTimer += elapsed;
 
 				var singTimeSec:Float = singTimeSteps * (Conductor.instance.stepLengthMs / Constants.MS_PER_SEC);
 
-				if(currentAnimation.endsWith("miss")) {
+				if (currentAnimation.endsWith("miss"))
 					singTimeSec *= 2;
-				}
 
 				var shouldStopSinging:Bool = isControlledByPlayer() ? !isHoldingNote() : true;
 
-				if(holdTimer > singTimeSec && shouldStopSinging) {
+				if (holdTimer > singTimeSec && shouldStopSinging)
+				{
 					holdTimer = 0;
 
 					var nextAnimation:String = currentAnimation;
 
-					if(nextAnimation.endsWith(Constants.ANIMATION_HOLD_SUFFIX)) {
+					if (nextAnimation.endsWith(Constants.ANIMATION_HOLD_SUFFIX))
 						nextAnimation = nextAnimation.substr(0, nextAnimation.length - Constants.ANIMATION_HOLD_SUFFIX.length);
-					}
 
 					var endAnimation:String = nextAnimation + Constants.ANIMATION_END_SUFFIX;
 
-					if(hasAnimation(endAnimation)) {
+					if (hasAnimation(endAnimation))
 						playAnim(endAnimation);
-					}else {
+					else
 						dance(true);
-					}
 				}
-			}else {
-				holdTimer = 0;
 			}
+			else
+				holdTimer = 0;
 
-			switch (curCharacter) {
+			switch (curCharacter)
+			{
 				case 'gf' | 'fesh':
 					if (currentAnimation == 'hairFall' && isAnimationFinished())
 						playAnim('danceRight');
@@ -428,326 +318,373 @@ class Character extends feshixl.FeshSprite {
 		super.update(elapsed * (FlxG.save.data.showAntialiasing ? 1 : DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER));
 	}
 
-	override function destroy() {
-		if(compositeGraphics != null) {
-			for(graphic in compositeGraphics) {
-				if(graphic == null) continue;
-				graphic.bitmap = FlxDestroyUtil.dispose(graphic.bitmap);
-				graphic.destroy();
-			}
-			compositeGraphics = null;
-		}
-
-		if(Std.isOfType(frames, CombinedAtlasFrames)) {
-			cast(frames, CombinedAtlasFrames).destroy();
-		}
-
-		super.destroy();
-
-		if(animOffsets != null) {
-			animOffsets.clear();
-		}
-
-		if(animationAliases != null) {
-			animationAliases.clear();
-		}
-
-		curCharacter = null;
-
-		animOffsets = null;
-		animationAliases = null;
-		animations = null;
-		_info = null;
+	inline public function isAnimationNull():Bool
+	{
+		return !isAnimateAtlas ? (animation.curAnim == null) : (atlas == null || atlas.anim.curInstance == null || atlas.anim.curSymbol == null);
 	}
 
-	private var danced:Bool = false;
+	inline public function getAnimationName():String
+	{
+		return _lastPlayedAnimation != null ? _lastPlayedAnimation : "";
+	}
+
+	// JTC API aliases.
+	inline public function getAnimName():String
+		return getAnimationName();
+
+	inline public function getCurrentAnimation():String
+		return getAnimationName();
+
+	public function isAnimationFinished():Bool
+	{
+		if (isAnimationNull())
+			return false;
+		return !isAnimateAtlas ? animation.curAnim.finished : atlas.anim.finished;
+	}
+
+	public function finishAnimation():Void
+	{
+		if (isAnimationNull())
+			return;
+
+		if (!isAnimateAtlas)
+			animation.curAnim.finish();
+		else
+			atlas.anim.curFrame = atlas.anim.length - 1;
+	}
+
+	public function hasAnimation(anim:String):Bool
+	{
+		if (animOffsets.exists(anim))
+			return true;
+
+		// Engine deviation from FNF-PlusEngine: some sparrow anims (gf/spooky) are registered by
+		// `setIndexis` without an offset entry, so fall back to the real animation list for them.
+		return !isAnimateAtlas && animation != null && animation.getByName(anim) != null;
+	}
+
+	public var animPaused(get, set):Bool;
+
+	private function get_animPaused():Bool
+	{
+		if (isAnimationNull())
+			return false;
+		return !isAnimateAtlas ? animation.curAnim.paused : !atlas.anim.isPlaying;
+	}
+
+	private function set_animPaused(value:Bool):Bool
+	{
+		if (isAnimationNull())
+			return value;
+
+		if (!isAnimateAtlas)
+			animation.curAnim.paused = value;
+		else
+		{
+			if (value)
+				atlas.anim.pause();
+			else
+				atlas.anim.resume();
+		}
+
+		return value;
+	}
+
+	public var danced:Bool = false;
 
 	/**
 	 * FOR GF DANCING SHIT
 	 */
 	public function dance(force:Bool = false)
 	{
-		if(isDead) {
+		if (isDead || debugMode || skipDance || specialAnim)
 			return;
-		}
 
-		if (!debugMode)
+		if (!force)
 		{
-			if(!force) {
-				if(specialAnim) {
-					return;
-				}
+			if (isSinging())
+				return;
 
-				if(isSinging()) {
-					return;
-				}
+			var currentAnimation:String = getAnimationName();
 
-				var currentAnimation:String = getAnimName();
+			// don't interrupt gf's hair animations
+			if (currentAnimation.startsWith('hair'))
+				return;
 
-				if(currentAnimation != ""
-					&& !currentAnimation.startsWith("dance")
-					&& !currentAnimation.startsWith("idle")
-					&& !isAnimationFinished()) {
-					return;
-				}
-			}
-
-			dancing = true;
-
-			switch (curCharacter)
-			{
-				case 'gf' | 'fesh':
-					if (!animation.curAnim.name.startsWith('hair'))
-					{
-						danced = !danced;
-
-						if (danced)
-							playAnim(resolveIdleAnimationName('danceRight'));
-						else
-							playAnim(resolveIdleAnimationName('danceLeft'));
-					}
-
-				case 'gf-christmas':
-					if (!animation.curAnim.name.startsWith('hair'))
-					{
-						danced = !danced;
-
-						if (danced)
-							playAnim(resolveIdleAnimationName('danceRight'));
-						else
-							playAnim(resolveIdleAnimationName('danceLeft'));
-					}
-
-				case 'gf-car':
-					if (!animation.curAnim.name.startsWith('hair'))
-					{
-						danced = !danced;
-
-						if (danced)
-							playAnim(resolveIdleAnimationName('danceRight'));
-						else
-							playAnim(resolveIdleAnimationName('danceLeft'));
-					}
-				case 'gf-pixel':
-					if (!animation.curAnim.name.startsWith('hair'))
-					{
-						danced = !danced;
-
-						if (danced)
-							playAnim(resolveIdleAnimationName('danceRight'));
-						else
-							playAnim(resolveIdleAnimationName('danceLeft'));
-					}
-
-				case 'spooky':
-					danced = !danced;
-
-					if (danced)
-						playAnim(resolveIdleAnimationName('danceRight'));
-					else
-						playAnim(resolveIdleAnimationName('danceLeft'));
-				default:
-					playAnim(resolveIdleAnimationName('idle'));
-			}
-		}
-	}
-
-	public function getAnimName():String {
-		if(animation.curAnim == null) {
-			return "";
+			if (currentAnimation != ""
+				&& !currentAnimation.startsWith("dance")
+				&& !currentAnimation.startsWith("idle")
+				&& !isAnimationFinished())
+				return;
 		}
 
-		return animation.curAnim.name;
+		dancing = true;
+
+		if (danceIdle)
+		{
+			danced = !danced;
+
+			if (danced)
+				playAnim('danceRight' + idleSuffix);
+			else
+				playAnim('danceLeft' + idleSuffix);
+		}
+		else if (hasAnimation('idle' + idleSuffix))
+			playAnim('idle' + idleSuffix);
 	}
 
-	public function playPreferredIdle(force:Bool = false):Void {
+	public function playPreferredIdle(force:Bool = false):Void
 		dance(force);
-	}
 
-	function resolveIdleAnimationName(baseName:String):String {
-		if(idleSuffix != null && idleSuffix != "") {
-			var suffixedName:String = baseName + idleSuffix;
-
-			if(hasAnimation(suffixedName)) {
-				return suffixedName;
-			}
-		}
-
-		return baseName;
-	}
-
-	public function playNoDanceAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+	public function playNoDanceAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void
+	{
 		dancing = false;
 		playAnim(AnimName, Force, Reversed, Frame);
 	}
 
-	public function refreshAnims():Void {
-		setIndexis(curCharacter);
-
-		for(anim in _info.animations.keys()) {
-			addAnimationFromInfo(anim, _info.animations.get(anim));
-		}
-	}
-
-	private var compositeGraphics:Array<FlxGraphic> = [];
-
-	private function findExactPrefixIndices(prefix:String):Array<Int> {
-		var result:Array<Int> = [];
-		if(frames == null || frames.frames == null || prefix == null || prefix == "") return result;
-
-		var matched:Array<{idx:Int, suffix:Int}> = [];
-		for(i in 0...frames.frames.length) {
-			var name:String = frames.frames[i].name;
-			if(name == null || !StringTools.startsWith(name, prefix)) continue;
-
-			var remainder:String = name.substr(prefix.length);
-			if(remainder.length == 0) continue;
-
-			var allDigits:Bool = true;
-			for(j in 0...remainder.length) {
-				var code:Null<Int> = remainder.charCodeAt(j);
-				if(code == null || code < 48 || code > 57) {
-					allDigits = false;
-					break;
-				}
-			}
-			if(!allDigits) continue;
-
-			matched.push({idx: i, suffix: Std.parseInt(remainder)});
-		}
-
-		matched.sort(function(a, b) return a.suffix - b.suffix);
-		for(m in matched) result.push(m.idx);
-		return result;
-	}
-
-	private function addAnimationFromInfo(animName:String, animInfo:AnimationInfo):Void {
-		if(animInfo.secondaryPrefix != null && animInfo.secondaryPrefix != "") {
-			var offsetX:Int = 0;
-			var offsetY:Int = 0;
-			if(animInfo.secondaryOffset != null && animInfo.secondaryOffset.length >= 2) {
-				offsetX = animInfo.secondaryOffset[0];
-				offsetY = animInfo.secondaryOffset[1];
-			}
-			var secondaryBehind:Bool = animInfo.secondaryBehind == true;
-			var composedIndices:Array<Int> = generateCompositeFrameIndices(animName, animInfo.prefix, animInfo.secondaryPrefix, offsetX, offsetY, secondaryBehind);
-			if(composedIndices.length > 0) {
-				animation.add(animName, composedIndices, animInfo.framerate, animInfo.looped);
-				return;
-			}
-		}
-		animation.addByPrefix(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
-	}
-
-	private function generateCompositeFrameIndices(animKey:String, basePrefix:String, secondaryPrefix:String, offsetX:Int, offsetY:Int, secondaryBehind:Bool = false):Array<Int> {
-		if(frames == null || frames.frames == null) return [];
-
-		var baseIndices:Array<Int> = findExactPrefixIndices(basePrefix);
-		var secIndices:Array<Int> = findExactPrefixIndices(secondaryPrefix);
-
-		var pairs:Int = Std.int(Math.min(baseIndices.length, secIndices.length));
-		if(pairs == 0) return [];
-
-		var newIndices:Array<Int> = [];
-
-		for(i in 0...pairs) {
-			var baseFrame:FlxFrame = frames.frames[baseIndices[i]];
-			var secFrame:FlxFrame = frames.frames[secIndices[i]];
-			if(baseFrame == null || secFrame == null) continue;
-
-			var baseW:Int = Std.int(baseFrame.sourceSize.x);
-			var baseH:Int = Std.int(baseFrame.sourceSize.y);
-			var secW:Int = Std.int(secFrame.sourceSize.x);
-			var secH:Int = Std.int(secFrame.sourceSize.y);
-
-			var baseDrawX:Int = offsetX < 0 ? -offsetX : 0;
-			var baseDrawY:Int = offsetY < 0 ? -offsetY : 0;
-			var secDrawX:Int = offsetX < 0 ? 0 : offsetX;
-			var secDrawY:Int = offsetY < 0 ? 0 : offsetY;
-
-			var canvasW:Int = Std.int(Math.max(baseDrawX + baseW, secDrawX + secW));
-			var canvasH:Int = Std.int(Math.max(baseDrawY + baseH, secDrawY + secH));
-			if(canvasW <= 0 || canvasH <= 0) continue;
-
-			var composite:openfl.display.BitmapData = new openfl.display.BitmapData(canvasW, canvasH, true, 0x00000000);
-			if(secondaryBehind) {
-				secFrame.paint(composite, new openfl.geom.Point(secDrawX, secDrawY), true);
-				baseFrame.paint(composite, new openfl.geom.Point(baseDrawX, baseDrawY), true);
-			} else {
-				baseFrame.paint(composite, new openfl.geom.Point(baseDrawX, baseDrawY), true);
-				secFrame.paint(composite, new openfl.geom.Point(secDrawX, secDrawY), true);
-			}
-
-			var graphic:FlxGraphic = FlxGraphic.fromBitmapData(composite, false, null, false);
-			graphic.destroyOnNoUse = false;
-			compositeGraphics.push(graphic);
-
-			var newFrame:FlxFrame = graphic.imageFrame.frame;
-			newFrame.name = "__combined_" + animKey + "_" + StringTools.lpad(Std.string(i), "0", 4);
-
-			frames.pushFrame(newFrame);
-			newIndices.push(frames.frames.length - 1);
-		}
-
-		return newIndices;
-	}
-
-	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void {
+	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void
+	{
 		specialAnim = false;
-		var resolvedAnimName = resolveAnimationName(AnimName);
 
-		if(animations.length == 0) {
+		if (animations.length == 0)
 			return;
-		}
 
-		if(resolvedAnimName.startsWith('sing')) {
+		if (AnimName.startsWith('sing'))
+		{
 			dancing = false;
-			animation.reset();
+			if (!isAnimateAtlas)
+				animation.reset();
 		}
 
-		super.playAnim(resolvedAnimName, Force, Reversed, Frame);
-		//animation.play(AnimName, Force, Reversed, Frame);
-
-		var daOffset = animOffsets.get(AnimName);
-
-		if(daOffset == null) {
-			daOffset = animOffsets.get(resolvedAnimName);
+		if (!isAnimateAtlas)
+			animation.play(AnimName, Force, Reversed, Frame);
+		else
+		{
+			atlas.anim.play(AnimName, Force, Reversed, Frame);
+			atlas.update(0);
 		}
+		_lastPlayedAnimation = AnimName;
 
-		if (daOffset != null) {
+		if (hasAnimation(AnimName))
+		{
+			var daOffset = animOffsets.get(AnimName);
 			offset.set(daOffset[0], daOffset[1]);
-		}else {
-			offset.set(0, 0);
 		}
+		else
+			offset.set(0, 0);
 
 		if (curCharacter.startsWith('gf') || curCharacter == "fesh")
 		{
 			if (AnimName == 'singLEFT')
-			{
 				danced = true;
-			}
 			else if (AnimName == 'singRIGHT')
-			{
 				danced = false;
-			}
 
 			if (AnimName == 'singUP' || AnimName == 'singDOWN')
-			{
 				danced = !danced;
-			}
 		}
 	}
 
-	public function isSinging():Bool {
-		var currentAnimation:String = getAnimName();
+	// JTC API alias.
+	inline public function playAnimation(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void
+		playAnim(animName, force, reversed, frame);
+
+	public var danceEveryNumBeats:Int = 2;
+	private var settingCharacterUp:Bool = true;
+
+	public function recalculateDanceIdle():Void
+	{
+		var lastDanceIdle:Bool = danceIdle;
+		danceIdle = (hasAnimation('danceLeft' + idleSuffix) && hasAnimation('danceRight' + idleSuffix));
+
+		if (settingCharacterUp)
+		{
+			danceEveryNumBeats = (danceIdle ? 1 : 2);
+		}
+		else if (lastDanceIdle != danceIdle)
+		{
+			var calc:Float = danceEveryNumBeats;
+			if (danceIdle)
+				calc /= 2;
+			else
+				calc *= 2;
+
+			danceEveryNumBeats = Math.round(Math.max(calc, 1));
+		}
+		settingCharacterUp = false;
+
+		// keep the engine's per-beat field (used by PlayState) in sync
+		danceBeatTimer = danceEveryNumBeats;
+	}
+
+	public function addOffset(name:String, x:Float = 0, y:Float = 0):Void
+		animOffsets[name] = [x, y];
+
+	public function changeOffsets(name:String, value:Float, axes:FlxAxes):Void
+	{
+		if (axes == FlxAxes.X)
+			animOffsets[name][0] = value;
+		else if (axes == FlxAxes.Y)
+			animOffsets[name][1] = value;
+		else
+		{
+			animOffsets[name][0] = value;
+			animOffsets[name][1] = value;
+		}
+	}
+
+	public function quickAnimAdd(name:String, anim:String):Void
+		animation.addByPrefix(name, anim, 24, false);
+
+	public function refreshAnims():Void
+	{
+		if (!isAnimateAtlas)
+			setIndexis(curCharacter);
+
+		for (anim in _info.animations.keys())
+		{
+			var animInfo:AnimationInfo = _info.animations.get(anim);
+			if (!isAnimateAtlas)
+				animation.addByPrefix(anim, animInfo.prefix, animInfo.framerate, animInfo.looped);
+			else
+				atlas.anim.addBySymbol(anim, animInfo.prefix, animInfo.framerate, animInfo.looped);
+		}
+	}
+
+	// ---------------------------------------------------------------------------
+	// Atlas support
+	// ---------------------------------------------------------------------------
+
+	public override function draw():Void
+	{
+		var lastAlpha:Float = alpha;
+		var lastColor:FlxColor = color;
+		if (missingCharacter)
+		{
+			alpha *= 0.6;
+			color = FlxColor.BLACK;
+		}
+
+		if (isAnimateAtlas && atlas != null)
+		{
+			if (atlas.anim.curInstance != null)
+			{
+				copyAtlasValues();
+				atlas.draw();
+
+				// Mirror atlas dimensions back so getGraphicMidpoint()/getMidpoint() behave.
+				width = atlas.width;
+				height = atlas.height;
+
+				alpha = lastAlpha;
+				color = lastColor;
+
+				if (missingCharacter && visible)
+				{
+					missingText.x = getMidpoint().x - 150;
+					missingText.y = getMidpoint().y - 10;
+					missingText.draw();
+				}
+			}
+			return;
+		}
+
+		super.draw();
+
+		if (missingCharacter && visible)
+		{
+			alpha = lastAlpha;
+			color = lastColor;
+			missingText.x = getMidpoint().x - 150;
+			missingText.y = getMidpoint().y - 10;
+			missingText.draw();
+		}
+	}
+
+	/**
+	 * Copies this sprite's transform onto the embedded `FlxAnimate` before drawing it.
+	 *
+	 * FLICKER FIX: the bundled (older) flxanimate applies `flipX` in `FlxAnimate.draw()` via
+	 * `_matrix.tx += width`, where `width` is only recomputed AFTER the symbol is rendered — i.e.
+	 * it uses the PREVIOUS frame's width. On animations whose bounding box changes size each frame
+	 * (e.g. sings), a flipped (player) character then jitters horizontally every frame. FNF-PlusEngine
+	 * avoids this only because it ships a newer flxanimate. So instead of `atlas.flipX`, we flip via a
+	 * negative `scale.x` around the symbol's `transformationPoint` origin (which `drawLimb` already
+	 * pivots on) — no `width` dependency, no jitter. We must therefore NOT overwrite `atlas.origin`.
+	 */
+	function copyAtlasValues():Void
+	{
+		@:privateAccess
+		{
+			atlas.cameras = cameras;
+			atlas.scrollFactor = scrollFactor;
+			atlas.offset = offset;
+			atlas.x = x;
+			atlas.y = y;
+			atlas.angle = angle;
+			atlas.alpha = alpha;
+			atlas.visible = visible;
+			atlas.shader = shader;
+			atlas.antialiasing = antialiasing;
+			atlas.colorTransform = colorTransform;
+			atlas.color = color;
+
+			// Flip with negative scale around the atlas's own (transformationPoint) origin.
+			atlas.flipX = false;
+			atlas.flipY = false;
+			atlas.scale.set(flipX ? -Math.abs(scale.x) : Math.abs(scale.x), flipY ? -Math.abs(scale.y) : Math.abs(scale.y));
+		}
+	}
+
+	public override function destroy():Void
+	{
+		if (atlas != null)
+		{
+			atlas.destroy();
+			atlas = null;
+		}
+
+		super.destroy();
+
+		if (animOffsets != null)
+			animOffsets.clear();
+
+		curCharacter = null;
+		animOffsets = null;
+		animations = null;
+		_info = null;
+	}
+
+	// ---------------------------------------------------------------------------
+	// JTC sing / note logic (kept for PlayState & co.)
+	// ---------------------------------------------------------------------------
+
+	function repairInvalidAnimationState():Void
+	{
+		if (isAnimateAtlas || animation == null || animation.curAnim == null)
+			return;
+
+		if (animation.curAnim.frames != null)
+			return;
+
+		animation.play(null);
+		playPreferredIdle(true);
+	}
+
+	public function isSinging():Bool
+	{
+		var currentAnimation:String = getAnimationName();
 		return currentAnimation.startsWith("sing") && !currentAnimation.endsWith(Constants.ANIMATION_END_SUFFIX);
 	}
 
-	private function getSingDirectionIndex(direction:Int):Int {
+	private function getSingDirectionIndex(direction:Int):Int
+	{
 		var lane:Int = Std.int(Math.abs(direction));
 
-		if(PlayState.SONG != null && PlayState.SONG.fifthKey) {
-			return switch(lane) {
+		if (PlayState.SONG != null && PlayState.SONG.fifthKey)
+		{
+			return switch (lane)
+			{
 				case 0: 0;
 				case 1: 1;
 				case 3: 2;
@@ -759,41 +696,39 @@ class Character extends feshixl.FeshSprite {
 		return lane >= 0 && lane < singDirections.length ? lane : -1;
 	}
 
-	function buildSingAnimationName(direction:Int, miss:Bool = false, ?suffix:String = ""):String {
+	function buildSingAnimationName(direction:Int, miss:Bool = false, ?suffix:String = ""):String
+	{
 		var singDirectionIndex:Int = getSingDirectionIndex(direction);
-		if(singDirectionIndex < 0) {
+		if (singDirectionIndex < 0)
 			return "";
-		}
 
 		return 'sing${singDirections[singDirectionIndex]}${miss ? "miss" : ""}$suffix';
 	}
 
-	function isControlledByPlayer():Bool {
+	function isControlledByPlayer():Bool
 		return PlayState.instance != null && PlayState.instance.currentPlayer == this;
-	}
 
-	function isHoldingNote():Bool {
-		if(!isControlledByPlayer()) {
+	function isHoldingNote():Bool
+	{
+		if (!isControlledByPlayer())
 			return false;
-		}
 
 		var controls = PlayerSettings.player1.controls;
 
-		return controls != null
-			&& (controls.LEFT || controls.DOWN || controls.UP || controls.RIGHT || controls.SPACE);
+		return controls != null && (controls.LEFT || controls.DOWN || controls.UP || controls.RIGHT || controls.SPACE);
 	}
 
-	public function playSingAnimation(direction:Int, miss:Bool = false, ?suffix:String = ""):Void {
+	public function playSingAnimation(direction:Int, miss:Bool = false, ?suffix:String = ""):Void
+	{
 		var animName:String = buildSingAnimationName(direction, miss, suffix);
-		if(animName != "") {
+		if (animName != "")
 			playAnim(animName, true);
-		}
 	}
 
-	public function playMissAnimation(direction:Int, ?suffix:String = ""):Void {
-		if(getSingDirectionIndex(direction) < 0) {
+	public function playMissAnimation(direction:Int, ?suffix:String = ""):Void
+	{
+		if (getSingDirectionIndex(direction) < 0)
 			return;
-		}
 
 		var candidates:Array<String> = [
 			buildSingAnimationName(direction, true, suffix),
@@ -802,8 +737,10 @@ class Character extends feshixl.FeshSprite {
 			buildSingAnimationName(direction, false)
 		];
 
-		for(animName in candidates) {
-			if(hasAnimation(animName)) {
+		for (animName in candidates)
+		{
+			if (hasAnimation(animName))
+			{
 				playNoDanceAnim(animName, true);
 				holdTimer = 0;
 				return;
@@ -811,68 +748,78 @@ class Character extends feshixl.FeshSprite {
 		}
 	}
 
-	public function onNoteHit(direction:Int, ?suffix:String = ""):Void {
-		applyQueuedAnimationSetSwitchOnNoteHit();
-		if(getSingDirectionIndex(direction) < 0) {
+	public function onNoteHit(direction:Int, ?suffix:String = ""):Void
+	{
+		if (getSingDirectionIndex(direction) < 0)
 			return;
-		}
 
 		playSingAnimation(direction, false, suffix);
 		holdTimer = 0;
 	}
 
-	public function onNoteMiss(direction:Int, ?suffix:String = ""):Void {
+	public function onNoteMiss(direction:Int, ?suffix:String = ""):Void
 		playMissAnimation(direction, suffix);
-	}
 
-	public function onNoteGhostMiss(direction:Int, ?suffix:String = ""):Void {
+	public function onNoteGhostMiss(direction:Int, ?suffix:String = ""):Void
 		playMissAnimation(direction, suffix);
-	}
 
-	public function onNoteHoldDrop(direction:Int, ?suffix:String = ""):Void {
+	public function onNoteHoldDrop(direction:Int, ?suffix:String = ""):Void
 		playMissAnimation(direction, suffix);
+
+	// ---------------------------------------------------------------------------
+	// Misc engine hooks
+	// ---------------------------------------------------------------------------
+
+	public function resetCharacter(reapplyDance:Bool = true):Void
+	{
+		visible = true;
+		alpha = 1;
+		color = FlxColor.WHITE;
+		angle = 0;
+		specialAnim = false;
+		customAnimation = false;
+		holdTimer = 0;
+		stunned = false;
+
+		if (reapplyDance)
+			dance();
 	}
 
-	public function addOffset(name:String, x:Float = 0, y:Float = 0):Void {
-		animOffsets[name] = [x, y];
-	}
+	public function getDeathCameraOffsets():Array<Float>
+		return [0, 0];
 
-	public function changeOffsets(name:String, value:Float, axes:FlxAxes):Void {
-		if(axes == FlxAxes.X)
-			animOffsets[name][0] = value;
-		else if(axes == FlxAxes.Y)
-			animOffsets[name][1] = value;
-		else {
-			animOffsets[name][0] = value;
-			animOffsets[name][1] = value;
+	public function getDeathCameraZoom():Float
+		return 1;
+
+	public function getDeathQuote():String
+		return null;
+
+	public var cameraFocusPoint(get, never):FlxPoint;
+
+	function get_cameraFocusPoint():FlxPoint
+	{
+		cameraFocusPointCache.set(getGraphicMidpoint().x, getGraphicMidpoint().y);
+
+		if (_info != null && _info.position != null)
+		{
+			var camPosX:Dynamic = _info.position.get('camPosX');
+			var camPosY:Dynamic = _info.position.get('camPosY');
+
+			cameraFocusPointCache.x += camPosX != null ? camPosX : 0;
+			cameraFocusPointCache.y += camPosY != null ? camPosY : 0;
 		}
+
+		return cameraFocusPointCache;
 	}
 
-	public function updateFinalized(x:Float, y:Float):Void {
+	public function updateFinalized(x:Float, y:Float):Void
+	{
 		finalizedX = x;
 		finalizedY = y;
 	}
 
-	private static var infoCache:Map<String, ConfigCharacters> = new Map<String, ConfigCharacters>();
-
-	public static function loadInfo(character:String):ConfigCharacters {
-		if (infoCache.exists(character))
-			return infoCache.get(character);
-
-		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
-		var result:ConfigCharacters = parser.fromJson(Paths.readText(Paths.getPreloadPath('$character.json')), '${character.split('/')[1]}.json');
-
-		if (result != null)
-			infoCache.set(character, result);
-
-		return result;
-	}
-
-	public static function clearInfoCache():Void {
-		infoCache = new Map<String, ConfigCharacters>();
-	}
-
-	public function refresh(character:String, camPos:FlxPoint) {
+	public function refresh(character:String, camPos:FlxPoint)
+	{
 		this.setPosition(finalizedX, finalizedY);
 
 		this.x += _info.position.get('x');
@@ -884,8 +831,10 @@ class Character extends feshixl.FeshSprite {
 		camPos.y += _info.position.get('camPosY');
 	}
 
-	function setIndexis(character:String):Void {
-		switch(character) {
+	function setIndexis(character:String):Void
+	{
+		switch (character)
+		{
 			case 'gf' | 'fesh':
 				animations = ['sad', 'danceLeft', 'danceRight', 'hairBlow', 'hairFall'];
 
@@ -922,9 +871,30 @@ class Character extends feshixl.FeshSprite {
 		}
 	}
 
-	function get__info():ConfigCharacters {
-		if(_info == null) {
-			 return {
+	private static var infoCache:Map<String, ConfigCharacters> = new Map<String, ConfigCharacters>();
+
+	public static function loadInfo(character:String):ConfigCharacters
+	{
+		if (infoCache.exists(character))
+			return infoCache.get(character);
+
+		var parser:JsonParser<ConfigCharacters> = new JsonParser<ConfigCharacters>();
+		var result:ConfigCharacters = parser.fromJson(Paths.readText(Paths.getPreloadPath('$character.json')), '${character.split('/')[1]}.json');
+
+		if (result != null)
+			infoCache.set(character, result);
+
+		return result;
+	}
+
+	public static function clearInfoCache():Void
+		infoCache = new Map<String, ConfigCharacters>();
+
+	function get__info():ConfigCharacters
+	{
+		if (_info == null)
+		{
+			return {
 				file: "",
 				animations: [],
 				position: [],
@@ -936,8 +906,8 @@ class Character extends feshixl.FeshSprite {
 				iconFile: "iconGrid",
 				clippingAdjustment: []
 			};
-		}else {
-			return DefaultHandler.setupUpdateInfo(_info);
 		}
+		else
+			return DefaultHandler.setupUpdateInfo(_info);
 	}
 }

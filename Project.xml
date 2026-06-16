@@ -147,6 +147,9 @@
 	<!-- Custom Libraries -->
 	<haxelib name="json2object" version="3.11.0" />
 
+	<!-- Adobe Animate texture atlas support (used by the funkin.* atlas character port + Animation Debugger) -->
+	<haxelib name="flxanimate" />
+
 	<!--In case you want to use the ui package-->
 	<haxelib name="flixel-ui" version="2.6.2" />
 	<haxelib name="faxe" if='switch'/>
