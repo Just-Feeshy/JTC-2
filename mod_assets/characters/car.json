@@ -1,7 +1,7 @@
 {
 	"animations": {
 		"idle": {
-			"prefix": "car drive and dust0",
+			"prefix": "daddycar",
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -11,12 +11,12 @@
 			"looped": false
 		},
 		"singUP": {
-			"prefix": "car drive and dust t",
+			"prefix": "car drive and dust",
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				768,
-				222
+				0,
+				0
 			],
 			"looped": false
 		}
@@ -31,7 +31,7 @@
 	},
 	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "daddycar2.xml",
+	"file": "car",
 	"icon": [
 		10,
 		11

@@ -63,6 +63,13 @@
       "dir": null,
       "ref": "100f2c96beab619cfe72c567a058c41c71e3e998",
       "url": "https://github.com/haxeui/haxeui-flixel"
+    },
+    {
+      "name": "flxanimate",
+      "type": "git",
+      "dir": null,
+      "ref": "768740a56b26aa0c072720e0d1236b94afe68e3e",
+      "url": "https://github.com/Dot-Stuff/flxanimate"
     }
   ]
 }
