@@ -442,7 +442,7 @@ class PlayLua
 		});
 
 		playState.addCallback("setCharacterAnimOffset", function(name:String, animation:String, x:Float, y:Float) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 
 			if(character == null || animation == null) {
 				return false;
@@ -453,7 +453,7 @@ class PlayLua
 		});
 
 		playState.addCallback("addCharacterOffset", function(name:String, animation:String, x:Float, y:Float) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 
 			if(character == null || animation == null) {
 				return false;
@@ -465,12 +465,12 @@ class PlayLua
 
 		playState.addCallback("warmCharacterAnimations", function(name:String, animations:Array<Dynamic>) {
 			// Animation pre-warming was removed; kept as a no-op for script compatibility.
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 			return character != null && animations != null;
 		});
 
 		playState.addCallback("primeCharacterAnimations", function(name:String, animations:Array<Dynamic>) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 
 			if(character == null || animations == null) {
 				return false;
@@ -533,7 +533,7 @@ class PlayLua
 				return false;
 			}
 
-			var character:Character = null;
+			var character:ICharacter = null;
 
 			switch(type.toLowerCase().trim()) {
 				case "dad", "opponent":
@@ -563,7 +563,7 @@ class PlayLua
 				return false;
 			}
 
-			var character:Character = null;
+			var character:ICharacter = null;
 
 			switch(type.toLowerCase().trim()) {
 				case "dad", "opponent":
@@ -668,13 +668,13 @@ class PlayLua
 		});
 
 		playState.addCallback("addCharacter", function(name:String, insertBefore:String = null) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 
 			if(character == null) {
 				return false;
 			}
 
-			if(playState.stage.members.indexOf(character) >= 0) {
+			if(playState.stage.members.indexOf(cast character) >= 0) {
 				return true;
 			}
 
@@ -683,11 +683,11 @@ class PlayLua
 			if(insertBefore != null) {
 				switch(insertBefore.toLowerCase().trim()) {
 					case "boyfriend", "bf", "player":
-						insertIndex = playState.stage.members.indexOf(playState.boyfriend);
+						insertIndex = playState.stage.members.indexOf(cast playState.boyfriend);
 					case "dad", "opponent":
-						insertIndex = playState.stage.members.indexOf(playState.dad);
+						insertIndex = playState.stage.members.indexOf(cast playState.dad);
 					case "gf", "girlfriend":
-						insertIndex = playState.gf != null ? playState.stage.members.indexOf(playState.gf) : -1;
+						insertIndex = playState.gf != null ? playState.stage.members.indexOf(cast playState.gf) : -1;
 					default:
 						var targetSprite:FlxSprite = getSprite(insertBefore);
 						insertIndex = targetSprite != null ? playState.stage.members.indexOf(targetSprite) : -1;
@@ -695,16 +695,16 @@ class PlayLua
 			}
 
 			if(insertIndex >= 0) {
-				playState.stage.insert(insertIndex, character);
+				playState.stage.insert(insertIndex, cast character);
 			} else {
-				playState.stage.add(character);
+				playState.stage.add(cast character);
 			}
 
 			return true;
 		});
 
 		playState.addCallback("characterDance", function(name:String) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 
 			if(character == null)
 				return false;
@@ -782,7 +782,7 @@ class PlayLua
 		});
 
 		playState.addCallback("setCharacterHoldTimer", function(name:String, value:Float) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 
 			if(character != null)
 				character.holdTimer = value;
@@ -793,7 +793,7 @@ class PlayLua
 		});
 
 		playState.addCallback("setCharacterIdleSuffix", function(name:String, suffix:String = "") {
-			var character:Character = null;
+			var character:ICharacter = null;
 
 			switch(name != null ? name.toLowerCase().trim() : "") {
 				case "dad", "opponent":
@@ -814,7 +814,7 @@ class PlayLua
 		});
 
 		playState.addCallback("setCharacterShouldPlayDance", function(name:String, enabled:Bool = true) {
-			var character:Character = null;
+			var character:ICharacter = null;
 
 			switch(name != null ? name.toLowerCase().trim() : "") {
 				case "dad", "opponent":
@@ -835,7 +835,7 @@ class PlayLua
 		});
 
 		playState.addCallback("setCharacterSpecialAnim", function(name:String, enabled:Bool = true) {
-			var character:Character = null;
+			var character:ICharacter = null;
 
 			switch(name != null ? name.toLowerCase().trim() : "") {
 				case "dad", "opponent":
@@ -856,7 +856,7 @@ class PlayLua
 		});
 
 		playState.addCallback("setCharacterCustomAnimation", function(name:String, enabled:Bool = true) {
-			var character:Character = null;
+			var character:ICharacter = null;
 
 			switch(name != null ? name.toLowerCase().trim() : "") {
 				case "dad", "opponent":
@@ -907,22 +907,22 @@ class PlayLua
 		});
 
 		playState.addCallback("getCharacterIsPlayer", function(name:String) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 			return character != null ? character.isPlayer : false;
 		});
 
 		playState.addCallback("getCharacterDancing", function(name:String) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 			return character != null ? character.dancing : false;
 		});
 
 		playState.addCallback("getCharacterStunned", function(name:String) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 			return character != null ? character.stunned : false;
 		});
 
 		playState.addCallback("getCharacterHoldTimer", function(name:String) {
-			var character:Character = playState.modifiableCharacters.get(name);
+			var character:ICharacter = playState.modifiableCharacters.get(name);
 			return character != null ? character.holdTimer : 0;
 		});
 
@@ -1148,6 +1148,7 @@ class PlayLua
 			}
 			return true;
 		});
+
 		#end
 	}
 

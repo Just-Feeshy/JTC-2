@@ -19,7 +19,7 @@ class CameraFocusPositioner
 		return mustHitSection ? getPlayerFocus(playState, out) : getOpponentFocus(playState, out);
 	}
 
-	public static function getCharacterFocus(character:Character, role:String, stage:String, ?out:FlxPoint):FlxPoint
+	public static function getCharacterFocus(character:ICharacter, role:String, stage:String, ?out:FlxPoint):FlxPoint
 	{
 		var point:FlxPoint = out != null ? out : FlxPoint.get();
 
@@ -42,7 +42,7 @@ class CameraFocusPositioner
 		return point;
 	}
 
-	private static function applyOpponentOffset(character:Character, point:FlxPoint):Void
+	private static function applyOpponentOffset(character:ICharacter, point:FlxPoint):Void
 	{
 		switch(character.curCharacter) {
 			case "mom":

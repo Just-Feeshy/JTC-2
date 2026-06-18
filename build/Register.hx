@@ -132,11 +132,11 @@ class Register {
 
             switch (character) {
                 case BOYFRIEND:
-                    return playstate.boyfriend;
+                    return cast playstate.boyfriend;
                 case GIRLFRIEND:
-                    return playstate.gf;
+                    return cast playstate.gf;
                 default:
-                    return playstate.dad;
+                    return cast playstate.dad;
             }
         }
 

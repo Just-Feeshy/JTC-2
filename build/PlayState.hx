@@ -133,7 +133,7 @@ class PlayState extends MusicBeatState
 	var precacheList:Map<String, String> = new Map<String, String>();
 
 	//Lua Stuff
-	public var modifiableCharacters:Map<String, Character>;
+	public var modifiableCharacters:Map<String, ICharacter>;
 
 	//More Stuff
 	public var stage:StageBuilder;
@@ -307,13 +307,13 @@ class PlayState extends MusicBeatState
 	private var syncedSongTracks:Array<SongTrackInfo> = [];
 	private var syncedSongTrackMap:Map<String, SongTrackInfo> = new Map<String, SongTrackInfo>();
 
-	public var dad:Character;
-	public var gf:Character;
-	public var boyfriend:Boyfriend;
+	public var dad:ICharacter;
+	public var gf:ICharacter;
+	public var boyfriend:ICharacter;
 	public var customDeathCharacter:play.DeathCharacter;
-	public var boyfriendMap:Map<String, Boyfriend> = new Map<String, Boyfriend>();
-	public var dadMap:Map<String, Character> = new Map<String, Character>();
-	public var gfMap:Map<String, Character> = new Map<String, Character>();
+	public var boyfriendMap:Map<String, ICharacter> = new Map<String, ICharacter>();
+	public var dadMap:Map<String, ICharacter> = new Map<String, ICharacter>();
+	public var gfMap:Map<String, ICharacter> = new Map<String, ICharacter>();
 
 	// Track character changes for proper reset
 	public var originalPlayer1:String = "";
@@ -321,8 +321,8 @@ class PlayState extends MusicBeatState
 	public var originalGirlfriend:String = "";
 	public var characterChangeDirty:Bool = false;
 
-	public var currentPlayer(get, never):Character;
-	public var currentOpponent(get, never):Character;
+	public var currentPlayer(get, never):ICharacter;
+	public var currentOpponent(get, never):ICharacter;
 
 	public var notes:FlxTypedGroup<Note>;
 	public var unspawnNotes:Array<Note> = [];
@@ -499,7 +499,7 @@ class PlayState extends MusicBeatState
 	override public function create() {
 		instance = this;
 
-		modifiableCharacters = new Map<String, Character>();
+		modifiableCharacters = new Map<String, ICharacter>();
 
 		Cache.clearNoneCachedAssets();
 
@@ -1169,10 +1169,10 @@ class PlayState extends MusicBeatState
 		}
 
 		if(!createdCharacters) {
-			stage.add(gf);
+			stage.add(cast gf);
 
-			stage.add(dad);
-			stage.add(boyfriend);
+			stage.add(cast dad);
+			stage.add(cast boyfriend);
 
 			stage.whenCreatingScene();
 		} else {
@@ -2681,7 +2681,7 @@ class PlayState extends MusicBeatState
 		resetCharacterForSongStart(boyfriend);
 	}
 
-	function resetCharacterForSongStart(character:Character):Void
+	function resetCharacterForSongStart(character:ICharacter):Void
 	{
 		if(character == null) {
 			return;
@@ -4092,7 +4092,7 @@ class PlayState extends MusicBeatState
 
 			setHealth(health + note.giveHealth());
 
-			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
+			note.pressedByPlayer(cast currentPlayer, cast currentOpponent, cast gf);
 			currentPlayer.customAnimation = true;
 			singNotePlayer(note);
 
@@ -4647,7 +4647,7 @@ class PlayState extends MusicBeatState
 		switch(type) {
 			case 0:
 				if(!boyfriendMap.exists(newCharacter)) {
-					var sourceBoyfriend:Boyfriend = boyfriend;
+					var sourceBoyfriend:ICharacter = boyfriend;
 					var baseX:Float = sourceBoyfriend != null ? sourceBoyfriend.x - sourceBoyfriend._info.position.get("x") : 770;
 					var baseY:Float = sourceBoyfriend != null ? sourceBoyfriend.y - sourceBoyfriend._info.position.get("y") : 100;
 					var newBoyfriend:Boyfriend = new Boyfriend(baseX, baseY, newCharacter);
@@ -4658,7 +4658,7 @@ class PlayState extends MusicBeatState
 					boyfriendMap.set(newCharacter, newBoyfriend);
 
 					if(stage != null) {
-						var insertIndex:Int = sourceBoyfriend != null ? stage.members.indexOf(sourceBoyfriend) : -1;
+						var insertIndex:Int = sourceBoyfriend != null ? stage.members.indexOf(cast sourceBoyfriend) : -1;
 
 						if(insertIndex >= 0)
 							stage.insert(insertIndex, newBoyfriend);
@@ -4669,7 +4669,7 @@ class PlayState extends MusicBeatState
 
 			case 1:
 				if(!dadMap.exists(newCharacter)) {
-					var sourceDad:Character = dad;
+					var sourceDad:ICharacter = dad;
 					var baseX:Float = sourceDad != null ? sourceDad.x - sourceDad._info.position.get("x") : 100;
 					var baseY:Float = sourceDad != null ? sourceDad.y - sourceDad._info.position.get("y") : 100;
 					var newDad:Character = new Character(baseX, baseY, newCharacter);
@@ -4680,7 +4680,7 @@ class PlayState extends MusicBeatState
 					dadMap.set(newCharacter, newDad);
 
 					if(stage != null) {
-						var insertIndex:Int = sourceDad != null ? stage.members.indexOf(sourceDad) : -1;
+						var insertIndex:Int = sourceDad != null ? stage.members.indexOf(cast sourceDad) : -1;
 
 						if(insertIndex >= 0)
 							stage.insert(insertIndex, newDad);
@@ -4691,7 +4691,7 @@ class PlayState extends MusicBeatState
 
 			case 2:
 				if(gf != null && !gfMap.exists(newCharacter)) {
-					var sourceGf:Character = gf;
+					var sourceGf:ICharacter = gf;
 					var baseX:Float = sourceGf != null ? sourceGf.x - sourceGf._info.position.get("x") : 400;
 					var baseY:Float = sourceGf != null ? sourceGf.y - sourceGf._info.position.get("y") : 130;
 					var newGf:Character = new Character(baseX, baseY, newCharacter);
@@ -4702,7 +4702,7 @@ class PlayState extends MusicBeatState
 					gfMap.set(newCharacter, newGf);
 
 					if(stage != null) {
-						var insertIndex:Int = sourceGf != null ? stage.members.indexOf(sourceGf) : -1;
+						var insertIndex:Int = sourceGf != null ? stage.members.indexOf(cast sourceGf) : -1;
 
 						if(insertIndex >= 0)
 							stage.insert(insertIndex, newGf);
@@ -4713,13 +4713,13 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	private function destroyLoadedCharacterInstance(character:Character):Void {
+	private function destroyLoadedCharacterInstance(character:ICharacter):Void {
 		if(character == null) {
 			return;
 		}
 
-		if(stage != null && stage.members.indexOf(character) >= 0) {
-			stage.remove(character, true);
+		if(stage != null && stage.members.indexOf(cast character) >= 0) {
+			stage.remove(cast character, true);
 		}
 
 		if(modifiableCharacters != null) {
@@ -4755,7 +4755,7 @@ class PlayState extends MusicBeatState
 
 		switch(type) {
 			case 0:
-				var loadedBoyfriend:Boyfriend = boyfriendMap != null ? boyfriendMap.get(resolvedCharacter) : null;
+				var loadedBoyfriend:ICharacter = boyfriendMap != null ? boyfriendMap.get(resolvedCharacter) : null;
 
 				if(loadedBoyfriend == null || loadedBoyfriend == boyfriend) {
 					return false;
@@ -4766,7 +4766,7 @@ class PlayState extends MusicBeatState
 				return true;
 
 			case 1:
-				var loadedDad:Character = dadMap != null ? dadMap.get(resolvedCharacter) : null;
+				var loadedDad:ICharacter = dadMap != null ? dadMap.get(resolvedCharacter) : null;
 
 				if(loadedDad == null || loadedDad == dad) {
 					return false;
@@ -4777,7 +4777,7 @@ class PlayState extends MusicBeatState
 				return true;
 
 			case 2:
-				var loadedGf:Character = gfMap != null ? gfMap.get(resolvedCharacter) : null;
+				var loadedGf:ICharacter = gfMap != null ? gfMap.get(resolvedCharacter) : null;
 
 				if(loadedGf == null || loadedGf == gf) {
 					return false;
@@ -4791,7 +4791,7 @@ class PlayState extends MusicBeatState
 		return false;
 	}
 
-	private function syncLoadedCharacterTransform(currentChar:Character, nextChar:Character):Void {
+	private function syncLoadedCharacterTransform(currentChar:ICharacter, nextChar:ICharacter):Void {
 		if(currentChar == null || nextChar == null) {
 			return;
 		}
@@ -4821,13 +4821,13 @@ class PlayState extends MusicBeatState
 
 		switch(type) {
 			case 0:
-				var nextBoyfriend:Boyfriend = boyfriendMap.get(newCharacter);
+				var nextBoyfriend:ICharacter = boyfriendMap.get(newCharacter);
 
 				if(nextBoyfriend == null || boyfriend == nextBoyfriend) {
 					return false;
 				}
 
-				var previousBoyfriend:Boyfriend = boyfriend;
+				var previousBoyfriend:ICharacter = boyfriend;
 				syncLoadedCharacterTransform(previousBoyfriend, nextBoyfriend);
 				boyfriend.alpha = 0.00001;
 				boyfriend.active = false;
@@ -4842,13 +4842,13 @@ class PlayState extends MusicBeatState
 				return true;
 
 			case 1:
-				var nextDad:Character = dadMap.get(newCharacter);
+				var nextDad:ICharacter = dadMap.get(newCharacter);
 
 				if(nextDad == null || dad == nextDad) {
 					return false;
 				}
 
-				var previousDad:Character = dad;
+				var previousDad:ICharacter = dad;
 				syncLoadedCharacterTransform(previousDad, nextDad);
 				dad.alpha = 0.00001;
 				dad.active = false;
@@ -4863,13 +4863,13 @@ class PlayState extends MusicBeatState
 				return true;
 
 			case 2:
-				var nextGf:Character = gfMap.get(newCharacter);
+				var nextGf:ICharacter = gfMap.get(newCharacter);
 
 				if(nextGf == null || gf == nextGf) {
 					return false;
 				}
 
-				var previousGf:Character = gf;
+				var previousGf:ICharacter = gf;
 				syncLoadedCharacterTransform(previousGf, nextGf);
 				gf.alpha = 0.00001;
 				gf.active = false;
@@ -4909,7 +4909,7 @@ class PlayState extends MusicBeatState
 			return opponentStrums;
 	}
 
-	function get_currentPlayer():Character {
+	function get_currentPlayer():ICharacter {
 		if(SaveData.getData(PLAY_AS_OPPONENT))
 			return dad;
 		else
@@ -4918,7 +4918,7 @@ class PlayState extends MusicBeatState
 
 	public function extractGameOverCharacter():Character
 	{
-		var deathCharacter:Character = currentPlayer;
+		var deathCharacter:Character = cast currentPlayer;
 
 		if(deathCharacter == null)
 		{
@@ -4954,7 +4954,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	function get_currentOpponent():Character {
+	function get_currentOpponent():ICharacter {
 		if(SaveData.getData(PLAY_AS_OPPONENT))
 			return boyfriend;
 		else
@@ -5361,7 +5361,7 @@ class PlayState extends MusicBeatState
 
 		if(modifiableCharacters != null) {
             for(k in modifiableCharacters.keys()) {
-                var spr:Character = modifiableCharacters.get(k);
+                var spr:ICharacter = modifiableCharacters.get(k);
 
                 if(spr != null && spr != boyfriend && spr != dad && spr != gf) {
                     spr.destroy();

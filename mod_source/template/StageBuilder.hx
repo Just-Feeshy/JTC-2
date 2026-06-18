@@ -81,7 +81,7 @@ abstract class StageBuilder extends FlxGroup {
 	}
 
 	public function getBoyfriend(removeFromStage:Bool = false):Boyfriend {
-		var boyfriend:Boyfriend = playstate.boyfriend;
+		var boyfriend:Boyfriend = cast playstate.boyfriend;
 
 		if(removeFromStage && boyfriend != null) {
 			remove(boyfriend, true);

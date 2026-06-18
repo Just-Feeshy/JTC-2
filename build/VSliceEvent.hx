@@ -217,14 +217,14 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
 
         switch(targetName) {
             case "boyfriend" | "bf" | "player":
-                target = playState.boyfriend;
+                target = cast playState.boyfriend;
             case "dad" | "opponent":
-                target = playState.dad;
+                target = cast playState.dad;
             case "girlfriend" | "gf":
-                target = playState.gf;
+                target = cast playState.gf;
             default:
                 if(playState.modifiableCharacters != null && playState.modifiableCharacters.exists(targetName)) {
-                    target = playState.modifiableCharacters.get(targetName);
+                    target = cast playState.modifiableCharacters.get(targetName);
                 } else if(playState.stage != null) {
                     var stageTarget:Dynamic = Reflect.field(playState.stage, targetName);
 
@@ -459,11 +459,11 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
 
         switch(value != null ? value.toLowerCase().trim() : "") {
             case "dad" | "opponent":
-                return playState.dad;
+                return cast playState.dad;
             case "girlfriend" | "gf":
-                return playState.gf;
+                return cast playState.gf;
             default:
-                return playState.boyfriend;
+                return cast playState.boyfriend;
         }
     }
 

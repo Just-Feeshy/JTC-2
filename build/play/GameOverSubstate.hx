@@ -109,7 +109,7 @@ class GameOverSubstate extends MusicBeatSubstate
         // Position at boyfriend's location if boyfriend exists
         if (parentPlayState.boyfriend != null)
         {
-          customDeathChar.copyCenterFrom(parentPlayState.boyfriend);
+          customDeathChar.copyCenterFrom(cast parentPlayState.boyfriend);
         }
 
         trace('[GameOver] Using custom death character');
@@ -352,7 +352,7 @@ class GameOverSubstate extends MusicBeatSubstate
 
       if (sourceBoyfriend != null)
       {
-        customDeathChar.copyCenterFrom(sourceBoyfriend);
+        customDeathChar.copyCenterFrom(cast sourceBoyfriend);
       }
 
       if (cameraFollowPoint != null)

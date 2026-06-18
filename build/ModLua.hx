@@ -3526,16 +3526,16 @@ class ModLua {
 
             switch(name.toLowerCase().trim()) {
                 case "boyfriend", "bf":
-                    spr = playState.boyfriend;
+                    spr = cast playState.boyfriend;
                 case "dad", "opponent":
-                    spr = playState.dad;
+                    spr = cast playState.dad;
                 case "gf", "girlfriend":
-                    spr = playState.gf;
+                    spr = cast playState.gf;
                 default:
             }
 
             if(spr == null && playState.modifiableCharacters != null && playState.modifiableCharacters.exists(name))
-                spr = playState.modifiableCharacters.get(name);
+                spr = cast playState.modifiableCharacters.get(name);
         }
 
         if(spr == null && curState != null) {

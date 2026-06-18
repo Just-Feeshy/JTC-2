@@ -351,7 +351,7 @@ class DialogueBuilder extends MusicBeatSubstate implements IDialogue {
         var playstate:PlayState = cast(state, PlayState);
 
         playstateRef = playstate;
-        girlfriend = playstate.gf;
+        girlfriend = cast playstate.gf;
 
         blurEffect = new GuassianBlur(0);
         blurFilter = new ShaderFilter(blurEffect);

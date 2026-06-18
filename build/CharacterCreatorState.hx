@@ -51,8 +51,8 @@ typedef PreloadJSON = Map<String, Array<Array<Float>>>;
 class CharacterCreatorState extends UIState {
     private static inline var DEFAULT_HEALTH_COLOR:Int = 0xFFFF0000;
 
-    private var shadowEntity:CreatorCharacter;
-    private var character:CreatorCharacter;
+    private var shadowEntity:ICharacter;
+    private var character:ICharacter;
     private var characterStorage:FlxTypedGroup<CreatorCharacter>;
     private var characterAutosave:Map<String, ConfigCharacters>;
     private var mapEditor:Map<String, Dynamic>;
@@ -281,9 +281,9 @@ class CharacterCreatorState extends UIState {
         add(characterStorage);
 
         character = new CreatorCharacter(440, 100, currentCharacterName, true);
-        character.updateFinalized(FlixelCompat.getScreenCenter(character, X), 100);
+        character.updateFinalized(FlixelCompat.getScreenCenter(cast character, X), 100);
         character.cameras = [camGame];
-        characterStorage.add(character);
+        characterStorage.add(cast character);
 
         camGame.zoom = 0.9;
         camPos = new FlxPoint(character.getGraphicMidpoint().x, character.getGraphicMidpoint().y);
@@ -755,7 +755,7 @@ class CharacterCreatorState extends UIState {
         shadowEntity.isPlayer = true;
         shadowEntity.alpha = 0.5;
         shadowEntity.cameras = [camGame];
-        characterStorage.add(shadowEntity);
+        characterStorage.add(cast shadowEntity);
 
         if(character.animation.curAnim != null) {
             shadowEntity.playAnim(character.animation.curAnim.name);
@@ -771,7 +771,7 @@ class CharacterCreatorState extends UIState {
             return;
         }
 
-        characterStorage.remove(shadowEntity, true);
+        characterStorage.remove(cast shadowEntity, true);
         shadowEntity.destroy();
         shadowEntity = null;
     }
@@ -938,18 +938,18 @@ class CharacterCreatorState extends UIState {
         }
 
         if(character != null) {
-            characterStorage.remove(character, true);
+            characterStorage.remove(cast character, true);
             character.destroy();
             character = null;
         }
 
         character = new CreatorCharacter(440, 100, characterName, true, currentConfig());
         character.flipX = false;
-        character.updateFinalized(FlixelCompat.getScreenCenter(character, X), character.y);
+        character.updateFinalized(FlixelCompat.getScreenCenter(cast character, X), character.y);
         character.refresh(character.curCharacter, camPos);
         character.isPlayer = true;
         character.cameras = [camGame];
-        characterStorage.add(character);
+        characterStorage.add(cast character);
 
         camFollow.setPosition(camPos.x, camPos.y);
         camGame.focusOn(camFollow.getPosition());
