@@ -110,6 +110,10 @@ typedef AnimationInfo = {
     @:optional var secondaryPrefix:String;
     @:optional var secondaryOffset:Array<Int>;
     @:optional var secondaryBehind:Bool;
+    // Optional frame range (relative to the animation's frame label / symbol), mirroring
+    // Codename's `indices="a..b"`. Used to split a single Animate symbol (e.g. GF's
+    // "GF Dancing Beat") into danceLeft/danceRight halves.
+    @:optional var indices:Array<Int>;
 }
 
 typedef DiscordRPC = {

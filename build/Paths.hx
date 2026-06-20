@@ -1145,9 +1145,9 @@ class Paths
 			if(settings.cacheOnLoad != null) animateSettings.cacheOnLoad = settings.cacheOnLoad;
 			if(settings.filterQuality != null) animateSettings.filterQuality = settings.filterQuality;
 		}
-		var cs4Frames:flixel.graphics.frames.FlxFramesCollection = Cs4AtlasCompat.loadIfNeeded(directory, animateSettings);
-		if(cs4Frames != null)
-			return cs4Frames;
+		// flixel-animate parses the long-form CS4/legacy Animate JSON natively (every key
+		// falls back to its long name, e.g. `AN ?? ANIMATION`, `MX ?? Matrix`,
+		// `ST ?? symbolType`), so we load the atlas folder directly for every atlas.
 		return animate.FlxAnimateFrames.fromAnimate(directory, null, null, null, false, animateSettings);
 	}
 

@@ -22,8 +22,10 @@ class CheesyStage extends StorageStage {
 
 	var allTweens:Array<FlxTween>;
 
-	var boyfriend:Character;
-	var dad:Character;
+	// Typed as the atlas-safe interface: these may be Sparrow `Character`/`Boyfriend` or
+	// Adobe Animate `AtlasCharacter` instances depending on the character's `useAtlas` flag.
+	var boyfriend:ICharacter;
+	var dad:ICharacter;
 
 	var dadShouldDance:Bool = true;
 	var curStep:Float = 0;
@@ -224,9 +226,11 @@ class CheesyStage extends StorageStage {
 		updateCurStep();
 		updateBeat();
 
+		// Atlas-safe: `getCurrentAnimation()`/`isSinging()` work for both Sparrow and Animate
+		// characters, unlike `animation.curAnim` which is never populated for atlas chars.
 		if(dad.exists) {
-			if(dad.animation.curAnim != null) {
-				if (!dad.animation.curAnim.name.startsWith("sing") && !dad.stunned && dadShouldDance) {
+			if(dad.getCurrentAnimation() != "") {
+				if (!dad.isSinging() && !dad.stunned && dadShouldDance) {
 					dad.dance();
 				}
 			}
@@ -237,8 +241,8 @@ class CheesyStage extends StorageStage {
 			dad.shouldPlayDance = false;
 		}
 
-		if(boyfriend.animation.curAnim != null) {
-			if(!boyfriend.animation.curAnim.name.startsWith("sing") && !boyfriend.stunned) {
+		if(boyfriend.getCurrentAnimation() != "") {
+			if(!boyfriend.isSinging() && !boyfriend.stunned) {
 				boyfriend.dance();
 			}
 		}

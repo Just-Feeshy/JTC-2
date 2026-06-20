@@ -5044,21 +5044,24 @@ class PlayState extends MusicBeatState
 			notes.sort(FlxSort.byY, FlxSort.DESCENDING);
 		}
 
+		// `getCurrentAnimation()`/`isSinging()` are atlas-safe; the chars may be Sparrow
+		// (`Character`) or Adobe Animate (`AtlasCharacter`), and atlas chars never populate
+		// the `animation` controller, so we must not read `animation.curAnim` here.
 		if (gf != null) {
-			if(gf.animation.curAnim != null) {
+			if(gf.getCurrentAnimation() != "") {
 				if (!isInCountdown && curBeat % gf.danceBeatTimer == 0 && !gf.isSinging() && !gf.stunned && gf.shouldPlayDance) {
 					gf.dance();
 				}
 			}
 		}
 
-		if(dad.animation.curAnim != null) {
+		if(dad.getCurrentAnimation() != "") {
 			if (curBeat % dad.danceBeatTimer == 0 && !dad.isSinging() && !dad.stunned && dad.shouldPlayDance) {
 				playOpponentIdle();
 			}
 		}
 
-		if(boyfriend.animation.curAnim != null) {
+		if(boyfriend.getCurrentAnimation() != "") {
 			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.isSinging() && !boyfriend.stunned && boyfriend.shouldPlayDance) {
 				boyfriend.dance();
 			}

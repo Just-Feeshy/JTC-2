@@ -111,21 +111,38 @@ class AtlasCharacter extends FunkinSprite implements ICharacter {
 	}
 
 	function addAnimationFromInfo(animName:String, animInfo:AnimationInfo):Void {
+		// Optional frame range (relative to the label/symbol), Codename-style. Lets a single
+		// Animate symbol be split into sub-animations (e.g. GF's "GF Dancing Beat" -> danceLeft/danceRight).
+		var indices:Array<Int> = animInfo.indices;
+		var hasIndices:Bool = indices != null && indices.length > 0;
+
 		if(isAnimate && anim != null) {
 			if(anim.findFrameLabelIndices(animInfo.prefix).length > 0) {
-				anim.addByFrameLabel(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+				if(hasIndices)
+					anim.addByFrameLabelIndices(animName, animInfo.prefix, indices, animInfo.framerate, animInfo.looped);
+				else
+					anim.addByFrameLabel(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
 				if(anim.exists(animName)) return;
 			}
 
 			var symbol:Dynamic = library != null ? library.getSymbol(animInfo.prefix) : null;
 			if(symbol != null && !Std.isOfType(symbol, Bool)) {
-				anim.addBySymbol(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+				if(hasIndices)
+					anim.addBySymbolIndices(animName, animInfo.prefix, indices, animInfo.framerate, animInfo.looped);
+				else
+					anim.addBySymbol(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
 				if(anim.exists(animName)) return;
 			}
 
-			anim.addByFrameLabel(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+			if(hasIndices)
+				anim.addByFrameLabelIndices(animName, animInfo.prefix, indices, animInfo.framerate, animInfo.looped);
+			else
+				anim.addByFrameLabel(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
 		} else if(animation != null) {
-			animation.addByPrefix(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+			if(hasIndices)
+				animation.addByIndices(animName, animInfo.prefix, indices, "", animInfo.framerate, animInfo.looped);
+			else
+				animation.addByPrefix(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
 		}
 	}
 

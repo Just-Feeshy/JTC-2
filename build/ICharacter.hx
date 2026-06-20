@@ -65,4 +65,5 @@ interface ICharacter extends IFlxSprite {
 	function setColorTransform(redMultiplier:Float = 1, greenMultiplier:Float = 1, blueMultiplier:Float = 1, alphaMultiplier:Float = 1,
 		redOffset:Float = 0, greenOffset:Float = 0, blueOffset:Float = 0, alphaOffset:Float = 0):Void;
 	function updateFinalized(x:Float, y:Float):Void;
+	function updateHitbox():Void;
 }
