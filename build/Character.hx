@@ -872,6 +872,31 @@ class Character extends feshixl.FeshSprite implements ICharacter {
 		infoCache = new Map<String, ConfigCharacters>();
 	}
 
+	/**
+	 * Builds the appropriate `ICharacter` implementation for `character`, reading the
+	 * `useAtlas` flag from its JSON config:
+	 * - `useAtlas: true`  -> `AtlasCharacter` (Adobe Animate texture atlas playback)
+	 * - players           -> `Boyfriend`
+	 * - everyone else     -> `Character`
+	 *
+	 * Any state (PlayState, CharacterCreatorState, editors, ...) should call this
+	 * instead of `new Character(...)` so atlas-backed characters are picked up
+	 * automatically without each call site having to know which class to use.
+	 */
+	public static function build(x:Float, y:Float, ?character:String = "bf", ?isPlayer:Bool = false, ?hardInfo:ConfigCharacters, frameOffsetApply:Bool = true):ICharacter {
+		var info:ConfigCharacters = hardInfo;
+		if(info == null && character != null && character != "none")
+			info = loadInfo('characters/$character');
+
+		if(info != null && info.useAtlas == true)
+			return new AtlasCharacter(x, y, character, isPlayer, info, frameOffsetApply);
+
+		if(isPlayer)
+			return new Boyfriend(x, y, character, frameOffsetApply);
+
+		return new Character(x, y, character, isPlayer, info, frameOffsetApply);
+	}
+
 	public function refresh(character:String, camPos:FlxPoint) {
 		this.setPosition(finalizedX, finalizedY);
 

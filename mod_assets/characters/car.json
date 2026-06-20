@@ -32,6 +32,7 @@
 	"clippingAdjustment": {},
 	"playAnim": "",
 	"file": "car",
+	"useAtlas": true,
 	"icon": [
 		10,
 		11

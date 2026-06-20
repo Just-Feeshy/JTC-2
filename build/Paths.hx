@@ -1128,22 +1128,61 @@ class Paths
 		return assetExists(animationPath, TEXT);
 	}
 
-	#if flxanimate
 	/**
-	 * Load an Adobe Animate texture atlas into the given `FlxAnimate`.
-	 * Resolves the on-disk folder (the one holding `Animation.json`) and lets flxanimate
-	 * read the `spritemap*` pages from it. Mirrors the FunkinSprite atlas path used elsewhere.
+	 * Load Adobe Animate texture atlas frames from the folder containing `Animation.json`.
 	 */
-	static public function loadAnimateAtlas(spr:flxanimate.FlxAnimate, key:String, ?library:String):Void {
-		if(spr == null || key == null)
-			return;
+	static public function getAnimateAtlas(key:String, ?library:String, ?settings:funkin.data.character.CharacterData.AtlasSpriteSettings):flixel.graphics.frames.FlxFramesCollection {
+		if(key == null)
+			return null;
 
 		var folder:String = key.split(",")[0].trim();
 		// getPath returns the resolved asset path without extension, e.g. `mod_assets/images/fonz`.
 		var directory:String = getPath('images/$folder', IMAGE, library);
-		spr.loadAtlas(directory);
+		var animateSettings:Dynamic = null;
+		if(settings != null) {
+			animateSettings = {};
+			if(settings.swfMode != null) animateSettings.swfMode = settings.swfMode;
+			if(settings.cacheOnLoad != null) animateSettings.cacheOnLoad = settings.cacheOnLoad;
+			if(settings.filterQuality != null) animateSettings.filterQuality = settings.filterQuality;
+		}
+		var cs4Frames:flixel.graphics.frames.FlxFramesCollection = Cs4AtlasCompat.loadIfNeeded(directory, animateSettings);
+		if(cs4Frames != null)
+			return cs4Frames;
+		return animate.FlxAnimateFrames.fromAnimate(directory, null, null, null, false, animateSettings);
 	}
-	#end
+
+	/**
+	 * Unified frame loader, mirroring Codename's `Paths.getFrames`.
+	 *
+	 * Picks the right backing for `key` in one place:
+	 * - an Adobe Animate texture atlas (folder with `Animation.json`) when one exists,
+	 * - otherwise one or more comma-separated Sparrow/Packer atlases, combined into a
+	 *   single collection.
+	 *
+	 * This is the single entry point `FunkinSprite` uses so the atlas-vs-sparrow
+	 * decision never has to be duplicated at the call sites.
+	 */
+	static public function getFrames(key:String, ?settings:funkin.data.character.CharacterData.AtlasSpriteSettings):flixel.graphics.frames.FlxFramesCollection {
+		if(hasAnimateAtlas(key))
+			return getAnimateAtlas(key, null, settings);
+
+		var files:Array<String> = [];
+		if(key != null) {
+			for(file in key.split(",")) {
+				var trimmedFile:String = file.trim();
+				if(trimmedFile.length > 0)
+					files.push(trimmedFile);
+			}
+		}
+
+		if(files.length <= 1)
+			return feshixl.FeshMinSprite.loadFrameCollection(files.length == 1 ? files[0] : key);
+
+		var frameCollections:Array<flixel.graphics.frames.FlxFramesCollection> = [];
+		for(file in files)
+			frameCollections.push(feshixl.FeshMinSprite.loadFrameCollection(file));
+		return FlxAnimationUtil.combineAtlas(frameCollections);
+	}
 
 	static public function image(key:String, ?library:String):FlxGraphic {
 		var cachedImage:FlxGraphic = ifImageCached(key, library);

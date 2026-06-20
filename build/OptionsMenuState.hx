@@ -732,8 +732,20 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Character Creator.";
 								setting(option, "", option.ID);
 							}),
-							new Options(0, 30, "Shader Event Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+							new Options(0, 30, "Atlas Debug Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
 								option.ID = 3;
+
+								if(option.optionIcon.animation.curAnim.name != "other")
+									option.optionIcon.animation.play("other");
+
+								if(pressed)
+									FlxG.switchState(new funkin.ui.debug.anim.DebugAtlasState());
+
+								option.description = "Atlas directory animation and offset editor.";
+								setting(option, "", option.ID);
+							}),
+							new Options(0, 40, "Shader Event Creator", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 4;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");
@@ -746,8 +758,8 @@ class OptionsMenuState extends MusicBeatState {
 							})
 							#if FEATURE_STAGE_EDITOR
 							,
-							new Options(0, 40, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
-								option.ID = 4;
+							new Options(0, 50, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
+								option.ID = 5;
 
 								if(option.optionIcon.animation.curAnim.name != "other")
 									option.optionIcon.animation.play("other");

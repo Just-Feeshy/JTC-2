@@ -46,6 +46,7 @@
 	<!-- Engine Customization -->
 	<define name="USING_LUA" />
 	<!-- <define name="USING_MOD_DEBUG" /> -->
+	<haxeflag name="--macro" value="haxe.macro.Compiler.addMetadata('@:build(compat.MoraFlxSpriteCompat.build())', 'flixel.FlxSprite')" />
 
 	<!-- Allow for applying modifiers in the option menu -->
 	<define name="TOGGLEABLE_MODIFIERS" />
@@ -148,7 +149,7 @@
 	<haxelib name="json2object" version="3.11.0" />
 
 	<!-- Adobe Animate texture atlas support (used by the funkin.* atlas character port + Animation Debugger) -->
-	<haxelib name="flxanimate" />
+	<haxelib name="flixel-animate" />
 
 	<!--In case you want to use the ui package-->
 	<haxelib name="flixel-ui" version="2.6.2" />

@@ -41,6 +41,13 @@ typedef ConfigCharacters = {
 
     var iconFile:String;
     var clippingAdjustment:Map<String, Array<Int>>;
+
+    /**
+     * When `true`, this character is backed by an Adobe Animate texture atlas and
+     * should be instantiated as `AtlasCharacter` (via `Character.build`) instead of
+     * the regular `Character`. Optional; defaults to `false` when absent from JSON.
+     */
+    @:optional var useAtlas:Bool;
 }
 
 typedef SongUtils = {

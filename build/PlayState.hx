@@ -646,7 +646,7 @@ class PlayState extends MusicBeatState
 		}
 
 		Cache.cacheCharacter(gfVersion);
-		gf = new Character(400, 130, gfVersion);
+		gf = Character.build(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
 		
 		if(!stage.hasGirlfriend()) {
@@ -655,7 +655,7 @@ class PlayState extends MusicBeatState
 		}
 
 		Cache.cacheCharacter(SONG.player2);
-		dad = new Character(100, 100, SONG.player2);
+		dad = Character.build(100, 100, SONG.player2);
 		originalPlayer1 = SONG.player1;
 		originalPlayer2 = SONG.player2;
 		originalGirlfriend = gf != null ? gf.curCharacter : "";
@@ -675,7 +675,7 @@ class PlayState extends MusicBeatState
 		}
 
 		Cache.cacheCharacter(SONG.player1);
-		boyfriend = new Boyfriend(770, 100, SONG.player1);
+		boyfriend = Character.build(770, 100, SONG.player1, true);
 
 		boyfriend.refresh(SONG.player1, camPos);
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
@@ -4650,7 +4650,7 @@ class PlayState extends MusicBeatState
 					var sourceBoyfriend:ICharacter = boyfriend;
 					var baseX:Float = sourceBoyfriend != null ? sourceBoyfriend.x - sourceBoyfriend._info.position.get("x") : 770;
 					var baseY:Float = sourceBoyfriend != null ? sourceBoyfriend.y - sourceBoyfriend._info.position.get("y") : 100;
-					var newBoyfriend:Boyfriend = new Boyfriend(baseX, baseY, newCharacter);
+					var newBoyfriend:ICharacter = Character.build(baseX, baseY, newCharacter, true);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newBoyfriend.refresh(newCharacter, newCamPos);
 					newCamPos.put();
@@ -4661,9 +4661,9 @@ class PlayState extends MusicBeatState
 						var insertIndex:Int = sourceBoyfriend != null ? stage.members.indexOf(cast sourceBoyfriend) : -1;
 
 						if(insertIndex >= 0)
-							stage.insert(insertIndex, newBoyfriend);
+							stage.insert(insertIndex, cast newBoyfriend);
 						else
-							stage.add(newBoyfriend);
+							stage.add(cast newBoyfriend);
 					}
 				}
 
@@ -4672,7 +4672,7 @@ class PlayState extends MusicBeatState
 					var sourceDad:ICharacter = dad;
 					var baseX:Float = sourceDad != null ? sourceDad.x - sourceDad._info.position.get("x") : 100;
 					var baseY:Float = sourceDad != null ? sourceDad.y - sourceDad._info.position.get("y") : 100;
-					var newDad:Character = new Character(baseX, baseY, newCharacter);
+					var newDad:ICharacter = Character.build(baseX, baseY, newCharacter);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newDad.refresh(newCharacter, newCamPos);
 					newCamPos.put();
@@ -4683,9 +4683,9 @@ class PlayState extends MusicBeatState
 						var insertIndex:Int = sourceDad != null ? stage.members.indexOf(cast sourceDad) : -1;
 
 						if(insertIndex >= 0)
-							stage.insert(insertIndex, newDad);
+							stage.insert(insertIndex, cast newDad);
 						else
-							stage.add(newDad);
+							stage.add(cast newDad);
 					}
 				}
 
@@ -4694,7 +4694,7 @@ class PlayState extends MusicBeatState
 					var sourceGf:ICharacter = gf;
 					var baseX:Float = sourceGf != null ? sourceGf.x - sourceGf._info.position.get("x") : 400;
 					var baseY:Float = sourceGf != null ? sourceGf.y - sourceGf._info.position.get("y") : 130;
-					var newGf:Character = new Character(baseX, baseY, newCharacter);
+					var newGf:ICharacter = Character.build(baseX, baseY, newCharacter);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newGf.refresh(newCharacter, newCamPos);
 					newCamPos.put();
@@ -4705,9 +4705,9 @@ class PlayState extends MusicBeatState
 						var insertIndex:Int = sourceGf != null ? stage.members.indexOf(cast sourceGf) : -1;
 
 						if(insertIndex >= 0)
-							stage.insert(insertIndex, newGf);
+							stage.insert(insertIndex, cast newGf);
 						else
-							stage.add(newGf);
+							stage.add(cast newGf);
 					}
 				}
 		}
@@ -4918,7 +4918,10 @@ class PlayState extends MusicBeatState
 
 	public function extractGameOverCharacter():Character
 	{
-		var deathCharacter:Character = cast currentPlayer;
+		// The game-over flow is built around the regular `Character` class. Atlas-backed
+		// players (`useAtlas`) aren't `Character`s, so guard the cast and let the death
+		// screen fall back to its default death character instead of crashing.
+		var deathCharacter:Character = Std.isOfType(currentPlayer, Character) ? cast currentPlayer : null;
 
 		if(deathCharacter == null)
 		{
