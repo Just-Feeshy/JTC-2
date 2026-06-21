@@ -33,8 +33,24 @@ class FeshMinSprite extends flixel.FlxSprite {
 			extension = trimmedFile.substr(extensionIndex + 1).toLowerCase();
 		}
 
-		var imagePath:String = Paths.getPath('images/$basePath.png', IMAGE, "shared");
-		var dataPath:String = Paths.getPath('images/$basePath.${extension == "json" ? "json" : "xml"}', extension == "json" ? TEXT : TEXT, "shared");
+		var dataExtension:String = extension == "json" ? "json" : "xml";
+
+		// Resolve against the shared library first (mod_assets + assets/shared, which keep sprites in a
+		// `cache/` subfolder). If that misses, fall back to the preload library: base-game sprites are
+		// embedded under assets/preload/images at the image root (no `cache/` subfolder), so they need
+		// `cache = false`. Without this fallback the character creator can't render any character whose
+		// only sprite lives in preload (e.g. the stock FNF characters).
+		var library:String = "shared";
+		var useCache:Bool = true;
+		var imagePath:String = Paths.getPath('images/$basePath.png', IMAGE, library);
+		var dataPath:String = Paths.getPath('images/$basePath.$dataExtension', TEXT, library);
+
+		if(!Paths.assetExists(imagePath, IMAGE) || !Paths.assetExists(dataPath, TEXT)) {
+			library = "preload";
+			useCache = false;
+			imagePath = Paths.getPath('images/$basePath.png', IMAGE, library);
+			dataPath = Paths.getPath('images/$basePath.$dataExtension', TEXT, library);
+		}
 
 		if(!Paths.assetExists(imagePath, IMAGE) || !Paths.assetExists(dataPath, TEXT)) {
 			return null;
@@ -42,9 +58,9 @@ class FeshMinSprite extends flixel.FlxSprite {
 
 		return switch(extension) {
 			case "json":
-				Paths.getPackerAtlas(basePath, "shared", true);
+				Paths.getPackerAtlas(basePath, library, useCache);
 			default:
-				Paths.getSparrowAtlas(basePath, "shared", true);
+				Paths.getSparrowAtlas(basePath, library, useCache);
 		};
 	}
 }

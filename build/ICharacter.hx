@@ -47,6 +47,9 @@ interface ICharacter extends IFlxSprite {
 	function drawFrame(Force:Bool = false):Void;
 	function finishAnimation():Void;
 	function getCurrentAnimation():String;
+	function getDeathCameraOffsets():Array<Float>;
+	function getDeathCameraZoom():Float;
+	function getDeathQuote():String;
 	function getGraphicMidpoint(?point:FlxPoint):FlxPoint;
 	function getScreenPosition(?result:FlxPoint, ?camera:FlxCamera):FlxPoint;
 	function hasAnimation(animName:String):Bool;

@@ -19,6 +19,7 @@
                                 <button id="updateFileButton" width="25%" text="Update" />
                             </hbox>
                             <label id="fileValidationLabel" width="100%" text="" />
+                            <checkbox id="useAtlasCheck" text="Use Adobe Animate Atlas (folder)" selected="false" />
                             <hbox width="100%">
                                 <label width="32%" text="Icon PNG" verticalAlign="center" />
                                 <textfield id="iconFileNameInput" width="43%" />

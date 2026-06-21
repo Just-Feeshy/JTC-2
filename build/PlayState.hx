@@ -648,7 +648,11 @@ class PlayState extends MusicBeatState
 		Cache.cacheCharacter(gfVersion);
 		gf = Character.build(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
-		
+		// Apply GF's JSON `position` x/y offset (relative to its build coords),
+		// the same way boyfriend/dad do via refresh(). GF isn't a camera target,
+		// so pass a throwaway point for the unused camPos output.
+		gf.refresh(gfVersion, FlxPoint.weak());
+
 		if(!stage.hasGirlfriend()) {
 			gf.destroy();
 			gf = null;
@@ -4916,12 +4920,12 @@ class PlayState extends MusicBeatState
 			return boyfriend;
 	}
 
-	public function extractGameOverCharacter():Character
+	public function extractGameOverCharacter():ICharacter
 	{
-		// The game-over flow is built around the regular `Character` class. Atlas-backed
-		// players (`useAtlas`) aren't `Character`s, so guard the cast and let the death
-		// screen fall back to its default death character instead of crashing.
-		var deathCharacter:Character = Std.isOfType(currentPlayer, Character) ? cast currentPlayer : null;
+		// The game-over flow works against the `ICharacter` interface, so both regular
+		// `Character`s and atlas-backed players (`useAtlas` -> `AtlasCharacter`) can be
+		// plucked out of the stage and reused on the death screen.
+		var deathCharacter:ICharacter = currentPlayer;
 
 		if(deathCharacter == null)
 		{
@@ -4930,13 +4934,13 @@ class PlayState extends MusicBeatState
 
 		if(stage != null)
 		{
-			stage.remove(deathCharacter, true);
+			stage.remove(cast deathCharacter, true);
 		}
 
 		return deathCharacter;
 	}
 
-	public function restoreGameOverCharacter(character:Character):Void
+	public function restoreGameOverCharacter(character:ICharacter):Void
 	{
 		if(character == null || stage == null)
 		{

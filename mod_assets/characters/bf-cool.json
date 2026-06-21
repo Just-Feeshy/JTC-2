@@ -23,49 +23,49 @@
             "prefix": "Cool/BF NOTE RIGHT cool",
             "framerate": 24,
             "looped": false,
-            "offset": [-38, -7]
+            "offset": [-45, 1]
         },
 
         "singLEFT": {
             "prefix": "Cool/BF NOTE LEFT cool",
             "framerate": 24,
             "looped": false,
-            "offset": [12, -6]
+            "offset": [13, -3]
         },
 
         "singDOWN": {
             "prefix": "Cool/BF NOTE DOWN cool",
             "framerate": 24,
             "looped": false,
-            "offset": [-10, -50]
+            "offset": [-1, -23]
         },
 
         "singUPmiss": {
             "prefix": "Cool/BF NOTE UP MISS cool",
             "framerate": 24,
             "looped": false,
-            "offset": [-29, 27]
+            "offset": [-36, 27]
         },
 
         "singRIGHTmiss": {
             "prefix": "Cool/BF NOTE RIGHT MISS cool",
             "framerate": 24,
             "looped": false,
-            "offset": [-30, 21]
+            "offset": [-52, 1]
         },
 
         "singLEFTmiss": {
             "prefix": "Cool/BF NOTE LEFT MISS cool",
             "framerate": 24,
             "looped": false,
-            "offset": [12, 24]
+            "offset": [12, 4]
         },
 
         "singDOWNmiss": {
             "prefix": "Cool/BF NOTE DOWN MISS cool",
             "framerate": 24,
             "looped": false,
-            "offset": [-11, -19]
+            "offset": [-11, -12]
         },
 
         "hey": {
@@ -79,21 +79,21 @@
             "prefix": "export/BF dies",
             "framerate": 24,
             "looped": false,
-            "offset": [37, 11]
+            "offset": [5, -2]
         },
 
         "deathLoop": {
             "prefix": "export/BF Dead Loop",
             "framerate": 24,
             "looped": false,
-            "offset": [37, 5]
+            "offset": [22, 482]
         },
 
         "deathConfirm": {
             "prefix": "export/BF Dead confirm",
             "framerate": 24,
             "looped": false,
-            "offset": [37, 69]
+            "offset": [3, 0]
         },
 
         "scared": {
@@ -126,10 +126,10 @@
     },
 
     "position": {
-        "x": 0,
-        "y": 350,
-        "camPosX": 0,
-        "camPosY": 0
+        "x": 242,
+        "y": 554,
+        "camPosX": -240,
+        "camPosY": -480
     },
 
     "icon": [26, 1, 26],

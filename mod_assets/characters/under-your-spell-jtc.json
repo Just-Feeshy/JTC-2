@@ -1,7 +1,7 @@
 {
 	"animations": {
 		"idle-alt": {
-			"prefix": "Idle",
+			"prefix": "JTC IDLE",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -11,7 +11,7 @@
 			"looped": false
 		},
 		"singDOWN": {
-			"prefix": "Down",
+			"prefix": "JTC SITTING DOWN",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -21,7 +21,7 @@
 			"looped": false
 		},
 		"singRIGHT-alt": {
-			"prefix": "Right",
+			"prefix": "JTC STANDING RIGHT",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -31,7 +31,7 @@
 			"looped": false
 		},
 		"singUP": {
-			"prefix": "Up",
+			"prefix": "JTC SITTING UP",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -41,7 +41,7 @@
 			"looped": false
 		},
 		"singLEFT-alt": {
-			"prefix": "Left",
+			"prefix": "JTC STANDING LEFT",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -61,7 +61,7 @@
 			"looped": false
 		},
 		"idle": {
-			"prefix": "Idle",
+			"prefix": "JTC SITTING IDLE",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -71,7 +71,7 @@
 			"looped": false
 		},
 		"singDOWN-alt": {
-			"prefix": "Down",
+			"prefix": "JTC STANDING DOWN",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -81,7 +81,7 @@
 			"looped": false
 		},
 		"singRIGHT": {
-			"prefix": "Right",
+			"prefix": "JTC SITTING RIGHT",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -91,7 +91,7 @@
 			"looped": false
 		},
 		"singLEFT": {
-			"prefix": "Left",
+			"prefix": "JTC SITTING LEFT",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -101,7 +101,7 @@
 			"looped": false
 		},
 		"singUP-alt": {
-			"prefix": "Up",
+			"prefix": "JTC STANDING UP",
 			"name": null,
 			"framerate": 24,
 			"offset": [
@@ -131,10 +131,7 @@
 	},
 	"clippingAdjustment": {},
 	"playAnim": "idle",
-	"file": "jtc",
-	"useAtlas": true,
-	"isAnimateAtlas": true,
-	"atlasMode": "animate",
+	"file": "school_house/JTC sit.xml, school_house/jtc standing animation.xml, school_house/JTC_standing.xml",
 	"icon": [
 		0,
 		1,

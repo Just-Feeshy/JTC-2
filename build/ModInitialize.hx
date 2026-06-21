@@ -48,6 +48,14 @@ typedef ConfigCharacters = {
      * the regular `Character`. Optional; defaults to `false` when absent from JSON.
      */
     @:optional var useAtlas:Bool;
+
+    /**
+     * Companion flags to `useAtlas` describing the Adobe Animate atlas backing. Not consumed
+     * by the runtime loader (which keys off `useAtlas`), but kept in the typedef so tools like
+     * the character creator preserve them across a load/save round-trip instead of dropping them.
+     */
+    @:optional var isAnimateAtlas:Bool;
+    @:optional var atlasMode:String;
 }
 
 typedef SongUtils = {

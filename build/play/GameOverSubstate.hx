@@ -37,7 +37,7 @@ class GameOverSubstate extends MusicBeatSubstate
   public static var musicSuffix:String = '';
   public static var blueBallSuffix:String = '';
   static var blueballed:Bool = false;
-  var boyfriend:Null<Character> = null;
+  var boyfriend:Null<ICharacter> = null;
   var customDeathChar:Null<DeathCharacter> = null;
   var usingCustomDeath:Bool = false;
   var cameraFollowPoint:FlxObject;
@@ -146,10 +146,8 @@ class GameOverSubstate extends MusicBeatSubstate
             // Return the original boyfriend to PlayState since we won't use it
             parentPlayState?.restoreGameOverCharacter(boyfriend);
 
-            // Load default death character
-            var bfPos = boyfriend.getPosition();
-            boyfriend = new Character(bfPos.x, bfPos.y, "bf", true);
-            bfPos.put();
+            // Load default death character (ICharacter has no getPosition(); read x/y directly)
+            boyfriend = new Character(boyfriend.x, boyfriend.y, "bf", true);
           }
 
           boyfriend.canPlayOtherAnims = true;
@@ -157,7 +155,7 @@ class GameOverSubstate extends MusicBeatSubstate
           boyfriend.specialAnim = false;
           boyfriend.customAnimation = false;
           boyfriend.holdTimer = 0;
-          add(boyfriend);
+          add(cast boyfriend);
           boyfriend.resetCharacter(false);
         }
       }
@@ -228,12 +226,15 @@ class GameOverSubstate extends MusicBeatSubstate
     FlxG.camera.follow(cameraFollowPoint, FlxCameraFollowStyle.LOCKON, Constants.DEFAULT_CAMERA_FOLLOW_RATE / 2);
     targetCameraZoom = (parentPlayState?.currentStage?.camZoom ?? 1.0) * boyfriend.getDeathCameraZoom();
 
-    // Zoom out further if the death sprite is unusually large (e.g. DEATHDEMON)
-    var bigThreshold:Float = 875;
-    var biggestDim:Float = Math.max(boyfriend.width, boyfriend.height);
-    if (biggestDim > bigThreshold)
+    // Zoom out only if the death sprite is genuinely taller than the viewport
+    // (e.g. a giant special death sprite like DEATHDEMON), and only just enough
+    // to fit it. Normal-sized characters already fit at the gameplay zoom, so
+    // they're left alone instead of being pushed far away. Height is used on its
+    // own because atlas frame widths can be inflated past the visible character.
+    var shownHeight:Float = boyfriend.height * targetCameraZoom;
+    if (shownHeight > FlxG.height)
     {
-      targetCameraZoom *= bigThreshold / biggestDim * 0.67;
+      targetCameraZoom *= FlxG.height / shownHeight;
     }
 
     // Immediately snap camera zoom to target to avoid inheriting zoomed-in state from Lua scripts
@@ -473,7 +474,7 @@ class GameOverSubstate extends MusicBeatSubstate
           else
           {
             boyfriend.isDead = false;
-            remove(boyfriend);
+            remove(cast boyfriend);
             parentPlayState?.restoreGameOverCharacter(boyfriend);
           }
 
