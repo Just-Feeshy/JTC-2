@@ -20,8 +20,12 @@ local stunned = false
 local daddyIsHere = false
 local daddyTrans = false
 
-local secondBaseX = 890
-local secondBaseY = 130
+-- Atlas-backed phase-two skater opponent (mod_assets/characters/frostbeat-second.json -> images/skater).
+-- Same transform the car/dad-car/skater-boi used (new value = old value + (newJson - oldJson)):
+-- frostbeat-second-old.json sat at (0, 0); frostbeat-second.json sits at (430, 429), so the JSON
+-- delta is (+430, +429). Old base (890, 130) + (430, 429):
+local secondBaseX = 1320
+local secondBaseY = 559
 local secondHiddenAlpha = 0.00001
 local originalDadCharacter = "joul"
 local originalBoyfriendCharacter = "flying BF sings"
@@ -35,8 +39,12 @@ local phaseTwoDadDeltaX = -394
 local phaseTwoDadDeltaY = 510
 local phaseTwoBoyfriendDeltaX = 240
 local phaseTwoBoyfriendDeltaY = 10
-local phaseOneDadBaseX = -132
-local phaseOneDadBaseY = 4
+-- Atlas-backed skater-boi opponent (mod_assets/characters/skater-boi.json -> images/skater).
+-- Same transform the car/dad-car used (new value = old value + (newJson - oldJson)):
+-- skater-boi-old.json sat at (-192, -96); skater-boi.json sits at (242, 335), so the JSON
+-- delta is (+434, +431). Old phaseOne base (-132, 4) + (434, 431):
+local phaseOneDadBaseX = 302
+local phaseOneDadBaseY = 435
 local phaseOneBoyfriendBaseX = 782
 local phaseOneBoyfriendBaseY = -164
 local baseFunkroadCameraX = 785

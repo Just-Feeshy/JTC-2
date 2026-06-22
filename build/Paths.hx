@@ -1135,9 +1135,6 @@ class Paths
 		if(key == null)
 			return null;
 
-		var folder:String = key.split(",")[0].trim();
-		// getPath returns the resolved asset path without extension, e.g. `mod_assets/images/fonz`.
-		var directory:String = getPath('images/$folder', IMAGE, library);
 		var animateSettings:Dynamic = null;
 		if(settings != null) {
 			animateSettings = {};
@@ -1145,10 +1142,76 @@ class Paths
 			if(settings.cacheOnLoad != null) animateSettings.cacheOnLoad = settings.cacheOnLoad;
 			if(settings.filterQuality != null) animateSettings.filterQuality = settings.filterQuality;
 		}
+
+		// Collect every comma-separated Animate atlas folder so a single character can pull
+		// symbols/frame-labels from more than one atlas (mirrors the Sparrow multi-atlas support
+		// in getFrames).
+		var folders:Array<String> = [];
+		for(part in key.split(",")) {
+			var folder:String = part.trim();
+			if(folder.length > 0 && hasAnimateAtlas(folder))
+				folders.push(folder);
+		}
+
+		if(folders.length == 0)
+			return null;
+
+		// Single atlas: keep the shared cache behaviour.
 		// flixel-animate parses the long-form CS4/legacy Animate JSON natively (every key
 		// falls back to its long name, e.g. `AN ?? ANIMATION`, `MX ?? Matrix`,
-		// `ST ?? symbolType`), so we load the atlas folder directly for every atlas.
-		return animate.FlxAnimateFrames.fromAnimate(directory, null, null, null, false, animateSettings);
+		// `ST ?? symbolType`), so we load the atlas folder directly.
+		// getPath returns the resolved asset path without extension, e.g. `mod_assets/images/fonz`.
+		if(folders.length == 1) {
+			var directory:String = getPath('images/${folders[0]}', IMAGE, library);
+			return animate.FlxAnimateFrames.fromAnimate(directory, null, null, null, false, animateSettings);
+		}
+
+		// Multiple atlases: merge them into one collection so a single character can pull
+		// symbols/frame-labels from every listed folder.
+		//
+		// Lifecycle notes (why this isn't just `combineAtlas` over unique copies):
+		// - flixel-animate frees a spritemap's bitmap via `FlxG.bitmap.remove` as soon as a
+		//   collection's useCount hits 0, and that removal is not shared-reference aware. A unique
+		//   copy would still share the underlying bitmap with the cached standalone atlas, so
+		//   destroying the combined character would free `<atlas>/spritemap1.png` out from under
+		//   every other user of that atlas (use-after-free on the next draw). So we merge the
+		//   *shared cached* collections, which keep a single correct useCount.
+		// - `addAtlas` appends the extras to the base's `addedCollections` without bumping the
+		//   base's useCount, so we pin every involved atlas as persistent to keep the merged set
+		//   resident - otherwise a freed extra would leave a dangling reference.
+		// - The merged base is cached here, keyed on the folder list, so reloads reuse it instead of
+		//   appending the same extras again.
+		var combinedKey:String = folders.join(",");
+		if(_combinedAnimateAtlases.exists(combinedKey))
+			return _combinedAnimateAtlases.get(combinedKey);
+
+		var base:animate.FlxAnimateFrames = cast animate.FlxAnimateFrames.fromAnimate(getPath('images/${folders[0]}', IMAGE, library), null, null, null, false, animateSettings);
+		if(base == null)
+			return null;
+		pinAnimateAtlas(base);
+
+		for(i in 1...folders.length) {
+			var extra:animate.FlxAnimateFrames = cast animate.FlxAnimateFrames.fromAnimate(getPath('images/${folders[i]}', IMAGE, library), null, null, null, false, animateSettings);
+			if(extra == null)
+				continue;
+			pinAnimateAtlas(extra);
+			base.addAtlas(extra);
+		}
+
+		_combinedAnimateAtlases.set(combinedKey, base);
+		return base;
+	}
+
+	// Merged Animate atlas collections, keyed by the comma-joined folder list. See getAnimateAtlas.
+	static var _combinedAnimateAtlases:Map<String, flixel.graphics.frames.FlxFramesCollection> = new Map();
+
+	// Keeps a merged atlas (and its spritemap bitmap) resident so a combined character never frees
+	// graphics that another character/instance still references.
+	static function pinAnimateAtlas(collection:flixel.graphics.frames.FlxFramesCollection):Void {
+		if(collection == null || collection.parent == null)
+			return;
+		collection.parent.persist = true;
+		collection.parent.destroyOnNoUse = false;
 	}
 
 	/**
