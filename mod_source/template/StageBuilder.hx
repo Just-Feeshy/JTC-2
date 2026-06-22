@@ -80,11 +80,11 @@ abstract class StageBuilder extends FlxGroup {
 		return playstate.defaultCamZoom;
 	}
 
-	public function getBoyfriend(removeFromStage:Bool = false):Boyfriend {
-		var boyfriend:Boyfriend = cast playstate.boyfriend;
+	public function getBoyfriend(removeFromStage:Bool = false):ICharacter {
+		var boyfriend:ICharacter = playstate.boyfriend;
 
 		if(removeFromStage && boyfriend != null) {
-			remove(boyfriend, true);
+			remove(cast boyfriend, true);
 		}
 
 		return boyfriend;

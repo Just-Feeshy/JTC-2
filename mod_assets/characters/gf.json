@@ -1,8 +1,6 @@
 {
 	"animations": {
 		"danceLeft": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "GF Dancing Beat",
 			"indices": [
 				0,
@@ -23,7 +21,6 @@
 			],
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				0
@@ -31,13 +28,10 @@
 			"looped": false
 		},
 		"sad": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "gf sad",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				-10
@@ -45,8 +39,6 @@
 			"looped": true
 		},
 		"danceRight": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "GF Dancing Beat",
 			"indices": [
 				15,
@@ -66,7 +58,6 @@
 			],
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				0
@@ -74,13 +65,10 @@
 			"looped": false
 		},
 		"cheer": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "GF Cheer",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				-10

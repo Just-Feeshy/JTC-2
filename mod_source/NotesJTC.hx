@@ -187,7 +187,7 @@ class CheeseNote extends CustomNoteTemplate {
         return true;
     }
 
-    override function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void {
+    override function pressedByPlayer(note:Note, player:ICharacter, opponent:ICharacter, girlfriend:ICharacter):Void {
         sourceWasPlayerSide = note.mustPress;
     }
 

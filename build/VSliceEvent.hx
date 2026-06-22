@@ -238,8 +238,11 @@ class VSliceEvent implements IFeshEvent implements IFlxDestroyable {
             return;
         }
 
-        if(Std.isOfType(target, Character)) {
-            cast(target, Character).playAnim(animName, force);
+        // Use the ICharacter interface so atlas-backed characters (AtlasCharacter,
+        // which is not a Character subclass) still go through playAnim and get their
+        // proper offsets, instead of falling through to a raw, un-offset animation.
+        if(Std.isOfType(target, ICharacter)) {
+            cast(target, ICharacter).playAnim(animName, force);
         } else if(target.animation != null) {
             target.animation.play(animName, force);
         }

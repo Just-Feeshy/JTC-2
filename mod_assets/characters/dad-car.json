@@ -1,57 +1,41 @@
 {
 	"animations": {
 		"idle": {
-			"prefix": "DD dance IDLE",
+			"prefix": "Idle",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
 				0,
-				0
+				15
 			],
 			"looped": false
 		},
 		"singDOWN": {
-			"prefix": "DD dance DOWN",
+			"prefix": "Down",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				0,
-				-31
+				-2,
+				-2
 			],
 			"looped": false
 		},
 		"singRIGHT": {
-			"prefix": "DD dance right",
+			"prefix": "Right",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				0,
-				-6
-			],
-			"looped": false
-		},
-		"singLEFT": {
-			"prefix": "DD dance left",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				0,
-				-12
-			],
-			"looped": false
-		},
-		"singUP": {
-			"prefix": "DD dance up",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				0,
-				35
+				-7,
+				11
 			],
 			"looped": false
 		},
 		"punch": {
-			"prefix": "DD dance punch",
+			"prefix": "Punch",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -59,21 +43,48 @@
 				35
 			],
 			"looped": false
+		},
+		"singUP": {
+			"prefix": "Up",
+			"indices": null,
+			"name": "singUP",
+			"framerate": 24,
+			"offset": [
+				-9,
+				12
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "Left",
+			"indices": null,
+			"name": "singLEFT",
+			"framerate": 24,
+			"offset": [
+				-5,
+				0
+			],
+			"looped": false
 		}
 	},
+	"isAnimateAtlas": true,
 	"isPlayer": false,
+	"atlasMode": "animate",
 	"pixel": false,
 	"position": {
-		"x": -585,
-		"camPosY": 0,
-		"y": 0,
-		"camPosX": 0
+		"x": -1859,
+		"camPosY": -670,
+		"y": -390,
+		"camPosX": 240
 	},
+	"useAtlas": true,
+	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "DD_assets.xml",
+	"file": "dd",
 	"icon": [
 		12,
 		13,
 		12
-	]
+	],
+	"iconFile": "iconGrid"
 }

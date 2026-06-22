@@ -4096,7 +4096,7 @@ class PlayState extends MusicBeatState
 
 			setHealth(health + note.giveHealth());
 
-			note.pressedByPlayer(cast currentPlayer, cast currentOpponent, cast gf);
+			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
 			singNotePlayer(note);
 

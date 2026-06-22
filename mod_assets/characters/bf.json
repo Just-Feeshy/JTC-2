@@ -1,13 +1,10 @@
 {
 	"animations": {
 		"scared": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "BF idle shaking",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-4,
 				0
@@ -15,13 +12,10 @@
 			"looped": false
 		},
 		"singDOWN": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE DOWN",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-1,
 				-23
@@ -29,13 +23,10 @@
 			"looped": false
 		},
 		"bfBEEP": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "boyfriend scared",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-5,
 				0
@@ -43,13 +34,10 @@
 			"looped": false
 		},
 		"singLEFTmiss": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE LEFT MISS",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				12,
 				4
@@ -57,13 +45,10 @@
 			"looped": false
 		},
 		"firstDeath": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF dies",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				5,
 				-2
@@ -71,13 +56,10 @@
 			"looped": false
 		},
 		"idle": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF idle dance",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				-5
@@ -85,13 +67,10 @@
 			"looped": false
 		},
 		"singLEFT": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE LEFT",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				13,
 				-3
@@ -99,13 +78,10 @@
 			"looped": false
 		},
 		"singUPmiss": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE UP MISS",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-36,
 				27
@@ -113,13 +89,10 @@
 			"looped": false
 		},
 		"poisoned": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "boyfriend poisoned",
 			"indices": null,
 			"name": null,
 			"framerate": 48,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				-20
@@ -127,13 +100,10 @@
 			"looped": false
 		},
 		"dodge": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "boyfriend dodge",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-5,
 				-12
@@ -141,13 +111,10 @@
 			"looped": false
 		},
 		"deathLoop": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF Dead Loop",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				22,
 				482
@@ -155,13 +122,10 @@
 			"looped": false
 		},
 		"singRIGHTmiss": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE RIGHT MISS",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-52,
 				1
@@ -169,13 +133,10 @@
 			"looped": false
 		},
 		"singUP": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE UP",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-29,
 				27
@@ -183,13 +144,10 @@
 			"looped": false
 		},
 		"hey": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "BF HEY!!",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				7,
 				4
@@ -197,13 +155,10 @@
 			"looped": false
 		},
 		"deathConfirm": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF Dead confirm",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				3,
 				0
@@ -211,13 +166,10 @@
 			"looped": false
 		},
 		"singDOWNmiss": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE DOWN MISS",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-11,
 				-12
@@ -225,13 +177,10 @@
 			"looped": false
 		},
 		"singRIGHT": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "export/BF NOTE RIGHT",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-45,
 				1

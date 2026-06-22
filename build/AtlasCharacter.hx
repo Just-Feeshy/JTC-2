@@ -10,15 +10,6 @@ import ModInitialize;
 
 using StringTools;
 
-/**
- * Atlas-backed character implementation.
- *
- * This mirrors the Codename Engine character shape where it fits this codebase:
- * character identity, global/camera offsets, dance toggling, sing/miss helpers,
- * and Adobe Animate atlas playback. The Codename scripting/XML event layer is
- * intentionally not copied here because this project does not expose those
- * systems on the active classpath.
- */
 class AtlasCharacter extends FunkinSprite implements ICharacter {
 	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT"];
 
@@ -90,8 +81,6 @@ class AtlasCharacter extends FunkinSprite implements ICharacter {
 	}
 
 	function loadCharacterAssets():Void {
-		// `Paths.getFrames` transparently resolves an Animate texture atlas when one
-		// exists for `_info.file`, otherwise one or more Sparrow/Packer atlases.
 		frames = Paths.getFrames(_info.file);
 	}
 

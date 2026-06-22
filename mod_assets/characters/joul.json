@@ -1,13 +1,10 @@
 {
 	"animations": {
 		"idle": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "joul idle dance",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				30
@@ -15,13 +12,10 @@
 			"looped": false
 		},
 		"singRIGHT": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "joul Sing Note RIGHT",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-22,
 				28
@@ -29,13 +23,10 @@
 			"looped": false
 		},
 		"singDOWN": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "joul Sing Note DOWN",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				0,
 				31
@@ -43,13 +34,10 @@
 			"looped": false
 		},
 		"singLEFT": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "joul Sing Note LEFT",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				2,
 				26
@@ -57,13 +45,10 @@
 			"looped": false
 		},
 		"singUP": {
-			"secondaryBehind": null,
-			"secondaryPrefix": null,
 			"prefix": "joul Sing Note UP",
 			"indices": null,
 			"name": null,
 			"framerate": 24,
-			"secondaryOffset": null,
 			"offset": [
 				-27,
 				27

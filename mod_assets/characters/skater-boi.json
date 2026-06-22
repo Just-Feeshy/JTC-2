@@ -2,6 +2,7 @@
 	"animations": {
 		"idle": {
 			"prefix": "skater dance IDLE",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -12,56 +13,63 @@
 		},
 		"singDOWN": {
 			"prefix": "skater dance DOWN",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				58,
-				-228
+				63,
+				-96
 			],
 			"looped": false
 		},
 		"singRIGHT": {
 			"prefix": "skater dance RIGHT",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				-127,
-				-45
+				-158,
+				30
 			],
 			"looped": false
 		},
 		"singLEFT": {
 			"prefix": "skater dance LEFT",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				-14,
-				-19
+				36,
+				-10
 			],
 			"looped": false
 		},
 		"singUP": {
 			"prefix": "skater dance UP",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				8,
-				59
+				31,
+				52
 			],
 			"looped": false
 		}
 	},
+	"isAnimateAtlas": true,
 	"isPlayer": false,
+	"atlasMode": "animate",
 	"pixel": false,
 	"position": {
-		"x": -192,
+		"x": 242,
 		"camPosY": 0,
-		"y": -96,
+		"y": 335,
 		"camPosX": 0
 	},
+	"useAtlas": true,
 	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "skater_assets.xml",
+	"file": "skater",
 	"icon": [
 		24,
 		30,

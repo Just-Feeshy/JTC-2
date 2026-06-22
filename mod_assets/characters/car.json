@@ -2,6 +2,7 @@
 	"animations": {
 		"idle": {
 			"prefix": "daddycar",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -12,6 +13,7 @@
 		},
 		"singUP": {
 			"prefix": "car drive and dust",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -21,20 +23,23 @@
 			"looped": false
 		}
 	},
+	"isAnimateAtlas": true,
 	"isPlayer": false,
+	"atlasMode": "animate",
 	"pixel": false,
 	"position": {
-		"x": 24,
+		"x": 364,
 		"camPosY": 0,
-		"y": 116,
+		"y": 153,
 		"camPosX": 0
 	},
+	"useAtlas": true,
 	"clippingAdjustment": {},
 	"playAnim": "",
 	"file": "car",
-	"useAtlas": true,
 	"icon": [
 		10,
+		11,
 		11
 	],
 	"iconFile": "iconGrid"
