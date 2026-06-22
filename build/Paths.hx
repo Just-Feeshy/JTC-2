@@ -1129,36 +1129,13 @@ class Paths
 	}
 
 	/**
-	 * Load Adobe Animate texture atlas frames for `key`.
-	 *
-	 * Like `getFrames`/`getMultiAtlas` for Sparrow sheets, `key` may be a comma list
-	 * (e.g. `"bf, bf-dead"`); every entry is loaded and concatenated into one
-	 * collection. This is the Animate-atlas analogue of a multi-Sparrow character:
-	 * the first entry must be an Animate atlas folder (it owns the combined symbol
-	 * library), and later entries may be either more Animate atlas folders or plain
-	 * Sparrow/Packer sheets.
+	 * Load Adobe Animate texture atlas frames from the folder containing `Animation.json`.
 	 */
 	static public function getAnimateAtlas(key:String, ?library:String, ?settings:funkin.data.character.CharacterData.AtlasSpriteSettings):flixel.graphics.frames.FlxFramesCollection {
 		if(key == null)
 			return null;
 
-		var keys:Array<String> = [];
-		for(part in key.split(",")) {
-			var trimmed:String = part.trim();
-			if(trimmed.length > 0)
-				keys.push(trimmed);
-		}
-
-		if(keys.length > 1)
-			return getMultiAnimateAtlas(keys, library, settings);
-
-		return loadAnimateAtlasFolder(keys.length == 1 ? keys[0] : key.trim(), library, settings);
-	}
-
-	/**
-	 * Load a single Adobe Animate texture atlas from the folder containing `Animation.json`.
-	 */
-	static function loadAnimateAtlasFolder(folder:String, ?library:String, ?settings:funkin.data.character.CharacterData.AtlasSpriteSettings):flixel.graphics.frames.FlxFramesCollection {
+		var folder:String = key.split(",")[0].trim();
 		// getPath returns the resolved asset path without extension, e.g. `mod_assets/images/fonz`.
 		var directory:String = getPath('images/$folder', IMAGE, library);
 		var animateSettings:Dynamic = null;
@@ -1172,80 +1149,6 @@ class Paths
 		// falls back to its long name, e.g. `AN ?? ANIMATION`, `MX ?? Matrix`,
 		// `ST ?? symbolType`), so we load the atlas folder directly for every atlas.
 		return animate.FlxAnimateFrames.fromAnimate(directory, null, null, null, false, animateSettings);
-	}
-
-	/**
-	 * Combine one or more Adobe Animate texture atlases (and, optionally, plain
-	 * Sparrow/Packer sheets) into a single collection. The Animate-atlas counterpart
-	 * of `getMultiAtlas`, modelled on Funkin's `MultiAnimateAtlasCharacter`.
-	 *
-	 * The first key owns the merged symbol library, so it must be an Animate atlas
-	 * folder; `FlxAnimateFrames.combineAtlas` then folds the rest in (their symbols
-	 * and frame labels stay reachable through the first atlas' `addedCollections`).
-	 */
-	static public function getMultiAnimateAtlas(keys:Array<String>, ?library:String, ?settings:funkin.data.character.CharacterData.AtlasSpriteSettings):flixel.graphics.frames.FlxFramesCollection {
-		if(keys == null || keys.length == 0)
-			return null;
-
-		var textureList:Array<FlxAtlasFrames> = [];
-
-		for(rawKey in keys) {
-			var token:String = rawKey.trim();
-			if(token.length == 0) continue;
-
-			// An Animate atlas folder (has Animation.json) loads natively; anything else
-			// falls back to a Sparrow/Packer sheet so atlases and sheets can be mixed.
-			var collection:flixel.graphics.frames.FlxFramesCollection = hasAnimateAtlas(token)
-				? loadAnimateAtlasFolder(token, library, settings)
-				: getAtlas(token, library);
-
-			if(collection == null) {
-				trace("Error: multi-atlas could not load entry - " + token);
-				continue;
-			}
-
-			// Sub-atlases are separate graphics from the primary atlas. Once combined
-			// they're no longer any sprite's direct `frames.parent`, so flixel's bitmap
-			// cache can purge their spritemap bitmaps out from under us and the frames
-			// draw as white squares. Pin every backing graphic for the combined atlas.
-			retainAtlasGraphics(collection);
-
-			textureList.push(cast collection);
-		}
-
-		if(textureList.length == 0)
-			return null;
-		if(textureList.length == 1)
-			return textureList[0];
-
-		return animate.FlxAnimateFrames.combineAtlas(textureList);
-	}
-
-	/**
-	 * Keep every bitmap backing `collection` alive. Required for sub-atlases in a
-	 * combined Animate atlas: after combining they're no longer a sprite's direct
-	 * `frames.parent`, so the flixel bitmap cache would otherwise purge their
-	 * spritemap graphics and the symbols would render as white squares.
-	 */
-	static function retainAtlasGraphics(collection:flixel.graphics.frames.FlxFramesCollection):Void {
-		if(collection == null)
-			return;
-
-		// The spritemap collection (`frames.parent`) drives `destroySpritemaps()`.
-		if(collection.parent != null) {
-			collection.parent.persist = true;
-			collection.parent.destroyOnNoUse = false;
-		}
-
-		// Each frame's parent is the actual spritemap bitmap the symbols draw from.
-		if(collection.frames != null) {
-			for(frame in collection.frames) {
-				if(frame != null && frame.parent != null) {
-					frame.parent.persist = true;
-					frame.parent.destroyOnNoUse = false;
-				}
-			}
-		}
 	}
 
 	/**

@@ -133,7 +133,7 @@
 	"isAnimateAtlas": true,
 	"atlasMode": "animate",
 	"playAnim": "",
-	"file": "flying, flying_death",
+	"file": "flying",
 	"icon": [
 		31,
 		32,

@@ -1,16 +1,5 @@
 {
 	"animations": {
-		"deathLoop": {
-			"prefix": "deathLoop",
-			"indices": null,
-			"name": "deathLoop",
-			"framerate": 24,
-			"offset": [
-				-127,
-				-91
-			],
-			"looped": false
-		},
 		"singDOWN": {
 			"prefix": "flying dance DOWN",
 			"indices": null,
@@ -48,28 +37,6 @@
 			"prefix": "flying miss LEFT",
 			"indices": null,
 			"name": "",
-			"framerate": 24,
-			"offset": [
-				0,
-				5
-			],
-			"looped": false
-		},
-		"deathConfirm": {
-			"prefix": "deathConfirm",
-			"indices": null,
-			"name": "deathConfirm",
-			"framerate": 24,
-			"offset": [
-				-127,
-				-87
-			],
-			"looped": false
-		},
-		"firstDeath": {
-			"prefix": "firstDeath",
-			"indices": null,
-			"name": "firstDeath",
 			"framerate": 24,
 			"offset": [
 				0,
@@ -146,7 +113,7 @@
 	"useAtlas": true,
 	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "flying, flying_death",
+	"file": "flying",
 	"icon": [
 		31,
 		32,
