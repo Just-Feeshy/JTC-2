@@ -15,6 +15,8 @@ import js.Browser;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
+import animate.FlxAnimate;
+import funkin.graphics.FunkinSprite;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxGradient;
@@ -674,6 +676,46 @@ class ModLua {
             }
         });
 
+        // Like `createSprite`, but backs the managed sprite with a `FunkinSprite`
+        // (`FlxAnimate`) loaded from an Adobe Animate texture atlas folder under
+        // `images/` (the folder holding `Animation.json`, e.g. `images/car`).
+        // Animations are registered with `addAnimationBySymbol` / `addAnimationByTimeline`
+        // and driven through the usual `playAnim` / `playAnimRaw` callbacks, since
+        // `FlxAnimate.animation` and `.anim` are the same controller instance.
+        addProtectedLuaCallback("createAnimateSprite", function(name:String, ?atlasKey:String) {
+            var sprites = getStateSpriteStore();
+
+            if(sprites == null) {
+                sprites = ensureLuaSpriteMap();
+            }
+
+            // Always rebuild so the atlas frames are loaded fresh for this key.
+            if(sprites.exists(name)) {
+                var existing:FlxSprite = sprites.get(name);
+
+                if(existing != null) {
+                    detachSpriteFromStateContainers(existing);
+                    existing.destroy();
+                }
+
+                sprites.remove(name);
+            }
+
+            var sprite:FunkinSprite = new FunkinSprite();
+            sprite.antialiasing = SaveData.getData(SaveType.GRAPHICS);
+            sprite.active = true;
+
+            if(atlasKey != null && atlasKey.trim() != "") {
+                sprite.loadTextureAtlas(atlasKey.trim());
+            }
+
+            sprites.set(name, sprite);
+
+            if(sprites != luaSprites) {
+                rememberStateOwnedSprite(name);
+            }
+        });
+
         addProtectedLuaCallback("createText", function(name:String, x:Float = 0, y:Float = 0, width:Float = 0, text:String = "", size:Int = 16) {
             var texts = getStateTextStore();
 
@@ -897,6 +939,52 @@ class ModLua {
 
             spr.animation.addByPrefix(animation, prefix, framerate, loop);
 		});
+
+        // Registers an animation from an Adobe Animate symbol on a sprite created
+        // via `createAnimateSprite`. No-op for non-atlas sprites.
+        addProtectedLuaCallback("addAnimationBySymbol", function(name:String, animation:String, symbol:String, framerate:Int = 24, loop:Bool = false) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null || !Std.isOfType(spr, FlxAnimate)) {
+                return;
+            }
+
+            var animSpr:FlxAnimate = cast spr;
+
+            if(animSpr.anim == null) {
+                return;
+            }
+
+            @:privateAccess
+            if(animSpr.anim._animations.exists(animation)) {
+                animSpr.anim.remove(animation);
+            }
+
+            animSpr.anim.addBySymbol(animation, symbol, framerate, loop);
+        });
+
+        // Registers an animation from the atlas' main timeline on a sprite created
+        // via `createAnimateSprite`. No-op for non-atlas sprites.
+        addProtectedLuaCallback("addAnimationByTimeline", function(name:String, animation:String, framerate:Int = 24, loop:Bool = true) {
+            var spr:FlxSprite = getSprite(name);
+
+            if(spr == null || !Std.isOfType(spr, FlxAnimate)) {
+                return;
+            }
+
+            var animSpr:FlxAnimate = cast spr;
+
+            if(animSpr.anim == null) {
+                return;
+            }
+
+            @:privateAccess
+            if(animSpr.anim._animations.exists(animation)) {
+                animSpr.anim.remove(animation);
+            }
+
+            animSpr.anim.addByTimeline(animation, animSpr.anim.getDefaultTimeline(), framerate, loop);
+        });
 
 		addProtectedLuaCallback("removeAnimationPrefix", function(name:String, animation:String) {
 				var spr:FlxSprite = getSprite(name);

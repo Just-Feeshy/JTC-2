@@ -52,8 +52,14 @@ class CharacterCreatorState extends UIState {
     private static inline var DEFAULT_HEALTH_COLOR:Int = 0xFFFF0000;
 
     private var shadowEntity:ICharacter;
+    // Frozen ghost of the character we last switched away from. Deliberately kept separate from
+    // `shadowEntity` (the manual onion-skin) and from the reload machinery: reloadCharacter never
+    // touches it, so the many internal reloads (edits, field syncs, atlas toggle, etc.) can't wipe it.
+    private var previousGhost:ICharacter;
     private var character:ICharacter;
-    private var characterStorage:FlxTypedGroup<CreatorCharacter>;
+    // Holds the previewed character + optional shadow. Typed as the shared `FlxSprite` base so it
+    // can store either a Sparrow `CreatorCharacter` or an Adobe Animate `AtlasCharacter`.
+    private var characterStorage:FlxTypedGroup<FlxSprite>;
     private var characterAutosave:Map<String, ConfigCharacters>;
     private var mapEditor:Map<String, Dynamic>;
     private var characterJSONs:Array<String> = [];
@@ -83,6 +89,7 @@ class CharacterCreatorState extends UIState {
     var fileNameInput:TextField;
     var fileValidationLabel:Label;
     var updateFileButton:Button;
+    var useAtlasCheck:CheckBox;
     var iconFileNameInput:TextField;
     var iconValidationLabel:Label;
     var updateIconFileButton:Button;
@@ -136,22 +143,6 @@ class CharacterCreatorState extends UIState {
     var applyClippingButton:Button;
     var checkPlayable:CheckBox;
     var canBePixel:CheckBox;
-
-    var combineTargetAnimDropDown:DropDown;
-    var combineBaseOffsetX:NumberStepper;
-    var combineBaseOffsetY:NumberStepper;
-    var combineOverlayXmlDropDown:DropDown;
-    var combineOverlayPrefixDropDown:DropDown;
-    var combineOverlayOffsetX:NumberStepper;
-    var combineOverlayOffsetY:NumberStepper;
-    var combineAnimationsButton:Button;
-    var updateCombineButton:Button;
-    var clearCombineButton:Button;
-    var flipCombineZButton:Button;
-    var combineZOrderLabel:Label;
-    var combineStatusLabel:Label;
-
-    private var xmlPrefixCache:Map<String, Array<String>> = new Map();
 
     var saveCharacterButton:Button;
     var saveColorsButton:Button;
@@ -277,10 +268,10 @@ class CharacterCreatorState extends UIState {
         stageCurtains.cameras = [camGame];
         add(stageCurtains);
 
-        characterStorage = new FlxTypedGroup<CreatorCharacter>();
+        characterStorage = new FlxTypedGroup<FlxSprite>();
         add(characterStorage);
 
-        character = new CreatorCharacter(440, 100, currentCharacterName, true);
+        character = buildCreatorCharacter(440, 100, currentCharacterName, true, currentConfig());
         character.updateFinalized(FlixelCompat.getScreenCenter(cast character, X), 100);
         character.cameras = [camGame];
         characterStorage.add(cast character);
@@ -359,7 +350,6 @@ class CharacterCreatorState extends UIState {
 
         bindDisplayHandlers();
         bindAnimationHandlers();
-        bindCombineHandlers();
         bindExportHandlers();
     }
 
@@ -386,8 +376,28 @@ class CharacterCreatorState extends UIState {
                 return;
             }
 
-            currentCharacterName = getDropDownValue(characterSelectorDropDown, currentCharacterName);
+            var nextCharacter:String = getDropDownValue(characterSelectorDropDown, currentCharacterName);
+
+            // Ignore spurious "change" events for the same value (haxe.ui re-fires onChange when the
+            // dropdown is programmatically re-selected during reloadCharacter). Reloading here would
+            // wipe the shadow we just left, which is exactly the bug we're avoiding.
+            if(nextCharacter == currentCharacterName) {
+                return;
+            }
+
+            // Keep the outgoing character on screen as a frozen ghost reference, then load the new one.
+            keepPreviousCharacterGhost();
+
+            currentCharacterName = nextCharacter;
             reloadCharacter(currentCharacterName);
+
+            // reloadCharacter appended the new character, leaving the ghost behind it (and thus hidden
+            // when they overlap). Re-add the ghost so it draws on top as a translucent onion-skin,
+            // matching the manual shadow and guaranteeing it's actually visible.
+            if(previousGhost != null) {
+                characterStorage.remove(cast previousGhost, true);
+                characterStorage.add(cast previousGhost);
+            }
         };
 
         centerCameraButton.onClick = function(_) {
@@ -397,6 +407,14 @@ class CharacterCreatorState extends UIState {
 
         createCharacterButton.onClick = function(_) createNewCharacter();
         flipSpriteButton.onClick = function(_) if(character != null) character.flipX = !character.flipX;
+
+        useAtlasCheck.onChange = function(_) {
+            if(syncingUi) {
+                return;
+            }
+
+            setCharacterAtlasMode(useAtlasCheck.selected);
+        };
 
         xInput.onChange = function(_) updateCharacterPosition("x", xInput);
         yInput.onChange = function(_) updateCharacterPosition("y", yInput);
@@ -460,239 +478,9 @@ class CharacterCreatorState extends UIState {
         canBePixel.onChange = function(_) currentConfig().pixel = canBePixel.selected;
     }
 
-    private function bindCombineHandlers():Void {
-        combineTargetAnimDropDown.onChange = function(_) {
-            if(syncingUi) return;
-            refreshCombineFieldsFromTarget();
-        };
-        combineOverlayXmlDropDown.onChange = function(_) {
-            if(syncingUi) return;
-            rebuildOverlayPrefixDropDown();
-        };
-        combineAnimationsButton.onClick = function(_) applyCombineToTarget(false);
-        updateCombineButton.onClick = function(_) applyCombineToTarget(true);
-        clearCombineButton.onClick = function(_) removeOverlayFromTarget();
-        flipCombineZButton.onClick = function(_) flipCombineZOrder();
-    }
-
     private function bindExportHandlers():Void {
         saveCharacterButton.onClick = function(_) saveFile(CHARACTER);
         saveColorsButton.onClick = function(_) saveFile(COLOR_MAPPING);
-    }
-
-    private function rebuildCombineDropDowns():Void {
-        syncingUi = true;
-
-        var files:Array<String> = parseXmlFileList(currentConfig().file);
-        if(files.length == 0) files = [""];
-        populateDropDown(combineOverlayXmlDropDown, files);
-
-        var animNames:Array<String> = [];
-        for(key in currentConfig().animations.keys()) animNames.push(key);
-        if(animNames.length == 0) animNames = [""];
-        populateDropDown(combineTargetAnimDropDown, animNames);
-
-        syncingUi = false;
-
-        rebuildOverlayPrefixDropDown();
-        refreshCombineFieldsFromTarget();
-    }
-
-    private function rebuildOverlayPrefixDropDown():Void {
-        var selectedXml:String = getDropDownValue(combineOverlayXmlDropDown, "");
-        var prefixes:Array<String> = selectedXml != "" ? loadXmlPrefixes(selectedXml) : [];
-        if(prefixes.length == 0) prefixes = [""];
-
-        syncingUi = true;
-        populateDropDown(combineOverlayPrefixDropDown, prefixes);
-        syncingUi = false;
-    }
-
-    private function refreshCombineFieldsFromTarget():Void {
-        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
-        var info = animName != "" ? currentConfig().animations.get(animName) : null;
-
-        syncingUi = true;
-        if(info != null) {
-            combineBaseOffsetX.pos = info.offset[0];
-            combineBaseOffsetY.pos = info.offset[1];
-            if(info.secondaryPrefix != null && info.secondaryPrefix != "") {
-                selectDropDownItem(combineOverlayPrefixDropDown, info.secondaryPrefix);
-                if(info.secondaryOffset != null && info.secondaryOffset.length >= 2) {
-                    combineOverlayOffsetX.pos = info.secondaryOffset[0];
-                    combineOverlayOffsetY.pos = info.secondaryOffset[1];
-                } else {
-                    combineOverlayOffsetX.pos = 0;
-                    combineOverlayOffsetY.pos = 0;
-                }
-                combineZOrderLabel.text = info.secondaryBehind == true
-                    ? "Overlay drawn behind base"
-                    : "Overlay drawn on top";
-            } else {
-                combineOverlayOffsetX.pos = 0;
-                combineOverlayOffsetY.pos = 0;
-                combineZOrderLabel.text = "No overlay attached";
-            }
-        } else {
-            combineBaseOffsetX.pos = 0;
-            combineBaseOffsetY.pos = 0;
-            combineOverlayOffsetX.pos = 0;
-            combineOverlayOffsetY.pos = 0;
-            combineZOrderLabel.text = "";
-        }
-        syncingUi = false;
-    }
-
-    private function parseXmlFileList(raw:String):Array<String> {
-        var out:Array<String> = [];
-        if(raw == null) return out;
-        for(piece in raw.split(",")) {
-            var trimmed:String = piece.trim();
-            if(trimmed.length > 0) out.push(trimmed);
-        }
-        return out;
-    }
-
-    private function loadXmlPrefixes(xmlFile:String):Array<String> {
-        if(xmlPrefixCache.exists(xmlFile)) {
-            return xmlPrefixCache.get(xmlFile);
-        }
-
-        var prefixes:Array<String> = [];
-        var seen:Map<String, Bool> = new Map();
-
-        var basePath:String = xmlFile;
-        var dotIndex:Int = xmlFile.lastIndexOf(".");
-        if(dotIndex >= 0) basePath = xmlFile.substr(0, dotIndex);
-
-        var dataPath:String = Paths.getPath('images/' + basePath + '.xml', TEXT, "shared");
-        if(!Paths.assetExists(dataPath, TEXT)) {
-            xmlPrefixCache.set(xmlFile, prefixes);
-            return prefixes;
-        }
-
-        var raw:String = Paths.readText(dataPath);
-        if(raw == null || raw.length == 0) {
-            xmlPrefixCache.set(xmlFile, prefixes);
-            return prefixes;
-        }
-
-        var nameRegex:EReg = ~/name="([^"]+)"/g;
-        var pos:Int = 0;
-        while(nameRegex.matchSub(raw, pos)) {
-            var matched:String = nameRegex.matched(1);
-            var matchPos = nameRegex.matchedPos();
-            pos = matchPos.pos + matchPos.len;
-
-            var trimEnd:Int = matched.length;
-            while(trimEnd > 0) {
-                var c:Null<Int> = matched.charCodeAt(trimEnd - 1);
-                if(c == null || c < 48 || c > 57) break;
-                trimEnd--;
-            }
-            var prefix:String = StringTools.rtrim(matched.substr(0, trimEnd));
-            if(prefix.length > 0 && !seen.exists(prefix)) {
-                seen.set(prefix, true);
-                prefixes.push(prefix);
-            }
-        }
-
-        xmlPrefixCache.set(xmlFile, prefixes);
-        return prefixes;
-    }
-
-    private function applyCombineToTarget(updateOnly:Bool):Void {
-        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
-        if(animName == "" || !currentConfig().animations.exists(animName)) {
-            combineStatusLabel.text = "Pick a target animation.";
-            return;
-        }
-
-        var info = currentConfig().animations.get(animName);
-
-        if(updateOnly && (info.secondaryPrefix == null || info.secondaryPrefix == "")) {
-            combineStatusLabel.text = "No overlay attached yet. Use Combine first.";
-            return;
-        }
-
-        if(!updateOnly) {
-            var overlayPrefix:String = getDropDownValue(combineOverlayPrefixDropDown, "");
-            if(overlayPrefix == "") {
-                combineStatusLabel.text = "Pick an overlay prefix.";
-                return;
-            }
-            info.secondaryPrefix = overlayPrefix;
-        }
-
-        info.offset[0] = Std.int(combineBaseOffsetX.pos);
-        info.offset[1] = Std.int(combineBaseOffsetY.pos);
-
-        var overlayOffX:Int = Std.int(combineOverlayOffsetX.pos);
-        var overlayOffY:Int = Std.int(combineOverlayOffsetY.pos);
-        if(info.secondaryOffset == null || info.secondaryOffset.length < 2) {
-            info.secondaryOffset = [overlayOffX, overlayOffY];
-        } else {
-            info.secondaryOffset[0] = overlayOffX;
-            info.secondaryOffset[1] = overlayOffY;
-        }
-
-        reloadCharacter(currentCharacterName, updateOnly);
-        selectDropDownItem(animationDropDown, animName);
-        refreshAnimationFields(animName);
-        selectDropDownItem(combineTargetAnimDropDown, animName);
-        refreshCombineFieldsFromTarget();
-        combineStatusLabel.text = updateOnly
-            ? "Updated '" + animName + "'."
-            : "Combined overlay into '" + animName + "'.";
-    }
-
-    private function flipCombineZOrder():Void {
-        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
-        if(animName == "" || !currentConfig().animations.exists(animName)) {
-            combineStatusLabel.text = "Pick a target animation.";
-            return;
-        }
-
-        var info = currentConfig().animations.get(animName);
-        if(info.secondaryPrefix == null || info.secondaryPrefix == "") {
-            combineStatusLabel.text = "No overlay attached yet. Use Combine first.";
-            return;
-        }
-
-        info.secondaryBehind = !(info.secondaryBehind == true);
-
-        reloadCharacter(currentCharacterName);
-        selectDropDownItem(animationDropDown, animName);
-        refreshAnimationFields(animName);
-        selectDropDownItem(combineTargetAnimDropDown, animName);
-        refreshCombineFieldsFromTarget();
-        combineStatusLabel.text = info.secondaryBehind
-            ? "Overlay moved behind base."
-            : "Overlay moved in front of base.";
-    }
-
-    private function removeOverlayFromTarget():Void {
-        var animName:String = getDropDownValue(combineTargetAnimDropDown, "");
-        if(animName == "" || !currentConfig().animations.exists(animName)) {
-            combineStatusLabel.text = "Pick a target animation.";
-            return;
-        }
-
-        var info = currentConfig().animations.get(animName);
-        if(info.secondaryPrefix == null || info.secondaryPrefix == "") {
-            combineStatusLabel.text = "Nothing to remove.";
-            return;
-        }
-
-        info.secondaryPrefix = null;
-        info.secondaryOffset = null;
-
-        reloadCharacter(currentCharacterName);
-        selectDropDownItem(animationDropDown, animName);
-        refreshAnimationFields(animName);
-        selectDropDownItem(combineTargetAnimDropDown, animName);
-        refreshCombineFieldsFromTarget();
-        combineStatusLabel.text = "Removed overlay from '" + animName + "'.";
     }
 
     private function createNewCharacter():Void {
@@ -750,20 +538,54 @@ class CharacterCreatorState extends UIState {
     private function createShadowCharacter():Void {
         clearShadowCharacter();
 
-        shadowEntity = new CreatorCharacter(character.x, character.y, character.curCharacter, true, character._info);
+        shadowEntity = buildCreatorCharacter(character.x, character.y, character.curCharacter, true, character._info);
         shadowEntity.flipX = character.flipX;
         shadowEntity.isPlayer = true;
         shadowEntity.alpha = 0.5;
         shadowEntity.cameras = [camGame];
         characterStorage.add(cast shadowEntity);
 
-        if(character.animation.curAnim != null) {
-            shadowEntity.playAnim(character.animation.curAnim.name);
-            shadowEntity.animation.stop();
-            if(shadowEntity.animation.curAnim != null) {
-                shadowEntity.animation.curAnim.curFrame = shadowEntity.animation.curAnim.numFrames;
-            }
+        // Atlas-safe: mirror the live character's pose, jump to the last frame, then freeze by
+        // disabling updates (works for both Sparrow `animation` and Animate `anim` controllers).
+        var currentAnim:String = character.getCurrentAnimation();
+        if(currentAnim != "") {
+            shadowEntity.playAnim(currentAnim);
+            shadowEntity.finishAnimation();
+            shadowEntity.active = false;
         }
+    }
+
+    /**
+     * Promotes the currently-previewed character into the persistent `previousGhost` instead of
+     * destroying it: the live instance stays in `characterStorage` with its frames intact, dimmed and
+     * frozen. `character` is detached (set null) so the following `reloadCharacter` builds a fresh
+     * preview without destroying this one (cloning + destroying the source is what blanked the old
+     * shadow). Because `previousGhost` is never referenced by reloadCharacter, no internal reload can
+     * wipe it - it only changes when you switch characters again.
+     */
+    private function keepPreviousCharacterGhost():Void {
+        // Drop the ghost left by the previous switch.
+        clearPreviousGhost();
+
+        if(character == null) {
+            return;
+        }
+
+        previousGhost = character;
+        character = null;
+
+        previousGhost.alpha = 0.5;
+        previousGhost.active = false;
+    }
+
+    private function clearPreviousGhost():Void {
+        if(previousGhost == null) {
+            return;
+        }
+
+        characterStorage.remove(cast previousGhost, true);
+        previousGhost.destroy();
+        previousGhost = null;
     }
 
     private function clearShadowCharacter():Void {
@@ -930,6 +752,38 @@ class CharacterCreatorState extends UIState {
         refreshAnimationFields(animName);
     }
 
+    /**
+     * Builds the preview character as the right backing for its config: an Adobe Animate
+     * `AtlasCharacter` when `useAtlas` is set, otherwise the Sparrow `CreatorCharacter`
+     * (which adds the editor's "play a random anim instead of crashing" safety net).
+     */
+    private function buildCreatorCharacter(x:Float, y:Float, characterName:String, isPlayer:Bool, ?info:ConfigCharacters):ICharacter {
+        if(info != null && info.useAtlas == true) {
+            return new AtlasCharacter(x, y, characterName, isPlayer, info);
+        }
+
+        return new CreatorCharacter(x, y, characterName, isPlayer, info);
+    }
+
+    /**
+     * Flips the current character between Sparrow and Adobe Animate backings, keeping the
+     * companion flags in sync, then rebuilds the preview so the new backing takes effect.
+     */
+    private function setCharacterAtlasMode(useAtlas:Bool):Void {
+        var info:ConfigCharacters = currentConfig();
+        info.useAtlas = useAtlas;
+
+        if(useAtlas) {
+            info.isAnimateAtlas = true;
+            info.atlasMode = "animate";
+        } else {
+            info.isAnimateAtlas = false;
+            info.atlasMode = null;
+        }
+
+        reloadCharacter(currentCharacterName);
+    }
+
     private function reloadCharacter(characterName:String, ?preserveShadow:Bool = false):Void {
         currentCharacterName = characterName;
         normalizeCharacterInfo(currentConfig());
@@ -943,7 +797,7 @@ class CharacterCreatorState extends UIState {
             character = null;
         }
 
-        character = new CreatorCharacter(440, 100, characterName, true, currentConfig());
+        character = buildCreatorCharacter(440, 100, characterName, true, currentConfig());
         character.flipX = false;
         character.updateFinalized(FlixelCompat.getScreenCenter(cast character, X), character.y);
         character.refresh(character.curCharacter, camPos);
@@ -962,9 +816,8 @@ class CharacterCreatorState extends UIState {
         setColorOptions(mapEditor.get("health"));
         refreshColorTransformFields();
         refreshDisplayFields();
-        rebuildAnimationDropDown(character.animation.curAnim != null ? character.animation.curAnim.name : null);
+        rebuildAnimationDropDown(character.getCurrentAnimation() != "" ? character.getCurrentAnimation() : null);
         refreshAnimationFields();
-        rebuildCombineDropDowns();
     }
 
     private function refreshDisplayFields():Void {
@@ -985,6 +838,7 @@ class CharacterCreatorState extends UIState {
         happyIconStepper.pos = currentConfig().icon[2];
         checkPlayable.selected = currentConfig().isPlayer;
         canBePixel.selected = currentConfig().pixel;
+        useAtlasCheck.selected = currentConfig().useAtlas == true;
 
         syncingUi = false;
 
@@ -1040,7 +894,7 @@ class CharacterCreatorState extends UIState {
 
         var targetAnimation:String = preferredAnimation;
         if(targetAnimation == null || targetAnimation == "") {
-            targetAnimation = character != null && character.animation.curAnim != null ? character.animation.curAnim.name : animations[0];
+            targetAnimation = character != null && character.getCurrentAnimation() != "" ? character.getCurrentAnimation() : animations[0];
         }
 
         selectDropDownItem(animationDropDown, targetAnimation);
@@ -1056,10 +910,12 @@ class CharacterCreatorState extends UIState {
             return;
         }
 
-        if(forcePlay || character.animation.curAnim == null || character.animation.curAnim.name != animName) {
+        if(forcePlay || character.getCurrentAnimation() == "" || character.getCurrentAnimation() != animName) {
             character.playAnim(animName, true);
         } else if(character.animOffsets.exists(animName)) {
-            character.offset.set(character.animOffsets[animName][0], character.animOffsets[animName][1]);
+            // Re-apply the offset without restarting; playAnim handles both `offset` (Sparrow)
+            // and `frameOffset` (Animate) internally, unlike a direct `offset.set`.
+            character.playAnim(animName, false);
         }
     }
 
@@ -1248,7 +1104,9 @@ class CharacterCreatorState extends UIState {
 
     private function updateFileValidation():Void {
         var value:String = fileNameInput.text.trim();
-        var exists:Bool = value.length > 0 && Paths.assetExists(Paths.getPreloadPath("images/" + value), IMAGE);
+        // Accept either a Sparrow/Packer image OR an Adobe Animate atlas folder (images/<value>/Animation.json).
+        var exists:Bool = value.length > 0
+            && (Paths.assetExists(Paths.getPreloadPath("images/" + value), IMAGE) || Paths.hasAnimateAtlas(value));
         fileValidationLabel.text = exists ? "Asset found" : "Asset missing";
     }
 
@@ -1339,20 +1197,22 @@ class CharacterCreatorState extends UIState {
             && lockAnimCheck.selected
             && selectedAnimation != null;
 
+        // Atlas-safe animation polling: `getCurrentAnimation()`/`isAnimationFinished()` work for
+        // both Sparrow (`animation`) and Adobe Animate (`anim`) backed characters.
         if(lockSelectedAnimation) {
-            if(character.animation.curAnim == null
-                || character.animation.curAnim.name != selectedAnimation
-                || character.animation.finished) {
+            if(character.getCurrentAnimation() == ""
+                || character.getCurrentAnimation() != selectedAnimation
+                || character.isAnimationFinished()) {
                 previewSelectedAnimation(true);
             } else {
                 previewSelectedAnimation(false);
             }
         } else if(allowInput) {
-            if(playCustomAnim && character.animation.finished) {
+            if(playCustomAnim && character.isAnimationFinished()) {
                 playCustomAnim = false;
             }
 
-            if(!playCustomAnim && character.animation.curAnim != null) {
+            if(!playCustomAnim && character.getCurrentAnimation() != "") {
                 if(controlArray[0] && character.animations.contains("singLEFT")) character.playAnim("singLEFT");
                 if(controlArray[1] && character.animations.contains("singDOWN")) character.playAnim("singDOWN");
                 if(controlArray[2] && character.animations.contains("singUP")) character.playAnim("singUP");
@@ -1361,8 +1221,10 @@ class CharacterCreatorState extends UIState {
                 if(character.animations.contains("idle")
                     || character.animations.contains("danceRight")
                     || character.animations.contains("danceLeft")) {
-                    if((!controlHoldArray.contains(true) && character.animation.curAnim.name.startsWith("sing"))
-                        || (!character.animation.curAnim.name.startsWith("sing") && character.animation.finished)) {
+                    // Re-read after the sing triggers above so we react to the anim actually playing.
+                    var currentAnim:String = character.getCurrentAnimation();
+                    if((!controlHoldArray.contains(true) && currentAnim.startsWith("sing"))
+                        || (!currentAnim.startsWith("sing") && character.isAnimationFinished())) {
                         character.dance();
                     }
                 }
@@ -1383,6 +1245,7 @@ class CharacterCreatorState extends UIState {
 
     override function destroy():Void {
         clearShadowCharacter();
+        clearPreviousGhost();
         iconP1 = FlxDestroyUtil.destroy(iconP1);
         iconP2 = FlxDestroyUtil.destroy(iconP2);
         super.destroy();

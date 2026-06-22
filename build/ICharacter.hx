@@ -47,6 +47,9 @@ interface ICharacter extends IFlxSprite {
 	function drawFrame(Force:Bool = false):Void;
 	function finishAnimation():Void;
 	function getCurrentAnimation():String;
+	function getDeathCameraOffsets():Array<Float>;
+	function getDeathCameraZoom():Float;
+	function getDeathQuote():String;
 	function getGraphicMidpoint(?point:FlxPoint):FlxPoint;
 	function getScreenPosition(?result:FlxPoint, ?camera:FlxCamera):FlxPoint;
 	function hasAnimation(animName:String):Bool;
@@ -65,4 +68,5 @@ interface ICharacter extends IFlxSprite {
 	function setColorTransform(redMultiplier:Float = 1, greenMultiplier:Float = 1, blueMultiplier:Float = 1, alphaMultiplier:Float = 1,
 		redOffset:Float = 0, greenOffset:Float = 0, blueOffset:Float = 0, alphaOffset:Float = 0):Void;
 	function updateFinalized(x:Float, y:Float):Void;
+	function updateHitbox():Void;
 }

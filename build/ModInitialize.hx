@@ -41,6 +41,21 @@ typedef ConfigCharacters = {
 
     var iconFile:String;
     var clippingAdjustment:Map<String, Array<Int>>;
+
+    /**
+     * When `true`, this character is backed by an Adobe Animate texture atlas and
+     * should be instantiated as `AtlasCharacter` (via `Character.build`) instead of
+     * the regular `Character`. Optional; defaults to `false` when absent from JSON.
+     */
+    @:optional var useAtlas:Bool;
+
+    /**
+     * Companion flags to `useAtlas` describing the Adobe Animate atlas backing. Not consumed
+     * by the runtime loader (which keys off `useAtlas`), but kept in the typedef so tools like
+     * the character creator preserve them across a load/save round-trip instead of dropping them.
+     */
+    @:optional var isAnimateAtlas:Bool;
+    @:optional var atlasMode:String;
 }
 
 typedef SongUtils = {
@@ -100,9 +115,10 @@ typedef AnimationInfo = {
     var framerate:Int;
     var looped:Bool;
     var offset:Array<Int>;
-    @:optional var secondaryPrefix:String;
-    @:optional var secondaryOffset:Array<Int>;
-    @:optional var secondaryBehind:Bool;
+    // Optional frame range (relative to the animation's frame label / symbol), mirroring
+    // Codename's `indices="a..b"`. Used to split a single Animate symbol (e.g. GF's
+    // "GF Dancing Beat") into danceLeft/danceRight halves.
+    @:optional var indices:Array<Int>;
 }
 
 typedef DiscordRPC = {

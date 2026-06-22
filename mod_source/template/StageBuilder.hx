@@ -80,32 +80,32 @@ abstract class StageBuilder extends FlxGroup {
 		return playstate.defaultCamZoom;
 	}
 
-	public function getBoyfriend(removeFromStage:Bool = false):Boyfriend {
-		var boyfriend:Boyfriend = cast playstate.boyfriend;
+	public function getBoyfriend(removeFromStage:Bool = false):ICharacter {
+		var boyfriend:ICharacter = playstate.boyfriend;
 
 		if(removeFromStage && boyfriend != null) {
-			remove(boyfriend, true);
+			remove(cast boyfriend, true);
 		}
 
 		return boyfriend;
 	}
 
-	public function addCharacter(character:Character, role:CharacterRole):Void {
+	public function addCharacter(character:ICharacter, role:CharacterRole):Void {
 		if(character == null) {
 			return;
 		}
 
 		switch(role) {
 			case BOYFRIEND:
-				playstate.boyfriend = cast character;
+				playstate.boyfriend = character;
 			case GIRLFRIEND:
 				playstate.gf = character;
 			case OPPONENT:
 				playstate.dad = character;
 		}
 
-		if(members.indexOf(character) == -1) {
-			add(character);
+		if(members.indexOf(cast character) == -1) {
+			add(cast character);
 		}
 	}
 

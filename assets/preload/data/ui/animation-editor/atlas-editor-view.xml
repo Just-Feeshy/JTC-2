@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<collapsible-dialog title="Atlas Debug Editor" width="390" height="230">
+  <vbox width="100%" height="100%" style="padding: 10px; spacing: 8px;">
+    <hbox width="100%">
+      <label width="35%" text="View" verticalAlign="center" />
+      <dropdown id="swapper" width="65%" />
+    </hbox>
+    <hbox width="100%">
+      <label width="35%" text="Atlas Directory" verticalAlign="center" />
+      <textfield id="atlasDirectoryInput" width="42%" />
+      <button id="loadAtlasButton" width="23%" text="Load" />
+    </hbox>
+    <hbox width="100%">
+      <label width="35%" text="Animation" verticalAlign="center" />
+      <dropdown id="animationDropdown" width="65%" dropdownSize="16" />
+    </hbox>
+    <label id="statusLabel" width="100%" text="" />
+  </vbox>
+</collapsible-dialog>

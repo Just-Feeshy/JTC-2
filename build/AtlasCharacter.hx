@@ -1,27 +1,15 @@
 package;
 
 import flixel.FlxG;
-import flixel.animation.FlxAnimation;
-import flixel.graphics.frames.FlxFramesCollection;
 import flixel.math.FlxPoint;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
-import feshixl.FeshMinSprite;
 import funkin.graphics.FunkinSprite;
 
 import ModInitialize;
 
 using StringTools;
 
-/**
- * Atlas-backed character implementation.
- *
- * This mirrors the Codename Engine character shape where it fits this codebase:
- * character identity, global/camera offsets, dance toggling, sing/miss helpers,
- * and Adobe Animate atlas playback. The Codename scripting/XML event layer is
- * intentionally not copied here because this project does not expose those
- * systems on the active classpath.
- */
 class AtlasCharacter extends FunkinSprite implements ICharacter {
 	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT"];
 
@@ -93,30 +81,7 @@ class AtlasCharacter extends FunkinSprite implements ICharacter {
 	}
 
 	function loadCharacterAssets():Void {
-		if(Paths.hasAnimateAtlas(_info.file)) {
-			loadTextureAtlas(_info.file);
-		} else {
-			frames = loadCharacterFrames(_info.file);
-		}
-	}
-
-	static function loadCharacterFrames(fileList:String):FlxFramesCollection {
-		var files:Array<String> = [];
-
-		if(fileList != null) {
-			for(file in fileList.split(",")) {
-				var trimmedFile:String = file.trim();
-				if(trimmedFile.length > 0) files.push(trimmedFile);
-			}
-		}
-
-		if(files.length <= 1) {
-			return FeshMinSprite.loadFrameCollection(files.length == 1 ? files[0] : fileList);
-		}
-
-		var frameCollections:Array<FlxFramesCollection> = [];
-		for(file in files) frameCollections.push(FeshMinSprite.loadFrameCollection(file));
-		return FlxAnimationUtil.combineAtlas(frameCollections);
+		frames = Paths.getFrames(_info.file);
 	}
 
 	function loadCharacterAnimations():Void {
@@ -135,14 +100,38 @@ class AtlasCharacter extends FunkinSprite implements ICharacter {
 	}
 
 	function addAnimationFromInfo(animName:String, animInfo:AnimationInfo):Void {
+		// Optional frame range (relative to the label/symbol), Codename-style. Lets a single
+		// Animate symbol be split into sub-animations (e.g. GF's "GF Dancing Beat" -> danceLeft/danceRight).
+		var indices:Array<Int> = animInfo.indices;
+		var hasIndices:Bool = indices != null && indices.length > 0;
+
 		if(isAnimate && anim != null) {
-			try {
-				anim.addByFrameLabel(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
-			} catch(e:Dynamic) {
-				anim.addBySymbol(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+			if(anim.findFrameLabelIndices(animInfo.prefix).length > 0) {
+				if(hasIndices)
+					anim.addByFrameLabelIndices(animName, animInfo.prefix, indices, animInfo.framerate, animInfo.looped);
+				else
+					anim.addByFrameLabel(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+				if(anim.exists(animName)) return;
 			}
+
+			var symbol:Dynamic = library != null ? library.getSymbol(animInfo.prefix) : null;
+			if(symbol != null && !Std.isOfType(symbol, Bool)) {
+				if(hasIndices)
+					anim.addBySymbolIndices(animName, animInfo.prefix, indices, animInfo.framerate, animInfo.looped);
+				else
+					anim.addBySymbol(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+				if(anim.exists(animName)) return;
+			}
+
+			if(hasIndices)
+				anim.addByFrameLabelIndices(animName, animInfo.prefix, indices, animInfo.framerate, animInfo.looped);
+			else
+				anim.addByFrameLabel(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
 		} else if(animation != null) {
-			animation.addByPrefix(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
+			if(hasIndices)
+				animation.addByIndices(animName, animInfo.prefix, indices, "", animInfo.framerate, animInfo.looped);
+			else
+				animation.addByPrefix(animName, animInfo.prefix, animInfo.framerate, animInfo.looped);
 		}
 	}
 
@@ -163,7 +152,7 @@ class AtlasCharacter extends FunkinSprite implements ICharacter {
 
 	public function hasAnimation(animName:String):Bool {
 		if(animName == null) return false;
-		if(isAnimate) return anim != null && anim.existsByName(animName);
+		if(isAnimate) return anim != null && anim.exists(animName);
 		return animation != null && animation.getByName(animName) != null;
 	}
 
@@ -174,7 +163,7 @@ class AtlasCharacter extends FunkinSprite implements ICharacter {
 
 	public function finishAnimation():Void {
 		if(isAnimate) {
-			if(anim != null) anim.curFrame = anim.length - 1;
+			if(anim != null && anim.curAnim != null) anim.curAnim.curFrame = anim.curAnim.numFrames - 1;
 		} else if(animation != null && animation.curAnim != null) {
 			animation.curAnim.finish();
 		}
@@ -217,8 +206,15 @@ class AtlasCharacter extends FunkinSprite implements ICharacter {
 		currentAnimation = resolvedAnimName;
 
 		var daOffset:Array<Float> = animOffsets.get(resolvedAnimName);
-		if(daOffset != null) offset.set(daOffset[0], daOffset[1]);
-		else offset.set(0, 0);
+		if(daOffset != null) {
+			if(isAnimate) frameOffset.set(daOffset[0], daOffset[1]);
+			else offset.set(daOffset[0], daOffset[1]);
+		} else {
+			if(isAnimate) frameOffset.set(0, 0);
+			else offset.set(0, 0);
+		}
+
+		if(isAnimate) offset.set(0, 0);
 	}
 
 	function resolveAnimationName(animName:String):String {

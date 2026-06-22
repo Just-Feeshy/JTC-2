@@ -1,0 +1,99 @@
+{
+	"animations": {
+		"danceLeft": {
+			"prefix": "GF Dancing Beat",
+			"indices": [
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14
+			],
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"sad": {
+			"prefix": "gf sad",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				-10
+			],
+			"looped": true
+		},
+		"danceRight": {
+			"prefix": "GF Dancing Beat",
+			"indices": [
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28
+			],
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"cheer": {
+			"prefix": "GF Cheer",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				-10
+			],
+			"looped": false
+		}
+	},
+	"isAnimateAtlas": true,
+	"isPlayer": false,
+	"atlasMode": "animate",
+	"pixel": false,
+	"position": {
+		"x": 350,
+		"camPosY": -440,
+		"y": 319,
+		"camPosX": -350
+	},
+	"useAtlas": true,
+	"clippingAdjustment": {},
+	"playAnim": "danceRight",
+	"file": "gf",
+	"icon": [
+		16,
+		16,
+		16
+	],
+	"iconFile": "iconGrid"
+}

@@ -71,6 +71,7 @@
 	},
 	"playAnim": "idle",
 	"file": "fonz",
+	"useAtlas": true,
 	"isAnimateAtlas": true,
 	"atlasMode": "animate",
 	"icon": [

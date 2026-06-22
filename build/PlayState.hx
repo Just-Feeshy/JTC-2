@@ -646,16 +646,20 @@ class PlayState extends MusicBeatState
 		}
 
 		Cache.cacheCharacter(gfVersion);
-		gf = new Character(400, 130, gfVersion);
+		gf = Character.build(400, 130, gfVersion);
 		gf.scrollFactor.set(0.95, 0.95);
-		
+		// Apply GF's JSON `position` x/y offset (relative to its build coords),
+		// the same way boyfriend/dad do via refresh(). GF isn't a camera target,
+		// so pass a throwaway point for the unused camPos output.
+		gf.refresh(gfVersion, FlxPoint.weak());
+
 		if(!stage.hasGirlfriend()) {
 			gf.destroy();
 			gf = null;
 		}
 
 		Cache.cacheCharacter(SONG.player2);
-		dad = new Character(100, 100, SONG.player2);
+		dad = Character.build(100, 100, SONG.player2);
 		originalPlayer1 = SONG.player1;
 		originalPlayer2 = SONG.player2;
 		originalGirlfriend = gf != null ? gf.curCharacter : "";
@@ -675,7 +679,7 @@ class PlayState extends MusicBeatState
 		}
 
 		Cache.cacheCharacter(SONG.player1);
-		boyfriend = new Boyfriend(770, 100, SONG.player1);
+		boyfriend = Character.build(770, 100, SONG.player1, true);
 
 		boyfriend.refresh(SONG.player1, camPos);
 		camPos.set(dad.getGraphicMidpoint().x, dad.getGraphicMidpoint().y);
@@ -4092,7 +4096,7 @@ class PlayState extends MusicBeatState
 
 			setHealth(health + note.giveHealth());
 
-			note.pressedByPlayer(cast currentPlayer, cast currentOpponent, cast gf);
+			note.pressedByPlayer(currentPlayer, currentOpponent, gf);
 			currentPlayer.customAnimation = true;
 			singNotePlayer(note);
 
@@ -4650,7 +4654,7 @@ class PlayState extends MusicBeatState
 					var sourceBoyfriend:ICharacter = boyfriend;
 					var baseX:Float = sourceBoyfriend != null ? sourceBoyfriend.x - sourceBoyfriend._info.position.get("x") : 770;
 					var baseY:Float = sourceBoyfriend != null ? sourceBoyfriend.y - sourceBoyfriend._info.position.get("y") : 100;
-					var newBoyfriend:Boyfriend = new Boyfriend(baseX, baseY, newCharacter);
+					var newBoyfriend:ICharacter = Character.build(baseX, baseY, newCharacter, true);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newBoyfriend.refresh(newCharacter, newCamPos);
 					newCamPos.put();
@@ -4661,9 +4665,9 @@ class PlayState extends MusicBeatState
 						var insertIndex:Int = sourceBoyfriend != null ? stage.members.indexOf(cast sourceBoyfriend) : -1;
 
 						if(insertIndex >= 0)
-							stage.insert(insertIndex, newBoyfriend);
+							stage.insert(insertIndex, cast newBoyfriend);
 						else
-							stage.add(newBoyfriend);
+							stage.add(cast newBoyfriend);
 					}
 				}
 
@@ -4672,7 +4676,7 @@ class PlayState extends MusicBeatState
 					var sourceDad:ICharacter = dad;
 					var baseX:Float = sourceDad != null ? sourceDad.x - sourceDad._info.position.get("x") : 100;
 					var baseY:Float = sourceDad != null ? sourceDad.y - sourceDad._info.position.get("y") : 100;
-					var newDad:Character = new Character(baseX, baseY, newCharacter);
+					var newDad:ICharacter = Character.build(baseX, baseY, newCharacter);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newDad.refresh(newCharacter, newCamPos);
 					newCamPos.put();
@@ -4683,9 +4687,9 @@ class PlayState extends MusicBeatState
 						var insertIndex:Int = sourceDad != null ? stage.members.indexOf(cast sourceDad) : -1;
 
 						if(insertIndex >= 0)
-							stage.insert(insertIndex, newDad);
+							stage.insert(insertIndex, cast newDad);
 						else
-							stage.add(newDad);
+							stage.add(cast newDad);
 					}
 				}
 
@@ -4694,7 +4698,7 @@ class PlayState extends MusicBeatState
 					var sourceGf:ICharacter = gf;
 					var baseX:Float = sourceGf != null ? sourceGf.x - sourceGf._info.position.get("x") : 400;
 					var baseY:Float = sourceGf != null ? sourceGf.y - sourceGf._info.position.get("y") : 130;
-					var newGf:Character = new Character(baseX, baseY, newCharacter);
+					var newGf:ICharacter = Character.build(baseX, baseY, newCharacter);
 					var newCamPos:FlxPoint = FlxPoint.get();
 					newGf.refresh(newCharacter, newCamPos);
 					newCamPos.put();
@@ -4705,9 +4709,9 @@ class PlayState extends MusicBeatState
 						var insertIndex:Int = sourceGf != null ? stage.members.indexOf(cast sourceGf) : -1;
 
 						if(insertIndex >= 0)
-							stage.insert(insertIndex, newGf);
+							stage.insert(insertIndex, cast newGf);
 						else
-							stage.add(newGf);
+							stage.add(cast newGf);
 					}
 				}
 		}
@@ -4916,9 +4920,12 @@ class PlayState extends MusicBeatState
 			return boyfriend;
 	}
 
-	public function extractGameOverCharacter():Character
+	public function extractGameOverCharacter():ICharacter
 	{
-		var deathCharacter:Character = cast currentPlayer;
+		// The game-over flow works against the `ICharacter` interface, so both regular
+		// `Character`s and atlas-backed players (`useAtlas` -> `AtlasCharacter`) can be
+		// plucked out of the stage and reused on the death screen.
+		var deathCharacter:ICharacter = currentPlayer;
 
 		if(deathCharacter == null)
 		{
@@ -4927,13 +4934,13 @@ class PlayState extends MusicBeatState
 
 		if(stage != null)
 		{
-			stage.remove(deathCharacter, true);
+			stage.remove(cast deathCharacter, true);
 		}
 
 		return deathCharacter;
 	}
 
-	public function restoreGameOverCharacter(character:Character):Void
+	public function restoreGameOverCharacter(character:ICharacter):Void
 	{
 		if(character == null || stage == null)
 		{
@@ -5041,21 +5048,24 @@ class PlayState extends MusicBeatState
 			notes.sort(FlxSort.byY, FlxSort.DESCENDING);
 		}
 
+		// `getCurrentAnimation()`/`isSinging()` are atlas-safe; the chars may be Sparrow
+		// (`Character`) or Adobe Animate (`AtlasCharacter`), and atlas chars never populate
+		// the `animation` controller, so we must not read `animation.curAnim` here.
 		if (gf != null) {
-			if(gf.animation.curAnim != null) {
+			if(gf.getCurrentAnimation() != "") {
 				if (!isInCountdown && curBeat % gf.danceBeatTimer == 0 && !gf.isSinging() && !gf.stunned && gf.shouldPlayDance) {
 					gf.dance();
 				}
 			}
 		}
 
-		if(dad.animation.curAnim != null) {
+		if(dad.getCurrentAnimation() != "") {
 			if (curBeat % dad.danceBeatTimer == 0 && !dad.isSinging() && !dad.stunned && dad.shouldPlayDance) {
 				playOpponentIdle();
 			}
 		}
 
-		if(boyfriend.animation.curAnim != null) {
+		if(boyfriend.getCurrentAnimation() != "") {
 			if (curBeat % boyfriend.danceBeatTimer == 0 && !boyfriend.isSinging() && !boyfriend.stunned && boyfriend.shouldPlayDance) {
 				boyfriend.dance();
 			}

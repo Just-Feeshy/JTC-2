@@ -72,7 +72,10 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
     var lastDialogueBeat:Int = -1;
     var dialogueCameraTween:FlxTween;
 
-    var girlfriend:Character;
+    // gf may be a Character or an AtlasCharacter (useAtlas), so hold it as the
+    // shared ICharacter interface; a `cast` to Character would dispatch against
+    // the wrong class for atlas characters and silently break dance().
+    var girlfriend:ICharacter;
 
     /** Duration applied to the per-scene shake. Override in subclasses if needed. */
     var shakeDuration:Float = 0.35;
@@ -397,21 +400,36 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
         lastDialogueBeat = Math.floor(FlxG.sound.music.time / dialogueBeatLengthMs);
     }
 
-    function updateDialogueGirlfriendDance():Void {
-        if (FlxG.sound.music == null || !playSong || dialogueBeatLengthMs <= 0) return;
+    var danceAccumulatorMs:Float = 0;
+    var danceBeatCounter:Int = 0;
 
-        dialogueSongPosition = FlxG.sound.music.time;
-        var dialogueBeat:Int = Math.floor(dialogueSongPosition / dialogueBeatLengthMs);
-        if (dialogueBeat == lastDialogueBeat) return;
-        lastDialogueBeat = dialogueBeat;
+    function dialogueDanceBeatLengthMs():Float {
+        // Prefer the dialogue song's BPM if one was started, otherwise fall back
+        // to the chart song's BPM so GF still dances when there's no dialogue music.
+        if (dialogueBeatLengthMs > 0) return dialogueBeatLengthMs;
+        var bpm:Float = (PlayState.SONG != null && PlayState.SONG.bpm > 0) ? PlayState.SONG.bpm : 100;
+        return (60 / bpm) * 1000;
+    }
 
+    function updateDialogueGirlfriendDance(elapsed:Float):Void {
         if (girlfriend == null || girlfriend.animation.curAnim == null) return;
 
-        if (dialogueBeat % girlfriend.danceBeatTimer == 0
-            && !girlfriend.isSinging()
-            && !girlfriend.stunned
-            && girlfriend.shouldPlayDance) {
-            girlfriend.dance();
+        var beatLengthMs:Float = dialogueDanceBeatLengthMs();
+        if (beatLengthMs <= 0) return;
+
+        var beatTimer:Int = girlfriend.danceBeatTimer > 0 ? girlfriend.danceBeatTimer : 1;
+
+        danceAccumulatorMs += elapsed * 1000;
+        while (danceAccumulatorMs >= beatLengthMs) {
+            danceAccumulatorMs -= beatLengthMs;
+            danceBeatCounter++;
+
+            if (danceBeatCounter % beatTimer == 0
+                && !girlfriend.isSinging()
+                && !girlfriend.stunned
+                && girlfriend.shouldPlayDance) {
+                girlfriend.dance();
+            }
         }
     }
 
@@ -453,7 +471,7 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
         var playstate:PlayState = cast(state, PlayState);
 
         playstateRef = playstate;
-        girlfriend = cast playstate.gf;
+        girlfriend = playstate.gf;
 
         blurEffect = new GuassianBlur(0);
         blurFilter = new ShaderFilter(blurEffect);
@@ -509,7 +527,7 @@ class DialogueBuilderV2 extends MusicBeatSubstate implements IDialogue {
     }
 
     override function update(elapsed:Float):Void {
-        updateDialogueGirlfriendDance();
+        updateDialogueGirlfriendDance(elapsed);
 
         if (controls.ACCEPT && !changingScene && dialogueScene < _info.scenes.length) {
             changingScene = true;

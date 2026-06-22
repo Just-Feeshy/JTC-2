@@ -126,17 +126,20 @@ class Register {
         HelperStates.transitionBuilds.remove(transition);
     }
 
-    public inline static function getInGameCharacter(character:CharacterRole):Character {
+    // Returns the role's character as the atlas-safe `ICharacter` interface; the concrete
+    // instance may be a Sparrow `Character`/`Boyfriend` or an Adobe Animate `AtlasCharacter`,
+    // so callers must not assume the `Character` class.
+    public inline static function getInGameCharacter(character:CharacterRole):ICharacter {
         if(isOfType(FlxG.state, PlayState)) {
             var playstate:PlayState = cast(FlxG.state, PlayState);
 
             switch (character) {
                 case BOYFRIEND:
-                    return cast playstate.boyfriend;
+                    return playstate.boyfriend;
                 case GIRLFRIEND:
-                    return cast playstate.gf;
+                    return playstate.gf;
                 default:
-                    return cast playstate.dad;
+                    return playstate.dad;
             }
         }
 

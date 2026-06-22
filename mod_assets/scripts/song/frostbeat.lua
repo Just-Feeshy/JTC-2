@@ -26,8 +26,13 @@ local secondHiddenAlpha = 0.00001
 local originalDadCharacter = "joul"
 local originalBoyfriendCharacter = "flying BF sings"
 
-local phaseTwoDadDeltaX = -120
-local phaseTwoDadDeltaY = 10
+-- Atlas-backed dad-car (mod_assets/characters/dad-car.json -> images/dd).
+-- Same transform the car used (baseFrostbiteCar = car-old.json -> car.json):
+--   new value = old value + (newJson - oldJson)
+-- dad-car-old.json sat at (-585, 0); dad-car.json sits at (-859, 500), so the
+-- JSON delta is (-274, +500). Old phaseTwo delta (-120, 10) + (-274, 500):
+local phaseTwoDadDeltaX = -394
+local phaseTwoDadDeltaY = 510
 local phaseTwoBoyfriendDeltaX = 240
 local phaseTwoBoyfriendDeltaY = 10
 local phaseOneDadBaseX = -132
@@ -45,8 +50,11 @@ local introClearStep = 50
 local introBaseCameraZoom = 0.9
 local introClearDuration = 0.35
 local introNoteRevealLanePairs = 4
-local baseFrostbiteCarX = -170
-local baseFrostbiteCarY = -35
+-- Atlas-backed car (mod_assets/characters/car.json -> images/car). Base position
+-- comes from car.json (364, 153); the old Sparrow car-old.json sat at (-170, -35),
+-- so any car position tuned for the Sparrow sheet is shifted by (+534, +188).
+local baseFrostbiteCarX = 364
+local baseFrostbiteCarY = 153
 local introOpponentFaceAnchorX = 0.53
 local introOpponentFaceAnchorY = 0.20
 local introOpponentFaceOffsetX = 6
@@ -118,7 +126,12 @@ local frostbeatWarmSpriteNames = {
     "frostWarm_deathRegular",
     "frostWarm_deathNote",
     "frostWarm_skaterExtraNotes",
-    "frostWarm_skatingFlyingDeath"
+    "frostWarm_skatingFlyingDeath",
+    -- Slender transition (step 608). The car/dad-car Animate atlases warm
+    -- themselves via their on-stage alpha-0.00001 sprites, but the full-screen
+    -- "jumpscare" image is created at alpha 0 (never drawn) so its texture
+    -- stalls on first reveal unless we force the upload here.
+    "frostWarm_jumpscare"
 }
 
 local function spawnFrostbeatWarmSprite(spriteName, imageName)
@@ -347,6 +360,27 @@ local function clearStaticShaderEffect()
     end
 
     staticShaderCleared = true
+end
+
+-- Detach the static shader after the intro-warmup link pass. Unlike
+-- clearStaticShaderEffect this must NOT touch the jumpscare sprite or the
+-- "cleared" latch: it only undoes the warm attach so phase one runs without the
+-- fullscreen-noise filter, leaving the now-linked shader program ready for the
+-- real step-608 attach to reuse instantly.
+local function detachWarmStaticShader()
+    if not staticShaderActive then
+        return
+    end
+
+    setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
+
+    if clearCameraShaders ~= nil then
+        clearCameraShaders(STATIC_SHADER_CAMERA)
+    elseif removeCameraShader ~= nil then
+        removeCameraShader(STATIC_SHADER_CAMERA)
+    end
+
+    staticShaderActive = false
 end
 
 local function startsWith(value, prefix)
@@ -862,8 +896,11 @@ local function updateIntroWarmup()
     elseif introWarmupIndex == 4 then
         -- By now the warm sprites have been in the scene for several frames,
         -- so their textures have been GPU-uploaded. Remove them so they
-        -- aren't drawn for the rest of the song.
+        -- aren't drawn for the rest of the song. The static shader has likewise
+        -- rendered (at opacity 0) for those frames, so its GPU program is linked
+        -- and we can detach it until the real step-608 transition.
         clearFrostbeatWarmSprites()
+        detachWarmStaticShader()
     else
         applyIntroOpponentFaceShot()
     end
@@ -926,7 +963,8 @@ local function refreshFrostbiteCarAnimation()
     local stepValue = curStep or 0
 
     if daddyTrans and stepValue < 630 then
-        setSpritePosition("frostbiteCAR", 241, 81)
+        -- (241, 81) Sparrow-tuned + atlas delta (+534, +188).
+        setSpritePosition("frostbiteCAR", 775, 269)
         playAnimRaw("frostbiteCAR", "transition", true)
         return
     end
@@ -942,12 +980,13 @@ local function ensureFrostbiteCar()
 	local smallestIndex = math.min(bfStageIndex, dadStageIndex)
 
     destroyManagedSprite("frostbiteCAR")
-    createSprite("frostbiteCAR")
+    createAnimateSprite("frostbiteCAR", "car")
     setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
-	compileSpriteSheet("frostbiteCAR", "daddycar", "sparrow")
-    addAnimationByPrefix("frostbiteCAR", "drive", "daddycar", 24, true)
-    addAnimationByPrefix("frostbiteCAR", "transition", "car drive and dust0", 24, false)
-    addAnimationByPrefix("frostbiteCAR", "fog", "car drive and dust t", 24, false)
+    -- Adobe Animate atlas symbols (images/car): "drive" is the main timeline (the
+    -- daddycar approach/drive sequence); transition/fog reuse the inner drive symbol.
+    addAnimationByTimeline("frostbiteCAR", "drive", 24, true)
+    addAnimationBySymbol("frostbiteCAR", "transition", "car drive and dust", 24, false)
+    addAnimationBySymbol("frostbiteCAR", "fog", "car drive and dust", 24, false)
     playAnimRaw("frostbiteCAR", "drive", true)
     setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
     insertSpriteToStage(smallestIndex, "frostbiteCAR")
@@ -1037,6 +1076,15 @@ function generatedStage()
     -- only used by the death/insta-kill flow.
     spawnFrostbeatWarmSprite("frostWarm_skaterExtraNotes", "skater extra notes")
     spawnFrostbeatWarmSprite("frostWarm_skatingFlyingDeath", "skating and flying DEATH")
+
+    -- Slender transition (step 608): upload the jumpscare texture and link the
+    -- static-shader GPU program now, while the intro cover hides everything.
+    -- The jumpscare sprite itself (created at alpha 0 in init) then reveals with
+    -- zero stall; the shader is detached again at intro-warmup index 4.
+    spawnFrostbeatWarmSprite("frostWarm_jumpscare", "jumpscare")
+    if ensureStaticShader() then
+        setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
+    end
 
     -- Prime everything the first death-note punch will trigger.
     warmFrostbeatPunchPath()
@@ -1268,7 +1316,8 @@ function onUpdate(elapsed)
         if carAnimDone and daddyTrans then
             stopAnim("frostbiteCAR")
             playAnimRaw("frostbiteCAR", "transition")
-            setSpritePosition("frostbiteCAR", 241, 81)
+            -- (241, 81) Sparrow-tuned + atlas delta (+534, +188).
+            setSpritePosition("frostbiteCAR", 775, 269)
             daddyTrans = false
         elseif carAnimDone and step ~= nil and step < 607 then
             playAnimRaw("frostbiteCAR", "drive")

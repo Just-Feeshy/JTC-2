@@ -355,7 +355,7 @@ class DefaultStage extends StageBuilder {
 				Register.getInGameCharacter(GIRLFRIEND).x += 180;
 				Register.getInGameCharacter(GIRLFRIEND).y += 300;
 			case 'schoolEvil':
-				var evilTrail = new FlxTrail(Register.getInGameCharacter(OPPONENT), null, 4, 24, 0.3, 0.069);
+				var evilTrail = new FlxTrail(cast Register.getInGameCharacter(OPPONENT), null, 4, 24, 0.3, 0.069);
 				add(evilTrail);
 
 				Register.getInGameCharacter(BOYFRIEND).x += 200;
@@ -369,13 +369,13 @@ class DefaultStage extends StageBuilder {
         super.whenCreatingScene();
 
 		if(stage == "limo") {
-			remove(Register.getInGameCharacter(BOYFRIEND));
-			remove(Register.getInGameCharacter(OPPONENT));
+			remove(cast Register.getInGameCharacter(BOYFRIEND));
+			remove(cast Register.getInGameCharacter(OPPONENT));
 
 			add(limo);
 
-			add(Register.getInGameCharacter(BOYFRIEND));
-			add(Register.getInGameCharacter(OPPONENT));
+			add(cast Register.getInGameCharacter(BOYFRIEND));
+			add(cast Register.getInGameCharacter(OPPONENT));
 		}
     }
 

@@ -6,7 +6,7 @@ import flixel.animation.FlxAnimationController;
 import flixel.math.FlxRect;
 
 interface ICustomNote {
-    function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void; //What happens when this note is press by the player.
+    function pressedByPlayer(note:Note, player:ICharacter, opponent:ICharacter, girlfriend:ICharacter):Void; //What happens when this note is press by the player.
     function useCustomPrefix(animation:FlxAnimationController):Bool; //Use your own animation prefixes for this note.
     function shouldBeIgnored():Bool; //Should the opponent ignore this note.
     function whenNoteIsHit(strumNote:Strum):Bool; //When this note is either hit by player or opponent.
@@ -40,7 +40,7 @@ interface ICustomNote {
 }
 
 class CustomNoteTemplate implements ICustomNote {
-    public function pressedByPlayer(note:Note, player:Character, opponent:Character, girlfriend:Character):Void {
+    public function pressedByPlayer(note:Note, player:ICharacter, opponent:ICharacter, girlfriend:ICharacter):Void {
         return;
     }
 

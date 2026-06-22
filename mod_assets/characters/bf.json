@@ -1,0 +1,211 @@
+{
+	"animations": {
+		"scared": {
+			"prefix": "BF idle shaking",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-4,
+				0
+			],
+			"looped": false
+		},
+		"singDOWN": {
+			"prefix": "export/BF NOTE DOWN",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-1,
+				-23
+			],
+			"looped": false
+		},
+		"bfBEEP": {
+			"prefix": "boyfriend scared",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-5,
+				0
+			],
+			"looped": false
+		},
+		"singLEFTmiss": {
+			"prefix": "export/BF NOTE LEFT MISS",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				12,
+				4
+			],
+			"looped": false
+		},
+		"firstDeath": {
+			"prefix": "export/BF dies",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				5,
+				-2
+			],
+			"looped": false
+		},
+		"idle": {
+			"prefix": "export/BF idle dance",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				0,
+				-5
+			],
+			"looped": false
+		},
+		"singLEFT": {
+			"prefix": "export/BF NOTE LEFT",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				13,
+				-3
+			],
+			"looped": false
+		},
+		"singUPmiss": {
+			"prefix": "export/BF NOTE UP MISS",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-36,
+				27
+			],
+			"looped": false
+		},
+		"poisoned": {
+			"prefix": "boyfriend poisoned",
+			"indices": null,
+			"name": null,
+			"framerate": 48,
+			"offset": [
+				0,
+				-20
+			],
+			"looped": false
+		},
+		"dodge": {
+			"prefix": "boyfriend dodge",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-5,
+				-12
+			],
+			"looped": false
+		},
+		"deathLoop": {
+			"prefix": "export/BF Dead Loop",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				22,
+				482
+			],
+			"looped": false
+		},
+		"singRIGHTmiss": {
+			"prefix": "export/BF NOTE RIGHT MISS",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-52,
+				1
+			],
+			"looped": false
+		},
+		"singUP": {
+			"prefix": "export/BF NOTE UP",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-29,
+				27
+			],
+			"looped": false
+		},
+		"hey": {
+			"prefix": "BF HEY!!",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				7,
+				4
+			],
+			"looped": false
+		},
+		"deathConfirm": {
+			"prefix": "export/BF Dead confirm",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				3,
+				0
+			],
+			"looped": false
+		},
+		"singDOWNmiss": {
+			"prefix": "export/BF NOTE DOWN MISS",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-11,
+				-12
+			],
+			"looped": false
+		},
+		"singRIGHT": {
+			"prefix": "export/BF NOTE RIGHT",
+			"indices": null,
+			"name": null,
+			"framerate": 24,
+			"offset": [
+				-45,
+				1
+			],
+			"looped": false
+		}
+	},
+	"isAnimateAtlas": true,
+	"isPlayer": true,
+	"atlasMode": "animate",
+	"pixel": false,
+	"position": {
+		"x": 242,
+		"camPosY": -480,
+		"y": 554,
+		"camPosX": -240
+	},
+	"useAtlas": true,
+	"clippingAdjustment": {},
+	"playAnim": "idle",
+	"file": "bf-cool",
+	"icon": [
+		0,
+		1,
+		0
+	],
+	"iconFile": "iconGrid"
+}

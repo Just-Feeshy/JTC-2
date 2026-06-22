@@ -65,11 +65,11 @@
       "url": "https://github.com/haxeui/haxeui-flixel"
     },
     {
-      "name": "flxanimate",
+      "name": "flixel-animate",
       "type": "git",
       "dir": null,
-      "ref": "768740a56b26aa0c072720e0d1236b94afe68e3e",
-      "url": "https://github.com/Dot-Stuff/flxanimate"
+      "ref": "old",
+      "url": "https://github.com/CodenameCrew/cne-flixel-animate/"
     }
   ]
 }

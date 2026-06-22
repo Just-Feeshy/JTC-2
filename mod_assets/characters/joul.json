@@ -2,6 +2,8 @@
 	"animations": {
 		"idle": {
 			"prefix": "joul idle dance",
+			"indices": null,
+			"name": null,
 			"framerate": 24,
 			"offset": [
 				0,
@@ -11,54 +13,67 @@
 		},
 		"singRIGHT": {
 			"prefix": "joul Sing Note RIGHT",
+			"indices": null,
+			"name": null,
 			"framerate": 24,
 			"offset": [
-				20,
-				35
+				-22,
+				28
 			],
 			"looped": false
 		},
 		"singDOWN": {
 			"prefix": "joul Sing Note DOWN",
+			"indices": null,
+			"name": null,
 			"framerate": 24,
 			"offset": [
 				0,
-				11
+				31
 			],
 			"looped": false
 		},
 		"singLEFT": {
 			"prefix": "joul Sing Note LEFT",
+			"indices": null,
+			"name": null,
 			"framerate": 24,
 			"offset": [
 				2,
-				40
+				26
 			],
 			"looped": false
 		},
 		"singUP": {
 			"prefix": "joul Sing Note UP",
+			"indices": null,
+			"name": null,
 			"framerate": 24,
 			"offset": [
-				-6,
-				107
+				-27,
+				27
 			],
 			"looped": false
 		}
 	},
+	"isAnimateAtlas": true,
 	"isPlayer": false,
+	"atlasMode": "animate",
 	"pixel": false,
 	"position": {
-		"x": 0,
-		"camPosY": -10,
-		"y": 0,
-		"camPosX": 0
+		"x": -860,
+		"camPosY": -480,
+		"y": 475,
+		"camPosX": 920
 	},
+	"useAtlas": true,
+	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "joul_assets.xml",
+	"file": "jtc",
 	"icon": [
 		24,
 		25,
 		30
-	]
+	],
+	"iconFile": "iconGrid"
 }
