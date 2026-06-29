@@ -1,47 +1,52 @@
 {
 	"animations": {
 		"singDOWN": {
-			"prefix": "skater dance DOWN0",
+			"prefix": "skater dance DOWN",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				234,
-				-131
+				255,
+				0
 			],
 			"looped": false
 		},
 		"singUP miss": {
 			"prefix": "skater dance UP miss",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				437,
-				202
+				293,
+				148
 			],
 			"looped": false
 		},
 		"singUP": {
-			"prefix": "skater dance UP0",
+			"prefix": "skater dance UP",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				264,
-				157
+				294,
+				146
 			],
 			"looped": false
 		},
 		"singDOWN miss": {
 			"prefix": "skater dance DOWN miss",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				259,
-				2
+				265,
+				-6
 			],
 			"looped": false
 		},
 		"idle": {
-			"prefix": "skater dance IDLE0",
+			"prefix": "skater dance IDLE",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -52,61 +57,67 @@
 		},
 		"idleExtra": {
 			"prefix": "skater dance IDLE GF",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				279,
+				219,
 				95
 			],
 			"looped": false
 		},
 		"punched": {
 			"prefix": "skater dance punchd",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				281,
-				93
+				297,
+				114
 			],
 			"looped": false
 		},
 		"singRIGHT": {
-			"prefix": "skater dance RIGHT0",
+			"prefix": "skater dance RIGHT",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				518,
-				53
+				486,
+				125
 			],
 			"looped": false
 		},
 		"singLEFT": {
-			"prefix": "skater dance LEFT0",
+			"prefix": "skater dance LEFT",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				265,
-				83
+				296,
+				86
 			],
 			"looped": false
 		},
 		"singLEFT miss": {
 			"prefix": "skater dance LEFT miss",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				280,
-				119
+				303,
+				86
 			],
 			"looped": false
 		},
 		"singRIGHT miss": {
 			"prefix": "skater dance RIGHT miss",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				591,
-				235
+				488,
+				123
 			],
 			"looped": false
 		}
@@ -116,9 +127,9 @@
 	"atlasMode": "animate",
 	"pixel": false,
 	"position": {
-		"x": 0,
+		"x": 430,
 		"camPosY": 0,
-		"y": 0,
+		"y": 429,
 		"camPosX": 0
 	},
 	"useAtlas": true,

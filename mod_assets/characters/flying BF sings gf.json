@@ -1,47 +1,19 @@
 {
 	"animations": {
 		"deathLoop": {
-			"prefix": "deathLoop",
+			"prefix": "deathLoopDad",
+			"indices": null,
 			"name": "deathLoop",
 			"framerate": 24,
 			"offset": [
-				-127,
-				-91
+				-92,
+				-33
 			],
-			"looped": false
-		},
-		"deathConfirm": {
-			"prefix": "deathConfirm",
-			"name": "deathConfirm",
-			"framerate": 24,
-			"offset": [
-				-127,
-				-87
-			],
-			"looped": false
-		},
-		"firstDeath": {
-			"prefix": "firstDeath",
-			"name": "firstDeath",
-			"framerate": 24,
-			"offset": [
-				760,
-				200
-			],
-			"looped": false
-		},
-		"idle": {
-			"prefix": "flying dance IDLE GF",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				0,
-				0
-			],
-			"looped": false
+			"looped": true
 		},
 		"singDOWN": {
 			"prefix": "flying dance DOWN GF",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -50,8 +22,20 @@
 			],
 			"looped": false
 		},
+		"singRIGHTmiss": {
+			"prefix": "flying miss RIGHT",
+			"indices": null,
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				11,
+				-23
+			],
+			"looped": false
+		},
 		"singUP": {
 			"prefix": "flying dance UP GF",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -60,18 +44,53 @@
 			],
 			"looped": false
 		},
-		"singLEFT": {
-			"prefix": "flying dance LEFT GF",
+		"singLEFTmiss": {
+			"prefix": "flying miss LEFT",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
-				11,
-				50
+				-27,
+				-15
+			],
+			"looped": false
+		},
+		"deathConfirm": {
+			"prefix": "deathConfirmDad",
+			"indices": null,
+			"name": "deathConfirm",
+			"framerate": 24,
+			"offset": [
+				-92,
+				-32
+			],
+			"looped": false
+		},
+		"firstDeath": {
+			"prefix": "firstDeath",
+			"indices": null,
+			"name": "firstDeath",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
+			],
+			"looped": false
+		},
+		"idle": {
+			"prefix": "flying dance IDLE GF",
+			"indices": null,
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				0,
+				0
 			],
 			"looped": false
 		},
 		"singRIGHT": {
 			"prefix": "flying dance RIGHT GF",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -82,6 +101,7 @@
 		},
 		"singDOWNmiss": {
 			"prefix": "flying miss DOWN",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -90,8 +110,20 @@
 			],
 			"looped": false
 		},
+		"singLEFT": {
+			"prefix": "flying dance LEFT GF",
+			"indices": null,
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				6,
+				3
+			],
+			"looped": false
+		},
 		"singUPmiss": {
 			"prefix": "flying miss UP",
+			"indices": null,
 			"name": "",
 			"framerate": 24,
 			"offset": [
@@ -99,44 +131,26 @@
 				-27
 			],
 			"looped": false
-		},
-		"singLEFTmiss": {
-			"prefix": "flying miss LEFT",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				-27,
-				-15
-			],
-			"looped": false
-		},
-		"singRIGHTmiss": {
-			"prefix": "flying miss RIGHT",
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				11,
-				-23
-			],
-			"looped": false
 		}
 	},
+	"isAnimateAtlas": true,
 	"isPlayer": true,
+	"atlasMode": "animate",
 	"pixel": false,
 	"position": {
-		"x": 12,
-		"camPosY": 150,
-		"y": -264,
-		"camPosX": 0
+		"x": -2825,
+		"camPosY": 875,
+		"y": -1219,
+		"camPosX": 2790
 	},
 	"useAtlas": true,
-	"isAnimateAtlas": true,
-	"atlasMode": "animate",
+	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "flying, flying_death",
+	"file": "flying,flying_death",
 	"icon": [
 		31,
 		32,
 		31
-	]
+	],
+	"iconFile": "iconGrid"
 }

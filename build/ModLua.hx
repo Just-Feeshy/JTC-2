@@ -150,6 +150,13 @@ class ModLua {
         return luaSprites;
     }
 
+    // Register an externally-created sprite (e.g. one built by the shared StageLayoutScene) into
+    // this VM's sprite store so getSprite(name) and the script's dynamic logic can find it by name.
+    public function registerSprite(name:String, spr:FlxSprite):Void {
+        if(name == null || spr == null) return;
+        ensureLuaSpriteMap().set(name, spr);
+    }
+
     inline function ensureLuaTextMap():Map<String, FlxText> {
         if(luaTexts == null) {
             luaTexts = new Map<String, FlxText>();
@@ -1323,6 +1330,25 @@ class ModLua {
             spr.scrollFactor.set(x, y);
         });
 
+        // Pin a sprite or character ("dad"/"bf"/"gf" or a stage sprite name) to the frozen
+        // stage camera so the gameplay camera's pan/zoom no longer slides or scales it — it
+        // stays exactly where the Stage Builder's static view shows it. Re-call after a
+        // sprite is rebuilt. Returns true if the target was found.
+        addProtectedLuaCallback("pinToStageCamera", function(name:String):Bool {
+            if(FlxG.state != null && FlxG.state is PlayState) {
+                return cast(FlxG.state, PlayState).pinToStageCamera(name);
+            }
+            return false;
+        });
+
+        // Undo pinToStageCamera: hand the sprite/character back to the gameplay camera.
+        addProtectedLuaCallback("unpinFromStageCamera", function(name:String):Bool {
+            if(FlxG.state != null && FlxG.state is PlayState) {
+                return cast(FlxG.state, PlayState).unpinFromStageCamera(name);
+            }
+            return false;
+        });
+
         addProtectedLuaCallback("setSpriteSize", function(name:String, width:Int, height:Int) {
             var spr:FlxSprite = getSprite(name);
 
@@ -1373,6 +1399,7 @@ class ModLua {
 
             return 0;
         });
+
 
         addProtectedLuaCallback("getMidpointX", function(name:String) {
             var spr:FlxSprite = getSprite(name);
@@ -3838,6 +3865,36 @@ class ModLua {
                 tween.active = true;
             }
         }
+    }
+
+    /**
+     * Reads a global Lua table as a Haxe array (e.g. the stage editor reading `stageVocals`).
+     * Returns null if the global isn't a table/array.
+     */
+    public function getGlobalArray(name:String):Array<Dynamic> {
+        #if (USING_LUA && cpp)
+        if (lua == null) return null;
+        Lua.getglobal(lua, name);
+        var v:Dynamic = Convert.fromLua(lua, -1);
+        Lua.pop(lua, 1);
+        return Std.isOfType(v, Array) ? cast v : null;
+        #else
+        return null;
+        #end
+    }
+
+    /** Read any Lua global, converted to a Haxe value (tables -> anon objects / arrays).
+     *  Used by the stage editor to read the declarative `stageLayout` table the real way. */
+    public function getGlobal(name:String):Dynamic {
+        #if (USING_LUA && cpp)
+        if (lua == null) return null;
+        Lua.getglobal(lua, name);
+        var v:Dynamic = Convert.fromLua(lua, -1);
+        Lua.pop(lua, 1);
+        return v;
+        #else
+        return null;
+        #end
     }
 
     public function close():Void {

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<collapsible-dialog title="Camera Timeline" width="320" height="420">
+  <vbox width="100%" height="100%">
+    <frame text="Keyframes" width="100%" height="100%" horizontalAlign="center">
+      <vbox width="100%" height="100%">
+        <listview id="kfList" width="100%" height="40%" />
+        <grid columns="2" width="100%">
+          <label text="Step" verticalAlign="center" horizontalAlign="center" />
+          <number-stepper id="kfStep" min="0" max="100000" step="1" precision="2" />
+          <label text="Zoom" verticalAlign="center" horizontalAlign="center" />
+          <number-stepper id="kfZoom" min="0.05" max="10" step="0.05" precision="2" />
+          <label text="Focus (X)" verticalAlign="center" horizontalAlign="center" />
+          <number-stepper id="kfFocusX" min="-100000" max="100000" step="1" precision="1" />
+          <label text="Focus (Y)" verticalAlign="center" horizontalAlign="center" />
+          <number-stepper id="kfFocusY" min="-100000" max="100000" step="1" precision="1" />
+        </grid>
+        <hbox width="100%" horizontalAlign="center">
+          <button id="kfAdd" text="Add Keyframe" width="50%" />
+          <button id="kfRemove" text="Remove" width="50%" />
+        </hbox>
+      </vbox>
+    </frame>
+  </vbox>
+</collapsible-dialog>

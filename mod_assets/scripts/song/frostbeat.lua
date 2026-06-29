@@ -1,10 +1,67 @@
--- First main game lua test of this "engine" to see how well it can handle lua modchart's and general scripting.
+-- Frostbeat song modchart (gameplay only).
+--
+-- Stage scenery (the frostbiteCAR prop + base character layout) now lives in
+-- scripts/stage/frostbeat/frostbeat_stage.lua, and the camera choreography is declarative
+-- data in scripts/stage/frostbeat/frostbeat_camera.lua (applied by the engine's StageCamera
+-- layer). Both run in their own Lua VM alongside this one (see build/play/PlayLua.hx).
+--
+-- What remains here: HUD/punch mechanics, the death-note logic, the static-shader / jumpscare
+-- "slender" transition, the phase-two character swaps, song tracks/vocals, the note-reactive
+-- skater opponent ("second"), and the GPU-warm precache trick.
 
---variables of components
+-- ============================================================================
+-- Modules
+-- ============================================================================
 local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
 local frost_bump = require("mod_assets/scripts/components/frost_bump")
 local frost_modchart = {}
 
+-- ============================================================================
+-- Phase-two layout deltas (gameplay character repositioning)
+-- ============================================================================
+local phaseTwoDadDeltaX = -394
+local phaseTwoDadDeltaY = 510
+local phaseTwoBoyfriendDeltaX = 240
+local phaseTwoBoyfriendDeltaY = 10
+
+-- Atlas-backed phase-two skater opponent (frostbeat-second.json -> images/skater).
+local secondBaseX = 1320
+local secondBaseY = 559
+local secondHiddenAlpha = 0.00001
+
+local originalDadCharacter = "joul"
+local originalBoyfriendCharacter = "flying BF sings"
+
+local jtcStrumAnims = {
+    "singRIGHT",
+    "singUP",
+    "singDOWN",
+    "singLEFT"
+}
+
+local shaderTrans = { -- In steps
+    608,
+    656,
+    629
+}
+
+local STATIC_SHADER_NAME = "static_shader"
+local STATIC_SHADER_CAMERA = "camHUD"
+
+-- Bop is suppressed through the intro (the camera is on scripted face-shots until ~step 68).
+local introBopSuppressUntilStep = 68
+local introBeginStep = 18
+local introNoteRevealStartStep = 36
+local introNoteRevealEndStep = 54
+local introNoteRevealLanePairs = 4
+local introClearDuration = 0.35
+local introWarmupTotalSteps = 5
+
+-- ============================================================================
+-- Runtime state
+-- ============================================================================
+
+-- Static shader / slender transition
 local staticShaderInitialized = false
 local staticShaderInitFailed = false
 local staticShaderActive = false
@@ -12,77 +69,65 @@ local staticShaderTime = 0
 local staticShaderCleared = false
 local staticShaderSoundPlayed = false
 
+-- Opponent animation pacing
 local curAnimName = ""
 local holdTimer = 0
 local multipler = 6.1
 local stunned = false
 
+-- Phase / character swap flags
 local daddyIsHere = false
-local daddyTrans = false
+local secondActive = false
+local boyfriendGFSwitched = false
 
-local secondBaseX = 890
-local secondBaseY = 130
-local secondHiddenAlpha = 0.00001
-local originalDadCharacter = "joul"
-local originalBoyfriendCharacter = "flying BF sings"
-
--- Atlas-backed dad-car (mod_assets/characters/dad-car.json -> images/dd).
--- Same transform the car used (baseFrostbiteCar = car-old.json -> car.json):
---   new value = old value + (newJson - oldJson)
--- dad-car-old.json sat at (-585, 0); dad-car.json sits at (-859, 500), so the
--- JSON delta is (-274, +500). Old phaseTwo delta (-120, 10) + (-274, 500):
-local phaseTwoDadDeltaX = -394
-local phaseTwoDadDeltaY = 510
-local phaseTwoBoyfriendDeltaX = 240
-local phaseTwoBoyfriendDeltaY = 10
-local phaseOneDadBaseX = -132
-local phaseOneDadBaseY = 4
-local phaseOneBoyfriendBaseX = 782
-local phaseOneBoyfriendBaseY = -164
-local baseFunkroadCameraX = 785
-local baseFunkroadCameraY = 458.5
-local baseFunkroadCameraZoom = 0.5
-local baseFunkroadCameraFocusLerp = 0.09
-local introNoteRevealStartStep = 36
-local introNoteRevealEndStep = 54
-local introBaseCameraStep = 40
-local introClearStep = 50
-local introBaseCameraZoom = 0.9
-local introClearDuration = 0.35
-local introNoteRevealLanePairs = 4
--- Atlas-backed car (mod_assets/characters/car.json -> images/car). Base position
--- comes from car.json (364, 153); the old Sparrow car-old.json sat at (-170, -35),
--- so any car position tuned for the Sparrow sheet is shifted by (+534, +188).
-local baseFrostbiteCarX = 364
-local baseFrostbiteCarY = 153
-local introOpponentFaceAnchorX = 0.53
-local introOpponentFaceAnchorY = 0.20
-local introOpponentFaceOffsetX = 6
-local introOpponentFaceOffsetY = -16
-local introOpponentFaceZoom = 1.95
-local introGirlfriendFaceAnchorX = 0.29
-local introGirlfriendFaceAnchorY = 0.24
-local introGirlfriendFaceOffsetX = 10
-local introGirlfriendFaceOffsetY = 30
-local introGirlfriendFaceZoom = 2.15
-local introBoyfriendFaceAnchorX = 0.29
-local introBoyfriendFaceAnchorY = 0.48
-local introBoyfriendFaceOffsetX = 10
-local introBoyfriendFaceOffsetY = 310
-local introBoyfriendFaceZoom = 2.15
+-- Intro warmup / cover
 local introWarmupIndex = 0
-local introBeginStep = 18
-local introWarmupTotalSteps = 5
+local introWarmupDone = false
+local introCoverRemoved = false
+local introNoteRevealDone = false
 
--- Mirror vanilla Funkin's precache pattern: pay the asset-load cost once
--- in generatedStage(), synchronously, before the song actually starts. No
--- worker pool, no per-step staging — just the standard precache* API.
+-- Punch / vocals
+local jtcVocalsSwitchedToPlayer = false
+local jtcVocalsMutedForPunch = false
+local pendingVoiceUnmuteAllowed = true
+local punchCount = 0
+local punchIconNames = {}
+
+-- ============================================================================
+-- Math & easing helpers (shader transition)
+-- ============================================================================
+
+local B1 = 1 / 2.75
+local B2 = 2 / 2.75
+local B3 = 1.5 / 2.75
+local B4 = 2.5 / 2.75
+local B5 = 2.25 / 2.75
+local B6 = 2.625 / 2.75
+
+local function bounceOut(t)
+    if t < B1 then
+        return 7.5625 * t * t
+    elseif t < B2 then
+        return 7.5625 * (t - B3) * (t - B3) + 0.75
+    elseif t < B4 then
+        return 7.5625 * (t - B5) * (t - B5) + 0.9375
+    else
+        return 7.5625 * (t - B6) * (t - B6) + 0.984375
+    end
+end
+
+local function bounceIn(t)
+    return 1 - bounceOut(1 - t)
+end
+
+-- ============================================================================
+-- Asset warming (pay first-draw GPU/audio cost up front behind the intro cover)
+-- ============================================================================
+
 local function precacheFrostbeatAssets()
     if precacheImage ~= nil then
         precacheImage("daddy_fist")
         precacheImage("daddy_fisted")
-        precacheImage("skater extra notes")
-        precacheImage("skating and flying DEATH")
     end
 
     if precacheSound ~= nil then
@@ -91,46 +136,26 @@ local function precacheFrostbeatAssets()
     end
 
     if precacheAtlas ~= nil then
-        -- DeathNote.getCombinedFrames merges these two atlases together.
-        -- Precache *both* so users who never play any other song that loads
-        -- the regular note atlas still get a working combined atlas here.
         precacheAtlas("notes/regular/NOTE_assets", "sparrow")
         precacheAtlas("notes/death/NOTE_assets", "sparrow")
-        --
-        -- inside the constructor.
-        precacheAtlas("flying notes BF SINGS", "sparrow")
-        precacheAtlas("skating and flying DEATH", "sparrow")
-        precacheAtlas("skating and flying DEATHDEMON", "sparrow")
-        -- "flying notes GF SINGS" is deferred: it is only needed when the
-        -- flying BF sings gf character swaps in at step 906. Loading it here
-        -- burns 256 MB of VRAM for the entire song on every device. It is
-        -- instead loaded at step 700 (see onStepHit), giving ~17 seconds of
-        -- buffer before the swap while keeping VRAM lower during Phase 1.
     end
 
     if precacheCharacter ~= nil then
         precacheCharacter("dad-car")
         precacheCharacter("frostbeat-second")
-        -- "flying BF sings gf" deferred alongside flying notes GF SINGS (step 700)
+        precacheCharacter("flying BF sings gf")
     end
 
     if addCharacterToList ~= nil then
         addCharacterToList("dad-car", "dad")
-        -- "flying BF sings gf" deferred alongside flying notes GF SINGS (step 700)
+        addCharacterToList("flying BF sings gf", "boyfriend")
     end
 end
 
 local frostbeatWarmSpriteNames = {
-    "frostWarm_daddyFist",
-    "frostWarm_daddyFisted",
     "frostWarm_deathRegular",
     "frostWarm_deathNote",
-    "frostWarm_skaterExtraNotes",
-    "frostWarm_skatingFlyingDeath",
-    -- Slender transition (step 608). The car/dad-car Animate atlases warm
-    -- themselves via their on-stage alpha-0.00001 sprites, but the full-screen
-    -- "jumpscare" image is created at alpha 0 (never drawn) so its texture
-    -- stalls on first reveal unless we force the upload here.
+    "frostWarm_daddyFisted",
     "frostWarm_jumpscare"
 }
 
@@ -157,127 +182,51 @@ local function clearFrostbeatWarmSprites()
     end
 end
 
-local frostbeatPunchPathWarmed = false
+local frostbeatAtlasesWarmed = false
 
--- The first death-note punch fires four first-time GPU/audio operations in
--- one frame: dad-car's "punch" anim, second's "punched" anim, the daddy_fist
--- → daddy_fisted texture swap on the punch icon, and the first decode of the
--- punch sound by OpenFL's audio backend. Pay each cost once up front so the
--- real punch event is pure warm-cache playback.
-local function warmFrostbeatPunchPath()
-    if frostbeatPunchPathWarmed then
+local function warmFrostbeatAtlases()
+    if frostbeatAtlasesWarmed then
         return
     end
 
-    -- dad-car is registered via addCharacterToList in precacheFrostbeatAssets,
-    -- so primeLoadedCharacterAnimations can drive its sprite even before
-    -- the phase-two character swap actually puts it on stage.
+    if primeCharacterAnimations ~= nil and spriteExist("second") then
+        primeCharacterAnimations("second", {"idle", "punched", "singLEFT", "singLEFT miss"})
+    end
+
+    if primeCharacterAnimations ~= nil then
+        primeCharacterAnimations("boyfriend", {"firstDeath"})
+    end
+
     if primeLoadedCharacterAnimations ~= nil then
         primeLoadedCharacterAnimations("dad-car", "dad", {"punch"})
+        primeLoadedCharacterAnimations("flying BF sings gf", "boyfriend", {"idle", "firstDeath"})
     end
 
-    if primeCharacterAnimations ~= nil and spriteExist("second") then
-        primeCharacterAnimations("second", {"punched"})
-    end
-
-    -- Silent play forces OpenFL to bind the Sound to a mixer channel; the
-    -- first audible play later then skips that one-time allocation.
     if playSound ~= nil then
         playSound("punch", 0)
     end
 
-    frostbeatPunchPathWarmed = true
+    frostbeatAtlasesWarmed = true
 end
 
-local jtcStrumAnims = {
-    "singRIGHT",
-    "singUP",
-    "singDOWN",
-    "singLEFT"
-}
-
-local shaderTrans = { --In steps
-	608,
-	656,
-	629
-}
-
-local STATIC_SHADER_NAME = "static_shader"
-local STATIC_SHADER_CAMERA = "camHUD"
-
-local updatePhaseTwoPreparation
-local preparePhaseTwoAssets
-local prepareFlyingGfCharacter
-
-local currentIntroFocusX = baseFunkroadCameraX
-local currentIntroFocusY = baseFunkroadCameraY
-local currentIntroZoom = baseFunkroadCameraZoom
-local currentIntroCarX = baseFrostbiteCarX
-local currentIntroCarY = baseFrostbiteCarY
-local introClearTween = nil
-local introWarmupDone = false
-local introCoverRemoved = false
-local introGirlfriendShotDone = false
-local introBoyfriendShotDone = false
-local introNoteRevealDone = false
-local introBaseCameraDone = false
-local introClearDone = false
-local secondActive = false
-local boyfriendGFSwitched = false
-local phaseTwoFlyingCameraActive = false
-local phaseTwoFlyingCameraStartFocusX = nil
-local phaseTwoFlyingCameraStartFocusY = nil
-local phaseTwoFlyingCameraStartZoom = nil
-local phaseTwoFlyingCameraCompleted = false
-local jtcVocalsSwitchedToPlayer = false
-local jtcVocalsMutedForPunch = false
-local pendingVoiceUnmuteAllowed = true
-local punchCount = 0
-local punchIconNames = {}
-local INTENSITY_MULTIPLIER = 1.5
-local gfCharacterPreloaded = false
-local phaseTwoFlyingCameraStartStep = 906
-local phaseTwoFlyingCameraPeakStep = 1136
-local phaseTwoFlyingCameraEndStep = 1028
-local phaseTwoFlyingCameraPeakZoom = 1.2
-
-local B1 = 1 / 2.75
-local B2 = 2 / 2.75
-local B3 = 1.5 / 2.75
-local B4 = 2.5 / 2.75
-local B5 = 2.25 / 2.75
-local B6 = 2.625 / 2.75
-
-local function bounceOut(t)
-    if t < B1 then
-        return 7.5625 * t * t
-    elseif t < B2 then
-        return 7.5625 * (t - B3) * (t - B3) + 0.75
-    elseif t < B4 then
-        return 7.5625 * (t - B5) * (t - B5) + 0.9375
-    else
-        return 7.5625 * (t - B6) * (t - B6) + 0.984375
-    end
-end
-
-local function bounceIn(t)
-    return 1 - bounceOut(1 - t)
-end
+-- ============================================================================
+-- Static shader (slender transition)
+-- ============================================================================
 
 local function shaderTransitionUpdate()
     if not staticShaderActive then
         return
     end
 
-	local opacity = (curStepFloat - shaderTrans[1]) / (shaderTrans[3] - shaderTrans[1])
+    local opacity = (curStepFloat - shaderTrans[1]) / (shaderTrans[3] - shaderTrans[1])
 
-	if shaderTrans[1] < curStepFloat and shaderTrans[2] > curStepFloat then
+    if shaderTrans[1] < curStepFloat and shaderTrans[2] > curStepFloat then
         setShaderFloat(STATIC_SHADER_CAMERA, "opacity", math.min(0.5 * bounceOut(opacity), 0.5))
-	end
+    end
 
-	if shaderTrans[1] < curStepFloat and shaderTrans[3] > curStepFloat then
-		setSpriteAlpha("jumpscare", bounceIn(opacity))
-	end
+    if shaderTrans[1] < curStepFloat and shaderTrans[3] > curStepFloat then
+        setSpriteAlpha("jumpscare", bounceIn(opacity))
+    end
 end
 
 local function initStaticShader()
@@ -289,10 +238,6 @@ local function initStaticShader()
         return false
     end
 
-    -- pcall guards against engine-side errors (e.g. ModLua reporting
-    -- "luaShaderSources is null") that would otherwise propagate up and
-    -- abort the current Lua frame. On failure we latch the failed flag
-    -- so we don't retry every frame from onUpdate.
     local ok, result = pcall(initLuaShader, STATIC_SHADER_NAME, "shaders")
 
     if ok and result == true then
@@ -325,7 +270,7 @@ end
 
 local function startStaticShaderEffect()
     if not staticShaderSoundPlayed then
-	    playSound("slenderdad", 1.0)
+        playSound("slenderdad", 1.0)
         staticShaderSoundPlayed = true
     end
 
@@ -362,11 +307,8 @@ local function clearStaticShaderEffect()
     staticShaderCleared = true
 end
 
--- Detach the static shader after the intro-warmup link pass. Unlike
--- clearStaticShaderEffect this must NOT touch the jumpscare sprite or the
--- "cleared" latch: it only undoes the warm attach so phase one runs without the
--- fullscreen-noise filter, leaving the now-linked shader program ready for the
--- real step-608 attach to reuse instantly.
+-- Detach the static shader after the intro-warmup link pass without touching the jumpscare
+-- sprite or the "cleared" latch (leaves the linked shader program ready for step 608).
 local function detachWarmStaticShader()
     if not staticShaderActive then
         return
@@ -383,75 +325,34 @@ local function detachWarmStaticShader()
     staticShaderActive = false
 end
 
-local function startsWith(value, prefix)
-    if type(value) ~= "string" or type(prefix) ~= "string" then
-        return false
-    end
-
-    return value:sub(1, #prefix) == prefix
-end
-
-local function smootherStep(value)
-    local clamped = math.max(0, math.min(value, 1))
-    return clamped * clamped * clamped * (clamped * ((clamped * 6) - 15) + 10)
-end
-
-local function lerp(a, b, t)
-    return a + ((b - a) * t)
-end
-
-local function setFrostbeatGameplayZoom(zoom, direct, snap, suppressUntilStep)
-    if setGameplayCameraZoom ~= nil then
-        setGameplayCameraZoom(zoom, direct, snap)
-    end
-
-    frost_bump.setSuppressed(direct == true, suppressUntilStep)
-end
-
-local function clearFrostbeatGameplayZoom(snap)
-    if clearGameplayCameraZoom ~= nil then
-        clearGameplayCameraZoom(snap)
-    end
-
-    frost_bump.setSuppressed(false)
-end
+-- ============================================================================
+-- Jumpscare
+-- ============================================================================
 
 local function createJumpscare()
-	createSprite("jumpscare")
-	loadGraphic("jumpscare", "jumpscare")
-	setSpriteAlpha("jumpscare", 0.0)
-	setSpriteToCamera("jumpscare", "camHUD")
-	setSpriteSize("jumpscare", windowWidth, windowHeight)
-	addSpriteToStage("jumpscare")
+    createSprite("jumpscare")
+    loadGraphic("jumpscare", "jumpscare")
+    setSpriteAlpha("jumpscare", 0.0)
+    setSpriteToCamera("jumpscare", "camHUD")
+    setSpriteSize("jumpscare", windowWidth, windowHeight)
+    addSpriteToStage("jumpscare")
 end
 
+-- ============================================================================
+-- Runtime-state resets + init
+-- ============================================================================
+
 local function resetIntroRuntimeState()
-    currentIntroFocusX = baseFunkroadCameraX
-    currentIntroFocusY = baseFunkroadCameraY
-    currentIntroZoom = baseFunkroadCameraZoom
-    currentIntroCarX = baseFrostbiteCarX
-    currentIntroCarY = baseFrostbiteCarY
-    introClearTween = nil
     introWarmupIndex = 0
     introWarmupDone = false
     introCoverRemoved = false
-    introGirlfriendShotDone = false
-    introBoyfriendShotDone = false
     introNoteRevealDone = false
-    introBaseCameraDone = false
-    introClearDone = false
 end
 
 local function resetPhaseTwoRuntimeState()
     daddyIsHere = false
-    daddyTrans = false
     secondActive = false
     boyfriendGFSwitched = false
-    phaseTwoFlyingCameraActive = false
-    phaseTwoFlyingCameraStartFocusX = nil
-    phaseTwoFlyingCameraStartFocusY = nil
-    phaseTwoFlyingCameraStartZoom = nil
-    phaseTwoFlyingCameraCompleted = false
 end
 
 local function resetPunchRuntimeState()
@@ -464,15 +365,6 @@ local function resetPunchRuntimeState()
     jtcVocalsMutedForPunch = false
     punchCount = 0
     punchIconNames = {}
-end
-
-local function resetCharactersToPhaseOneBaseline()
-    if spriteExist("dad") then
-        setSpritePosition("dad", phaseOneDadBaseX, phaseOneDadBaseY)
-    end
-    if spriteExist("boyfriend") then
-        setSpritePosition("boyfriend", phaseOneBoyfriendBaseX, phaseOneBoyfriendBaseY)
-    end
 end
 
 local function resetShaderRuntimeState()
@@ -489,24 +381,17 @@ end
 
 local function init()
     frost_modchart = {}
-    baseFunkroadCameraFocusLerp = 0.09
-    gfCharacterPreloaded = false
-    -- On retry, clear leftover warm sprites from the previous attempt and
-    -- reset the punch-path-warmed flag so generatedStage re-warms them.
     clearFrostbeatWarmSprites()
-    frostbeatPunchPathWarmed = false
+    frostbeatAtlasesWarmed = false
     resetIntroRuntimeState()
     resetPhaseTwoRuntimeState()
     resetPunchRuntimeState()
     resetShaderRuntimeState()
-    -- Compile the static shader up front while ModLua is freshly executed
-    -- and known healthy. Doing this lazily inside onUpdate (line ~1138)
-    -- meant a single failed initLuaShader would respawn the error every
-    -- frame, and produced a gameplay hitch when the shader window opened.
     initStaticShader()
-    resetCharactersToPhaseOneBaseline()
-	createJumpscare()
-	frost_bump.reset()
+    createJumpscare()
+    frost_bump.reset()
+    -- Suppress the lua beat-bump through the intro (the camera is on scripted shots).
+    frost_bump.setSuppressed(true, introBopSuppressUntilStep)
     if setSuppressGameplayCameraBop ~= nil then
         setSuppressGameplayCameraBop(true)
     end
@@ -515,6 +400,10 @@ local function init()
     end
     jtc_camera.reset()
 end
+
+-- ============================================================================
+-- Second (skater) sprite + phase-two layout/entry
+-- ============================================================================
 
 local function setupSecondSprite()
     if makeCharacter ~= nil then
@@ -569,32 +458,18 @@ local function applyPhaseTwoFunkroadLayout()
     end
 end
 
-local function destroyManagedSprite(spriteName)
-    if not spriteExist(spriteName) then
-        return
-    end
-
-    removeSpriteFromStage(spriteName)
-    removeSpriteFromState(spriteName)
-    destroySprite(spriteName)
-end
-
 local function enterPhaseTwo()
     if daddyIsHere then
         return
     end
 
-    preparePhaseTwoAssets()
-    callEvent("character change", "dad-car", "dad")
+    -- "character change" to dad-car is now triggered by frostbeat_stage.lua (stageCharacterChanges).
     if removeLoadedCharacter ~= nil then
         removeLoadedCharacter(originalDadCharacter, "dad")
     end
     setSpriteY("dad", 90)
-    -- Fully destroy the car sprite so the engine can release daddycar.png
-    -- (~256 MB VRAM) rather than merely hiding it for the rest of the song.
-    destroyManagedSprite("frostbiteCAR")
-    setFrostbeatGameplayZoom(1.0, false, false)
-    baseGameZoom = 1.0
+    -- The frostbiteCAR prop is destroyed by frostbeat_stage.lua at step 630, and the
+    -- camera opens up to 1.0 via the step-630 keyframe in frostbeat_camera.lua.
     daddyIsHere = true
     secondActive = true
 
@@ -618,6 +493,10 @@ local function enterPhaseTwo()
         setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
     end
 end
+
+-- ============================================================================
+-- HUD / health icons / punch
+-- ============================================================================
 
 local function applyPhaseOneHud()
     if setHealthIconAnimation ~= nil then
@@ -653,7 +532,7 @@ end
 
 local function triggerDeathNotePunch()
     if daddyIsHere then
-		playCharacterAnim("dad", "punch", true)
+        playCharacterAnim("dad", "punch", true)
     end
 
     if spriteExist("second") then
@@ -672,7 +551,7 @@ local function triggerDeathNotePunch()
 
     punchCount = punchCount + 1
     updatePunchIcon(punchCount)
-	playSound("punch", 2)
+    playSound("punch", 2)
 
     if punchCount >= 3 then
         instaKillPlayer()
@@ -696,104 +575,9 @@ local function recoverPunchCharge()
     refreshPunchIcons()
 end
 
-local function getIntroOpponentFaceFocus()
-    local opponentX = getSpriteX("opponent") or 0
-    local opponentY = getSpriteY("opponent") or 0
-    local opponentWidth = getSpriteWidth("opponent") or 0
-    local opponentHeight = getSpriteHeight("opponent") or 0
-
-    return opponentX + (opponentWidth * introOpponentFaceAnchorX) + introOpponentFaceOffsetX,
-        opponentY + (opponentHeight * introOpponentFaceAnchorY) + introOpponentFaceOffsetY
-end
-
-local function getIntroBoyfriendFaceFocus()
-    local boyfriendX = getSpriteX("boyfriend") or 0
-    local boyfriendY = getSpriteY("boyfriend") or 0
-    local boyfriendWidth = getSpriteWidth("boyfriend") or 0
-    local boyfriendHeight = getSpriteHeight("boyfriend") or 0
-
-    return boyfriendX + (boyfriendWidth * introBoyfriendFaceAnchorX) + introBoyfriendFaceOffsetX,
-        boyfriendY + (boyfriendHeight * introBoyfriendFaceAnchorY) + introBoyfriendFaceOffsetY
-end
-
-local function getIntroGirlfriendFaceFocus()
-    local girlfriendX = getSpriteX("boyfriend") or 0
-    local girlfriendY = getSpriteY("boyfriend") or 0
-    local girlfriendWidth = getSpriteWidth("boyfriend") or 0
-    local girlfriendHeight = getSpriteHeight("boyfriend") or 0
-
-    return girlfriendX + (girlfriendWidth * introGirlfriendFaceAnchorX) + introGirlfriendFaceOffsetX,
-        girlfriendY + (girlfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
-end
-
-local function getPhaseTwoFlyingGfFocus()
-    local boyfriendX = getSpriteX("boyfriend") or 0
-    local boyfriendY = getSpriteY("boyfriend") or 0
-    local boyfriendWidth = getSpriteWidth("boyfriend") or 0
-    local boyfriendHeight = getSpriteHeight("boyfriend") or 0
-
-    return boyfriendX + (boyfriendWidth * introGirlfriendFaceAnchorX) + introGirlfriendFaceOffsetX,
-        boyfriendY + (boyfriendHeight * introGirlfriendFaceAnchorY) + introGirlfriendFaceOffsetY
-end
-
-local function getIntroCompensatedCarPosition(focusX, focusY, zoom)
-    local originalHalfWidth = windowWidth / (2 * baseFunkroadCameraZoom)
-    local originalHalfHeight = windowHeight / (2 * baseFunkroadCameraZoom)
-    local introHalfWidth = windowWidth / (2 * zoom)
-    local introHalfHeight = windowHeight / (2 * zoom)
-    local originalCarScreenX = baseFrostbiteCarX - baseFunkroadCameraX + originalHalfWidth
-    local originalCarScreenY = baseFrostbiteCarY - baseFunkroadCameraY + originalHalfHeight
-
-    return originalCarScreenX + focusX - introHalfWidth,
-        originalCarScreenY + focusY - introHalfHeight
-end
-
-local function applyBaseFunkroadCameraFocus(snap)
-    setGameplayCameraFocus(baseFunkroadCameraX, baseFunkroadCameraY, snap)
-    setGameplayCameraFocusLerp(baseFunkroadCameraFocusLerp)
-end
-
-local function applyIntroCameraState(focusX, focusY, zoom, carX, carY)
-    introClearTween = nil
-    currentIntroFocusX = focusX
-    currentIntroFocusY = focusY
-    currentIntroZoom = zoom
-    currentIntroCarX = carX
-    currentIntroCarY = carY
-
-    setGameplayCameraFocus(focusX, focusY, true)
-    setGameplayCameraFocusLerp(0)
-    setFrostbeatGameplayZoom(zoom, true, true, 68)
-    setSpritePosition("frostbiteCAR", carX, carY)
-end
-
-local function applyIntroOpponentFaceShot()
-    local focusX, focusY = getIntroOpponentFaceFocus()
-    local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introOpponentFaceZoom)
-    applyIntroCameraState(focusX, focusY, introOpponentFaceZoom, introCarX, introCarY)
-end
-
-local function applyIntroGirfriendFaceShot()
-    local focusX, focusY = getIntroGirlfriendFaceFocus()
-    local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introGirlfriendFaceZoom)
-    applyIntroCameraState(focusX, focusY, introGirlfriendFaceZoom, introCarX, introCarY)
-end
-
-local function applyIntroBoyfriendFaceShot()
-    local focusX, focusY = getIntroBoyfriendFaceFocus()
-    local introCarX, introCarY = getIntroCompensatedCarPosition(focusX, focusY, introBoyfriendFaceZoom)
-    applyIntroCameraState(focusX, focusY, introBoyfriendFaceZoom, introCarX, introCarY)
-end
-
-local function applyIntroBaseCameraShot()
-    applyIntroCameraState(
-        baseFunkroadCameraX,
-        baseFunkroadCameraY,
-        introBaseCameraZoom,
-        baseFrostbiteCarX,
-        baseFrostbiteCarY
-    )
-end
+-- ============================================================================
+-- Intro note reveal + warmup cover (note cameras + GPU warm only)
+-- ============================================================================
 
 local function applyIntroNoteReveal()
     local totalRevealWindow = math.max(introClearDuration, ((introNoteRevealEndStep - introNoteRevealStartStep) * stepCrochet) / 1000)
@@ -805,65 +589,6 @@ local function applyIntroNoteReveal()
     end
 
     jtc_camera.revealNoteCameras(revealDuration, revealDelay)
-end
-
-local function clearIntroCameraShot()
-    introClearTween = {
-        elapsed = 0,
-        duration = introClearDuration,
-        startFocusX = currentIntroFocusX,
-        startFocusY = currentIntroFocusY,
-        startZoom = currentIntroZoom,
-        startCarX = currentIntroCarX,
-        startCarY = currentIntroCarY,
-        targetFocusX = baseFunkroadCameraX,
-        targetFocusY = baseFunkroadCameraY,
-        targetZoom = baseFunkroadCameraZoom,
-        targetCarX = baseFrostbiteCarX,
-        targetCarY = baseFrostbiteCarY
-    }
-end
-
-local function updatePhaseTwoFlyingCamera()
-    if not phaseTwoFlyingCameraActive or phaseTwoFlyingCameraCompleted or curStepFloat == nil then
-        return
-    end
-
-    local gfFocusX, gfFocusY = getPhaseTwoFlyingGfFocus()
-    local centerFocusX = baseFunkroadCameraX
-    local centerFocusY = baseFunkroadCameraY
-    setGameplayCameraFocusLerp(0)
-
-    if curStepFloat < phaseTwoFlyingCameraPeakStep then
-        local progress = math.max(0, math.min((curStepFloat - phaseTwoFlyingCameraStartStep) / math.max(phaseTwoFlyingCameraPeakStep - phaseTwoFlyingCameraStartStep, 1), 1))
-        local eased = smootherStep(progress)
-        local focusX = lerp(phaseTwoFlyingCameraStartFocusX or centerFocusX, gfFocusX, eased)
-        local focusY = lerp(phaseTwoFlyingCameraStartFocusY or centerFocusY, gfFocusY, eased)
-        local zoom = lerp(phaseTwoFlyingCameraStartZoom or 1.0, phaseTwoFlyingCameraPeakZoom, eased)
-        currentPhaseTwoGameZoom = zoom
-
-        setGameplayCameraFocus(focusX, focusY, true)
-        setFrostbeatGameplayZoom(zoom, true, true)
-        return
-    end
-
-    local progress = math.max(0, math.min((curStepFloat - phaseTwoFlyingCameraPeakStep) / math.max(phaseTwoFlyingCameraEndStep - phaseTwoFlyingCameraPeakStep, 1), 1))
-    local eased = smootherStep(progress)
-    local focusX = lerp(gfFocusX, centerFocusX, eased)
-    local focusY = lerp(gfFocusY, centerFocusY, eased)
-    local zoom = lerp(phaseTwoFlyingCameraPeakZoom, 1.0, eased)
-    currentPhaseTwoGameZoom = zoom
-
-    setGameplayCameraFocus(focusX, focusY, true)
-    setFrostbeatGameplayZoom(zoom, true, true)
-
-    if progress >= 1 then
-        phaseTwoFlyingCameraCompleted = true
-        currentPhaseTwoGameZoom = 1.0
-        setGameplayCameraFocus(centerFocusX, centerFocusY, true)
-        setGameplayCameraFocusLerp(baseFunkroadCameraFocusLerp)
-        clearFrostbeatGameplayZoom(true)
-    end
 end
 
 local function ensureIntroWarmupCover()
@@ -878,6 +603,9 @@ local function ensureIntroWarmupCover()
     addSpriteToState("introWarmupCover")
 end
 
+-- Keep the warm sprites alive for a few frames so their textures GPU-upload behind the
+-- cover, then clear them and detach the warmed static shader. The camera shots that used
+-- to run here are now driven from frostbeat_camera.lua.
 local function updateIntroWarmup()
     if introWarmupDone then
         return
@@ -885,24 +613,9 @@ local function updateIntroWarmup()
 
     ensureIntroWarmupCover()
 
-    if introWarmupIndex == 0 then
-        applyIntroGirfriendFaceShot()
-    elseif introWarmupIndex == 1 then
-        applyIntroBoyfriendFaceShot()
-    elseif introWarmupIndex == 2 then
-        applyIntroBaseCameraShot()
-    elseif introWarmupIndex == 3 then
-        applyIntroOpponentFaceShot()
-    elseif introWarmupIndex == 4 then
-        -- By now the warm sprites have been in the scene for several frames,
-        -- so their textures have been GPU-uploaded. Remove them so they
-        -- aren't drawn for the rest of the song. The static shader has likewise
-        -- rendered (at opacity 0) for those frames, so its GPU program is linked
-        -- and we can detach it until the real step-608 transition.
+    if introWarmupIndex == 4 then
         clearFrostbeatWarmSprites()
         detachWarmStaticShader()
-    else
-        applyIntroOpponentFaceShot()
     end
 
     if finishGPUCommands ~= nil then
@@ -913,83 +626,7 @@ local function updateIntroWarmup()
 
     if introWarmupIndex >= introWarmupTotalSteps then
         introWarmupDone = true
-        applyIntroOpponentFaceShot()
     end
-end
-
-local function updateIntroClearTween(elapsed)
-    if introClearTween == nil then
-        return
-    end
-
-    introClearTween.elapsed = introClearTween.elapsed + elapsed
-    local t = math.min(introClearTween.elapsed / introClearTween.duration, 1)
-    local eased = smootherStep(t)
-
-    local focusX = lerp(introClearTween.startFocusX, introClearTween.targetFocusX, eased)
-    local focusY = lerp(introClearTween.startFocusY, introClearTween.targetFocusY, eased)
-    local zoom = lerp(introClearTween.startZoom, introClearTween.targetZoom, eased)
-    local carX = lerp(introClearTween.startCarX, introClearTween.targetCarX, eased)
-    local carY = lerp(introClearTween.startCarY, introClearTween.targetCarY, eased)
-
-    currentIntroFocusX = focusX
-    currentIntroFocusY = focusY
-    currentIntroZoom = zoom
-    currentIntroCarX = carX
-    currentIntroCarY = carY
-
-    setGameplayCameraFocus(focusX, focusY, true)
-    setFrostbeatGameplayZoom(zoom, true, true, 68)
-    setSpritePosition("frostbiteCAR", carX, carY)
-
-    if t >= 1 then
-        introClearTween = nil
-        applyBaseFunkroadCameraFocus(true)
-        clearFrostbeatGameplayZoom(true)
-        setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
-        currentIntroFocusX = baseFunkroadCameraX
-        currentIntroFocusY = baseFunkroadCameraY
-        currentIntroZoom = baseFunkroadCameraZoom
-        currentIntroCarX = baseFrostbiteCarX
-        currentIntroCarY = baseFrostbiteCarY
-    end
-end
-
-local function refreshFrostbiteCarAnimation()
-    if not spriteExist("frostbiteCAR") then
-        return
-    end
-
-    local stepValue = curStep or 0
-
-    if daddyTrans and stepValue < 630 then
-        -- (241, 81) Sparrow-tuned + atlas delta (+534, +188).
-        setSpritePosition("frostbiteCAR", 775, 269)
-        playAnimRaw("frostbiteCAR", "transition", true)
-        return
-    end
-
-    if stepValue < 607 then
-        playAnimRaw("frostbiteCAR", "drive", true)
-    end
-end
-
-local function ensureFrostbiteCar()
-	local bfStageIndex = getSpriteIndexFromStage("boyfriend") or 0
-	local dadStageIndex = getSpriteIndexFromStage("dad") or 0
-	local smallestIndex = math.min(bfStageIndex, dadStageIndex)
-
-    destroyManagedSprite("frostbiteCAR")
-    createAnimateSprite("frostbiteCAR", "car")
-    setSpritePosition("frostbiteCAR", baseFrostbiteCarX, baseFrostbiteCarY)
-    -- Adobe Animate atlas symbols (images/car): "drive" is the main timeline (the
-    -- daddycar approach/drive sequence); transition/fog reuse the inner drive symbol.
-    addAnimationByTimeline("frostbiteCAR", "drive", 24, true)
-    addAnimationBySymbol("frostbiteCAR", "transition", "car drive and dust", 24, false)
-    addAnimationBySymbol("frostbiteCAR", "fog", "car drive and dust", 24, false)
-    playAnimRaw("frostbiteCAR", "drive", true)
-    setScrollFactorToSprite("frostbiteCAR", 1.0, 0.9)
-    insertSpriteToStage(smallestIndex, "frostbiteCAR")
 end
 
 local function resetSecondSprite()
@@ -1005,14 +642,6 @@ local function resetSecondSprite()
     holdTimer = 0
 end
 
--- All phase-two assets are precached + addCharacterToList'd up front in
--- precacheFrostbeatAssets(), and the "second" sprite is created in
--- generatedStage(). These remain as no-ops because event scripts and the
--- forward declarations above still reference them by name.
-updatePhaseTwoPreparation = function(_) end
-preparePhaseTwoAssets = function() end
-prepareFlyingGfCharacter = function() end
-
 local function refreshFrostbeatRuntimeState()
     frost_modchart = require("mod_assets/scripts/modcharts/frostbeat") or {}
 
@@ -1027,6 +656,10 @@ local function refreshFrostbeatRuntimeState()
     })
 end
 
+-- ============================================================================
+-- Lifecycle entry points
+-- ============================================================================
+
 function generatedStage()
     -- Mirror Funkin: pay the asset-load cost synchronously at song start.
     precacheFrostbeatAssets()
@@ -1038,7 +671,7 @@ function generatedStage()
         removeCameraShader(STATIC_SHADER_CAMERA)
     end
 
-	setGameOverBlueBallSuffix("-cheese")
+    setGameOverBlueBallSuffix("-cheese")
     setEndVideo("post.mp4")
     setCountdownPresentation(false, false)
     if skipCountdown ~= nil then
@@ -1050,44 +683,25 @@ function generatedStage()
     setCameraVisible("camGame", true)
     ensureIntroWarmupCover()
 
-    ensureFrostbiteCar()
-    -- "second" is the phase-two skater-boi opponent. Create it hidden up
-    -- front so phase 2 entry (step 630) is just an alpha/visibility flip.
+    -- "second" is the phase-two skater opponent. Create it hidden up front so phase 2
+    -- entry (step 630) is just an alpha/visibility flip.
     setupSecondSprite()
     resetSecondSprite()
-    applyIntroOpponentFaceShot()
 
     setupPunchHealth(3)
     refreshFrostbeatRuntimeState()
 
-    -- Force GPU upload of textures whose first draw would otherwise stall
-    -- gameplay: the death-note atlases (visible mid-song, reported as
-    -- "DeathNote doesn't appear" on slower GPUs) and the punch HUD icons.
-    -- The warm sprites stay alive through the intro warmup cycle and get
-    -- cleaned up by updateIntroWarmup once the upload has completed.
-    spawnFrostbeatWarmSprite("frostWarm_daddyFist", "daddy_fist")
-    spawnFrostbeatWarmSprite("frostWarm_daddyFisted", "daddy_fisted")
+    -- Force GPU upload while the intro cover hides everything.
     spawnFrostbeatWarmSprite("frostWarm_deathRegular", "notes/regular/NOTE_assets")
     spawnFrostbeatWarmSprite("frostWarm_deathNote", "notes/death/NOTE_assets")
-    -- The "skater dance punchd" frames live in skater extra notes.xml, NOT
-    -- in skater_assets.xml. Idle animation never touches the extra atlas, so
-    -- without this warm sprite the first death-note punch pays the GPU
-    -- upload cost mid-gameplay. Same for "skating and flying DEATH" which is
-    -- only used by the death/insta-kill flow.
-    spawnFrostbeatWarmSprite("frostWarm_skaterExtraNotes", "skater extra notes")
-    spawnFrostbeatWarmSprite("frostWarm_skatingFlyingDeath", "skating and flying DEATH")
+    spawnFrostbeatWarmSprite("frostWarm_daddyFisted", "daddy_fisted")
 
-    -- Slender transition (step 608): upload the jumpscare texture and link the
-    -- static-shader GPU program now, while the intro cover hides everything.
-    -- The jumpscare sprite itself (created at alpha 0 in init) then reveals with
-    -- zero stall; the shader is detached again at intro-warmup index 4.
     spawnFrostbeatWarmSprite("frostWarm_jumpscare", "jumpscare")
     if ensureStaticShader() then
         setShaderFloat(STATIC_SHADER_CAMERA, "opacity", 0.0)
     end
 
-    -- Prime everything the first death-note punch will trigger.
-    warmFrostbeatPunchPath()
+    warmFrostbeatAtlases()
 
     if finishGPUCommands ~= nil then
         finishGPUCommands()
@@ -1097,21 +711,17 @@ end
 function onStepHit()
     jtc_camera.onStepHit(curStep)
 
-    if curStep >= 68 and setSuppressGameplayCameraBop ~= nil then
+    if curStep >= introBopSuppressUntilStep and setSuppressGameplayCameraBop ~= nil then
         setSuppressGameplayCameraBop(false)
-    end
-
-    if curStep == 606 then
-        daddyTrans = true
     end
 
     if curStep == shaderTrans[1] then
         startStaticShaderEffect()
     end
 
-	if curStep == shaderTrans[2] then
+    if curStep == shaderTrans[2] then
         clearStaticShaderEffect()
-	end
+    end
 
     if curStep >= 630 then
         enterPhaseTwo()
@@ -1126,50 +736,28 @@ function onStepHit()
     if curStep > 906 then
         secondActive = false
     end
-
-    -- Deferred load: flying notes GF SINGS (~256 MB) and its character are
-    -- only needed at step 906. Loading them here at step 700 gives ~17 seconds
-    -- of buffer before the swap while keeping VRAM 256 MB lower during Phase 1
-    -- and early Phase 2. If precacheCharacter is synchronous this may cause a
-    -- brief hitch at step 700, which is preferable to a VRAM crash throughout.
-    if not gfCharacterPreloaded and curStep >= 700 then
-        if precacheAtlas ~= nil then
-            precacheAtlas("flying notes GF SINGS", "sparrow")
-        end
-        if precacheCharacter ~= nil then
-            precacheCharacter("flying BF sings gf")
-        end
-        if addCharacterToList ~= nil then
-            addCharacterToList("flying BF sings gf", "boyfriend")
-        end
-        gfCharacterPreloaded = true
-    end
-
 end
 
 function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSustainNote)
     if not boyfriendGFSwitched and curStep ~= nil and curStep >= 906 then
-        prepareFlyingGfCharacter()
         recoverPunchCharge()
-        baseFunkroadCameraFocusLerp = 0.18
-        callEvent("character change", "flying BF sings gf", "boyfriend")
-    if removeLoadedCharacter ~= nil then
-        removeLoadedCharacter(originalBoyfriendCharacter, "boyfriend")
-    end
-    if setHealthIconAnimation ~= nil then
-        setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
-    end
-        phaseTwoFlyingCameraActive = true
-        phaseTwoFlyingCameraStartFocusX = cameraX or baseFunkroadCameraX
-        phaseTwoFlyingCameraStartFocusY = cameraY or baseFunkroadCameraY
-        phaseTwoFlyingCameraStartZoom = getCameraZoom("camGAME") or 1.0
-        phaseTwoFlyingCameraCompleted = false
+        -- "character change" to flying-BF-sings-gf is now triggered by frostbeat_stage.lua.
+        if removeLoadedCharacter ~= nil then
+            removeLoadedCharacter(originalBoyfriendCharacter, "boyfriend")
+        end
+        if setHealthIconAnimation ~= nil then
+            setHealthIconAnimation("player", "flying BF sings", 28, 29, 28, true)
+        end
+        -- Phase-two flying camera is now a declarative segment driven by the stage camera.
+        if triggerStageCameraSegment ~= nil then
+            triggerStageCameraSegment("phaseTwoFlying")
+        end
         boyfriendGFSwitched = true
     end
 
     if noteAbstract == "death" then
-            triggerDeathNotePunch()
-            return
+        triggerDeathNotePunch()
+        return
     end
 
     if jtcVocalsMutedForPunch then
@@ -1181,18 +769,18 @@ function goodNoteHit(caculatePos, strumTime, noteData, tag, noteAbstract, isSust
     end
 
     if not secondActive or isSecondPunchLocked() then
-            return
+        return
     end
 
     playSecondAnimation(jtcStrumAnims[noteData + 1])
 end
 
 function noteMiss(noteData, tag)
-	if not secondActive or isSecondPunchLocked() then
-		return
-	end
+    if not secondActive or isSecondPunchLocked() then
+        return
+    end
 
-	playSecondAnimation(jtcStrumAnims[noteData + 1] .. " miss")
+    playSecondAnimation(jtcStrumAnims[noteData + 1] .. " miss")
 end
 
 function onUpdate(elapsed)
@@ -1205,8 +793,6 @@ function onUpdate(elapsed)
     local stepFloat = curStepFloat
     local step = curStep
 
-    -- Guard with daddyIsHere so this block is skipped for the rest of the
-    -- song once phase two is active — not called every frame as a no-op.
     if not daddyIsHere and stepFloat ~= nil and stepFloat >= 630 then
         enterPhaseTwo()
     end
@@ -1217,14 +803,7 @@ function onUpdate(elapsed)
         jtcVocalsSwitchedToPlayer = true
     end
 
-    -- Only attach + drive the static shader inside its visible window. Outside
-    -- the window it stays detached so the GPU isn't running fullscreen noise
-    -- math over the HUD for the entire song — the suspected cause of the
-    -- whole-song lag on weaker GPUs.
-    -- startStaticShaderEffect() is called once on entry (when shader is not yet
-    -- active) rather than every frame; calling it each frame was redundantly
-    -- zeroing the opacity uniform and re-invoking ensureStaticShader() on every
-    -- tick, fighting the transition logic in shaderTransitionUpdate().
+    -- Only attach + drive the static shader inside its visible window.
     if stepFloat ~= nil and stepFloat >= shaderTrans[1] and stepFloat < shaderTrans[2] then
         if not staticShaderActive then
             startStaticShaderEffect()
@@ -1244,38 +823,13 @@ function onUpdate(elapsed)
         introCoverRemoved = true
     end
 
-    if not introGirlfriendShotDone and step ~= nil and step >= 26 then
-        applyIntroGirfriendFaceShot()
-        introGirlfriendShotDone = true
-    end
-
-    if not introBoyfriendShotDone and step ~= nil and step >= 34 then
-        applyIntroBoyfriendFaceShot()
-        introBoyfriendShotDone = true
-    end
-
     if not introNoteRevealDone and step ~= nil and step >= introNoteRevealStartStep then
         applyIntroNoteReveal()
         introNoteRevealDone = true
     end
 
-    if not introBaseCameraDone and step ~= nil and step >= introBaseCameraStep then
-        applyIntroBaseCameraShot()
-        introBaseCameraDone = true
-    end
-
-    if not introClearDone and step ~= nil and step >= introClearStep then
-        clearIntroCameraShot()
-        introClearDone = true
-    end
-
     jtc_camera.onUpdate(elapsed)
     frost_bump.onUpdate()
-    updateIntroClearTween(elapsed)
-
-    if not inGameOver then
-        updatePhaseTwoFlyingCamera()
-    end
 
     -- Precompute once; used twice below to avoid duplicate string ops.
     local animIsSing = curAnimName:sub(1, 4) == "sing"
@@ -1284,7 +838,6 @@ function onUpdate(elapsed)
         holdTimer = holdTimer + elapsed
     end
 
-    -- Cache spriteExist("second") so the engine call runs at most once per frame.
     local secondExists = spriteExist("second")
 
     if secondExists and jtcVocalsMutedForPunch and pendingVoiceUnmuteAllowed and curAnimName == "punched" and sprAnimFinished("second") then
@@ -1309,21 +862,6 @@ function onUpdate(elapsed)
         end
     end
 
-    -- frostbiteCAR is removed in enterPhaseTwo(); skip the checks afterwards
-    -- so sprAnimFinished is not called twice per frame on a nonexistent sprite.
-    if not daddyIsHere then
-        local carAnimDone = sprAnimFinished("frostbiteCAR")
-        if carAnimDone and daddyTrans then
-            stopAnim("frostbiteCAR")
-            playAnimRaw("frostbiteCAR", "transition")
-            -- (241, 81) Sparrow-tuned + atlas delta (+534, +188).
-            setSpritePosition("frostbiteCAR", 775, 269)
-            daddyTrans = false
-        elseif carAnimDone and step ~= nil and step < 607 then
-            playAnimRaw("frostbiteCAR", "drive")
-        end
-    end
-
     shaderTransitionUpdate()
 end
 
@@ -1335,18 +873,15 @@ end
 
 function onResume()
     holdTimer = 0
-
-    refreshFrostbiteCarAnimation()
 end
-
 
 function setupPunchHealth(amount)
     local punchIcons = {}
-	local iconOffset = -10
+    local iconOffset = -10
 
-	if downscroll then
-		iconOffset = 10
-	end
+    if downscroll then
+        iconOffset = 10
+    end
 
     for i = 1, amount do
         local iconX = getSpriteX("healthBarBG") + getSpriteWidth("healthBarBG") + 50
@@ -1357,7 +892,7 @@ function setupPunchHealth(amount)
         setSpriteToCamera("punchIcon" .. i, "camHUD")
         scaleSprite("punchIcon" .. i, 0.7, 0.7)
         addSpriteToStage("punchIcon" .. i)
-        setSpritePosition("punchIcon" .. i, iconX + (i - 1) * getSpriteWidth("punchIcon"  .. i) * 1.05, iconY + iconOffset)
+        setSpritePosition("punchIcon" .. i, iconX + (i - 1) * getSpriteWidth("punchIcon" .. i) * 1.05, iconY + iconOffset)
         table.insert(punchIcons, "punchIcon" .. i)
     end
 

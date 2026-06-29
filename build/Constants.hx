@@ -2,6 +2,10 @@ package;
 
 class Constants
 {
+	// Stage editor (ported Funkin editor).
+	public static final AUTOSAVE_TIMER_DELAY_SEC:Float = 60.0;
+	public static final MAX_PREVIOUS_WORKING_FILES:Int = 10;
+
 	public static inline var DEFAULT_CAMERA_FOLLOW_RATE:Float = 0.04;
 	public static inline var DEFAULT_VIBRATION_DURATION:Int = 0;
 	public static inline var DEFAULT_CHARACTER:String = "bf";

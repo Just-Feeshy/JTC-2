@@ -111,7 +111,9 @@
 			"looped": false
 		}
 	},
+	"isAnimateAtlas": true,
 	"isPlayer": false,
+	"atlasMode": "animate",
 	"pixel": false,
 	"position": {
 		"x": 0,
@@ -119,9 +121,10 @@
 		"y": 0,
 		"camPosX": 0
 	},
+	"useAtlas": true,
 	"clippingAdjustment": {},
 	"playAnim": "idle",
-	"file": "skater_assets.xml, skater extra notes.xml",
+	"file": "skater",
 	"icon": [
 		24,
 		30,

@@ -1,4 +1,7 @@
-local school_stage = require("mod_assets/scripts/components/school_stage")
+-- Stage scenery now lives in scripts/stage/school_house/school_house_stage.lua and runs
+-- as its own Lua VM alongside this modchart (the engine builds the stage first, then this
+-- script's generatedStage runs). This script keeps the gameplay: HUD/meter mechanics and
+-- the dialogue blur shader.
 local school_mechanics = require("mod_assets/scripts/components/school_mechanics")
 local school_shader = require("mod_assets/scripts/components/school_shader")
 
@@ -12,8 +15,6 @@ function generatedStage()
     if setCharacterIdleSuffix ~= nil then
         setCharacterIdleSuffix("dad", "")
     end
-
-    school_stage.generatedStage()
 end
 
 function onStepHit()

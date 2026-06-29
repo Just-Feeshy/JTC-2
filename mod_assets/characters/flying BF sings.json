@@ -1,15 +1,15 @@
 {
 	"animations": {
 		"deathLoop": {
-			"prefix": "deathLoop",
+			"prefix": "deathLoopDad",
 			"indices": null,
 			"name": "deathLoop",
 			"framerate": 24,
 			"offset": [
-				-127,
-				-91
+				-92,
+				-33
 			],
-			"looped": false
+			"looped": true
 		},
 		"singDOWN": {
 			"prefix": "flying dance DOWN",
@@ -33,17 +33,6 @@
 			],
 			"looped": false
 		},
-		"singUP": {
-			"prefix": "flying dance UP",
-			"indices": null,
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				-4,
-				-9
-			],
-			"looped": false
-		},
 		"singLEFTmiss": {
 			"prefix": "flying miss LEFT",
 			"indices": null,
@@ -55,14 +44,25 @@
 			],
 			"looped": false
 		},
+		"singUP": {
+			"prefix": "flying dance UP",
+			"indices": null,
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-4,
+				-9
+			],
+			"looped": false
+		},
 		"deathConfirm": {
-			"prefix": "deathConfirm",
+			"prefix": "deathConfirmDad",
 			"indices": null,
 			"name": "deathConfirm",
 			"framerate": 24,
 			"offset": [
-				-127,
-				-87
+				-92,
+				-32
 			],
 			"looped": false
 		},
@@ -73,7 +73,7 @@
 			"framerate": 24,
 			"offset": [
 				0,
-				5
+				0
 			],
 			"looped": false
 		},
@@ -88,17 +88,6 @@
 			],
 			"looped": false
 		},
-		"singDOWNmiss": {
-			"prefix": "flying miss DOWN",
-			"indices": null,
-			"name": "",
-			"framerate": 24,
-			"offset": [
-				-6,
-				35
-			],
-			"looped": false
-		},
 		"singRIGHT": {
 			"prefix": "flying dance RIGHT",
 			"indices": null,
@@ -107,6 +96,17 @@
 			"offset": [
 				-16,
 				-6
+			],
+			"looped": false
+		},
+		"singDOWNmiss": {
+			"prefix": "flying miss DOWN",
+			"indices": null,
+			"name": "",
+			"framerate": 24,
+			"offset": [
+				-6,
+				35
 			],
 			"looped": false
 		},
@@ -146,7 +146,7 @@
 	"useAtlas": true,
 	"clippingAdjustment": {},
 	"playAnim": "",
-	"file": "flying, flying_death",
+	"file": "flying,flying_death",
 	"icon": [
 		31,
 		32,
