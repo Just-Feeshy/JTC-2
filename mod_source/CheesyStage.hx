@@ -59,25 +59,8 @@ class CheesyStage extends StorageStage {
 				add(stageCurtains);
 			case "funkroad":
 				setDefaultCameraZoom(0.50);
-
-				var funkroadSky:FlxSprite = new FlxSprite(-900, -500).loadGraphic(Paths.image('funkroadSky'));
-				funkroadSky.antialiasing = true;
-				funkroadSky.scrollFactor.set(0.7, 0.7);
-				funkroadSky.scale.set(1.2,1.2);
-				funkroadSky.active = false;
-				add(funkroadSky);
-
-				var frostFrames = Paths.getSparrowAtlas('funkroad');
-
-				var frostbiteBG:FlxSprite = new FlxSprite(-1300, -400);
-				frostbiteBG.frames = frostFrames;
-				frostbiteBG.animation.addByPrefix('move', "funkroad", 24, true);
-				frostbiteBG.animation.play('move');
-				frostbiteBG.antialiasing = true;
-				frostbiteBG.scrollFactor.set(0.9, 0.9);
-				frostbiteBG.scale.set(1.2,1.2);
-				frostbiteBG.updateHitbox();
-				add(frostbiteBG);
+				// Scenery (funkroadSky + animated frostbiteBG) moved to
+				// scripts/stage/frostbeat/frostbeat_stage.lua so the stage editor can see it.
         }
     }
 
@@ -151,11 +134,53 @@ class CheesyStage extends StorageStage {
 	}
 
 	override function hasGirlfriend():Bool {
-		if(stage == "funkroad" || stage == "school_house") {
+		// Declarative: a stage's lua can disable the standalone girlfriend via its stageCharacters
+		// table (girlfriend = { ..., enabled = false }). This replaces the old hardcoded stage check.
+		var luaPref = stageGirlfriendEnabled();
+		if(luaPref != null) {
+			return luaPref;
+		}
+
+		// Fallback for stages without a lua girlfriend flag.
+		if(stage == "school_house") {
 			return false;
 		}
 
 		return true;
+	}
+
+	/**
+	 * Reads the current song's stage lua (mod_assets/scripts/stage/<song>/<song>_stage.lua) and
+	 * returns its declared girlfriend `enabled` flag, or null if the file/flag is absent.
+	 */
+	function stageGirlfriendEnabled():Null<Bool> {
+		var song:String = (PlayState.SONG != null && PlayState.SONG.song != null) ? PlayState.SONG.song.toLowerCase() : null;
+		if(song == null || song == "") {
+			return null;
+		}
+
+		var src:String = null;
+		var path:String = 'mod_assets/scripts/stage/$song/${song}_stage.lua';
+		#if sys
+		if(sys.FileSystem.exists(path)) {
+			src = try sys.io.File.getContent(path) catch(e:Dynamic) null;
+		}
+		#end
+		if(src == null) {
+			var assetPath:String = 'assets/scripts/stage/$song/${song}_stage.lua';
+			if(Assets.exists(assetPath)) {
+				src = try Assets.getText(assetPath) catch(e:Dynamic) null;
+			}
+		}
+		if(src == null) {
+			return null;
+		}
+
+		var r = new EReg('girlfriend\\s*=\\s*\\{[^}]*enabled\\s*=\\s*(true|false)', "");
+		if(r.match(src)) {
+			return r.matched(1) == "true";
+		}
+		return null;
 	}
 
 	override function onEvent(eventName:String, eventValue:String, eventValue2:String):Void {

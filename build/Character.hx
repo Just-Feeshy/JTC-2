@@ -1,5 +1,7 @@
 package;
 
+import funkin.play.character.CharacterType;
+
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
@@ -22,6 +24,23 @@ import ModInitialize;
 using StringTools;
 
 class Character extends feshixl.FeshSprite implements ICharacter {
+
+	// ---- Stage editor support (additive; unused by gameplay) ----
+	public var characterType:CharacterType = CharacterType.OTHER;
+	public var globalOffsets:Array<Float> = [0, 0];
+
+	public var feetPosition(get, never):flixel.math.FlxPoint;
+	function get_feetPosition():flixel.math.FlxPoint return flixel.math.FlxPoint.get(x + width * 0.5, y + height);
+
+	public var characterOrigin(get, never):flixel.math.FlxPoint;
+	function get_characterOrigin():flixel.math.FlxPoint return flixel.math.FlxPoint.get(x, y);
+
+	public function getBaseScale():Float return 1.0;
+	public function getDataFlipX():Bool return flipX;
+	public var characterId(get, never):String;
+	function get_characterId():String return curCharacter;
+	public function setScale(?s:Null<Float>):Void { if (s == null) s = 1.0; scale.set(s, s); updateHitbox(); }
+
 	private static inline var DEFAULT_ANTIALIASING_UPDATE_MULTIPLIER:Float = 1.0;
 	private static var singDirections:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT"];
 	private var finalizedX:Float;

@@ -756,7 +756,7 @@ class OptionsMenuState extends MusicBeatState {
 								option.description = "Preview and export Rim Shadow / Color Adjust event payloads.";
 								setting(option, "", option.ID);
 							})
-							#if FEATURE_STAGE_EDITOR
+															#if FEATURE_STAGE_EDITOR
 							,
 							new Options(0, 50, "Stage Editor", SaveType.NONE, function(option:Options, pressed:Bool) {
 								option.ID = 5;
@@ -765,9 +765,9 @@ class OptionsMenuState extends MusicBeatState {
 									option.optionIcon.animation.play("other");
 
 								if(pressed)
-									FlxG.switchState(new stageeditor.StageEditorState());
+									FlxG.switchState(new funkin.editors.stage.StageEditor("frostbeat"));
 
-								option.description = "Funkin-style stage editor (haxeui XML UI, JTC2 backend).";
+								option.description = "Funkin stage editor with camera editor.";
 								setting(option, "", option.ID);
 							})
 							#end

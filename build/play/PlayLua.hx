@@ -21,7 +21,13 @@ using StringTools;
 class PlayLua
 {
 	private var playState:PlayState;
-	private var ownedLua:ModLua;
+	// Dual-script support: a song modchart (scripts/song/<dir>.lua) and an optional
+	// stage script (scripts/stage/<stage>/<stage>_stage.lua) run side by side, each in
+	// its own Lua VM. activeLua points at whichever VM is currently executing/binding so
+	// callback registration and sprite creation route into the correct VM.
+	private var songLua:ModLua;
+	private var stageLua:ModLua;
+	private var activeLua:ModLua;
 	private var luaDetachedForStateSwitch:Bool = false;
 
 	public function new(playState:PlayState)
@@ -32,7 +38,7 @@ class PlayLua
 	public inline function hasScript():Bool
 	{
 		#if USING_LUA
-		return !luaDetachedForStateSwitch && ownedLua != null;
+		return !luaDetachedForStateSwitch && (songLua != null || stageLua != null);
 		#else
 		return false;
 		#end
@@ -40,7 +46,20 @@ class PlayLua
 
 	public inline function getOwnedLua():ModLua
 	{
-		return ownedLua;
+		return activeLua != null ? activeLua : songLua;
+	}
+
+	inline function primaryLua():ModLua
+	{
+		return songLua != null ? songLua : stageLua;
+	}
+
+	inline function orderedLuas():Array<ModLua>
+	{
+		var list:Array<ModLua> = [];
+		if(songLua != null) list.push(songLua);
+		if(stageLua != null) list.push(stageLua);
+		return list;
 	}
 
 	public inline function releaseSongCacheImages(song:String):Void {
@@ -55,7 +74,15 @@ class PlayLua
 
 	public function getLua():ModLua
 	{
-		return ownedLua;
+		return activeLua != null ? activeLua : primaryLua();
+	}
+
+	// Register an externally-built sprite into the stage VM's store (falls back to the song VM),
+	// so the stage script's getSprite-based dynamic logic finds props built by StageLayoutScene.
+	public function registerStageSprite(name:String, spr:FlxSprite):Void
+	{
+		if(stageLua != null) stageLua.registerSprite(name, spr);
+		else if(songLua != null) songLua.registerSprite(name, spr);
 	}
 
 	public function getSprite(name:String):FlxSprite
@@ -63,65 +90,85 @@ class PlayLua
 		if(name == null || name.trim() == "")
 			return null;
 
-		var lua:ModLua = getLua();
-		return lua != null ? lua.getSprite(name) : null;
+		for(l in orderedLuas()) {
+			var spr:FlxSprite = l.getSprite(name);
+			if(spr != null)
+				return spr;
+		}
+
+		return null;
 	}
 
 	public function resumeLuaSpriteAnimations():Void
 	{
 		#if USING_LUA
-		var lua:ModLua = getLua();
-
-		if(lua != null) {
-			lua.resumeLuaSpriteAnimations();
-		}
+		for(l in orderedLuas()) l.resumeLuaSpriteAnimations();
 		#end
 	}
 
 	public function pauseLuaSpriteAnimations():Void
 	{
 		#if USING_LUA
-		var lua:ModLua = getLua();
-
-		if(lua != null) {
-			lua.pauseLuaSpriteAnimations();
-		}
+		for(l in orderedLuas()) l.pauseLuaSpriteAnimations();
 		#end
 	}
 
 	public function pauseLuaTweens():Void
 	{
 		#if USING_LUA
-		var lua:ModLua = getLua();
-
-		if(lua != null) {
-			lua.pauseLuaTweens();
-		}
+		for(l in orderedLuas()) l.pauseLuaTweens();
 		#end
 	}
 
 	public function resumeLuaTweens():Void
 	{
 		#if USING_LUA
-		var lua:ModLua = getLua();
-
-		if(lua != null) {
-			lua.resumeLuaTweens();
-		}
+		for(l in orderedLuas()) l.resumeLuaTweens();
 		#end
 	}
 
 	public function call(name:String, args:Array<Dynamic>):Dynamic
 	{
-		var lua:ModLua = getLua();
-		return lua != null && !luaDetachedForStateSwitch ? lua.call(name, args) : null;
+		if(luaDetachedForStateSwitch)
+			return null;
+
+		var prev:ModLua = activeLua;
+		var result:Dynamic = null;
+
+		// The stage script builds the world (props/scenery) first, so the song
+		// modchart can reference those sprites in the same lifecycle call. The
+		// song VM's return value stays primary (preserves single-script semantics).
+		if(stageLua != null) {
+			activeLua = stageLua;
+			stageLua.call(name, args);
+		}
+
+		if(songLua != null) {
+			activeLua = songLua;
+			result = songLua.call(name, args);
+		}
+
+		// Restore (not reset to primary): call/set may run re-entrantly inside the
+		// binding loop, which relies on activeLua pointing at the VM being bound.
+		activeLua = prev;
+		return result;
 	}
 
 	public function set(variable:String, data:Dynamic):Void
 	{
-		var lua:ModLua = getLua();
-		if(lua != null && !luaDetachedForStateSwitch)
-			lua.set(variable, data);
+		if(luaDetachedForStateSwitch)
+			return;
+
+		var prev:ModLua = activeLua;
+
+		for(l in orderedLuas()) {
+			activeLua = l;
+			l.set(variable, data);
+		}
+
+		// Restore (not reset to primary) so re-entrant set() calls inside the binding
+		// loop leave activeLua pointing at the VM currently being bound.
+		activeLua = prev;
 	}
 
 	public function resetElapsed():Void
@@ -178,40 +225,42 @@ class PlayLua
 	public function loadScript():Void
 	{
 		#if USING_LUA
-		var scriptPath:String = resolveScriptKey();
+		var keys = resolveScriptKeys();
 
-		if(ownedLua != null) {
-			ownedLua.close();
-		}
-
-		ownedLua = null;
+		closeAllLuas();
+		songLua = null;
+		stageLua = null;
+		activeLua = null;
 		luaDetachedForStateSwitch = false;
 
-		if(scriptPath != null) {
-			attachScript(scriptPath);
+		if(keys.song != null) {
+			songLua = createScriptLua(keys.song);
 		}
+
+		if(keys.stage != null) {
+			stageLua = createScriptLua(keys.stage);
+		}
+
+		activeLua = primaryLua();
 		#end
 	}
 
 	public function reloadScriptForSongRestart():Void
 	{
 		#if USING_LUA
-		var scriptPath:String = resolveScriptKey();
+		var keys = resolveScriptKeys();
 
-		if(scriptPath == null) {
+		if(keys.song == null && keys.stage == null) {
 			return;
 		}
 
-		if(ownedLua != null) {
-			ownedLua.close();
-		}
-
-		ownedLua = new ModLua(Paths.lua(scriptPath));
-		ownedLua.stateOwnsCreatedObjects = true;
+		closeAllLuas();
+		songLua = (keys.song != null) ? createScriptLua(keys.song) : null;
+		stageLua = (keys.stage != null) ? createScriptLua(keys.stage) : null;
+		activeLua = primaryLua();
 		luaDetachedForStateSwitch = false;
 
-		if(ownedLua != null) {
-			ownedLua.execute();
+		if(hasScript()) {
 			generateStaticBindings();
 			generateNoteBindings();
 			updateDynamicVars();
@@ -223,12 +272,67 @@ class PlayLua
 		#end
 	}
 
+	private function createScriptLua(scriptPath:String):ModLua
+	{
+		var lua:ModLua = new ModLua(Paths.lua(scriptPath));
+		lua.stateOwnsCreatedObjects = true;
+		lua.execute();
+		return lua;
+	}
+
+	private function closeAllLuas():Void
+	{
+		for(l in orderedLuas()) {
+			l.close();
+		}
+	}
+
+	/**
+	 * Snapshot of every named Lua sprite across both VMs (stage first so its props win
+	 * on name collisions). Used by the stage builder editor to map dragged objects back
+	 * to their script names for export.
+	 */
+	public function collectNamedSprites():Map<String, FlxSprite>
+	{
+		var out:Map<String, FlxSprite> = new Map<String, FlxSprite>();
+
+		if(stageLua != null && stageLua.luaSprites != null) {
+			for(name in stageLua.luaSprites.keys()) {
+				out.set(name, stageLua.luaSprites.get(name));
+			}
+		}
+
+		if(songLua != null && songLua.luaSprites != null) {
+			for(name in songLua.luaSprites.keys()) {
+				if(!out.exists(name)) {
+					out.set(name, songLua.luaSprites.get(name));
+				}
+			}
+		}
+
+		return out;
+	}
+
 	public function generateStaticBindings():Void
 	{
 		#if USING_LUA
 		if(!hasScript())
 			return;
 
+		// Register the full callback API + initial globals into every loaded VM.
+		// activeLua routes playState.addCallback/getModLua into the VM being bound.
+		for(l in orderedLuas()) {
+			activeLua = l;
+			bindStaticCallbacks();
+		}
+
+		activeLua = primaryLua();
+		#end
+	}
+
+	private function bindStaticCallbacks():Void
+	{
+		#if USING_LUA
 		playState.modifiableSprites.set("iconP1", playState.iconP1);
 		playState.modifiableSprites.set("iconP2", playState.iconP2);
 		playState.modifiableSprites.set("healthBarBG", playState.healthBarBG);
@@ -330,6 +434,38 @@ class PlayLua
 		playState.addCallback("focusGameplayCameraOnSprite", function(name:String, zoom:Float = 1, anchorX:Float = 0.5, anchorY:Float = 0.5,
 			offsetX:Float = 0, offsetY:Float = 0, direct:Bool = true, snap:Bool = true) {
 			return playState.focusGameplayCameraOnSprite(name, zoom, anchorX, anchorY, offsetX, offsetY, direct, snap);
+		});
+
+		// Declarative stage-camera (V-slice style): a stage script hands its <stage>_camera.lua
+		// config table to the engine, which then drives focus/zoom/lerp from keyframes.
+		playState.addCallback("setStageCameraConfig", function(config:Dynamic) {
+			if(playState.stageCamera != null) {
+				playState.stageCamera.configure(config);
+			}
+		});
+
+		// Declarative scene: a stage script hands its `stageLayout` table to the engine, which builds
+		// + places the scenery sprites via the SAME StageLayoutScene the editor preview uses (1:1).
+		playState.addCallback("setStageLayout", function(layout:Dynamic) {
+			playState.buildStageLayout(layout);
+		});
+
+		playState.addCallback("setStageCameraEnabled", function(enabled:Bool = true) {
+			if(playState.stageCamera != null) {
+				playState.stageCamera.setEnabled(enabled);
+			}
+		});
+
+		playState.addCallback("triggerStageCameraSegment", function(name:String) {
+			if(playState.stageCamera != null) {
+				playState.stageCamera.triggerSegment(name);
+			}
+		});
+
+		playState.addCallback("clearStageCameraSegment", function(name:String) {
+			if(playState.stageCamera != null) {
+				playState.stageCamera.clearSegment(name);
+			}
 		});
 
 		playState.addCallback("callEvent", function(skill:String, value:String, value2:String) {
@@ -1158,6 +1294,18 @@ class PlayLua
 		if(!hasScript())
 			return;
 
+		for(l in orderedLuas()) {
+			activeLua = l;
+			bindNoteCallbacks();
+		}
+
+		activeLua = primaryLua();
+		#end
+	}
+
+	private function bindNoteCallbacks():Void
+	{
+		#if USING_LUA
 		for(i in 0...PlayState.playerStrums.members.length) {
 			set('defaultPlayerStrumX' + i, PlayState.playerStrums.members[i].x);
 			set('defaultPlayerStrumY' + i, PlayState.playerStrums.members[i].y);
@@ -1333,7 +1481,9 @@ class PlayLua
 		if(!hasScript())
 			return;
 
-        getLua().updateManagedSprites(FlxG.elapsed);
+		for(l in orderedLuas()) {
+			l.updateManagedSprites(FlxG.elapsed);
+		}
 
 		var curStepFloat:Float = Conductor.instance.currentStepTime;
 		var curBeatFloat:Float = Conductor.instance.currentBeatTime;
@@ -1455,51 +1605,75 @@ class PlayLua
 
 	public function prepareForStateSwitch():Void
 	{
-		var stateLua:ModLua = ownedLua;
-
-		if(!luaDetachedForStateSwitch && stateLua != null) {
-			stateLua.close();
-			luaDetachedForStateSwitch = true;
+		if(luaDetachedForStateSwitch) {
+			return;
 		}
+
+		for(l in orderedLuas()) {
+			l.close();
+		}
+
+		luaDetachedForStateSwitch = true;
 	}
 
 	public function destroy():Void
 	{
-		var stateLua:ModLua = ownedLua;
-
-		if(!luaDetachedForStateSwitch && stateLua != null) {
-			stateLua.close();
+		if(!luaDetachedForStateSwitch) {
+			for(l in orderedLuas()) {
+				l.close();
+			}
 		}
 
-		ownedLua = null;
+		songLua = null;
+		stageLua = null;
+		activeLua = null;
 		playState = null;
 		luaDetachedForStateSwitch = true;
 	}
 
-	private function resolveScriptKey():String
+	/**
+	 * Resolve the song modchart and (optionally) a separate stage script that runs
+	 * alongside it. The stage VM is only auto-loaded for the new per-stage directory
+	 * layout (scripts/stage/<stage>/<stage>_stage.lua); legacy flat stage scripts keep
+	 * the old single-script behaviour so songs that build their own stage don't double-load.
+	 */
+	private function resolveScriptKeys():{song:String, stage:String}
 	{
-		var songScript:String = "song/" + CoolUtil.readableSongDirectory(PlayState.SONG.song.toLowerCase());
-		var stageScript:String = "stage/" + PlayState.curStage.toLowerCase();
+		var songDir:String = CoolUtil.readableSongDirectory(PlayState.SONG.song.toLowerCase());
+		var songScript:String = "song/" + songDir;
+		var stageId:String = PlayState.curStage != null ? PlayState.curStage.toLowerCase() : "";
 
-		if(Paths.assetExists(Paths.getPath('scripts/${songScript}.lua', TEXT, null), TEXT)) {
-			return songScript;
+		// New-style stage scripts live in their own directory and may be keyed either by
+		// the stage id (SONG.stage) or by the song directory (a stage bespoke to one song,
+		// e.g. funkroad's stage authored as scripts/stage/frostbeat/frostbeat_stage.lua).
+		var newStageById:String = "stage/" + stageId + "/" + stageId + "_stage";
+		var newStageBySong:String = "stage/" + songDir + "/" + songDir + "_stage";
+		var flatStageScript:String = "stage/" + stageId;
+
+		var song:String = scriptExists(songScript) ? songScript : null;
+		var newStage:String = scriptExists(newStageById) ? newStageById
+			: (scriptExists(newStageBySong) ? newStageBySong : null);
+		var flatStage:String = scriptExists(flatStageScript) ? flatStageScript : null;
+
+		var stage:String = null;
+
+		if(song != null) {
+			// Song modchart present: dual-load the new-style stage script next to it.
+			stage = newStage;
+		} else if(newStage != null) {
+			// No song modchart: the new-style stage script is the main script.
+			song = newStage;
+		} else if(flatStage != null) {
+			// Legacy single stage script.
+			song = flatStage;
 		}
 
-		if(Paths.assetExists(Paths.getPath('scripts/${stageScript}.lua', TEXT, null), TEXT)) {
-			return stageScript;
-		}
-
-		return null;
+		return {song: song, stage: stage};
 	}
 
-	private function attachScript(scriptPath:String):Void
+	private inline function scriptExists(scriptKey:String):Bool
 	{
-		ownedLua = new ModLua(Paths.lua(scriptPath));
-		ownedLua.stateOwnsCreatedObjects = true;
-
-		if(ownedLua != null) {
-			ownedLua.execute();
-		}
+		return Paths.assetExists(Paths.getPath('scripts/${scriptKey}.lua', TEXT, null), TEXT);
 	}
 
 	// Parse color string safely to handle unsigned 32-bit values on Windows/CPP

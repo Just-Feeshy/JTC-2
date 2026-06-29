@@ -53,9 +53,10 @@
 	<define name="haxeui" />
 	<define name="haxeui_flixel" />
 
-	<!-- Enables the ported Funkin Stage Editor (build/stageeditor/StageEditorState.hx) -->
-	<!-- <define name="FEATURE_STAGE_EDITOR" if="debug" />
-	<define name="FEATURE_STAGE_EDITOR" if="USING_MOD_DEBUG" /> -->
+	<!-- Enables the ported Funkin Stage Editor (build/funkin/ui/debug/stageeditor/StageEditorState.hx) -->
+	<define name="FEATURE_STAGE_EDITOR" />
+	<!-- Codename code-folding marker used by the vendored stage editor (#if REGION blocks). -->
+	<haxedef name="REGION" />
 
     <!-- Disable Deprecation Warnings -->
     <haxedef name="no-deprecation-warnings" />

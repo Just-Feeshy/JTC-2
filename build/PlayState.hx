@@ -67,6 +67,9 @@ import example_code.DefaultStage;
 import play.PlayAudio;
 import play.PlayCamera;
 import play.CameraFocusPositioner;
+import play.StageCamera;
+import play.StageLayoutScene;
+import play.GameplayStageSceneFactory;
 import play.Countdown;
 import play.DefaultHandler;
 import play.PlayEvents;
@@ -144,6 +147,9 @@ class PlayState extends MusicBeatState
 	private var warningSprState:WarningSubGroup;
 	private var curChar:String = '';
 	private var camMovementPos:FlxPoint;
+	// Eased copy of camMovementPos used while the StageCamera is scripted (the follow lerp is
+	// snapped to 1 there, so the sing-direction nudge is smoothed here instead).
+	private var camMovementSmooth:FlxPoint = new FlxPoint(0, 0);
 	public var showCountdownSprites:Bool = true;
 	public var playCountdownSounds:Bool = true;
 	private var prevDadNoteData:Int = -1;
@@ -170,6 +176,14 @@ class PlayState extends MusicBeatState
 
 	inline function getGameplayCameraFollowLerp():Float
 	{
+		// While the declarative StageCamera drives the focus, it already eases the framing
+		// deterministically per keyframe (exactly like the Stage Editor preview). Letting
+		// FlxCamera apply its own follow lerp on top double-smooths it, so camGame lags a few
+		// frames behind the authored framing — which slides the far background props/car out of
+		// place while the focus-centered characters stay put. Snap (1.0) when scripted so the
+		// camera sits exactly where the editor shows it.
+		if (vSliceCameraFocusEnabled)
+			return 1;
 		return GAMEPLAY_CAMERA_FOLLOW_LERP_60FPS * 60 / FlxG.updateFramerate;
 	}
 
@@ -252,6 +266,7 @@ class PlayState extends MusicBeatState
 	private var playFlow:PlayFlow;
 	private var playInput:PlayInput;
 	private var playLua:PlayLua;
+	public var stageCamera:StageCamera;
 	private var playScoreFeedback:PlayScoreFeedback;
 	public var playScrollSpeed:PlayScrollSpeed;
 
@@ -383,6 +398,13 @@ class PlayState extends MusicBeatState
 
 	public var camGame:PlayCamera;
 
+	// Reusable "stage" camera, frozen at the song's opening framing (base focus + default
+	// zoom) and never panned or zoomed afterwards. Sprites/characters opted in via
+	// pinToStageCamera() render exactly as the Stage Builder's static "fake camera" view
+	// shows them — camGame's cinematic pans/zooms no longer slide or scale them. The
+	// background layers stay on camGame so they keep their parallax.
+	public var camStage:PlayCamera;
+
 	var customNoteSprites:FlxTypedGroup<FlxSprite>;
 
 	var playerIconColor:FlxColor;
@@ -430,6 +452,7 @@ class PlayState extends MusicBeatState
 		playFlow = new PlayFlow(this);
 		playInput = new PlayInput(this);
 		playLua = new PlayLua(this);
+		stageCamera = new StageCamera(this);
 		playScoreFeedback = new PlayScoreFeedback(this);
 		playScrollSpeed = new PlayScrollSpeed();
 		PlayScrollSpeed.active = playScrollSpeed;
@@ -527,6 +550,11 @@ class PlayState extends MusicBeatState
 		camNOTE.bgColor.alpha = 0;
 
 		FlxG.cameras.reset(camGame);
+		// Stacked right after camGame: pinned sprites draw above the stage background but
+		// below the note/HUD cameras. Frozen at the opening framing in freezeStageCamera().
+		camStage = new PlayCamera();
+		camStage.bgColor.alpha = 0;
+		FlxG.cameras.add(camStage);
 		FlxG.cameras.add(camNOTE.camNoteStrum);
 		FlxG.cameras.add(camNOTE.camNoteSustain);
 		FlxG.cameras.add(camNOTE);
@@ -775,6 +803,7 @@ class PlayState extends MusicBeatState
 		cameraFocusTransitionY = camPos.y;
 		cameraFocusTransitionInitialized = true;
 		FlxG.camera.focusOn(camFollow.getPosition());
+		freezeStageCamera();
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
@@ -2015,6 +2044,9 @@ class PlayState extends MusicBeatState
 		FlxG.camera.zoom = defaultCamZoom;
 		camHUD.zoom = 1;
 		camNOTE.zoom = 1;
+		// Re-anchor the frozen stage camera to the (reset) opening framing. Sprites stay
+		// pinned across a restart; stage Lua re-pins its own sprites when it reloads.
+		freezeStageCamera();
 		camGame.engineAlpha = modifierCheckList('blind effect') ? 0 : 1;
 
 		var restartCountdownLeadIn:Float = Conductor.instance.beatLengthMs * -5;
@@ -2024,6 +2056,10 @@ class PlayState extends MusicBeatState
 		Conductor.instance.update(startTimestamp + restartCountdownLeadIn);
 		lastTrackedSongPos = Conductor.instance.trackedSongPosition;
 		syncMusicBeatState(Conductor.instance.trackedSongPosition);
+
+		if(stageCamera != null) {
+			stageCamera.reset();
+		}
 
 		if(playLua != null) {
 			playLua.reloadScriptForSongRestart();
@@ -3490,6 +3526,7 @@ class PlayState extends MusicBeatState
 			#end
 		}
 
+
 		#if (debug || USING_MOD_DEBUG)
 		if(FlxG.keys.justPressed.SIX) {
 			songScore += 1000;
@@ -3543,6 +3580,10 @@ class PlayState extends MusicBeatState
 		if(startedCountdown && !startingSong && !inCutscene && prevEventStep != liveEventStep) {
 			prevEventStep = liveEventStep;
 			eventLoad();
+		}
+
+		if(stageCamera != null && generatedMusic && startedCountdown && !inCutscene) {
+			stageCamera.update(elapsed, Conductor.instance.currentStepTime, Conductor.instance.stepLengthMs);
 		}
 
 		var cameraPlaybackTime:Float = Conductor.instance.trackedSongPosition;
@@ -3604,6 +3645,17 @@ class PlayState extends MusicBeatState
 					followX = focusOnlyX + camMovementPos.x;
 					followY = focusOnlyY + camMovementPos.y;
 				}
+
+			// The scripted focus is snapped (followLerp = 1) to match the editor exactly, so the
+			// sing-direction nudge (camMovementPos) can no longer ride FlxCamera's follow lerp.
+			// Ease it here so it stays smooth instead of stiff. Unscripted gameplay is untouched.
+			if(vSliceCameraFocusEnabled) {
+				var rate:Float = GAMEPLAY_CAMERA_FOLLOW_LERP_60FPS * 60 / FlxG.updateFramerate;
+				camMovementSmooth.x = FlxMath.lerp(camMovementSmooth.x, camMovementPos.x, rate);
+				camMovementSmooth.y = FlxMath.lerp(camMovementSmooth.y, camMovementPos.y, rate);
+				followX = focusOnlyX + camMovementSmooth.x;
+				followY = focusOnlyY + camMovementSmooth.y;
+			}
 
 			updateCameraFocusTransition(focusOnlyX, focusOnlyY);
 			camFollow.setPosition(followX, followY);
@@ -4560,6 +4612,80 @@ class PlayState extends MusicBeatState
 		return playLua != null ? playLua.getOwnedLua() : null;
 	}
 
+	// Lets StageCamera resolve a stage prop by its Lua name for character-anchored shots.
+	public function getStageCameraSprite(name:String):FlxSprite {
+		return playLua != null ? playLua.getSprite(name) : null;
+	}
+
+	// Build the declarative scenery from a stage's `stageLayout` table (handed in via the
+	// `setStageLayout` lua callback) using the SAME shared builder the editor preview uses, so
+	// gameplay and editor place props identically. Characters stay with PlayState's own flow.
+	public function buildStageLayout(layout:Dynamic):Void {
+		if(layout == null) return;
+		StageLayoutScene.build(layout, new GameplayStageSceneFactory(this));
+	}
+
+	// Register a sprite built outside the lua VM (by StageLayoutScene) into the stage VM's store,
+	// so the stage script's getSprite-based dynamic logic still finds it by name.
+	public function registerStageSprite(name:String, spr:FlxSprite):Void {
+		if(playLua != null) playLua.registerStageSprite(name, spr);
+	}
+
+	// Snapshot camGame's current framing onto camStage and leave it there. Called once the
+	// opening shot is established (create + restart), so camStage = the base focus/zoom the
+	// player first sees. camStage is never updated again, so anything pinned to it ignores
+	// every later cinematic pan/zoom.
+	public function freezeStageCamera():Void {
+		if(camStage == null)
+			return;
+		camStage.scroll.copyFrom(camGame.scroll);
+		camStage.zoom = camGame.zoom;
+	}
+
+	// Resolve a pin target: a character alias (dad/opponent/p2, bf/boyfriend/player/p1,
+	// gf/girlfriend) or, failing that, a named stage sprite.
+	function resolveStageCameraTarget(target:String):FlxSprite {
+		if(target == null)
+			return null;
+		switch(target.toLowerCase()) {
+			case "opponent", "dad", "p2":
+				return dad != null ? cast(dad, FlxSprite) : null;
+			case "boyfriend", "bf", "player", "p1":
+				return boyfriend != null ? cast(boyfriend, FlxSprite) : null;
+			case "gf", "girlfriend":
+				return gf != null ? cast(gf, FlxSprite) : null;
+			default:
+				return getStageCameraSprite(target);
+		}
+	}
+
+	// Opt a sprite/character into the frozen stage camera so camGame's pan/zoom no longer
+	// moves or scales it (matches the editor's static "fake camera" view). Re-callable, e.g.
+	// after a stage sprite is destroyed and rebuilt. Returns true if the target was found.
+	public function pinToStageCamera(target:String):Bool {
+		if(camStage == null)
+			return false;
+		var spr:FlxSprite = resolveStageCameraTarget(target);
+		if(spr == null)
+			return false;
+		spr.cameras = [camStage];
+		return true;
+	}
+
+	// Undo pinToStageCamera: send the sprite/character back to the gameplay camera.
+	public function unpinFromStageCamera(target:String):Bool {
+		var spr:FlxSprite = resolveStageCameraTarget(target);
+		if(spr == null)
+			return false;
+		spr.cameras = [camGame];
+		return true;
+	}
+
+	// Name -> sprite snapshot for the stage builder editor.
+	public function getNamedStageSprites():Map<String, FlxSprite> {
+		return playLua != null ? playLua.collectNamedSprites() : new Map<String, FlxSprite>();
+	}
+
 	override public function addCallback(name:String, method:Dynamic):Void {
 		var lua:ModLua = getModLua();
 		if(lua != null) {
@@ -4568,8 +4694,9 @@ class PlayState extends MusicBeatState
 	}
 
 	override public function callLua(name:String, args:Array<Dynamic>):Dynamic {
-		var lua:ModLua = getModLua();
-		return lua != null ? lua.call(name, args) : null;
+		// Fan out through PlayLua so both the song and stage VMs receive lifecycle calls
+		// (onUpdate, onStepHit, goodNoteHit, ...). getModLua() only returns the active VM.
+		return playLua != null ? playLua.call(name, args) : null;
 	}
 
 	override public function setLua(variable:String, data:Dynamic):Void {

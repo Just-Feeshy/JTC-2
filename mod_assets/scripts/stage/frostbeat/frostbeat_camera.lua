@@ -1,0 +1,73 @@
+return {
+    defaultZoom = 0.5,
+    focusLerp = 0.09,
+    baseFocus = { x = 785, y = 458.5 },
+
+    keyframes = {
+        {
+            step = 0,
+            focus = { x = 27.33, y = 279 },
+            zoom = 1.9,
+            lerp = 0,
+        },
+        {
+            step = 26,
+            focus = { x = 1128.85000000019, y = 303.720000000043 },
+            zoom = 2.15,
+            lerp = 0,
+        },
+        {
+            step = 34,
+            focus = { x = 1098.85000000003, y = 688.440000000005 },
+            zoom = 2.15,
+            lerp = 0,
+        },
+        {
+            step = 40,
+            focus = { x = 785, y = 458.5 },
+            zoom = 0.9,
+            lerp = 0,
+        },
+        {
+            step = 50,
+            focus = { x = 785, y = 458.5 },
+            zoom = 0.5,
+            lerp = 0.09,
+            duration = 0.35,
+            ease = "smootherStep",
+        },
+        {
+            step = 95,
+            focus = { x = 694, y = 605.5 },
+            zoom = 0.39,
+            lerp = 0.09,
+            duration = 8,
+            ease = "quintInOut",
+        },
+        {
+            step = 149.26,
+            focus = { x = 661, y = 434.5 },
+            zoom = 0.56,
+            lerp = 0.09,
+            duration = 0.25,
+            ease = "expoInOut",
+        },
+        {
+            step = 630,
+            focus = { x = 785, y = 458.5 },
+            zoom = 1,
+            lerp = 0.09,
+            duration = 0.5,
+            ease = "smootherStep",
+        },
+        {
+            step = 1136,
+            target = "boyfriend",
+            anchor = { x = 0.29, y = 0.24 },
+            offset = { x = 10, y = 30 },
+            zoom = 1.2,
+            lerp = 0,
+            ease = "smootherStep",
+        },
+    },
+}
