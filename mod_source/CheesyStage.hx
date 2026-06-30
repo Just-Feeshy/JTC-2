@@ -119,8 +119,8 @@ class CheesyStage extends StorageStage {
 		dad = Register.getInGameCharacter(OPPONENT);
 
 		if(stage == "funkroad" && PlayState.SONG.song.toLowerCase() == "frostbeat") {
-			boyfriend.shouldPlayDance = false;
-			dad.shouldPlayDance = false;
+			// Let bf/dad bop on the beat (beatHit). They were left with shouldPlayDance = false
+			// for the whole song, which froze them on idle.
 			boyfriend.playAnim("idle", true);
 		}
 	}
@@ -263,7 +263,6 @@ class CheesyStage extends StorageStage {
 			dad = Register.getInGameCharacter(OPPONENT);
 			dad.scale.set(1.1, 1.1);
 			dad.updateHitbox();
-			dad.shouldPlayDance = false;
 		}
 
 		if(boyfriend.getCurrentAnimation() != "") {

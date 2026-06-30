@@ -3980,7 +3980,10 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		dad.playPreferredIdle(true);
+		// Unforced: let the current idle finish and re-trigger on completion instead of
+		// restarting it every beat (which chopped multi-beat atlas idles like frostbeat's skater).
+		// Short single-beat idles finish within a beat, so their on-beat bop is unchanged.
+		dad.playPreferredIdle(false);
 	}
 
 	function shouldBotplayHitPlayerNote(note:Note):Bool {

@@ -547,7 +547,9 @@ class PlayLua
 			if(playState.modifiableCharacters.exists(name))
 				return;
 
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer);
+			// Character.build picks AtlasCharacter for useAtlas chars; `new Character` would build a
+			// Sparrow char around an Animate atlas (no valid frames) -> the sprite never animates.
+			var characterSprite:ICharacter = Character.build(x, y, characterName, isPlayer);
 			characterSprite.refresh(characterName, playState.camPos);
 			characterSprite.active = true;
 
@@ -558,7 +560,7 @@ class PlayLua
 			if(playState.modifiableCharacters.exists(name))
 				return false;
 
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer);
+			var characterSprite:ICharacter = Character.build(x, y, characterName, isPlayer);
 			characterSprite.refresh(characterName, playState.camPos);
 			characterSprite.active = true;
 
@@ -570,7 +572,7 @@ class PlayLua
 			if(playState.modifiableCharacters.exists(name))
 				return;
 
-			var characterSprite:Character = new Character(x, y, characterName, isPlayer, null, false);
+			var characterSprite:ICharacter = Character.build(x, y, characterName, isPlayer, null, false);
 			characterSprite.refresh(characterName, playState.camPos);
 			characterSprite.active = true;
 
@@ -852,11 +854,15 @@ class PlayLua
 		playState.addCallback("playCharacterAnim", function(name:String, animation:String, forced:Bool = false, reverse:Bool = false, startFrame:Int = 0) {
 			var sprite = getSprite(name);
 
-			if(!Std.isOfType(sprite, Character) || animation == null) {
+			// Accept ICharacter, not the concrete Character: useAtlas chars are AtlasCharacter,
+			// which does NOT extend Character, so an `isOfType(sprite, Character)` check rejected
+			// every atlas character and made this a silent no-op (e.g. frostbeat's lua-driven
+			// "second" skater idle never played -> frozen).
+			if(!Std.isOfType(sprite, ICharacter) || animation == null) {
 				return false;
 			}
 
-			var character:Character = cast sprite;
+			var character:ICharacter = cast sprite;
 
 			if(character == null || !character.hasAnimation(animation)) {
 				return false;
