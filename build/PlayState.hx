@@ -2614,7 +2614,8 @@ class PlayState extends MusicBeatState
 			note.destroy();
 		}
 
-		stopHoldCoverForLane(lane, true);
+		// Play the End 'pop' on release and let it finish; hideInstant would cut it mid-splash.
+		endHoldCoverForLane(lane, true);
 	}
 
 	/**
@@ -3378,7 +3379,8 @@ class PlayState extends MusicBeatState
 			trail.alpha = 1;
 
 			if (trail.mustPress && trail.hitNote && !strum.keyHeld) {
-				stopHoldCoverForLane(trail.noteDirection, true);
+				// Funkin plays the end 'pop' animation on release; don't hideInstant mid-splash.
+				endHoldCoverForLane(trail.noteDirection, true);
 				if (toRemove == null) toRemove = [];
 				toRemove.push(trail);
 				return;
