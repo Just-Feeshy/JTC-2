@@ -86,6 +86,12 @@ class Main extends Sprite
 
 		SaveData.bindProjectSave();
 
+		// flixel-animate keeps a static atlas cache (_cachedAtlases) that only self-evicts when the
+		// FlxAnimateFrames is destroy()'d. We destroy the underlying FlxGraphic (Cache.clear, stage
+		// editor teardown) without destroying the frames, leaving a cached atlas with dead graphics
+		// that crashes on next draw. Drop those on every state switch (mirrors Codename's Paths.init).
+		FlxG.signals.preStateSwitch.add(Cache.purgeStaleAnimateAtlases);
+
 		addChild(feeshmora);
 
 		#if !html5

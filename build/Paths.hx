@@ -1205,6 +1205,28 @@ class Paths
 	// Merged Animate atlas collections, keyed by the comma-joined folder list. See getAnimateAtlas.
 	static var _combinedAnimateAtlases:Map<String, flixel.graphics.frames.FlxFramesCollection> = new Map();
 
+	/**
+	 * Drop merged atlases whose graphics were freed (e.g. Cache.clearNoneCachedAssets removes the
+	 * underlying flixel-animate spritemaps on a song reload). Leaving them cached hands a combined
+	 * character a collection that draws a destroyed graphic. Dropping the entry makes getAnimateAtlas
+	 * rebuild it fresh. Called from Cache.purgeStaleAnimateAtlases.
+	 */
+	public static function purgeStaleCombinedAtlases():Void {
+		var stale:Array<String> = [];
+		for(key in _combinedAnimateAtlases.keys()) {
+			var coll = _combinedAnimateAtlases.get(key);
+			if(coll == null) { stale.push(key); continue; }
+			for(frame in coll.frames) {
+				if(frame == null || frame.parent == null || frame.parent.isDestroyed) {
+					stale.push(key);
+					break;
+				}
+			}
+		}
+		for(key in stale)
+			_combinedAnimateAtlases.remove(key);
+	}
+
 	// Keeps a merged atlas (and its spritemap bitmap) resident so a combined character never frees
 	// graphics that another character/instance still references.
 	static function pinAnimateAtlas(collection:flixel.graphics.frames.FlxFramesCollection):Void {
@@ -1212,6 +1234,15 @@ class Paths
 			return;
 		collection.parent.persist = true;
 		collection.parent.destroyOnNoUse = false;
+		// `collection.parent` is a synthetic spritemap-collection graphic; the graphics that actually
+		// get drawn (and that Cache.clearNoneCachedAssets would otherwise free on every song entry,
+		// forcing a slow atlas re-decode on re-entry) are the frame parents. Pin those too.
+		for(frame in collection.frames) {
+			if(frame != null && frame.parent != null) {
+				frame.parent.persist = true;
+				frame.parent.destroyOnNoUse = false;
+			}
+		}
 	}
 
 	/**

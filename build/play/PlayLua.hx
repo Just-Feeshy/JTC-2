@@ -642,8 +642,15 @@ class PlayLua
 					continue;
 				}
 
-				character.playAnimation(animationName, true);
-				character.drawFrame(true);
+				// Warming is a best-effort GPU-upload optimization. An anim whose atlas graphic was
+				// freed (e.g. a multi-atlas char's death sub-atlas the cache clears) must not crash
+				// song load — skip it and keep warming the rest.
+				try {
+					character.playAnimation(animationName, true);
+					character.drawFrame(true);
+				} catch(e:Dynamic) {
+					Sys.println('[warm] skipped anim "' + animationName + '": ' + Std.string(e));
+				}
 			}
 
 			if(originalAnim != null && originalAnim != "" && character.hasAnimation(originalAnim)) {
@@ -652,7 +659,11 @@ class PlayLua
 				character.playAnimation("idle", true);
 			}
 
-			character.drawFrame(true);
+			try {
+				character.drawFrame(true);
+			} catch(e:Dynamic) {
+				Sys.println('[warm] skipped restore draw: ' + Std.string(e));
+			}
 			character.visible = originalVisible;
 			character.active = originalActive;
 			character.exists = originalExists;
@@ -744,8 +755,15 @@ class PlayLua
 					continue;
 				}
 
-				character.playAnimation(animationName, true);
-				character.drawFrame(true);
+				// Warming is a best-effort GPU-upload optimization. An anim whose atlas graphic was
+				// freed (e.g. a multi-atlas char's death sub-atlas the cache clears) must not crash
+				// song load — skip it and keep warming the rest.
+				try {
+					character.playAnimation(animationName, true);
+					character.drawFrame(true);
+				} catch(e:Dynamic) {
+					Sys.println('[warm] skipped anim "' + animationName + '": ' + Std.string(e));
+				}
 			}
 
 			if(originalAnim != null && originalAnim != "" && character.hasAnimation(originalAnim)) {
@@ -754,7 +772,11 @@ class PlayLua
 				character.playAnimation("idle", true);
 			}
 
-			character.drawFrame(true);
+			try {
+				character.drawFrame(true);
+			} catch(e:Dynamic) {
+				Sys.println('[warm] skipped restore draw: ' + Std.string(e));
+			}
 			character.visible = originalVisible;
 			character.active = originalActive;
 			character.exists = originalExists;

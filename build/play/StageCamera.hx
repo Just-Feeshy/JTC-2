@@ -4,37 +4,6 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
 
-/**
- * Declarative, V-slice-style camera layer for stages.
- *
- * Instead of a song modchart hand-driving `setGameplayCameraFocus`/`Zoom`/`FocusLerp`
- * every frame, a stage exports a `<stage>_camera.lua` config table that this class reads
- * and applies. The config is handed in from Lua via the `setStageCameraConfig` callback
- * (see PlayLua.generateStaticBindings) as a Reflect-readable structure (sequence tables
- * arrive as Array, keyed tables as anonymous objects, numbers as Float).
- *
- * Config schema:
- * {
- *   defaultZoom = 0.5, focusLerp = 0.09,
- *   baseFocus = { x = 785, y = 458.5 },
- *   characters = { dad = { focusOffset = {x=0,y=0} }, ... },
- *   keyframes = {
- *     -- focus may be absolute { x, y } OR character-anchored (target + anchor + offset)
- *     { step=18, target="opponent", anchor={x=0.53,y=0.20}, offset={x=6,y=-16},
- *       zoom=1.95, lerp=0 },
- *     { step=50, focus={x=785,y=458.5}, zoom=0.5, duration=0.35, ease="smootherStep" },
- *     { step=1136, fromStep=906, target="boyfriend", anchor={x=0.29,y=0.24},
- *       zoom=1.2, ease="smootherStep", segment="phaseTwoFlying" },
- *   },
- * }
- *
- * Interpolation model per keyframe (in priority order):
- *  - `fromStep` set  -> step-based ease: progress = (curStep-fromStep)/(step-fromStep)
- *  - `duration` > 0  -> time-based tween (seconds) started when the keyframe activates
- *  - otherwise       -> snap
- * A keyframe with a `segment` only becomes eligible once that segment is triggered via
- * `triggerStageCameraSegment(name)` (gating gameplay-driven moves like a mid-song zoom).
- */
 class StageCamera
 {
 	var playState:PlayState;
@@ -51,9 +20,9 @@ class StageCamera
 	var charOffsetY:Map<String, Float> = new Map<String, Float>();
 
 	var keyframes:Array<CameraKeyframe> = [];
+	var bumps:Array<BumpSeg> = [];
 	var activeSegments:Map<String, Bool> = new Map<String, Bool>();
 
-	// Runtime interpolation state.
 	var curIndex:Int = -1;
 
 	var appliedFocusX:Float = 0;
@@ -84,23 +53,17 @@ class StageCamera
 		activeSegments.remove(name);
 	}
 
-	/**
-	 * Reset runtime interpolation (called on song restart). Keeps the parsed config.
-	 */
 	public function reset():Void
 	{
 		curIndex = -1;
 		hasApplied = false;
+		lastBumpStep = -1;
 		activeSegments = new Map<String, Bool>();
 		appliedFocusX = baseFocusX;
 		appliedFocusY = baseFocusY;
 		appliedZoom = defaultZoom;
 		appliedLerp = focusLerp;
 	}
-
-	// ------------------------------------------------------------------
-	// Config parsing (from the Lua config table)
-	// ------------------------------------------------------------------
 
 	public function configure(config:Dynamic):Void
 	{
@@ -147,6 +110,23 @@ class StageCamera
 			var bv:Float = b.activationStep();
 			return (av < bv) ? -1 : (av > bv ? 1 : 0);
 		});
+
+		bumps = [];
+		var rawBumps:Dynamic = field(config, "bumps");
+		if(rawBumps != null && Std.isOfType(rawBumps, Array)) {
+			var arr:Array<Dynamic> = cast rawBumps;
+			for(raw in arr) {
+				if(raw == null) continue;
+				var b:BumpSeg = new BumpSeg();
+				b.step = getFloat(raw, "step", 0);
+				b.perStep = Std.int(getFloat(raw, "perStep", 4));
+				b.force = getFloat(raw, "force", 1);
+				b.count = Std.int(getFloat(raw, "count", 0));
+				bumps.push(b);
+			}
+			bumps.sort(function(a, b) return (a.step < b.step) ? -1 : (a.step > b.step ? 1 : 0));
+		}
+		playState.hasAuthoredBumps = bumps.length > 0;
 
 		configured = true;
 		reset();
@@ -201,7 +181,12 @@ class StageCamera
 	 */
 	public function update(elapsed:Float, stepFloat:Float, stepLengthMs:Float):Void
 	{
-		if(!enabled || !configured || keyframes.length == 0)
+		if(!enabled || !configured)
+			return;
+
+		applyBumps(stepFloat);
+
+		if(keyframes.length == 0)
 			return;
 
 		var idx:Int = pickKeyframe(stepFloat);
@@ -264,6 +249,39 @@ class StageCamera
 		playState.setScriptedCameraFocus(appliedFocusX, appliedFocusY, false);
 		playState.setScriptedCameraFocusLerp(0);
 		playState.setScriptedCameraZoom(appliedZoom, true, false);
+	}
+
+	var lastBumpStep:Int = -1;
+
+	/**
+	 * Fire authored camera bumps with the SAME per-integer-step timing as the Stage Editor preview
+	 * (StageEditor.updatePreviewBump): one bop per new step, on steps where (step - segStep) % perStep
+	 * == 0 within the active segment's window. Bops go straight to triggerCameraBop with bypass=true so
+	 * they ride over the stage's suppress-while-scripted-zoom flag. No reliance on stepHit/bumpPerStep,
+	 * so there's no frame-order drift between setting the interval and reading it (that drift was
+	 * dropping/mistiming bops in gameplay while the preview stayed clean).
+	 */
+	function applyBumps(stepFloat:Float):Void
+	{
+		if(bumps.length == 0)
+			return;
+
+		var curStep:Int = Std.int(stepFloat);
+		if(curStep == lastBumpStep)
+			return; // one bop per integer step
+		lastBumpStep = curStep;
+
+		var seg:BumpSeg = null;
+		for(b in bumps) {
+			if(b.step <= curStep) seg = b;
+			else break;
+		}
+		if(seg == null)
+			return; // before the first segment
+
+		var within:Bool = (seg.count <= 0) || (curStep < seg.step + (seg.count * seg.perStep));
+		if(within && seg.perStep > 0 && (curStep - Std.int(seg.step)) % seg.perStep == 0)
+			playState.triggerCameraBop(seg.force, true);
 	}
 
 	var focusTmp:Array<Float> = [0, 0];
@@ -400,4 +418,14 @@ private class CameraKeyframe
 	{
 		return Math.isNaN(fromStep) ? step : fromStep;
 	}
+}
+
+private class BumpSeg
+{
+	public var step:Float = 0;
+	public var perStep:Int = 4;
+	public var force:Float = 1;
+	public var count:Int = 0;
+
+	public function new() {}
 }

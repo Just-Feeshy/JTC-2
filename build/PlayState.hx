@@ -146,6 +146,8 @@ class PlayState extends MusicBeatState
 	private var testSprite:FlxSprite;
 	private var warningSprState:WarningSubGroup;
 	private var curChar:String = '';
+	// Who the camera focuses on, driven by whoever last sang (not by mustHitSection). "" behaves as "dad".
+	private var camFocusChar:String = '';
 	private var camMovementPos:FlxPoint;
 	// Eased copy of camMovementPos used while the StageCamera is scripted (the follow lerp is
 	// snapped to 1 there, so the sing-direction nudge is smoothed here instead).
@@ -353,6 +355,8 @@ class PlayState extends MusicBeatState
 	public var bumpOffset:Int = 0;
 	public var bumpPerStep:Int = 0;
 	public var bumpStepOffset:Int = 0;
+	// Set by StageCamera.configure when the stage declares a `bumps` table (drives declarative camera bops).
+	public var hasAuthoredBumps:Bool = false;
 
 	private static inline var CAMERA_BUMP_GAME_ZOOM:Float = 0.02;
 	private static inline var CAMERA_BUMP_HUD_ZOOM:Float = 0.04;
@@ -1910,6 +1914,7 @@ class PlayState extends MusicBeatState
 		bumpOffset = 0;
 		bumpPerStep = 0;
 		bumpStepOffset = 0;
+		hasAuthoredBumps = false;
 		cameraBopGameOffset = 0;
 		cameraBopHudOffset = 0;
 		singDrainValue = 1;
@@ -3592,7 +3597,7 @@ class PlayState extends MusicBeatState
 
 		if (generatedMusic && startedCountdown && !inCutscene && SONG.notes[cameraSectionIndex] != null)
 		{
-			if (!SONG.notes[cameraSectionIndex].mustHitSection)
+			if (camFocusChar != "bf")
 			{
 				if(curChar != "dad") {
 					camMovementPos.x = 0;
@@ -3611,7 +3616,7 @@ class PlayState extends MusicBeatState
 				}
 			}
 
-			if(SONG.notes[cameraSectionIndex].mustHitSection)
+			if(camFocusChar == "bf")
 			{
 				if(curChar != "bf") {
 					camMovementPos.x = 0;
@@ -3948,6 +3953,7 @@ class PlayState extends MusicBeatState
 		events.whenNoteIsPressed(note, this);
 		stage.whenNoteIsPressed(note);
 		cameraMovement(note.noteData, note.isSustainNote);
+		camFocusChar = "dad";
 
 		if(modifierCheckList('sing drain') && health > 0.2) {
 			setHealth(health - (0.04 * singDrainValue));
@@ -4126,6 +4132,7 @@ class PlayState extends MusicBeatState
 			events.whenNoteIsPressed(note, this);
 			stage.whenNoteIsPressed(note);
 			cameraMovement(note.noteData, false);
+			camFocusChar = "bf";
 
 			currentPlayer.customAnimation = false;
 
@@ -4481,7 +4488,9 @@ class PlayState extends MusicBeatState
 		if(direct) {
 			vSliceDirectZoomEnabled = true;
 			vSliceDirectZoomValue = zoom;
-			if(suppressCameraBopWhileDirectZoom) {
+			// Don't wipe authored stage bumps: when the stage has a bumps table, let the bop decay
+			// naturally on top of the scripted zoom instead of clearing it every frame.
+			if(suppressCameraBopWhileDirectZoom && !hasAuthoredBumps) {
 				clearCameraBop();
 			}
 		}else {
@@ -5114,25 +5123,29 @@ class PlayState extends MusicBeatState
 		return !paused && !inCutscene && !talking;
 	}
 
-	public function triggerCameraBop(?intensity:Float = 1):Void {
+	public function triggerCameraBop(?intensity:Float = 1, ?bypassSuppress:Bool = false):Void {
 		if(!canTriggerCameraBop()) {
 			return;
 		}
 
-		if(suppressCameraBop) {
-			clearCameraBop();
-			return;
-		}
+		// Authored stage bumps (bypassSuppress) are deliberate: they ride over the suppress flags and the
+		// zoom cap so gameplay matches the Stage Editor preview exactly.
+		if(!bypassSuppress) {
+			if(suppressCameraBop) {
+				clearCameraBop();
+				return;
+			}
 
-		if(suppressCameraBopWhileDirectZoom && vSliceDirectZoomEnabled) {
-			clearCameraBop();
-			return;
+			if(suppressCameraBopWhileDirectZoom && vSliceDirectZoomEnabled) {
+				clearCameraBop();
+				return;
+			}
 		}
 
 		var finalIntensity:Float = Math.max(0, bumpForce * intensity);
 		var zoomCap:Float = Math.max(1.35, getGameplayCameraZoomBase() * 1.35);
 
-		if(FlxG.camera.zoom < zoomCap) {
+		if(bypassSuppress || FlxG.camera.zoom < zoomCap) {
 			cameraBopGameOffset = Math.max(cameraBopGameOffset, CAMERA_BUMP_GAME_ZOOM * finalIntensity);
 			cameraBopHudOffset = Math.max(cameraBopHudOffset, CAMERA_BUMP_HUD_ZOOM * finalIntensity);
 		}

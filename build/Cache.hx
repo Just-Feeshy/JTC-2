@@ -428,6 +428,8 @@ class Cache
 				}
 			}
 		}
+
+		purgeStaleAnimateAtlases();
 	}
 
 	/**
@@ -638,6 +640,56 @@ class Cache
 		purgeCache(true);
 	}
 
+	/**
+	 * flixel-animate keeps a static `_cachedAtlases` map so repeated `fromAnimate` calls reuse a
+	 * parsed atlas. Our texture purge destroys the underlying FlxGraphics, but that map still holds
+	 * the atlas referencing them — so a reload (e.g. song -> freeplay -> song) gets an atlas whose
+	 * graphics are destroyed and crashes on the next draw ("Cannot queue ... This sprite was
+	 * destroyed"). flixel-animate's own completeness guard misses multi-atlas characters (their parent
+	 * isn't a FlxAnimateSpritemapCollection), so drop any cached atlas with a destroyed frame graphic
+	 * here and let it rebuild fresh on next use.
+	 */
+	@:access(animate.FlxAnimateFrames)
+	public static function purgeStaleAnimateAtlases():Void
+	{
+		var cache = animate.FlxAnimateFrames._cachedAtlases;
+		if (cache == null)
+			return;
+
+		var staleKeys:Array<String> = [];
+		for (key in cache.keys())
+		{
+			var atlas = cache.get(key);
+			if (atlas == null)
+			{
+				staleKeys.push(key);
+				continue;
+			}
+
+			// The draw path throws on FlxGraphic.isDestroyed (FlxCamera.startQuadBatch); match that
+			// exactly. atlas.frames[i].parent is the real spritemap graphic, so this catches the case
+			// clearNoneCachedAssets frees a flixel-animate spritemap that isn't in Cache's tracked maps.
+			for (frame in atlas.frames)
+			{
+				if (frame == null || frame.parent == null || frame.parent.isDestroyed)
+				{
+					staleKeys.push(key);
+					break;
+				}
+			}
+		}
+
+		// Drop the per-folder entry so the next fromAnimate rebuilds fresh. Not calling atlas.destroy():
+		// its graphics are already freed, and destroy() would walk them again. The orphaned shell GCs.
+		for (key in staleKeys)
+			cache.remove(key);
+
+		// Paths keeps a second cache of *merged* multi-atlas collections (e.g. "flying,flying_death")
+		// that bypasses fromAnimate on reuse, so it must be invalidated too or a combined character
+		// gets the dead merged atlas back.
+		Paths.purgeStaleCombinedAtlases();
+	}
+
 	public static function collectNow():Void
 	{
 		MemoryUtil.collect(true);
@@ -698,6 +750,8 @@ class Cache
 				previousCachedTextures.remove(key);
 			OpenFlAssets.cache.clear(key);
 		}
+
+		purgeStaleAnimateAtlases();
 	}
 
 	public static function clearSongSoundCache():Void
@@ -745,12 +799,21 @@ class Cache
 		{
 			var graphic = FlxG.bitmap.get(key);
 
-			if (graphic != null && getCachedGraphic(key) == null)
+			// Skip persistent graphics: pinned flixel-animate spritemaps (see Paths.pinAnimateAtlas)
+			// aren't in the tracked maps but must stay resident, or a combined character's atlas is
+			// freed here and has to be re-decoded on every re-entry (and used-after-free before the
+			// purge below catches it).
+			if (graphic != null && !graphic.persist && getCachedGraphic(key) == null)
 			{
 				OpenFlAssets.cache.removeBitmapData(key);
 				FlxG.bitmap.removeByKey(key);
 			}
 		}
+
+		// This just freed flixel-animate spritemaps that aren't in the tracked maps. Any cached atlas
+		// referencing them is now a use-after-free waiting to happen on the next draw; drop them so
+		// they rebuild fresh (this runs in PlayState.create before the characters are built).
+		purgeStaleAnimateAtlases();
 	}
 
 	public static function releaseSongCacheImages(song:String):Void {}

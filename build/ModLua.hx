@@ -4085,9 +4085,11 @@ class ModLua {
                 activeLuaCallbackName = null;
                 return result;
             }catch(e:haxe.Exception) {
+                Sys.println('[LUACB-CRASH] callback "' + name + '" threw: ' + e.message + '\n' + haxe.CallStack.toString(e.stack));
                 pushLuaCallbackError(name, e.message, haxe.CallStack.toString(e.stack));
                 throw e;
             }catch(e:Dynamic) {
+                Sys.println('[LUACB-CRASH] callback "' + name + '" threw: ' + Std.string(e) + '\n' + haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
                 pushLuaCallbackError(name, Std.string(e), haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
                 throw e;
             }

@@ -13,7 +13,6 @@
 -- Modules
 -- ============================================================================
 local jtc_camera = require("mod_assets/scripts/components/jtc_camera")
-local frost_bump = require("mod_assets/scripts/components/frost_bump")
 local frost_modchart = {}
 
 -- ============================================================================
@@ -389,9 +388,8 @@ local function init()
     resetShaderRuntimeState()
     initStaticShader()
     createJumpscare()
-    frost_bump.reset()
-    -- Suppress the lua beat-bump through the intro (the camera is on scripted shots).
-    frost_bump.setSuppressed(true, introBopSuppressUntilStep)
+    -- Camera bumps are declarative now (bumps table in frostbeat_camera.lua, applied by StageCamera).
+    -- Suppress the engine beat-bump through the intro (the camera is on scripted shots).
     if setSuppressGameplayCameraBop ~= nil then
         setSuppressGameplayCameraBop(true)
     end
@@ -829,7 +827,6 @@ function onUpdate(elapsed)
     end
 
     jtc_camera.onUpdate(elapsed)
-    frost_bump.onUpdate()
 
     -- Precompute once; used twice below to avoid duplicate string ops.
     local animIsSing = curAnimName:sub(1, 4) == "sing"
